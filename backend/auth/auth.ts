@@ -1,11 +1,11 @@
-import { api, APIError } from "encore.dev/api";
+import { api, APIError, Header } from "encore.dev/api";
 import { authHandler, getAuthData } from "encore.dev/auth";
 import { secret } from "encore.dev/config";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const db = new SQLDatabase("users", { migrations: "../users/migrations" });
+const db = new SQLDatabase("users", { migrations: "./migrations" });
 
 // ── Secrets (set via `encore secret set`) ────────────────────────────────────
 const jwtSecret = secret("JWTSecret");
@@ -28,7 +28,7 @@ export interface TokenResponse {
 // ── Auth Handler (validates Bearer tokens on every protected request) ─────────
 
 interface AuthParams {
-  authorization: string; // "Bearer <token>"
+  authorization: Header<"Authorization">;
 }
 
 export interface AuthData {
