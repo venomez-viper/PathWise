@@ -24,10 +24,10 @@ import './App.css';
 /** Marketing site layout — uses top Navbar */
 function MarketingLayout() {
   return (
-    <div className="marketing-root">
+    <>
       <Navbar />
       <Outlet />
-    </div>
+    </>
   );
 }
 

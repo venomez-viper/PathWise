@@ -58,10 +58,7 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="navbar__actions">
-          <Link to="/signin" className="btn btn-outline navbar__cta-secondary">
-            Sign In
-          </Link>
-          <Link to="/signup" className="btn btn-primary navbar__cta">
+          <Link to="/pricing" className="btn btn-primary navbar__cta">
             Get Started Free
           </Link>
         </div>
@@ -91,10 +88,7 @@ export default function Navbar() {
           <div className="navbar__mobile-search">
             <SearchComponent />
           </div>
-          <Link to="/signin" className="btn btn-outline" style={{ textAlign: 'center' }}>
-            Sign In
-          </Link>
-          <Link to="/signup" className="btn btn-primary">
+          <Link to="/pricing" className="btn btn-primary">
             Get Started Free
           </Link>
         </div>
