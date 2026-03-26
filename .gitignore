@@ -25,3 +25,7 @@ dist-ssr
 
 # Design reference assets
 *.zip
+
+# Local env overrides (never commit real secrets)
+.env.local
+.env.*.local
