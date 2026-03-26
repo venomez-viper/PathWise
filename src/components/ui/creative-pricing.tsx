@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface PricingTier {
   name: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   price: number | string;
   description: string;
   features: string[];

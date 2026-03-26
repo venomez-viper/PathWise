@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import './Solution.css';
 
 const LAYERS = [
@@ -78,7 +78,7 @@ export default function Solution() {
 
         <div className="solution__grid">
           {LAYERS.map((layer, i) => (
-            <div key={i} className="solution__layer-card card fade-up" style={{ '--layer-color': layer.color, '--layer-bg': layer.bg } as React.CSSProperties}>
+            <div key={i} className="solution__layer-card card fade-up" style={{ '--layer-color': layer.color, '--layer-bg': layer.bg } as CSSProperties}>
               <div className="solution__layer-header">
                 <div className="solution__layer-icon">{layer.emoji}</div>
                 <h3 className="solution__layer-name">{layer.name}</h3>

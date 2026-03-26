@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, type FormEvent } from 'react';
 import './CTA.css';
 
 export default function CTA() {
@@ -21,7 +21,7 @@ export default function CTA() {
     return () => observer.disconnect();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (email) setSubmitted(true);
   };
