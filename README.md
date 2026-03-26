@@ -4,6 +4,15 @@ Welcome to the **PathWise** repository!
 
 PathWise is a modern SaaS platform designed to be a "Digital Atelier" for one's career. It transcends the traditional "utility app" aesthetic by acting as an Ethereal Mentor—providing aspirational career guidance, tracking roadmap progress, and recommending top career matches based on skills and personality assessments.
 
+## 📋 Business Concept
+
+PathWise is built on a validated business concept from our founding pitch deck. The full foundation — problem statement, product framework, pricing model, competitive positioning, and operating model — is documented in **[CONCEPT.md](./CONCEPT.md)**.
+
+> *"Your career is too important to leave to chance."*
+> PathWise is an AI-powered career orientation platform that maps your identity, predicts high-fit career paths, builds a step-by-step roadmap, and tracks your progress toward your target role.
+
+---
+
 ## 🛠 Tech Stack
 
 - **Frontend Framework**: React 18 + TypeScript
@@ -63,3 +72,9 @@ To get the project running locally:
 - **Design Tokens**: Configured global CSS variables in `index.css` to match the "Ethereal Mentor" design specification (Color palette, Topography, Spacing, and Glassmorphism).
 - **Home Dashboard Implementation**: Built the primary dashboard screen (`App.tsx`) with the user hero section, progress metrics (Roadmap Completion, Tasks Finished, Job Readiness), circular progress indicators for Top Career Matches, and integrated the custom PathWise logo.
 - **Dependencies**: Added `lucide-react` for SVG iconography.
+
+### **v0.2.0** — Business Concept Documentation
+*Date: March 26, 2026*
+- **CONCEPT.md Added**: Extracted and structured the full business concept from the founding pitch deck (Zafuture Group 5) into `CONCEPT.md`. Covers the core problem statement, Zafuture Product Experience Framework (Discovery → Planning → Execution → Intelligence layers), customer segments, pricing model ($0 free tier / $12.99 premium / $9.99 annual), revenue streams (subscriptions, university licensing, coaching add-ons), operating model (in-house vs. partner capabilities), and competitive positioning.
+- **README Updated**: Added a `Business Concept` section linking to `CONCEPT.md` with the product's founding tagline and mission summary.
+
