@@ -9,17 +9,22 @@
    DESIGN TOKENS
 ───────────────────────────────────────────── */
 :root {
-  --primary: #6245a4;
-  --primary-dark: #4a3280;
-  --primary-light: #8b6fcf;
-  --primary-container: #7b5ebf;
+  --primary: #5d2a80;
+  --primary-dark: #1a2b5f;
+  --primary-light: #a78bfa;
+  --primary-container: #5d2a80;
   --primary-fixed: #e9ddff;
   --on-primary-container: #ffffff;
 
-  --secondary: #006a62;
+  --secondary: #008080;
   --secondary-container: #5ef6e6;
   --secondary-light: #00a396;
-  --tertiary-container: #caa842;
+  --tertiary-container: #ff7f50;
+
+  --accent-orange: #ff7f50;
+  --brand-blue: #1a2b5f;
+  --brand-purple: #5d2a80;
+  --brand-teal: #008080;
 
   --surface: #faf9fe;
   --surface-container-lowest: #ffffff;

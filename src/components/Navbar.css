@@ -40,18 +40,7 @@
 .navbar__logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: #fff;
   z-index: 10;
-}
-
-.navbar__logo img {
-  height: 28px;
-  width: auto;
-  filter: brightness(0) invert(1);
 }
 
 .navbar__links {

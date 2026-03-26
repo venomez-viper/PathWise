@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SearchComponent from '@/components/ui/animated-glowing-search-bar';
+import Logo from '@/components/ui/Logo';
 import './Navbar.css';
 
 const NAV_LINKS = [
@@ -34,8 +35,7 @@ export default function Navbar() {
       <div className="navbar__inner container">
         {/* Logo */}
         <Link to="/" className="navbar__logo">
-          <img src="/logo.png" alt="PathWise" />
-          <span>PathWise</span>
+          <Logo size={40} />
         </Link>
 
         {/* Desktop Nav */}

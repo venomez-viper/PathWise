@@ -1,3 +1,4 @@
+import Logo from '@/components/ui/Logo';
 import './Footer.css';
 
 const LINKS = {
@@ -12,8 +13,7 @@ export default function Footer() {
       <div className="container footer__inner">
         <div className="footer__brand">
           <div className="footer__logo">
-            <img src="/logo.png" alt="PathWise" />
-            <span>PathWise</span>
+            <Logo size={36} />
           </div>
           <p className="footer__tagline">
             "Your career is too important to leave to chance."<br />

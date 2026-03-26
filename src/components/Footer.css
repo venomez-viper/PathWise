@@ -21,16 +21,6 @@
 .footer__logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #fff;
-}
-
-.footer__logo img {
-  height: 28px;
-  filter: brightness(0) invert(1);
 }
 
 .footer__tagline {

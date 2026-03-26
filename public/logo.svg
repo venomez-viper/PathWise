@@ -1,0 +1,8 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(0, 5)">
+    <path d="M10 45L25 25L35 38L50 15" stroke="#1A2B5F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M25 25L35 38L50 15" stroke="#5D2A80" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M50 15L60 5M60 5H45M60 5V20" stroke="#FF7F50" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="75" y="40" font-family="Inter, sans-serif" font-weight="800" font-size="28" fill="#1A2B5F">pathwise</text>
+</svg>
