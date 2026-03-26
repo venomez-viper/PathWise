@@ -53,7 +53,7 @@ function App() {
       {/* Top Header */}
       <header className="app-header">
         <div className="brand">
-          <Rocket size={24} />
+          <img src="/logo.png" alt="PathWise Logo" style={{ height: '28px', width: 'auto' }} />
           <span>PathWise</span>
         </div>
         <div className="avatar">
