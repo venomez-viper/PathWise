@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { HandWrittenTitle } from '@/components/ui/hand-writing-text';
 import './HowItWorks.css';
 

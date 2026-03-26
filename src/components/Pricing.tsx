@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { CreativePricing } from '@/components/ui/creative-pricing';
 import type { PricingTier } from '@/components/ui/creative-pricing';
 import { Sparkles, Star, Building2 } from 'lucide-react';
