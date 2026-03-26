@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800;900&family=Caveat:wght@400;600;700&display=swap');
 
-/* Tailwind */
-@tailwind base;
+/* Tailwind utilities only — base (Preflight) is intentionally excluded
+   to prevent global CSS reset from breaking the webapp styles */
 @tailwind components;
 @tailwind utilities;
 
@@ -12,7 +12,7 @@
   --primary: #5d2a80;
   --primary-dark: #1a2b5f;
   --primary-light: #a78bfa;
-  --primary-container: #5d2a80;
+  --primary-container: #7b5ebf;
   --primary-fixed: #e9ddff;
   --on-primary-container: #ffffff;
 
@@ -134,7 +134,7 @@ section { padding: var(--section-padding); }
   color: var(--primary-light);
 }
 
-.section-title {
+.marketing-root .section-title {
   font-family: var(--font-display);
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
@@ -145,7 +145,7 @@ section { padding: var(--section-padding); }
   margin-bottom: var(--spacing-4);
 }
 
-.section-subtitle {
+.marketing-root .section-subtitle {
   font-size: 1.05rem;
   color: var(--on-surface-variant);
   line-height: 1.7;
@@ -240,7 +240,7 @@ section { padding: var(--section-padding); }
 /* ─────────────────────────────────────────────
    MISC
 ───────────────────────────────────────────── */
-.chip {
+.marketing-root .chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -251,8 +251,8 @@ section { padding: var(--section-padding); }
   letter-spacing: 0.04em;
 }
 
-.chip-primary { background: var(--primary-fixed); color: var(--primary); }
-.chip-dark { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.15); }
+.marketing-root .chip-primary { background: var(--primary-fixed); color: var(--primary); }
+.marketing-root .chip-dark { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.15); }
 
 .section-header { text-align: center; margin-bottom: var(--spacing-12); }
 
