@@ -1,94 +1,93 @@
-import { useEffect, useRef } from 'react';
-import { CreativePricing } from '@/components/ui/creative-pricing';
-import type { PricingTier } from '@/components/ui/creative-pricing';
-import { Sparkles, Star, Building2 } from 'lucide-react';
-import './Pricing.css';
+import { ArrowRight, Building2, Check, Sparkles, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const PATHWISE_TIERS: PricingTier[] = [
+const TIERS = [
   {
     name: 'Explorer',
-    icon: <Star className="w-6 h-6" />,
-    price: 0,
-    description: 'Kick off your career journey for free',
-    color: 'violet',
-    features: [
-      'AI Career Discovery',
-      'Skill Gap Analysis',
-      'Career Path Recommendation',
-      'Limited Career Insights',
-      'Ad-Supported Experience',
-    ],
+    price: 'Free',
+    description: 'A light way to test your direction and see your strongest-fit paths.',
+    icon: Star,
+    featured: false,
+    features: ['Career identity snapshot', 'Basic fit suggestions', 'Starter roadmap preview'],
   },
   {
     name: 'Navigator',
-    icon: <Sparkles className="w-6 h-6" />,
-    price: 12.99,
-    description: 'Full platform access — no limits, no ads',
-    color: 'amber',
-    popular: true,
-    features: [
-      'Full Career Roadmap',
-      'Daily Career Task Planner',
-      'Progress Tracking Dashboard',
-      'Career Opportunity Insights',
-      'Unlimited AI Career Coach',
-      'Ad-Free Experience',
-    ],
+    price: '$12.99/mo',
+    description: 'The full PathWise experience for people actively building toward a role shift or major goal.',
+    icon: Sparkles,
+    featured: true,
+    features: ['Full roadmap generation', 'Weekly action plans', 'Progress tracking and readiness signals'],
   },
   {
     name: 'Institution',
-    icon: <Building2 className="w-6 h-6" />,
     price: 'Custom',
-    description: 'Campus-wide licensing for universities',
-    color: 'teal',
-    features: [
-      'Per-Student Licensing',
-      'Campus-Wide SaaS Contract',
-      'Career Center Integration',
-      'Institutional Analytics',
-      'Dedicated Support',
-    ],
+    description: 'For universities and programs supporting many students at once.',
+    icon: Building2,
+    featured: false,
+    features: ['Campus licensing', 'Shared reporting', 'Implementation support'],
   },
 ];
 
 export default function Pricing() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.querySelectorAll('.fade-up').forEach((el, i) => {
-            setTimeout(() => el.classList.add('visible'), i * 100);
-          });
-        }
-      }),
-      { threshold: 0.1 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section className="pricing-section" id="pricing" ref={ref}>
-      <div className="container">
-        <CreativePricing
-          tag="Simple Pricing"
-          title="Start free. Grow on your terms."
-          description="No credit card required · Cancel anytime · Annual plan saves 23%"
-          tiers={PATHWISE_TIERS}
-        />
+    <section className="container py-8 md:py-12" id="pricing">
+      <div className="section-shell px-6 py-8 md:px-8 md:py-10">
+        <div className="max-w-3xl">
+          <div className="section-label">
+            <span className="eyebrow-dot" />
+            Pricing
+          </div>
+          <h2 className="mt-5 section-title">Start small, then grow into the full roadmap.</h2>
+          <p className="mt-5 section-copy">
+            The entry point stays accessible, and the premium plan is built for people who want a guided system rather
+            than another static dashboard.
+          </p>
+        </div>
 
-        {/* Discount callout below */}
-        <div className="pricing-discounts fade-up">
-          <div className="pricing-discount-item">
-            <span>📅</span>
-            <span><strong>Annual Plan</strong> — $9.99/mo (save 23%)</span>
-          </div>
-          <div className="pricing-discount-item">
-            <span>👫</span>
-            <span><strong>Peer Plan</strong> — $149.99/yr for up to 6 users</span>
-          </div>
+        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          {TIERS.map((tier) => {
+            const Icon = tier.icon;
+            return (
+              <div
+                key={tier.name}
+                className="relative rounded-[28px] border p-6"
+                style={{
+                  borderColor: tier.featured ? 'rgba(30, 90, 82, 0.32)' : 'var(--line)',
+                  background: tier.featured ? 'linear-gradient(180deg, rgba(30, 90, 82, 0.08), rgba(255,255,255,0.78))' : 'rgba(255,255,255,0.72)',
+                  boxShadow: tier.featured ? '0 24px 60px rgba(17, 58, 54, 0.12)' : 'none',
+                }}
+              >
+                {tier.featured && (
+                  <div className="absolute right-5 top-5 rounded-full bg-[color:var(--brand)] px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-white">
+                    Most popular
+                  </div>
+                )}
+
+                <div className="rounded-2xl bg-[rgba(216,109,61,0.1)] p-3 text-[color:var(--brand-warm)] w-fit">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-6 text-2xl font-bold text-[color:var(--ink)]">{tier.name}</h3>
+                <div className="mt-4 text-4xl font-bold text-[color:var(--ink)]">{tier.price}</div>
+                <p className="mt-4 text-base leading-7 text-[color:var(--ink-soft)]">{tier.description}</p>
+
+                <div className="mt-6 space-y-3">
+                  {tier.features.map((feature) => (
+                    <div key={feature} className="flex items-start gap-3 text-sm text-[color:var(--ink)]">
+                      <div className="mt-0.5 rounded-full bg-[rgba(30,90,82,0.12)] p-1 text-[color:var(--brand)]">
+                        <Check className="h-3.5 w-3.5" />
+                      </div>
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+
+                <Link to="/pricing" className="btn-primary mt-8 w-full">
+                  Choose {tier.name}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

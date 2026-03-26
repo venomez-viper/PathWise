@@ -1,100 +1,121 @@
-import { useEffect, useRef } from 'react';
-import './Problem.css';
+import { ArrowRight, Brain, BriefcaseBusiness, Check, Compass, Sparkles, X } from 'lucide-react';
 
 const TOOLS = [
   {
-    name: 'Job Boards',
-    icon: '🔍',
-    does: 'Find open job listings',
-    missing: ['Career identity', 'Direction & planning', 'Daily guidance'],
-    accent: '#ef4444',
+    name: 'Job boards',
+    does: 'Show open listings',
+    misses: ['Personal career fit', 'Long-range planning', 'Weekly accountability'],
+    icon: BriefcaseBusiness,
   },
   {
-    name: 'LinkedIn',
-    icon: '🔗',
-    does: '1B+ users — but revenue from job clicks, not career clarity',
-    missing: ['Career identity', 'Personalized direction', 'Daily action plans'],
-    accent: '#f59e0b',
+    name: 'Professional networks',
+    does: 'Expand your visibility',
+    misses: ['Path clarity', 'Decision support', 'Roadmap sequencing'],
+    icon: Sparkles,
   },
   {
-    name: 'Resume Tools',
-    icon: '📄',
-    does: 'Fix your formatting',
-    missing: ['Path planning', 'Skill gap analysis', 'Coaching & clarity'],
-    accent: '#f59e0b',
+    name: 'Resume tools',
+    does: 'Polish application assets',
+    misses: ['Career discovery', 'Skill prioritization', 'Confidence-building guidance'],
+    icon: Brain,
   },
 ];
 
 const NEEDS = [
-  { emoji: '🎯', type: 'Functional', text: '"Help me figure out the right career path and create a plan to get there."' },
-  { emoji: '💙', type: 'Emotional', text: '"Help me reduce the fear of making the wrong career decision."' },
-  { emoji: '🌟', type: 'Social', text: '"Help me appear proactive and confident about my career path."' },
+  {
+    title: 'Functional need',
+    text: 'Help me identify the right path and break it into realistic steps.',
+  },
+  {
+    title: 'Emotional need',
+    text: 'Help me stop second-guessing every decision about my future.',
+  },
+  {
+    title: 'Momentum need',
+    text: 'Help me stay consistent instead of restarting from zero every month.',
+  },
 ];
 
 export default function Problem() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.querySelectorAll('.fade-up').forEach((el, i) => {
-            setTimeout(() => el.classList.add('visible'), i * 100);
-          });
-        }
-      }),
-      { threshold: 0.1 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section className="problem" id="problem" ref={ref}>
-      <div className="container">
-        <div className="section-header fade-up">
-          <span className="section-label">The Problem</span>
-          <h2 className="section-title">Every year, millions face the same question</h2>
-          <div className="hero-question">
-            "What should I do with my career?"
+    <section className="container py-8 md:py-12">
+      <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="section-shell px-6 py-8 md:px-8">
+          <div className="section-label">
+            <span className="eyebrow-dot" />
+            Why current tools fall short
           </div>
-          <p className="section-subtitle">
-            Current tools only solve fragments. Nobody answers the real question: <strong>what are the exact steps between me and my dream career?</strong>
+          <h2 className="mt-5 section-title">
+            Most career products help you apply faster, not decide better.
+          </h2>
+          <p className="mt-5 section-copy">
+            The real bottleneck is not effort. It is uncertainty. People need a system that helps them understand who
+            they are, where they should go next, and what to do this week.
           </p>
-        </div>
 
-        {/* Tool comparison */}
-        <div className="problem__tools">
-          {TOOLS.map((tool, i) => (
-            <div key={i} className="problem__tool-card card fade-up">
-              <div className="problem__tool-header">
-                <span className="problem__tool-icon">{tool.icon}</span>
-                <span className="problem__tool-name">{tool.name}</span>
-              </div>
-              <p className="problem__tool-does">✅ {tool.does}</p>
-              <div className="problem__tool-missing">
-                {tool.missing.map((item, j) => (
-                  <div key={j} className="problem__missing-item">
-                    <span className="problem__x">✗</span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* User needs */}
-        <div className="problem__needs">
-          <h3 className="problem__needs-title fade-up">What people actually need:</h3>
-          <div className="problem__needs-grid">
-            {NEEDS.map((need, i) => (
-              <div key={i} className="problem__need-card glass-card fade-up">
-                <div className="problem__need-emoji">{need.emoji}</div>
-                <div className="problem__need-type">{need.type}</div>
-                <p className="problem__need-text">{need.text}</p>
+          <div className="mt-8 space-y-4">
+            {NEEDS.map((need) => (
+              <div
+                key={need.title}
+                className="rounded-[24px] border border-[color:var(--line)] bg-white/68 p-5"
+              >
+                <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.22em] text-[color:var(--brand)]">
+                  <Compass className="h-4 w-4" />
+                  {need.title}
+                </div>
+                <p className="mt-3 text-base leading-7 text-[color:var(--ink)]">{need.text}</p>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="section-shell px-6 py-8 md:px-8">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[color:var(--ink-soft)]">Market reality</p>
+              <h3 className="mt-2 text-3xl font-bold text-[color:var(--ink)]">Fragmented tools, fragmented confidence</h3>
+            </div>
+            <div className="hidden rounded-full bg-[rgba(30,90,82,0.08)] p-3 text-[color:var(--brand)] md:block">
+              <ArrowRight className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            {TOOLS.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <div
+                  key={tool.name}
+                  className="rounded-[24px] border border-[color:var(--line)] bg-white/72 p-5"
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-2xl bg-[rgba(216,109,61,0.1)] p-3 text-[color:var(--brand-warm)]">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-bold text-[color:var(--ink)]">{tool.name}</h4>
+                          <p className="mt-1 flex items-center gap-2 text-sm text-[color:var(--ink-soft)]">
+                            <Check className="h-4 w-4 text-[color:var(--brand)]" />
+                            {tool.does}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2 md:min-w-[260px]">
+                      {tool.misses.map((miss) => (
+                        <div key={miss} className="flex items-start gap-2 rounded-2xl bg-[rgba(17,58,54,0.05)] px-3 py-2 text-sm text-[color:var(--ink)]">
+                          <X className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--brand-warm)]" />
+                          {miss}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
