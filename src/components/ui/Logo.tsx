@@ -7,35 +7,58 @@ interface LogoProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export default function Logo({ variant = 'full', size = 32, className, ...props }: LogoProps) {
-  const iconColor = variant === 'white' ? '#ffffff' : 'var(--brand-deep)';
-  const accentColor = variant === 'white' ? 'rgba(255,255,255,0.72)' : 'var(--brand)';
-  const warmColor = variant === 'white' ? '#f0bb5a' : 'var(--brand-warm)';
+  const iconSize = size;
+  const textSize = size * 0.8;
 
   return (
-    <div
-      className={cn('flex items-center gap-3 leading-none', className)}
-      style={{ fontSize: size * 0.68 }}
+    <div 
+      className={cn("flex items-center gap-2 font-display font-bold leading-none", className)}
+      style={{ fontSize: textSize }}
       {...props}
     >
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 84 84"
-        fill="none"
+      {/* SVG Icon */}
+      <svg 
+        width={iconSize} 
+        height={iconSize} 
+        viewBox="0 0 100 100" 
+        fill="none" 
         xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0"
+        className="flex-shrink-0"
       >
-        <rect x="4" y="4" width="76" height="76" rx="24" fill={variant === 'white' ? 'rgba(255,255,255,0.12)' : 'rgba(30,90,82,0.08)'} />
-        <path d="M18 54L33 39L43 47L60 28" stroke={iconColor} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M43 47L60 28" stroke={accentColor} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M58 28H67V37" stroke={warmColor} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+        {/* The ZigZag Path - Recreated from brand guide */}
+        <path 
+          d="M10 75L35 45L50 65L75 25" 
+          stroke="currentColor" 
+          strokeWidth="12" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+          className={variant === 'white' ? "text-white" : "text-[var(--brand-blue)]"}
+        />
+        <path 
+          d="M35 45L50 65L75 25" 
+          stroke="currentColor" 
+          strokeWidth="12" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+          className={variant === 'white' ? "text-white/80" : "text-[var(--brand-purple)]"}
+        />
+        {/* Arrow Tip */}
+        <path 
+          d="M75 25L90 10M90 10H70M90 10V30" 
+          stroke="currentColor" 
+          strokeWidth="12" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+          className={variant === 'white' ? "text-white" : "text-[var(--accent-orange)]"}
+        />
       </svg>
 
-      {variant !== 'icon' && (
-        <span
-          className="font-['Space_Grotesk'] font-bold tracking-[-0.06em]"
-          style={{ color: variant === 'white' ? '#ffffff' : 'var(--brand-deep)' }}
-        >
+      {/* Wordmark */}
+      {(variant === 'full' || variant === 'white') && (
+        <span className={cn(
+          "tracking-tight mt-1",
+          variant === 'white' ? "text-white" : "text-[var(--brand-blue)]"
+        )}>
           pathwise
         </span>
       )}

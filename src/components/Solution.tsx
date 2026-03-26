@@ -1,99 +1,101 @@
-import { BarChart3, Brain, BriefcaseBusiness, CalendarRange, Compass, Network, Route, Sparkles } from 'lucide-react';
+import { useEffect, useRef, type CSSProperties } from 'react';
+import './Solution.css';
 
 const LAYERS = [
   {
-    title: 'Discovery',
-    description: 'Clarify your professional identity and strongest-fit directions.',
-    icon: Brain,
-    points: ['AI career discovery', 'Strength and value mapping', 'Skill gap diagnosis'],
+    name: 'Discovery Layer',
+    emoji: '🔭',
+    color: '#a78bfa',
+    bg: 'rgba(167,139,250,0.1)',
+    features: [
+      { icon: '🧬', title: 'AI Career Discovery', desc: 'Uncover who you are professionally through deep assessment.' },
+      { icon: '🪞', title: 'Career Identity Analysis', desc: 'Map your strengths, values & personality to real careers.' },
+      { icon: '📊', title: 'Skill Gap Analysis', desc: 'Know exactly what\'s between you and your target role.' },
+    ],
   },
   {
-    title: 'Planning',
-    description: 'Translate career direction into a practical roadmap.',
-    icon: Route,
-    points: ['Goal-based path design', 'Skill sequencing', 'Role transition planning'],
+    name: 'Planning Layer',
+    emoji: '🗺️',
+    color: '#5ef6e6',
+    bg: 'rgba(94,246,230,0.1)',
+    features: [
+      { icon: '✨', title: 'Career Path Recommendation', desc: 'AI-matched paths based on your unique profile.' },
+      { icon: '🛣️', title: 'Roadmap Generation', desc: 'Step-by-step plan from today to your dream role.' },
+      { icon: '🎓', title: 'Skill Development', desc: 'Curated learning to close the gap faster.' },
+    ],
   },
   {
-    title: 'Execution',
-    description: 'Keep momentum with practical weekly guidance.',
-    icon: CalendarRange,
-    points: ['Weekly action plans', 'Project prompts', 'Career readiness checkpoints'],
+    name: 'Execution Layer',
+    emoji: '⚡',
+    color: '#fbbf24',
+    bg: 'rgba(251,191,36,0.1)',
+    features: [
+      { icon: '📅', title: 'Daily / Weekly Planner', desc: 'Turn your roadmap into focused daily actions.' },
+      { icon: '🌐', title: 'Networking Guidance', desc: 'Build the right connections at the right time.' },
+      { icon: '📈', title: 'Progress Tracking', desc: 'Visual dashboard to see how far you\'ve come.' },
+    ],
   },
   {
-    title: 'Opportunity',
-    description: 'Surface the right signals as you become more ready.',
-    icon: BriefcaseBusiness,
-    points: ['Target-role insight', 'Network prompts', 'Progress dashboards'],
+    name: 'Intelligence Layer',
+    emoji: '🧠',
+    color: '#f87171',
+    bg: 'rgba(248,113,113,0.1)',
+    features: [
+      { icon: '💼', title: 'Career Opportunity Insights', desc: 'Surface relevant roles as you grow.' },
+      { icon: '🏆', title: 'Career Readiness Score', desc: 'Know objectively when you\'re ready to make the move.' },
+    ],
   },
-];
-
-const IMPACT = [
-  { label: 'Decision clarity', icon: Compass },
-  { label: 'Weekly momentum', icon: Sparkles },
-  { label: 'Network guidance', icon: Network },
-  { label: 'Progress visibility', icon: BarChart3 },
 ];
 
 export default function Solution() {
-  return (
-    <section className="container py-8 md:py-12" id="solution">
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="section-shell px-6 py-8 md:px-8">
-          <div className="section-label">
-            <span className="eyebrow-dot" />
-            The PathWise system
-          </div>
-          <h2 className="mt-5 section-title">One product that covers the entire journey.</h2>
-          <p className="mt-5 section-copy">
-            PathWise is not another isolated career tool. It connects discovery, planning, and execution so every next
-            step has context.
-          </p>
+  const ref = useRef<HTMLDivElement>(null);
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            {IMPACT.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.label} className="rounded-[24px] border border-[color:var(--line)] bg-white/68 p-4">
-                  <Icon className="h-5 w-5 text-[color:var(--brand-warm)]" />
-                  <p className="mt-3 text-base font-medium text-[color:var(--ink)]">{item.label}</p>
-                </div>
-              );
-            })}
-          </div>
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.querySelectorAll('.fade-up').forEach((el, i) => {
+            setTimeout(() => el.classList.add('visible'), i * 80);
+          });
+        }
+      }),
+      { threshold: 0.05 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section className="solution" id="solution" ref={ref}>
+      <div className="container">
+        <div className="section-header fade-up">
+          <span className="section-label">Our Solution</span>
+          <h2 className="section-title">One platform. Every step of your career.</h2>
+          <p className="section-subtitle">
+            The complete Zafuture Product Experience Framework — from discovering who you are to landing your dream role.
+          </p>
         </div>
 
-        <div className="grid gap-4">
-          {LAYERS.map((layer, index) => {
-            const Icon = layer.icon;
-            return (
-              <div key={layer.title} className="section-shell px-6 py-6 md:px-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="max-w-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-2xl bg-[rgba(30,90,82,0.1)] p-3 text-[color:var(--brand)]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold uppercase tracking-[0.22em] text-[color:var(--ink-soft)]">
-                          Layer {index + 1}
-                        </p>
-                        <h3 className="text-2xl font-bold text-[color:var(--ink)]">{layer.title}</h3>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-base leading-7 text-[color:var(--ink-soft)]">{layer.description}</p>
-                  </div>
-
-                  <div className="grid gap-2 md:min-w-[280px]">
-                    {layer.points.map((point) => (
-                      <div key={point} className="rounded-2xl bg-white/68 px-4 py-3 text-sm font-medium text-[color:var(--ink)]">
-                        {point}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+        <div className="solution__grid">
+          {LAYERS.map((layer, i) => (
+            <div key={i} className="solution__layer-card card fade-up" style={{ '--layer-color': layer.color, '--layer-bg': layer.bg } as CSSProperties}>
+              <div className="solution__layer-header">
+                <div className="solution__layer-icon">{layer.emoji}</div>
+                <h3 className="solution__layer-name">{layer.name}</h3>
               </div>
-            );
-          })}
+              <div className="solution__features">
+                {layer.features.map((f, j) => (
+                  <div key={j} className="solution__feature">
+                    <span className="solution__feature-icon">{f.icon}</span>
+                    <div>
+                      <div className="solution__feature-title">{f.title}</div>
+                      <div className="solution__feature-desc">{f.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
