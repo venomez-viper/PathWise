@@ -50,6 +50,14 @@ export default function SettingsPage() {
 
       {/* ── Premium Plan ── */}
       <section className="settings-premium-card">
+        <div className="settings-premium-badge">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" opacity="0.18">
+            <circle cx="32" cy="24" r="14" stroke="white" strokeWidth="3"/>
+            <polygon points="32,4 36,18 50,18 39,27 43,41 32,32 21,41 25,27 14,18 28,18" fill="white"/>
+            <rect x="20" y="46" width="24" height="6" rx="3" fill="white"/>
+            <rect x="24" y="52" width="16" height="5" rx="2.5" fill="white"/>
+          </svg>
+        </div>
         <h2 className="settings-premium-title">Premium Plan</h2>
         <p className="settings-premium-desc">
           Access all advanced roadmaps, AI career coaching, and priority support.

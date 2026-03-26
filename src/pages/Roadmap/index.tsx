@@ -110,7 +110,7 @@ function PathSection({
         <span className="label-caps">{label}</span>
       </div>
       {items.map((item) => (
-        <div className="path-item" key={item.title}>
+        <div className={`path-item priority-${item.priority}-border`} key={item.title}>
           <span className={`priority-badge priority-${item.priority}`}>
             {item.priority.toUpperCase()} PRIORITY
           </span>
