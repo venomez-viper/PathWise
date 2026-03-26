@@ -1,5 +1,6 @@
 import { api, APIError, Header } from "encore.dev/api";
-import { authHandler, getAuthData } from "encore.dev/auth";
+import { authHandler } from "encore.dev/auth";
+import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { secret } from "encore.dev/config";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import bcrypt from "bcryptjs";
