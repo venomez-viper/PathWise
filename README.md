@@ -1,73 +1,65 @@
-# React + TypeScript + Vite
+# 🚀 PathWise: The Guided Path
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to the **PathWise** repository! 
 
-Currently, two official plugins are available:
+PathWise is a modern SaaS platform designed to be a "Digital Atelier" for one's career. It transcends the traditional "utility app" aesthetic by acting as an Ethereal Mentor—providing aspirational career guidance, tracking roadmap progress, and recommending top career matches based on skills and personality assessments.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠 Tech Stack
 
-## React Compiler
+- **Frontend Framework**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **Styling**: Vanilla CSS (CSS Variables based on a custom Design System)
+- **Icons**: `lucide-react`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🎨 Design System: "The Ethereal Mentor"
 
-## Expanding the ESLint configuration
+Our UI is built around fluid, illuminated layers, rejecting standard flat design for **Organic Asymmetry** and **Tonal Depth**.
+- **The "No-Line" Rule**: We avoid harsh 1px solid borders. Structure is built with spacing, tonal layering of backgrounds (`surface-container-low`, `surface-container-highest`), and soft gradients.
+- **Glassmorphism**: Modals and overlays use a frosted glass effect with deep blur.
+- **Typography**: `Manrope` for display and headlines, `Inter` for highly readable body text.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🏗 Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+To get the project running locally:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/venomez-viper/PathWise.git
+   cd PathWise
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. **Configure Environments**:
+   The app uses `.env.development` and `.env.production` files. Ensure you have the required variables configured.
+   ```env
+   VITE_APP_ENV=development
+   VITE_API_BASE_URL=http://localhost:3000/api
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+4. **Start the Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open your browser to `http://localhost:5173`.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🚨 MANDATORY PUSH RULE: Version History 🚨
+
+**CRITICAL:** It is a **strict mandatory rule** for all developers that **every push MUST be accompanied by an update to the Version History** below. If you are adding a new feature, fixing a bug, or making architectural changes, you must log it in the Version History section with the version number, date, and a description of the changes before pushing your branch or merging a Pull Request.
+
+---
+
+## 📅 Version History
+
+### **v0.1.0** — Initial Project Scaffold & UI Framework
+*Date: March 26, 2026*
+- **Framework Initialization**: Initialized the repository as a Vite + React + TypeScript project.
+- **Environment Setup**: Added `.env.development` and `.env.production` definitions.
+- **Design Tokens**: Configured global CSS variables in `index.css` to match the "Ethereal Mentor" design specification (Color palette, Topography, Spacing, and Glassmorphism).
+- **Home Dashboard Implementation**: Built the primary dashboard screen (`App.tsx`) with the user hero section, progress metrics (Roadmap Completion, Tasks Finished, Job Readiness), circular progress indicators for Top Career Matches, and integrated the custom PathWise logo.
+- **Dependencies**: Added `lucide-react` for SVG iconography.
