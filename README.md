@@ -2,6 +2,8 @@
 
 Welcome to the **PathWise** repository! 
 
+**[🔗 Live Demo (Vercel)](https://pathwise-git-main-akash-ags-projects.vercel.app/)**
+
 PathWise is a modern SaaS platform designed to be a "Digital Atelier" for one's career. It transcends the traditional "utility app" aesthetic by acting as an Ethereal Mentor—providing aspirational career guidance, tracking roadmap progress, and recommending top career matches based on skills and personality assessments.
 
 ## 📋 Business Concept
@@ -78,3 +80,10 @@ To get the project running locally:
 - **CONCEPT.md Added**: Extracted and structured the full business concept from the founding pitch deck (Zafuture Group 5) into `CONCEPT.md`. Covers the core problem statement, Zafuture Product Experience Framework (Discovery → Planning → Execution → Intelligence layers), customer segments, pricing model ($0 free tier / $12.99 premium / $9.99 annual), revenue streams (subscriptions, university licensing, coaching add-ons), operating model (in-house vs. partner capabilities), and competitive positioning.
 - **README Updated**: Added a `Business Concept` section linking to `CONCEPT.md` with the product's founding tagline and mission summary.
 
+### **v0.3.0** — Marketing Website Launch
+*Date: March 26, 2026*
+- **Multi-Page Routing**: Migrated from a single-page scroll to a 5-page React Router architecture (`Home`, `How It Works`, `Solution`, `Pricing`, `Blog`).
+- **Advanced UI Components**: Integrated 4 premium shadcn-style components (Glassmorphism Hero, Glowing Search, Handwritten Animation, Creative Pricing).
+- **Blog Implementation**: Added a full-featured Blog with category filtering and newsletter CTA.
+- **Vercel Deployment**: Configured `vercel.json` for SPA routing and fixed TypeScript strict-mode build errors.
+- **Live Link**: Added the official Vercel deployment URL to the repository documentation.
