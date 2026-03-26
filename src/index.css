@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap');
+
+:root {
+  /* Colors */
+  --primary: #6245a4;
+  --secondary: #006a62;
+  --surface: #faf9fe;
+  --surface-container-low: #f4f3f8;
+  --surface-container-lowest: #ffffff;
+  --surface-container-high: #e8e6ef;
+  --surface-container-highest: #e0deea;
+  --surface-bright: #ffffff;
+  --primary-fixed: #e9ddff;
+  --primary-container: #7b5ebf;
+  --on-primary-container: #ffffff;
+  --secondary-container: #5ef6e6;
+  --tertiary-container: #caa842;
+  --on-surface: #1a1c1f;
+  --on-surface-variant: #49454f;
+  --outline-variant: rgba(73, 69, 79, 0.15); /* 15% opacity */
+  --success-glow: #40E0D0;
+
+  /* Typography */
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing Scale (8 to 12 mental boundaries) */
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+
+  /* Borders & Radius */
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* Utilities */
+  --glass-bg: rgba(244, 243, 248, 0.7); /* surface-container */
+  --glass-blur: blur(16px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--surface);
+  color: var(--on-surface);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Classes */
+.display-lg {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.headline-md {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.body-lg {
+  font-size: 1rem;
+}
+
+.label-md {
+  font-size: 0.75rem;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-xl);
+}
+
+/* Tonal Lift / Cards */
+.card {
+  background-color: var(--surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  /* No drop shadow - tonal lift against surface-container-high background */
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface);
+}
+
+.btn-tertiary {
+  background-color: transparent;
+  color: var(--primary);
+  text-decoration: none;
+}
+.btn-tertiary:hover {
+  text-decoration: underline;
+}
