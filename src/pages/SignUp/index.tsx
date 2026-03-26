@@ -1,40 +1,53 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { auth, tokenStore } from '../../lib/api';
 
 export default function SignUp() {
-  const [showPassword, setShowPassword]   = useState(false);
-  const [showConfirm,  setShowConfirm]    = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm,  setShowConfirm]  = useState(false);
+  const [form,  setForm]    = useState({ name: '', email: '', password: '', confirm: '' });
+  const [error, setError]   = useState('');
+  const [loading, setLoading] = useState(false);
 
   const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }));
 
   const passwordsMatch = form.confirm === '' || form.password === form.confirm;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordsMatch) return;
-    // TODO: wire to POST /users + auth API
+    setError('');
+    setLoading(true);
+    try {
+      const res = await auth.signup({ name: form.name, email: form.email, password: form.password });
+      tokenStore.set(res.token);
+      navigate('/onboarding');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="auth-page">
-      {/* Brand */}
       <div className="auth-brand">
         <img src="/logo.png" alt="PathWise" className="auth-logo" />
         <span className="auth-brand-name">PathWise</span>
       </div>
 
-      {/* Card */}
       <div className="auth-card">
         <div className="auth-card-header">
           <h1 className="auth-title">Create your account</h1>
           <p className="auth-subtitle">Start mapping your career path today.</p>
         </div>
 
+        {error && <div className="auth-error">{error}</div>}
+
         <form className="auth-form" onSubmit={handleSubmit}>
-          {/* Full Name */}
           <div className="input-group">
             <label className="input-label">Full Name</label>
             <div className="input-wrap">
@@ -51,7 +64,6 @@ export default function SignUp() {
             </div>
           </div>
 
-          {/* Email */}
           <div className="input-group">
             <label className="input-label">Email</label>
             <div className="input-wrap">
@@ -68,7 +80,6 @@ export default function SignUp() {
             </div>
           </div>
 
-          {/* Password */}
           <div className="input-group">
             <label className="input-label">Password</label>
             <div className="input-wrap">
@@ -83,18 +94,13 @@ export default function SignUp() {
                 minLength={8}
                 autoComplete="new-password"
               />
-              <button
-                type="button"
-                className="input-eye"
-                onClick={() => setShowPassword(p => !p)}
-                aria-label="Toggle password visibility"
-              >
+              <button type="button" className="input-eye" onClick={() => setShowPassword(p => !p)}
+                aria-label="Toggle password visibility">
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
 
-          {/* Confirm Password */}
           <div className="input-group">
             <label className="input-label">Confirm Password</label>
             <div className={`input-wrap${!passwordsMatch ? ' input-error' : ''}`}>
@@ -108,22 +114,16 @@ export default function SignUp() {
                 required
                 autoComplete="new-password"
               />
-              <button
-                type="button"
-                className="input-eye"
-                onClick={() => setShowConfirm(p => !p)}
-                aria-label="Toggle confirm password visibility"
-              >
+              <button type="button" className="input-eye" onClick={() => setShowConfirm(p => !p)}
+                aria-label="Toggle confirm password visibility">
                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-            {!passwordsMatch && (
-              <p className="input-error-msg">Passwords don't match</p>
-            )}
+            {!passwordsMatch && <p className="input-error-msg">Passwords don't match</p>}
           </div>
 
-          <button type="submit" className="btn-auth-primary" disabled={!passwordsMatch}>
-            Create Account
+          <button type="submit" className="btn-auth-primary" disabled={loading || !passwordsMatch}>
+            {loading ? 'Creating account…' : 'Create Account'}
           </button>
         </form>
 
@@ -139,7 +139,6 @@ export default function SignUp() {
         </p>
       </div>
 
-      {/* Decorative glow */}
       <div className="auth-glow" />
     </div>
   );

@@ -1,36 +1,49 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { auth, tokenStore } from '../../lib/api';
 
 export default function SignIn() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form,  setForm]  = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: wire to auth API
+    setError('');
+    setLoading(true);
+    try {
+      const res = await auth.signin({ email: form.email, password: form.password });
+      tokenStore.set(res.token);
+      navigate('/');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="auth-page">
-      {/* Brand */}
       <div className="auth-brand">
         <img src="/logo.png" alt="PathWise" className="auth-logo" />
         <span className="auth-brand-name">PathWise</span>
       </div>
 
-      {/* Card */}
       <div className="auth-card">
         <div className="auth-card-header">
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Sign in to continue your career journey.</p>
         </div>
 
+        {error && <div className="auth-error">{error}</div>}
+
         <form className="auth-form" onSubmit={handleSubmit}>
-          {/* Email */}
           <div className="input-group">
             <label className="input-label">Email</label>
             <div className="input-wrap">
@@ -47,7 +60,6 @@ export default function SignIn() {
             </div>
           </div>
 
-          {/* Password */}
           <div className="input-group">
             <label className="input-label">Password</label>
             <div className="input-wrap">
@@ -76,7 +88,9 @@ export default function SignIn() {
             <Link to="/forgot-password" className="auth-link-sm">Forgot password?</Link>
           </div>
 
-          <button type="submit" className="btn-auth-primary">Sign In</button>
+          <button type="submit" className="btn-auth-primary" disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
         </form>
 
         <p className="auth-switch">
@@ -85,7 +99,6 @@ export default function SignIn() {
         </p>
       </div>
 
-      {/* Decorative glow */}
       <div className="auth-glow" />
     </div>
   );

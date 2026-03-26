@@ -233,6 +233,17 @@
 }
 .auth-link-bold:hover { opacity: 0.7; }
 
+.auth-error {
+  background-color: #fdecea;
+  color: #c62828;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-4);
+  line-height: 1.4;
+}
+
 /* Header */
 .app-header {
   display: flex;
