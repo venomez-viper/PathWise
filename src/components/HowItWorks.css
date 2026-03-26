@@ -1,0 +1,94 @@
+.how {
+  background: var(--surface-container-low);
+  position: relative;
+  overflow: hidden;
+}
+
+.how__bg-accent {
+  position: absolute;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(98,69,164,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.how__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-8);
+  position: relative;
+  margin-top: var(--spacing-8);
+}
+
+.how__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-4);
+}
+
+.how__connector {
+  position: absolute;
+  top: 32px;
+  left: calc(50% + 40px);
+  right: calc(-50% + 40px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--outline-variant), transparent);
+  z-index: 0;
+}
+
+.how__step-number {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  border: 2px solid;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.how__step-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: var(--transition-spring);
+}
+
+.how__step:hover .how__step-icon {
+  transform: scale(1.1);
+}
+
+.how__step-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.how__step-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.how__step-desc {
+  font-size: 0.9rem;
+  color: var(--on-surface-variant);
+  line-height: 1.65;
+}
+
+@media (max-width: 768px) {
+  .how__steps { grid-template-columns: 1fr; gap: var(--spacing-8); }
+  .how__connector { display: none !important; }
+  .how__step { flex-direction: row; text-align: left; align-items: flex-start; }
+  .how__step-icon { flex-shrink: 0; }
+  .how__step-number { position: absolute; top: 0; left: 0; }
+}
