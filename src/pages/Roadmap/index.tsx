@@ -1,16 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Clock, TrendingUp, Pencil, Zap, GraduationCap, ChevronRight, Loader2, AlertCircle, Lock, CheckCircle2 } from 'lucide-react';
+import { Clock, TrendingUp, Pencil, Loader2, AlertCircle, Lock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { roadmap as roadmapApi, assessment as assessmentApi, tasks as tasksApi } from '../../lib/api';
+import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
 
 type Task = { id: string; title: string; status: string; milestoneId?: string; category?: string };
-
-const IMPORTANCE_COLOR: Record<string, string> = {
-  high: '#f87171',
-  medium: '#f59e0b',
-  low: '#34d399',
-};
 
 const MILESTONE_COLOR: Record<string, string> = {
   completed: '#34d399',
@@ -293,22 +287,17 @@ export default function Roadmap() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
-  const [skillGaps, setSkillGaps] = useState<any[]>([]);
   const [milestoneTaskMap, setMilestoneTaskMap] = useState<Record<string, Task[]>>({});
   const [completing, setCompleting] = useState<string | null>(null);
 
   async function loadData(userId: string, silent = false) {
     if (!silent) setLoading(true);
-    const [roadmapRes, assessRes, tasksRes] = await Promise.allSettled([
+    const [roadmapRes, tasksRes] = await Promise.allSettled([
       roadmapApi.get(userId),
-      assessmentApi.getResult(userId),
       tasksApi.list(userId),
     ]);
 
     const roadmap = roadmapRes.status === 'fulfilled' ? (roadmapRes.value as any).roadmap : null;
-    const gaps = assessRes.status === 'fulfilled'
-      ? ((assessRes.value as any).result?.skillGaps ?? [])
-      : [];
     const taskList: Task[] = tasksRes.status === 'fulfilled'
       ? ((tasksRes.value as any).tasks ?? [])
       : [];
@@ -323,7 +312,6 @@ export default function Roadmap() {
     }
 
     setData(roadmap);
-    setSkillGaps(gaps);
     setMilestoneTaskMap(taskMap);
     if (!silent) {
       setLoading(false);
@@ -464,45 +452,6 @@ export default function Roadmap() {
             </div>
           </div>
 
-          <div className="panel">
-            <div className="panel__header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Zap size={16} color="#f59e0b" />
-                <h2 className="panel__title">Skill Gaps</h2>
-              </div>
-              {skillGaps.length > 0 && (
-                <span className="badge-pill badge-pill--warning">Action needed</span>
-              )}
-            </div>
-
-            {skillGaps.length === 0 ? (
-              <div style={{ padding: '1rem 0', textAlign: 'center' }}>
-                <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', marginBottom: 10 }}>
-                  Take the career assessment to see your personalised skill gaps.
-                </p>
-                <Link to="/app/assessment" style={{ fontSize: '0.82rem', color: '#a78bfa', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  Take Assessment <ChevronRight size={13} />
-                </Link>
-              </div>
-            ) : skillGaps.slice(0, 5).map((gap: any) => (
-              <div className="skill-gap-row" key={gap.skill}>
-                <div className="skill-gap-row__icon"><GraduationCap size={16} color="#a78bfa" /></div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <p className="skill-gap-row__title">{gap.skill}</p>
-                    <span style={{
-                      fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
-                      color: IMPORTANCE_COLOR[gap.importance] ?? '#a78bfa',
-                      background: `${IMPORTANCE_COLOR[gap.importance] ?? '#a78bfa'}18`,
-                      padding: '1px 6px', borderRadius: 999,
-                    }}>{gap.importance}</span>
-                  </div>
-                  <p className="skill-gap-row__desc">{gap.learningResource}</p>
-                </div>
-                <ChevronRight size={15} color="var(--on-surface-variant)" />
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Right panel: milestone grid */}
