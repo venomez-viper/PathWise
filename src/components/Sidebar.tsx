@@ -12,11 +12,17 @@ const NAV_ITEMS = [
   { to: '/app/settings', icon: Settings,        label: 'Settings'             },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  user: { name: string; email: string; avatarUrl?: string; plan: string };
+}
+
+export default function Sidebar({ user }: SidebarProps) {
   const handleLogout = () => {
     tokenStore.clear();
     window.location.href = '/';
   };
+
+  const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <aside className="sidebar">
@@ -39,19 +45,25 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="sidebar__upgrade">
-        <Sparkles size={14} />
-        <div>
-          <p className="sidebar__upgrade-title">Upgrade to Pro</p>
-          <p className="sidebar__upgrade-sub">Unlock AI coaching & more</p>
+      {user.plan === 'free' && (
+        <div className="sidebar__upgrade">
+          <Sparkles size={14} />
+          <div>
+            <p className="sidebar__upgrade-title">Upgrade to Pro</p>
+            <p className="sidebar__upgrade-sub">Unlock AI coaching & more</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="sidebar__footer">
-        <img src="https://i.pravatar.cc/150?u=pathwise" alt="User" className="sidebar__avatar" />
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt={user.name} className="sidebar__avatar" />
+        ) : (
+          <div className="sidebar__avatar sidebar__avatar--initials">{initials}</div>
+        )}
         <div className="sidebar__user-info">
-          <span className="sidebar__user-name">Emily Carter</span>
-          <span className="sidebar__user-plan">Free Plan</span>
+          <span className="sidebar__user-name">{user.name}</span>
+          <span className="sidebar__user-plan">{user.plan === 'premium' ? 'Pro Plan' : 'Free Plan'}</span>
         </div>
         <button className="sidebar__logout" onClick={handleLogout} aria-label="Log out">
           <LogOut size={15} />

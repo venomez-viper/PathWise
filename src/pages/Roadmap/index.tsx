@@ -1,80 +1,90 @@
 import { useState, useEffect } from 'react';
-import { Clock, TrendingUp, Pencil, Plus, Zap, GraduationCap, FolderOpen, Users, ChevronRight } from 'lucide-react';
-
-const COURSES = [
-  { title: 'Learn SQL basics', priority: 'high', meta: '4 of 12 modules completed' },
-  { title: 'Marketing Analytics Fundamentals', priority: 'medium', meta: 'Course by Google Analytics Academy' },
-];
-const PROJECTS = [
-  { title: 'Portfolio Audit', priority: 'low', meta: 'Update resume and LinkedIn profile with new analytical keywords.' },
-  { title: 'E-commerce Data Project', priority: 'high', meta: 'Clean and analyze a Kaggle dataset using Python/SQL.' },
-];
-const NETWORKING = [
-  { title: 'Industry Coffee Chat', priority: 'medium', meta: 'Reach out to 3 senior analysts at target companies.' },
-];
-
-const PRIORITY_COLOR: Record<string, string> = {
-  high: '#ef4444',
-  medium: '#f59e0b',
-  low: '#34d399',
-};
+import { Clock, TrendingUp, Pencil, Zap, GraduationCap, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../lib/auth-context';
+import { roadmap as roadmapApi } from '../../lib/api';
 
 export default function Roadmap() {
+  const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    roadmapApi.get(user.id).then((res: any) => {
+      if (!cancelled) { setData(res.roadmap); setLoading(false); setTimeout(() => setMounted(true), 100); }
+    }).catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [user]);
+
+  if (loading) return (
+    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+      <Loader2 size={28} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
+
+  if (!data) return (
+    <div className="page">
+      <div className="page-header">
+        <div><h1 className="page-title">Career Roadmap</h1><p className="page-subtitle">Build your path to your dream role.</p></div>
+      </div>
+      <div className="panel" style={{ textAlign: 'center', padding: '3rem' }}>
+        <AlertCircle size={32} color="var(--on-surface-variant)" style={{ margin: '0 auto 12px' }} />
+        <p style={{ fontWeight: 600, color: 'var(--on-surface)', marginBottom: 8 }}>No roadmap yet</p>
+        <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', marginBottom: 16 }}>Complete onboarding to generate your personalised career roadmap.</p>
+        <Link to="/app/onboarding" className="btn-page-action">Start Onboarding</Link>
+      </div>
+    </div>
+  );
+
+  const completionPct = data.completionPercent ?? 0;
+  const MILESTONE_COLOR: Record<string, string> = { completed: '#34d399', in_progress: '#a78bfa', locked: 'var(--outline-variant)' };
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
           <h1 className="page-title">Career Roadmap</h1>
-          <p className="page-subtitle">Your personalised path to Marketing Analyst.</p>
+          <p className="page-subtitle">Your personalised path to {data.targetRole}.</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="btn-page-secondary"><Pencil size={14} /> Adjust Timeline</button>
-          <button className="btn-page-action"><Plus size={14} /> Add Task</button>
-        </div>
+        <Link to="/app/onboarding" className="btn-page-secondary"><Pencil size={14} /> Change Role</Link>
       </div>
 
       <div className="roadmap-grid">
-        {/* Left: target + skill gaps */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Target Card */}
           <div className="panel">
             <p className="panel__eyebrow">CURRENT TARGET</p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '8px 0 12px' }}>
               <h2 style={{ fontSize: '1.75rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--on-surface)' }}>
-                Marketing Analyst
+                {data.targetRole}
               </h2>
               <div className="roadmap-progress-ring">
                 <svg width="64" height="64" viewBox="0 0 64 64">
                   <circle cx="32" cy="32" r="26" fill="none" stroke="var(--surface-container-high)" strokeWidth="6" />
-                  <circle
-                    cx="32" cy="32" r="26"
-                    fill="none" stroke="#a78bfa" strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeDasharray={163.4}
-                    strokeDashoffset={mounted ? 163.4 * 0.68 : 163.4}
+                  <circle cx="32" cy="32" r="26" fill="none" stroke="#a78bfa" strokeWidth="6"
+                    strokeLinecap="round" strokeDasharray={163.4}
+                    strokeDashoffset={mounted ? 163.4 * (1 - completionPct / 100) : 163.4}
                     style={{ transform: 'rotate(-90deg)', transformOrigin: '32px 32px', transition: 'stroke-dashoffset 1s ease' }}
                   />
                 </svg>
-                <span className="roadmap-progress-label">32%</span>
+                <span className="roadmap-progress-label">{completionPct}%</span>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <span className="tag"><Clock size={12} /> 6 Months Timeline</span>
-              <span className="tag tag--teal"><TrendingUp size={12} /> Advanced Track</span>
+              <span className="tag"><Clock size={12} /> {data.milestones?.length ?? 0} milestones</span>
+              <span className="tag tag--teal"><TrendingUp size={12} /> {data.milestones?.filter((m: any) => m.status === 'completed').length ?? 0} completed</span>
             </div>
           </div>
 
-          {/* Skill Gap */}
           <div className="panel">
             <div className="panel__header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Zap size={16} color="#f59e0b" />
                 <h2 className="panel__title">Skill Gaps</h2>
               </div>
-              <span className="badge-pill badge-pill--warning">2 Missing</span>
+              <span className="badge-pill badge-pill--warning">Action needed</span>
             </div>
             {[
               { title: 'Google Data Analytics Professional Certificate', desc: 'Core technical foundation' },
@@ -92,44 +102,30 @@ export default function Roadmap() {
           </div>
         </div>
 
-        {/* Right: learning path */}
         <div className="panel">
           <div className="panel__header">
-            <h2 className="panel__title">Learning Path</h2>
-            <button className="btn-icon"><Plus size={15} /></button>
+            <h2 className="panel__title">Milestones</h2>
+            <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>{data.milestones?.length ?? 0} total</span>
           </div>
-
-          <PathSection icon={<GraduationCap size={14} />} label="COURSES"    items={COURSES}    />
-          <PathSection icon={<FolderOpen   size={14} />} label="PROJECTS"   items={PROJECTS}   />
-          <PathSection icon={<Users        size={14} />} label="NETWORKING" items={NETWORKING} />
+          {(data.milestones ?? []).map((m: any, i: number) => (
+            <div key={m.id} className="path-item" style={{ borderLeftColor: MILESTONE_COLOR[m.status], marginBottom: '8px', opacity: m.status === 'locked' ? 0.5 : 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <p className="path-item__title">{i + 1}. {m.title}</p>
+                <span className="priority-tag" style={{
+                  color: MILESTONE_COLOR[m.status],
+                  background: `${MILESTONE_COLOR[m.status]}18`,
+                  fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px',
+                }}>{m.status.replace('_', ' ')}</span>
+              </div>
+              <p className="path-item__meta">{m.description}</p>
+              {m.dueDate && <p className="path-item__meta" style={{ marginTop: '3px' }}>Due: {new Date(m.dueDate).toLocaleDateString()}</p>}
+            </div>
+          ))}
+          {(!data.milestones || data.milestones.length === 0) && (
+            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.875rem', padding: '1rem 0' }}>No milestones yet.</p>
+          )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function PathSection({ icon, label, items }: {
-  icon: React.ReactNode;
-  label: string;
-  items: { title: string; priority: string; meta: string }[];
-}) {
-  return (
-    <div className="path-section">
-      <div className="path-section__header">
-        {icon}
-        <span className="path-section__label">{label}</span>
-      </div>
-      {items.map(item => (
-        <div className="path-item" key={item.title} style={{ borderLeftColor: PRIORITY_COLOR[item.priority] }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-            <p className="path-item__title">{item.title}</p>
-            <span className="priority-tag" style={{ color: PRIORITY_COLOR[item.priority], background: `${PRIORITY_COLOR[item.priority]}15` }}>
-              {item.priority}
-            </span>
-          </div>
-          <p className="path-item__meta">{item.meta}</p>
-        </div>
-      ))}
     </div>
   );
 }

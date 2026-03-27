@@ -1,112 +1,120 @@
-import { useState, useEffect } from 'react';
-import { Clock, Share2, FileText, Sparkles, Plus, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { CheckCircle2, Plus, Sparkles, Loader2 } from 'lucide-react';
+import { useAuth } from '../../lib/auth-context';
+import { tasks as tasksApi } from '../../lib/api';
 
-type TaskItem = { id: string; title: string; meta: string; icon: 'clock' | 'share2' | 'file'; done: boolean };
-
-const DAILY: TaskItem[] = [
-  { id: 'd1', title: "Complete 'SQL Basics Module 1'",               meta: '30 mins',        icon: 'clock',  done: false },
-  { id: 'd2', title: 'Connect with 1 Marketing Analyst on LinkedIn', meta: 'Networking',     icon: 'share2', done: true  },
-  { id: 'd3', title: 'Review 2 Job Descriptions',                    meta: 'Market Research', icon: 'file',  done: false },
-];
-const WEEKLY: TaskItem[] = [
-  { id: 'w1', title: 'Complete Marketing Analytics module',           meta: '2 hours',    icon: 'clock',  done: false },
-  { id: 'w2', title: 'Update portfolio with E-commerce Data Project', meta: 'Projects',   icon: 'file',   done: false },
-  { id: 'w3', title: 'Attend 1 industry webinar',                    meta: 'Networking', icon: 'share2', done: false },
-];
-
-const MetaIcon = ({ type }: { type: 'clock' | 'share2' | 'file' }) =>
-  type === 'clock' ? <Clock size={12} /> : type === 'share2' ? <Share2 size={12} /> : <FileText size={12} />;
+type Task = { id: string; title: string; status: string; priority: string; description?: string };
 
 export default function Tasks() {
-  const [tab, setTab] = useState<'daily' | 'weekly'>('daily');
-  const [tasks, setTasks] = useState({ daily: DAILY, weekly: WEEKLY });
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
+  const { user } = useAuth();
+  const [taskList, setTaskList] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'todo' | 'done'>('all');
 
-  const current = tasks[tab];
-  const done = current.filter(t => t.done).length;
-  const toggle = (id: string) =>
-    setTasks(p => ({ ...p, [tab]: p[tab].map(t => t.id === id ? { ...t, done: !t.done } : t) }));
+  const load = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res: any = await tasksApi.list(user.id);
+      setTaskList(res.tasks ?? []);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const toggle = async (task: Task) => {
+    const newStatus = task.status === 'done' ? 'todo' : 'done';
+    setTaskList(p => p.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+    try {
+      await tasksApi.update(task.id, { status: newStatus });
+    } catch {
+      setTaskList(p => p.map(t => t.id === task.id ? { ...t, status: task.status } : t));
+    }
+  };
+
+  const visible = taskList.filter(t => filter === 'all' ? true : filter === 'done' ? t.status === 'done' : t.status !== 'done');
+  const done  = taskList.filter(t => t.status === 'done').length;
+  const total = taskList.length;
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
           <h1 className="page-title">Tasks</h1>
-          <p className="page-subtitle">Stay on track with your daily priorities.</p>
+          <p className="page-subtitle">Stay on track with your career priorities.</p>
         </div>
         <button className="btn-page-action"><Plus size={14} /> Add Task</button>
       </div>
 
       <div className="tasks-layout">
-        {/* Main task area */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Progress bar */}
           <div className="panel" style={{ padding: '1.25rem 1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <div>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-variant)' }}>Targeting</span>
-                <span style={{ marginLeft: '8px', fontWeight: 700, color: 'var(--primary)' }}>Marketing Analyst</span>
-              </div>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
-                {done}/{current.length} done
-              </span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)' }}>{done} of {total} tasks completed</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)' }}>{total - done} remaining</span>
             </div>
             <div className="stat-tile__bar">
-              <div className="stat-tile__fill" style={{
-                width: mounted ? `${(done / current.length) * 100}%` : '0%',
-                background: 'var(--primary)',
-                transition: 'width 0.6s ease'
-              }} />
+              <div className="stat-tile__fill" style={{ width: total > 0 ? `${(done / total) * 100}%` : '0%', background: 'var(--primary)', transition: 'width 0.6s ease' }} />
             </div>
           </div>
 
-          {/* Tab toggle */}
           <div className="tab-bar">
-            <button className={`tab-btn${tab === 'daily' ? ' active' : ''}`} onClick={() => setTab('daily')}>
-              Daily Tasks
-            </button>
-            <button className={`tab-btn${tab === 'weekly' ? ' active' : ''}`} onClick={() => setTab('weekly')}>
-              Weekly Tasks
-            </button>
-          </div>
-
-          {/* Task list */}
-          <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-            {current.map((task, i) => (
-              <div
-                key={task.id}
-                className={`task-row${task.done ? ' task-row--done' : ''}`}
-                style={{ borderTop: i > 0 ? '1px solid var(--outline-variant)' : 'none' }}
-                onClick={() => toggle(task.id)}
-              >
-                <div className={`task-row__check${task.done ? ' checked' : ''}`}>
-                  {task.done && <CheckCircle2 size={16} />}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="task-row__title">{task.title}</p>
-                  <p className="task-row__meta">
-                    <MetaIcon type={task.icon} /> {task.meta}
-                  </p>
-                </div>
-              </div>
+            {(['all', 'todo', 'done'] as const).map(f => (
+              <button key={f} className={`tab-btn${filter === f ? ' active' : ''}`} onClick={() => setFilter(f)}>
+                {f === 'all' ? 'All' : f === 'todo' ? 'To Do' : 'Done'}
+              </button>
             ))}
           </div>
 
-          <button className="btn-complete-all">
-            <Sparkles size={15} /> Mark All Complete
-          </button>
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+              <Loader2 size={24} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="panel" style={{ textAlign: 'center', padding: '3rem', color: 'var(--on-surface-variant)', fontSize: '0.875rem' }}>
+              {total === 0 ? 'No tasks yet — complete onboarding to generate your roadmap and tasks.' : 'No tasks in this view.'}
+            </div>
+          ) : (
+            <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+              {visible.map((task, i) => (
+                <div key={task.id}
+                  className={`task-row${task.status === 'done' ? ' task-row--done' : ''}`}
+                  style={{ borderTop: i > 0 ? '1px solid var(--outline-variant)' : 'none' }}
+                  onClick={() => toggle(task)}
+                >
+                  <div className={`task-row__check${task.status === 'done' ? ' checked' : ''}`}>
+                    {task.status === 'done' && <CheckCircle2 size={16} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="task-row__title">{task.title}</p>
+                    {task.description && <p className="task-row__meta">{task.description}</p>}
+                  </div>
+                  <span style={{
+                    fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px',
+                    color: task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f59e0b' : '#34d399',
+                    background: task.priority === 'high' ? 'rgba(239,68,68,0.1)' : task.priority === 'medium' ? 'rgba(245,158,11,0.1)' : 'rgba(52,211,153,0.1)',
+                  }}>{task.priority}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {total > 0 && (
+            <button className="btn-complete-all" onClick={() => Promise.all(taskList.filter(t => t.status !== 'done').map(t => toggle(t)))}>
+              <Sparkles size={15} /> Mark All Complete
+            </button>
+          )}
         </div>
 
-        {/* Sidebar info */}
         <div className="tasks-sidebar">
           <div className="panel">
-            <h3 className="panel__title">This Week</h3>
+            <h3 className="panel__title">Summary</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
               {[
-                { label: 'Tasks Done',  value: '5 / 8',   color: '#a78bfa' },
-                { label: 'Est. Time',   value: '45 min',  color: '#5ef6e6' },
-                { label: 'On Streak',   value: '7 days',  color: '#34d399' },
+                { label: 'Total Tasks',  value: String(total), color: '#a78bfa' },
+                { label: 'Completed',    value: String(done),  color: '#34d399' },
+                { label: 'Remaining',    value: String(total - done), color: '#f59e0b' },
               ].map(s => (
                 <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>{s.label}</span>
@@ -114,17 +122,6 @@ export default function Tasks() {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="panel">
-            <h3 className="panel__title">AI Suggestion</h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, marginTop: '8px' }}>
-              Focus on the SQL module first — it unlocks 3 more career paths in your roadmap.
-            </p>
-            <button className="panel-link" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <Sparkles size={13} color="var(--primary)" />
-              <span style={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600 }}>Generate more suggestions</span>
-            </button>
           </div>
         </div>
       </div>
