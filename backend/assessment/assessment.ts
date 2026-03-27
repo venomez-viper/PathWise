@@ -124,6 +124,72 @@ Provide exactly 3 career matches ranked by match score (highest first). Identify
   return JSON.parse(jsonMatch[0]);
 }
 
+// --- Certificate Recommendations ---
+
+export interface CertificateRecommendation {
+  skill: string;
+  certName: string;
+  provider: string;
+  url: string;
+  duration: string;
+  level: string;
+  cost: string;
+  whyRecommended: string;
+}
+
+export interface GetCertificatesParams {
+  userId: string;
+  skills: string[];
+  targetRole: string;
+}
+
+export interface GetCertificatesResponse {
+  recommendations: CertificateRecommendation[];
+}
+
+// POST /assessment/certificates
+export const getCertificates = api(
+  { expose: true, method: "POST", path: "/assessment/certificates" },
+  async ({ userId, skills, targetRole }: GetCertificatesParams): Promise<GetCertificatesResponse> => {
+    const client = new Anthropic({ apiKey: anthropicKey() });
+
+    const prompt = `You are a career advisor recommending real online certificates. For someone targeting "${targetRole}" with skill gaps in: ${skills.join(', ')}
+
+Recommend exactly ${Math.min(skills.length * 2, 8)} real, verifiable certificates from real platforms. Use ONLY real certificate programs that exist right now.
+
+Respond with ONLY a valid JSON array:
+[
+  {
+    "skill": "which skill gap this addresses",
+    "certName": "Official certificate/course name",
+    "provider": "Platform name (Coursera/Google/AWS/etc)",
+    "url": "Direct URL to the certificate page",
+    "duration": "e.g. 6 months part-time",
+    "level": "Beginner|Intermediate|Advanced",
+    "cost": "Free|$49/month|$300 exam fee|etc",
+    "whyRecommended": "One sentence on why this is the best choice for targeting ${targetRole}"
+  }
+]
+
+Include a mix of: free options (Coursera audit, Google certificates), paid certificates (AWS, etc). Prioritize industry-recognized certifications.`;
+
+    const message = await client.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = message.content[0];
+    if (content.type !== "text") throw new Error("Unexpected AI response type");
+
+    const jsonMatch = content.text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error("Could not parse AI response");
+
+    const recommendations: CertificateRecommendation[] = JSON.parse(jsonMatch[0]);
+    return { recommendations };
+  }
+);
+
 // POST /assessment — Submit questionnaire answers, get AI career matches
 export const submitAssessment = api(
   { expose: true, method: "POST", path: "/assessment" },

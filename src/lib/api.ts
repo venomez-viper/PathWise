@@ -57,6 +57,8 @@ export const auth = {
 export const assessment = {
   getResult: (userId: string) => request(`/assessment/${userId}`),
   submit: (data: unknown)     => request('/assessment', { method: 'POST', body: JSON.stringify(data) }),
+  getCertificates: (data: unknown) =>
+    request('/assessment/certificates', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // --- Roadmap ---

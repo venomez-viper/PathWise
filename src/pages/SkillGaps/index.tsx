@@ -24,9 +24,33 @@ export default function SkillGaps() {
   const [careerMatches, setCareerMatches] = useState<CareerMatch[]>([]);
   const [targetRole, setTargetRole] = useState<string | null>(null);
 
+  const [certs, setCerts] = useState<any[]>([]);
+  const [certsLoading, setCertsLoading] = useState(false);
+  const [certsError, setCertsError] = useState('');
+  const [certsVisible, setCertsVisible] = useState(false);
+
   const [skillProgress, setSkillProgress] = useState<Record<string, SkillStatus>>(() => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}'); } catch { return {}; }
   });
+
+  async function handleFindCertificates() {
+    if (!user || skillGaps.length === 0) return;
+    setCertsLoading(true);
+    setCertsError('');
+    setCertsVisible(true);
+    try {
+      const res = await assessmentApi.getCertificates({
+        userId: user.id,
+        skills: skillGaps.map(g => g.skill),
+        targetRole: careerMatches[0]?.title ?? targetRole ?? 'your target role',
+      }) as any;
+      setCerts(res.recommendations ?? []);
+    } catch (err) {
+      setCertsError(err instanceof Error ? err.message : 'Failed to fetch recommendations');
+    } finally {
+      setCertsLoading(false);
+    }
+  }
 
   function setSkillStatus(skill: string, status: SkillStatus) {
     const updated = { ...skillProgress, [skill]: status };
@@ -155,6 +179,27 @@ export default function SkillGaps() {
             <span className="stat-tile__value">{completedCount}</span>
           </div>
         </div>
+      </div>
+
+      {/* Find Certificates button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button
+          onClick={handleFindCertificates}
+          disabled={certsLoading || skillGaps.length === 0}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '0.6rem 1.25rem',
+            background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+            color: '#fff', border: 'none', borderRadius: 'var(--radius-full)',
+            fontSize: '0.875rem', fontWeight: 600, cursor: certsLoading ? 'not-allowed' : 'pointer',
+            opacity: (certsLoading || skillGaps.length === 0) ? 0.6 : 1,
+          }}
+        >
+          {certsLoading
+            ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Finding certificates...</>
+            : <><Sparkles size={14} /> Find Recommended Certificates</>
+          }
+        </button>
       </div>
 
       {/* Main two-column layout */}
@@ -458,6 +503,92 @@ export default function SkillGaps() {
           )}
         </div>
       </div>
+
+      {/* Certificate recommendations section */}
+      {certsVisible && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="panel">
+            <div className="panel__header">
+              <h2 className="panel__title">Recommended Certificates</h2>
+              <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>AI-curated for your skill gaps</span>
+            </div>
+
+            {certsLoading && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: 12 }}>
+                <Loader2 size={24} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+                <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Claude is searching for the best certificates for your profile...</p>
+              </div>
+            )}
+
+            {certsError && (
+              <p style={{ color: '#ef4444', fontSize: '0.875rem', padding: '1rem 0' }}>{certsError}</p>
+            )}
+
+            {!certsLoading && certs.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1rem', marginTop: '0.5rem' }}>
+                {certs.map((cert, i) => (
+                  <div key={i} style={{
+                    background: 'var(--surface-container-low)',
+                    border: '1px solid var(--outline-variant)',
+                    borderRadius: 'var(--radius-xl)',
+                    padding: '1.25rem',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    {/* Provider + level badges */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                        color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
+                        padding: '2px 8px', borderRadius: 999,
+                      }}>{cert.provider}</span>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
+                        color: cert.cost === 'Free' || cert.cost?.toLowerCase().includes('free') ? '#34d399' : '#f59e0b',
+                        background: cert.cost === 'Free' || cert.cost?.toLowerCase().includes('free') ? 'rgba(52,211,153,0.12)' : 'rgba(245,158,11,0.12)',
+                        padding: '2px 8px', borderRadius: 999,
+                      }}>{cert.cost}</span>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 600, color: 'var(--on-surface-variant)',
+                        background: 'var(--surface-container-high)',
+                        padding: '2px 8px', borderRadius: 999,
+                      }}>{cert.level}</span>
+                    </div>
+
+                    {/* Cert name */}
+                    <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--on-surface)', lineHeight: 1.3 }}>
+                      {cert.certName}
+                    </p>
+
+                    {/* Skill tag */}
+                    <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', margin: 0 }}>
+                      Covers: <strong style={{ color: 'var(--on-surface)' }}>{cert.skill}</strong> · {cert.duration}
+                    </p>
+
+                    {/* Why recommended */}
+                    <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', lineHeight: 1.5, margin: 0 }}>
+                      {cert.whyRecommended}
+                    </p>
+
+                    {/* Link */}
+                    <a
+                      href={cert.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        fontSize: '0.8rem', fontWeight: 600, color: '#a78bfa',
+                        marginTop: 4, textDecoration: 'none',
+                      }}
+                    >
+                      View Certificate →
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
