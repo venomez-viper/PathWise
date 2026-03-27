@@ -24,7 +24,7 @@ export default function SignUp() {
     try {
       const res = await auth.signup({ name: form.name, email: form.email, password: form.password });
       tokenStore.set(res.token);
-      navigate('/onboarding');
+      navigate('/app/onboarding');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');
     } finally {
