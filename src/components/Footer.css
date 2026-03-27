@@ -99,15 +99,24 @@
 }
 
 @media (max-width: 900px) {
+  /* Brand full-width on top, then all 3 link columns in one row */
   .footer__inner {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: var(--spacing-10);
   }
   .footer__brand {
     grid-column: 1 / -1;
   }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 560px) {
+  /* 2-column link grid on small tablets */
+  .footer__inner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 420px) {
   .footer__inner { grid-template-columns: 1fr; }
   .footer__bottom-inner { flex-direction: column; text-align: center; }
 }

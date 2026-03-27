@@ -4,15 +4,20 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  transition: var(--transition-base);
+  transition: background 0.3s ease, backdrop-filter 0.3s ease, border-color 0.3s ease;
   padding: 0;
+  /* Always dark so logo + nav links are readable on every page */
+  background: rgba(15, 11, 30, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .navbar--scrolled {
-  background: rgba(15, 11, 30, 0.92);
+  background: rgba(15, 11, 30, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .navbar__inner {

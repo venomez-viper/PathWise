@@ -30,6 +30,7 @@ function HandWrittenTitle({
           width="100%"
           height="100%"
           viewBox="0 0 1200 400"
+          preserveAspectRatio="none"
           initial="hidden"
           animate="visible"
           className="w-full h-full"
