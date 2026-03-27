@@ -158,6 +158,72 @@ export const me = api(
   }
 );
 
+// ── Update Profile ────────────────────────────────────────────────────────────
+
+export interface UpdateProfileParams {
+  name?: string;
+  avatarUrl?: string;
+}
+
+export const updateProfile = api(
+  { expose: true, method: "PATCH", path: "/auth/me", auth: true },
+  async (params: UpdateProfileParams): Promise<MeResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const row = await db.queryRow`
+      SELECT id, name, email, avatar_url, plan FROM users WHERE id = ${userID}
+    `;
+    if (!row) throw APIError.notFound("user not found");
+
+    const newName      = params.name      ?? row.name;
+    const newAvatarUrl = params.avatarUrl !== undefined ? params.avatarUrl : row.avatar_url;
+
+    await db.exec`
+      UPDATE users SET name = ${newName}, avatar_url = ${newAvatarUrl} WHERE id = ${userID}
+    `;
+
+    return {
+      user: {
+        id:        userID,
+        name:      newName,
+        email:     row.email,
+        avatarUrl: newAvatarUrl ?? undefined,
+        plan:      row.plan,
+      },
+    };
+  }
+);
+
+// ── Change Password ───────────────────────────────────────────────────────────
+
+export interface ChangePasswordParams {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export const changePassword = api(
+  { expose: true, method: "POST", path: "/auth/change-password", auth: true },
+  async (params: ChangePasswordParams): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+
+    if (params.newPassword.length < 8) {
+      throw APIError.invalidArgument("new password must be at least 8 characters");
+    }
+
+    const row = await db.queryRow`
+      SELECT password_hash FROM users WHERE id = ${userID}
+    `;
+    if (!row) throw APIError.notFound("user not found");
+
+    const match = await bcrypt.compare(params.currentPassword, row.password_hash);
+    if (!match) throw APIError.unauthenticated("current password is incorrect");
+
+    const newHash = await bcrypt.hash(params.newPassword, 12);
+    await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${userID}`;
+
+    return { success: true };
+  }
+);
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 function issueToken(userId: string): string {

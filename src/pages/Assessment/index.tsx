@@ -53,7 +53,7 @@ export default function Assessment() {
   const [currentSkillsText, setCurrentSkillsText] = useState('');
   const [experienceLevel, setExperienceLevel] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
 
