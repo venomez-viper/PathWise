@@ -14,6 +14,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const closeMenu = () => setMenuOpen(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -21,9 +22,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close menu on route change
   useEffect(() => {
-    setMenuOpen(false);
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
@@ -33,8 +32,8 @@ export default function Navbar() {
     <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
       <div className="navbar__inner container">
         {/* Logo */}
-        <Link to="/" className="navbar__logo">
-          <Logo size={40} />
+        <Link to="/" className="navbar__logo" onClick={closeMenu}>
+          <Logo variant="white" size={40} />
         </Link>
 
         {/* Desktop Nav */}
@@ -75,11 +74,12 @@ export default function Navbar() {
               key={link.href}
               to={link.href}
               className="navbar__mobile-link"
+              onClick={closeMenu}
             >
               {link.label}
             </Link>
           ))}
-          <Link to="/pricing" className="btn btn-primary">
+          <Link to="/pricing" className="btn btn-primary" onClick={closeMenu}>
             Get Started Free
           </Link>
         </div>

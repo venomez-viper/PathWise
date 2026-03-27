@@ -1,6 +1,6 @@
 .legal-page {
   min-height: 100vh;
-  padding-top: 7rem;
+  padding-top: calc(72px + var(--spacing-4));
   padding-bottom: 0;
   background: var(--surface);
   position: relative;
@@ -24,7 +24,7 @@
 
 .legal-hero {
   text-align: center;
-  padding: var(--spacing-8) 0 var(--spacing-12);
+  padding: var(--spacing-4) 0 var(--spacing-12);
 }
 
 .legal-hero__title {
@@ -95,7 +95,7 @@
 
 @media (max-width: 700px) {
   .legal-page {
-    padding-top: 6rem;
+    padding-top: calc(72px + var(--spacing-3));
   }
 
   .legal-card {

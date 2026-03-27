@@ -1,6 +1,6 @@
 .blog-page {
   min-height: 100vh;
-  padding-top: 7rem;
+  padding-top: calc(72px + var(--spacing-4));
   padding-bottom: 0;
   background: var(--surface);
   position: relative;
@@ -24,7 +24,7 @@
 
 .blog-header {
   text-align: center;
-  padding: var(--spacing-8) 0 var(--spacing-12);
+  padding: var(--spacing-4) 0 var(--spacing-12);
 }
 
 .blog-header__title {
@@ -449,7 +449,7 @@
 
 @media (max-width: 700px) {
   .blog-page {
-    padding-top: 6rem;
+    padding-top: calc(72px + var(--spacing-3));
   }
 
   .blog-featured__content,
@@ -468,7 +468,7 @@
 
 @media (max-width: 520px) {
   .blog-header {
-    padding-top: var(--spacing-6);
+    padding-top: var(--spacing-3);
   }
 
   .blog-header__sub,

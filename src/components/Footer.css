@@ -53,6 +53,8 @@
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: rgba(255,255,255,0.7);
   transition: var(--transition-base);
 }

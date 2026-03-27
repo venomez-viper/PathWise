@@ -9,11 +9,25 @@ interface LogoProps extends HTMLAttributes<HTMLDivElement> {
 export default function Logo({ variant = 'full', size = 32, className, ...props }: LogoProps) {
   const iconSize = size;
   const textSize = size * 0.8;
+  const isWhiteVariant = variant === 'white';
+  const palette = isWhiteVariant
+    ? {
+        primary: '#ffffff',
+        secondary: 'rgba(255, 255, 255, 0.78)',
+        accent: '#ff9f76',
+        text: '#ffffff',
+      }
+    : {
+        primary: 'var(--primary-light)',
+        secondary: 'var(--brand-purple)',
+        accent: 'var(--accent-orange)',
+        text: 'var(--on-surface)',
+      };
 
   return (
-    <div 
+    <div
       className={cn("flex items-center gap-2 font-display font-bold leading-none", className)}
-      style={{ fontSize: textSize }}
+      style={{ fontSize: textSize, color: palette.text }}
       {...props}
     >
       {/* SVG Icon */}
@@ -32,7 +46,7 @@ export default function Logo({ variant = 'full', size = 32, className, ...props 
           strokeWidth="12" 
           strokeLinecap="round" 
           strokeLinejoin="round"
-          className={variant === 'white' ? "text-white" : "text-[var(--primary-light)]"}
+          style={{ color: palette.primary }}
         />
         <path
           d="M35 45L50 65L75 25"
@@ -40,7 +54,7 @@ export default function Logo({ variant = 'full', size = 32, className, ...props 
           strokeWidth="12"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={variant === 'white' ? "text-white/80" : "text-[var(--brand-purple)]"}
+          style={{ color: palette.secondary }}
         />
         {/* Arrow Tip */}
         <path
@@ -49,16 +63,13 @@ export default function Logo({ variant = 'full', size = 32, className, ...props 
           strokeWidth="12"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={variant === 'white' ? "text-white" : "text-[var(--accent-orange)]"}
+          style={{ color: palette.accent }}
         />
       </svg>
 
       {/* Wordmark */}
       {(variant === 'full' || variant === 'white') && (
-        <span className={cn(
-          "tracking-tight mt-1",
-          variant === 'white' ? "text-white" : "text-white"
-        )}>
+        <span className="tracking-tight mt-1">
           pathwise
         </span>
       )}
