@@ -1,10 +1,9 @@
-import { useRef, useState, useEffect, type FormEvent } from 'react';
+import { useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './CTA.css';
 
 export default function CTA() {
   const ref = useRef<HTMLDivElement>(null);
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -20,11 +19,6 @@ export default function CTA() {
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (email) setSubmitted(true);
-  };
 
   return (
     <section className="cta-section gradient-bg-hero" id="cta" ref={ref}>
@@ -43,25 +37,14 @@ export default function CTA() {
           who are replacing uncertainty with a clear, AI-powered direction.
         </p>
 
-        {submitted ? (
-          <div className="cta-section__success fade-up">
-            🎉 You're on the list! We'll be in touch soon.
-          </div>
-        ) : (
-          <form className="cta-section__form fade-up" onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="cta-section__input"
-              required
-            />
-            <button type="submit" className="btn btn-primary btn-lg">
-              Get Early Access
-            </button>
-          </form>
-        )}
+        <div className="cta-section__form fade-up">
+          <Link to="/signup" className="btn btn-primary btn-lg">
+            Create Free Account
+          </Link>
+          <Link to="/signin" className="btn btn-outline btn-lg">
+            Sign In
+          </Link>
+        </div>
 
         <p className="cta-section__note fade-up">Free to start · No credit card required · Cancel anytime</p>
       </div>

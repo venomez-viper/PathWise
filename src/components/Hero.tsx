@@ -46,10 +46,10 @@ export default function Hero() {
           </p>
 
           <div className="hero__actions">
-            <a href="#cta" className="hero__button hero__button--primary">
+            <Link to="/signup" className="hero__button hero__button--primary">
               Start Free Today
               <ArrowRight size={18} />
-            </a>
+            </Link>
             <Link to="/how-it-works" className="hero__button hero__button--secondary">
               <Play size={16} fill="currentColor" />
               See How It Works
