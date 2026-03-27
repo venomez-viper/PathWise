@@ -1,52 +1,54 @@
 import { CreativePricing } from "@/components/ui/creative-pricing";
 import type { PricingTier } from "@/components/ui/creative-pricing";
-import { Pencil, Star, Sparkles } from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 
-const sampleTiers: PricingTier[] = [
+const pathwiseTiers: PricingTier[] = [
   {
-    name: "Creator",
-    icon: <Pencil className="w-6 h-6" />,
-    price: 29,
-    description: "Perfect for short video beginners",
-    color: "amber",
+    name: "Free",
+    icon: <Zap className="w-6 h-6" />,
+    monthlyPrice: 0,
+    description: "Get started on your career journey",
+    color: "violet",
+    cta: "Start for Free",
+    ctaHref: "/signup",
     features: [
-      "60-second Video Export",
-      "10 Trending Templates",
-      "Auto Text-to-Speech",
-      "Basic Transitions",
+      "1 AI-generated career roadmap",
+      "Up to 3 career match suggestions",
+      "Basic task planner",
+      "Career readiness score",
+      "5-step career assessment",
     ],
   },
   {
-    name: "Influencer",
-    icon: <Star className="w-6 h-6" />,
-    price: 79,
-    description: "For serious content creators",
-    color: "blue",
-    features: [
-      "3-minute Video Export",
-      "Voice Effects & Filters",
-      "Trending Sound Library",
-      "Auto Captions & Subtitles",
-    ],
-    popular: true,
-  },
-  {
-    name: "Pro Studio",
+    name: "Pro",
     icon: <Sparkles className="w-6 h-6" />,
-    price: 149,
-    description: "For viral content masters",
-    color: "purple",
+    monthlyPrice: 12.99,
+    description: "Unlock your full career potential",
+    color: "amber",
+    popular: true,
+    cta: "Upgrade to Pro",
+    ctaHref: "/signup",
     features: [
-      "Multi-clip Editing",
-      "Green Screen Effects",
-      "Viral Sound Detection",
-      "Engagement Analytics",
+      "Unlimited AI roadmap generations",
+      "Advanced Claude AI coaching",
+      "Personalised skill gap analysis",
+      "Priority AI response times",
+      "Shareable roadmap link",
+      "Labor market salary insights",
+      "Priority support",
     ],
   },
 ];
 
 function CreativePricingDemo() {
-  return <CreativePricing tiers={sampleTiers} />;
+  return (
+    <CreativePricing
+      tag="Transparent Pricing"
+      title="Invest in your career"
+      description="Start free. Upgrade when you're ready to accelerate."
+      tiers={pathwiseTiers}
+    />
+  );
 }
 
 export { CreativePricingDemo };

@@ -1,28 +1,23 @@
 .pricing-section {
-  background: linear-gradient(135deg, #0f0b1e 0%, #1a1235 100%);
-  padding: var(--section-padding);
+  background: linear-gradient(160deg, #0f0b1e 0%, #130d2a 50%, #0a0715 100%);
+  padding: 6rem 1rem 8rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.pricing-discounts {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-8);
-  margin-top: var(--spacing-12);
-  flex-wrap: wrap;
+/* Subtle grid texture */
+.pricing-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(93, 42, 128, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(93, 42, 128, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
 }
 
-.pricing-discount-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.6);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: var(--spacing-3) var(--spacing-6);
-  border-radius: var(--radius-full);
-}
-
-.pricing-discount-item strong {
-  color: rgba(255,255,255,0.9);
+.pricing-section .container {
+  position: relative;
+  z-index: 1;
 }
