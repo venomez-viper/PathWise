@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { auth, tokenStore } from '../../lib/api';
+import { useAuth } from '../../lib/auth-context';
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const { refresh } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [form,  setForm]  = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -20,6 +22,7 @@ export default function SignIn() {
     try {
       const res = await auth.signin({ email: form.email, password: form.password });
       tokenStore.set(res.token);
+      await refresh();
       navigate('/app');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
