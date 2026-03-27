@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, useNavigate } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './lib/auth-context';
 
 // Marketing site components
@@ -35,6 +36,7 @@ function MarketingLayout() {
 function AppLayout() {
   const { user, ready } = useAuth();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (ready && !user) navigate('/signin', { replace: true });
@@ -49,8 +51,15 @@ function AppLayout() {
 
   return (
     <div className="saas-layout">
-      <Sidebar user={user} />
+      <Sidebar user={user} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="saas-main">
+        <button
+          className="sidebar-hamburger"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open menu"
+        >
+          <Menu size={22} />
+        </button>
         <Outlet />
       </main>
     </div>

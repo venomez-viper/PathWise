@@ -15,9 +15,11 @@ const NAV_ITEMS = [
 
 interface SidebarProps {
   user: { name: string; email: string; avatarUrl?: string; plan: string };
+  open?: boolean;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ user }: SidebarProps) {
+export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
   const handleLogout = () => {
     tokenStore.clear();
     window.location.href = '/';
@@ -26,7 +28,9 @@ export default function Sidebar({ user }: SidebarProps) {
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <aside className="sidebar">
+    <>
+    {open && <div className="sidebar-backdrop" onClick={onClose} />}
+    <aside className={`sidebar${open ? ' sidebar--open' : ''}`}>
       <div className="sidebar__logo">
         <Logo size={28} variant="white" />
       </div>
@@ -39,6 +43,7 @@ export default function Sidebar({ user }: SidebarProps) {
             to={to}
             end={end}
             className={({ isActive }) => `sidebar__link${isActive ? ' active' : ''}`}
+            onClick={onClose}
           >
             <Icon size={17} />
             <span>{label}</span>
@@ -71,5 +76,6 @@ export default function Sidebar({ user }: SidebarProps) {
         </button>
       </div>
     </aside>
+    </>
   );
 }
