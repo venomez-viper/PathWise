@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { tasks as tasksApi } from '../../lib/api';
+import { tasks as tasksApi, roadmap as roadmapApi } from '../../lib/api';
 import './Tasks.css';
 
 /* ── Types ── */
@@ -22,6 +22,7 @@ type Task = {
 };
 
 type ViewMode = 'board' | 'list';
+type Milestone = { id: string; title: string; status: string };
 
 /* ── Category display map ── */
 const CATEGORY_LABELS: Record<string, string> = {
@@ -61,6 +62,7 @@ function formatDate(dateStr: string): string {
 export default function Tasks() {
   const { user } = useAuth();
   const [taskList, setTaskList] = useState<Task[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<ViewMode>('board');
 
@@ -72,17 +74,29 @@ export default function Tasks() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskPriority, setNewTaskPriority] = useState<Task['priority']>('medium');
   const [newTaskCategory, setNewTaskCategory] = useState('');
+  const [newTaskMilestoneId, setNewTaskMilestoneId] = useState('');
   const [addingLoading, setAddingLoading] = useState(false);
 
   // Mark all
   const [markingAll, setMarkingAll] = useState(false);
 
-  /* ── Load tasks ── */
+  /* ── Load tasks + milestones ── */
   const load = useCallback(async () => {
     if (!user) return;
     try {
-      const res = await tasksApi.list(user.id) as { tasks?: Task[] };
-      setTaskList(res.tasks ?? []);
+      const [tasksRes, roadmapRes] = await Promise.allSettled([
+        tasksApi.list(user.id),
+        roadmapApi.get(user.id),
+      ]);
+      const fetchedTasks = tasksRes.status === 'fulfilled' ? ((tasksRes.value as any).tasks ?? []) : [];
+      const fetchedMilestones: Milestone[] = roadmapRes.status === 'fulfilled'
+        ? ((roadmapRes.value as any).roadmap?.milestones ?? [])
+        : [];
+      setTaskList(fetchedTasks);
+      setMilestones(fetchedMilestones);
+      // Default new task milestone to the current in_progress one
+      const active = fetchedMilestones.find((m: Milestone) => m.status === 'in_progress');
+      if (active) setNewTaskMilestoneId(active.id);
     } finally {
       setLoading(false);
     }
@@ -103,6 +117,7 @@ export default function Tasks() {
         status: 'todo',
         priority: newTaskPriority,
         ...(newTaskCategory ? { category: newTaskCategory } : {}),
+        ...(newTaskMilestoneId ? { milestoneId: newTaskMilestoneId } : {}),
       }) as { task: Task };
       setTaskList(prev => [...prev, res.task]);
       setNewTaskTitle('');
@@ -169,6 +184,9 @@ export default function Tasks() {
     setNewTaskTitle('');
     setNewTaskPriority('medium');
     setNewTaskCategory('');
+    // restore default milestone to active one
+    const active = milestones.find(m => m.status === 'in_progress');
+    if (active) setNewTaskMilestoneId(active.id);
   };
 
   /* ================================================================
@@ -300,10 +318,13 @@ export default function Tasks() {
                       title={newTaskTitle}
                       priority={newTaskPriority}
                       category={newTaskCategory}
+                      milestoneId={newTaskMilestoneId}
+                      milestones={milestones}
                       loading={addingLoading}
                       onTitleChange={setNewTaskTitle}
                       onPriorityChange={setNewTaskPriority}
                       onCategoryChange={setNewTaskCategory}
+                      onMilestoneChange={setNewTaskMilestoneId}
                       onSubmit={addTask}
                       onCancel={cancelAdd}
                     />
@@ -571,10 +592,13 @@ interface AddTaskFormProps {
   title: string;
   priority: Task['priority'];
   category: string;
+  milestoneId: string;
+  milestones: Milestone[];
   loading: boolean;
   onTitleChange: (v: string) => void;
   onPriorityChange: (v: Task['priority']) => void;
   onCategoryChange: (v: string) => void;
+  onMilestoneChange: (v: string) => void;
   onSubmit: () => void;
   onCancel: () => void;
 }
@@ -583,10 +607,13 @@ function AddTaskForm({
   title,
   priority,
   category,
+  milestoneId,
+  milestones,
   loading,
   onTitleChange,
   onPriorityChange,
   onCategoryChange,
+  onMilestoneChange,
   onSubmit,
   onCancel,
 }: AddTaskFormProps) {
@@ -630,6 +657,23 @@ function AddTaskForm({
           ))}
         </select>
       </div>
+      {milestones.length > 0 && (
+        <select
+          className="kanban-add-form__select"
+          style={{ width: '100%' }}
+          value={milestoneId}
+          onChange={e => onMilestoneChange(e.target.value)}
+          aria-label="Milestone"
+        >
+          <option value="">No milestone</option>
+          {milestones.map(m => (
+            <option key={m.id} value={m.id} disabled={m.status === 'locked'}>
+              {m.status === 'in_progress' ? '▶ ' : m.status === 'completed' ? '✓ ' : '🔒 '}
+              {m.title}
+            </option>
+          ))}
+        </select>
+      )}
       <div className="kanban-add-form__actions">
         <button className="kanban-cancel-btn" onClick={onCancel} type="button">
           Cancel
