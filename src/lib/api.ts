@@ -63,6 +63,8 @@ export const assessment = {
 export const roadmap = {
   get:      (userId: string) => request(`/roadmap/${userId}`),
   generate: (data: unknown)  => request('/roadmap', { method: 'POST', body: JSON.stringify(data) }),
+  completeMilestone: (milestoneId: string) =>
+    request(`/roadmap/milestones/${milestoneId}`, { method: 'PATCH', body: JSON.stringify({}) }),
 };
 
 // --- Tasks ---

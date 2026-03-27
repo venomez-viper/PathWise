@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Clock, TrendingUp, Pencil, Zap, GraduationCap, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import { Clock, TrendingUp, Pencil, Zap, GraduationCap, ChevronRight, Loader2, AlertCircle, Lock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { roadmap as roadmapApi, assessment as assessmentApi } from '../../lib/api';
+import { roadmap as roadmapApi, assessment as assessmentApi, tasks as tasksApi } from '../../lib/api';
+
+type Task = { id: string; title: string; status: string; milestoneId?: string; category?: string };
 
 const IMPORTANCE_COLOR: Record<string, string> = {
   high: '#f87171',
@@ -16,28 +18,67 @@ export default function Roadmap() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [skillGaps, setSkillGaps] = useState<any[]>([]);
+  const [milestoneTaskMap, setMilestoneTaskMap] = useState<Record<string, Task[]>>({});
+  const [completing, setCompleting] = useState<string | null>(null);
+
+  async function loadData(userId: string, silent = false) {
+    if (!silent) setLoading(true);
+    const [roadmapRes, assessRes, tasksRes] = await Promise.allSettled([
+      roadmapApi.get(userId),
+      assessmentApi.getResult(userId),
+      tasksApi.list(userId),
+    ]);
+
+    const roadmap = roadmapRes.status === 'fulfilled' ? (roadmapRes.value as any).roadmap : null;
+    const gaps = assessRes.status === 'fulfilled'
+      ? ((assessRes.value as any).result?.skillGaps ?? [])
+      : [];
+    const taskList: Task[] = tasksRes.status === 'fulfilled'
+      ? ((tasksRes.value as any).tasks ?? [])
+      : [];
+
+    // Group tasks by milestoneId
+    const taskMap: Record<string, Task[]> = {};
+    for (const t of taskList) {
+      if (t.milestoneId) {
+        if (!taskMap[t.milestoneId]) taskMap[t.milestoneId] = [];
+        taskMap[t.milestoneId].push(t);
+      }
+    }
+
+    setData(roadmap);
+    setSkillGaps(gaps);
+    setMilestoneTaskMap(taskMap);
+    if (!silent) {
+      setLoading(false);
+      setTimeout(() => setMounted(true), 100);
+    }
+  }
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
 
-    Promise.allSettled([
-      roadmapApi.get(user.id),
-      assessmentApi.getResult(user.id),
-    ]).then(([roadmapRes, assessRes]) => {
+    loadData(user.id).then(() => {
       if (cancelled) return;
-      const roadmap = roadmapRes.status === 'fulfilled' ? (roadmapRes.value as any).roadmap : null;
-      const gaps = assessRes.status === 'fulfilled'
-        ? ((assessRes.value as any).result?.skillGaps ?? [])
-        : [];
-      setData(roadmap);
-      setSkillGaps(gaps);
-      setLoading(false);
-      setTimeout(() => setMounted(true), 100);
+      setMounted(true);
     });
 
     return () => { cancelled = true; };
   }, [user]);
+
+  async function handleComplete(milestoneId: string) {
+    if (!user || completing) return;
+    setCompleting(milestoneId);
+    try {
+      await roadmapApi.completeMilestone(milestoneId);
+      await loadData(user.id, true);
+    } catch (err) {
+      console.error('Failed to complete milestone', err);
+    } finally {
+      setCompleting(null);
+    }
+  }
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
@@ -144,20 +185,77 @@ export default function Roadmap() {
             <h2 className="panel__title">Milestones</h2>
             <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>{data.milestones?.length ?? 0} total</span>
           </div>
-          {(data.milestones ?? []).map((m: any, i: number) => (
-            <div key={m.id} className="path-item" style={{ borderLeftColor: MILESTONE_COLOR[m.status], marginBottom: '8px', opacity: m.status === 'locked' ? 0.5 : 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <p className="path-item__title">{i + 1}. {m.title}</p>
-                <span className="priority-tag" style={{
-                  color: MILESTONE_COLOR[m.status],
-                  background: `${MILESTONE_COLOR[m.status]}18`,
-                  fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px',
-                }}>{m.status.replace('_', ' ')}</span>
+          {(data.milestones ?? []).map((m: any, i: number) => {
+            const mTasks = milestoneTaskMap[m.id] ?? [];
+            const isCompleting = completing === m.id;
+
+            return (
+              <div key={m.id} className="path-item" style={{ borderLeftColor: MILESTONE_COLOR[m.status], marginBottom: '8px', opacity: m.status === 'locked' ? 0.5 : 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <p className="path-item__title">{i + 1}. {m.title}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {m.status === 'completed' && (
+                      <CheckCircle2 size={16} color="#34d399" />
+                    )}
+                    <span className="priority-tag" style={{
+                      color: MILESTONE_COLOR[m.status],
+                      background: `${MILESTONE_COLOR[m.status]}18`,
+                      fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px',
+                    }}>{m.status.replace('_', ' ')}</span>
+                  </div>
+                </div>
+                <p className="path-item__meta">{m.description}</p>
+                {m.dueDate && <p className="path-item__meta" style={{ marginTop: '3px' }}>Due: {new Date(m.dueDate).toLocaleDateString()}</p>}
+
+                {m.status === 'in_progress' && (
+                  <div style={{ marginTop: '10px' }}>
+                    {mTasks.length > 0 && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <p className="path-item__meta" style={{ fontWeight: 600, marginBottom: '4px' }}>
+                          Tasks ({mTasks.length}):
+                        </p>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                          {mTasks.slice(0, 3).map((t) => (
+                            <li key={t.id} style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', paddingLeft: '10px', borderLeft: '2px solid #a78bfa33', marginBottom: '3px' }}>
+                              {t.title}
+                            </li>
+                          ))}
+                          {mTasks.length > 3 && (
+                            <li style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', paddingLeft: '10px', fontStyle: 'italic' }}>
+                              +{mTasks.length - 3} more
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => handleComplete(m.id)}
+                      disabled={!!completing}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        fontSize: '0.78rem', fontWeight: 700, padding: '5px 12px',
+                        borderRadius: '999px', border: 'none', cursor: completing ? 'not-allowed' : 'pointer',
+                        background: '#a78bfa', color: '#fff', opacity: completing ? 0.7 : 1,
+                        transition: 'opacity 0.2s',
+                      }}
+                    >
+                      {isCompleting
+                        ? <><Loader2 size={12} style={{ animation: 'spin 0.8s linear infinite' }} /> Completing...</>
+                        : <><CheckCircle2 size={12} /> Mark Complete</>
+                      }
+                    </button>
+                  </div>
+                )}
+
+                {m.status === 'locked' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: '8px' }}>
+                    <Lock size={12} color="var(--on-surface-variant)" />
+                    <p className="path-item__meta" style={{ margin: 0 }}>Complete previous milestone to unlock</p>
+                  </div>
+                )}
               </div>
-              <p className="path-item__meta">{m.description}</p>
-              {m.dueDate && <p className="path-item__meta" style={{ marginTop: '3px' }}>Due: {new Date(m.dueDate).toLocaleDateString()}</p>}
-            </div>
-          ))}
+            );
+          })}
           {(!data.milestones || data.milestones.length === 0) && (
             <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.875rem', padding: '1rem 0' }}>No milestones yet.</p>
           )}

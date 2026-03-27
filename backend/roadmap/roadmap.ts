@@ -133,6 +133,40 @@ Requirements:
   return JSON.parse(jsonMatch[0]);
 }
 
+// PATCH /roadmap/milestones/:milestoneId — mark a milestone complete, unlock next
+export const completeMilestone = api(
+  { expose: true, method: "PATCH", path: "/roadmap/milestones/:milestoneId" },
+  async ({ milestoneId }: { milestoneId: string }): Promise<{ success: boolean; nextMilestoneId?: string }> => {
+    // 1. Get the milestone and its roadmap
+    const ms = await db.queryRow`
+      SELECT id, roadmap_id, position FROM milestones WHERE id = ${milestoneId}
+    `;
+    if (!ms) throw new Error("Milestone not found");
+
+    // 2. Mark this milestone as completed
+    await db.exec`UPDATE milestones SET status = 'completed' WHERE id = ${milestoneId}`;
+
+    // 3. Unlock the next milestone (position + 1)
+    const next = await db.queryRow`
+      SELECT id FROM milestones
+      WHERE roadmap_id = ${ms.roadmap_id} AND position = ${ms.position + 1}
+    `;
+    let nextMilestoneId: string | undefined;
+    if (next) {
+      await db.exec`UPDATE milestones SET status = 'in_progress' WHERE id = ${next.id}`;
+      nextMilestoneId = next.id;
+    }
+
+    // 4. Recalculate roadmap completion_percent
+    const totalRow = await db.queryRow`SELECT COUNT(*) as cnt FROM milestones WHERE roadmap_id = ${ms.roadmap_id}`;
+    const doneRow  = await db.queryRow`SELECT COUNT(*) as cnt FROM milestones WHERE roadmap_id = ${ms.roadmap_id} AND status = 'completed'`;
+    const pct = totalRow && doneRow ? Math.round((Number(doneRow.cnt) / Number(totalRow.cnt)) * 100) : 0;
+    await db.exec`UPDATE roadmaps SET completion_percent = ${pct} WHERE id = ${ms.roadmap_id}`;
+
+    return { success: true, nextMilestoneId };
+  }
+);
+
 export interface GenerateRoadmapParams {
   userId: string;
   targetRole: string;
