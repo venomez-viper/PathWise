@@ -44,6 +44,8 @@
   margin-bottom: var(--spacing-8);
   position: relative;
   z-index: 1;
+  width: 100%;
+  max-width: 420px;
 }
 
 .auth-logo {
@@ -61,6 +63,7 @@
 
 .auth-card {
   width: 100%;
+  max-width: 420px;
   background-color: var(--surface-container-lowest);
   border-radius: var(--radius-xl);
   padding: var(--spacing-6);

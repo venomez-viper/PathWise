@@ -11,12 +11,14 @@ export default function Dashboard() {
   const [data, setData] = useState<{
     roadmapPct: number;
     targetRole: string;
+    hasAssessment: boolean;
     careerMatches: { title: string; matchScore: number; description: string }[];
     recentTasks: { id: string; title: string; status: string; priority: string }[];
     stats: { tasksFinished: number; tasksTotal: number; jobReadinessScore: number };
   }>({
     roadmapPct: 0,
     targetRole: '—',
+    hasAssessment: false,
     careerMatches: [],
     recentTasks: [],
     stats: { tasksFinished: 0, tasksTotal: 0, jobReadinessScore: 0 },
@@ -37,10 +39,9 @@ export default function Dashboard() {
 
         if (cancelled) return;
 
-        const careerMatches =
-          assessRes.status === 'fulfilled'
-            ? (assessRes.value as any).result?.careerMatches ?? []
-            : [];
+        const assessResult = assessRes.status === 'fulfilled' ? (assessRes.value as any).result : null;
+        const careerMatches = assessResult?.careerMatches ?? [];
+        const hasAssessment = !!assessResult;
 
         const roadmapData = roadmapRes.status === 'fulfilled' ? (roadmapRes.value as any).roadmap : null;
         const taskList    = tasksRes.status === 'fulfilled'   ? (tasksRes.value as any).tasks ?? [] : [];
@@ -49,6 +50,7 @@ export default function Dashboard() {
         setData({
           roadmapPct:    roadmapData?.completionPercent ?? 0,
           targetRole:    roadmapData?.targetRole ?? '—',
+          hasAssessment,
           careerMatches: careerMatches.slice(0, 3),
           recentTasks:   taskList.slice(0, 3),
           stats: {
@@ -66,7 +68,7 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const { roadmapPct, targetRole, careerMatches, recentTasks, stats } = data;
+  const { roadmapPct, targetRole, hasAssessment, careerMatches, recentTasks, stats } = data;
   const taskDonePct = stats.tasksTotal > 0 ? (stats.tasksFinished / stats.tasksTotal) * 100 : 0;
 
   const MATCH_COLORS = ['#a78bfa', '#5ef6e6', '#f59e0b'];
@@ -82,6 +84,18 @@ export default function Dashboard() {
           View Roadmap <ArrowRight size={15} />
         </Link>
       </div>
+
+      {!loading && !hasAssessment && (
+        <div className="panel panel--cta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, rgba(167,139,250,0.12), rgba(94,246,230,0.06))', border: '1px solid rgba(167,139,250,0.25)' }}>
+          <div>
+            <p style={{ fontWeight: 700, color: 'var(--on-surface)', marginBottom: 4 }}>Take the Career Assessment</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>AI-analyse your strengths and get your top 3 career matches.</p>
+          </div>
+          <Link to="/app/assessment" className="btn-page-action" style={{ whiteSpace: 'nowrap' }}>
+            Start <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
 
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
@@ -138,7 +152,7 @@ export default function Dashboard() {
               {careerMatches.length === 0 ? (
                 <div style={{ padding: '2rem 0', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.875rem' }}>
                   <p>No assessment yet.</p>
-                  <Link to="/app/onboarding" className="panel-link" style={{ marginTop: '8px' }}>Complete your assessment <ArrowRight size={13} /></Link>
+                  <Link to="/app/assessment" className="panel-link" style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>Take the assessment <ArrowRight size={13} /></Link>
                 </div>
               ) : (
                 <div className="matches-list">

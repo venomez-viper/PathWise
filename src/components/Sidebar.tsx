@@ -1,15 +1,16 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList } from 'lucide-react';
 import Logo from './ui/Logo';
 import { tokenStore } from '../lib/api';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
-  { to: '/app',          icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { to: '/app/roadmap',  icon: Compass,         label: 'Roadmap'              },
-  { to: '/app/tasks',    icon: CheckSquare,     label: 'Tasks'                },
-  { to: '/app/progress', icon: BarChart2,       label: 'Progress'             },
-  { to: '/app/settings', icon: Settings,        label: 'Settings'             },
+  { to: '/app',             icon: LayoutDashboard, label: 'Dashboard',  end: true },
+  { to: '/app/assessment',  icon: ClipboardList,   label: 'Assessment'           },
+  { to: '/app/roadmap',     icon: Compass,         label: 'Roadmap'              },
+  { to: '/app/tasks',       icon: CheckSquare,     label: 'Tasks'                },
+  { to: '/app/progress',    icon: BarChart2,       label: 'Progress'             },
+  { to: '/app/settings',    icon: Settings,        label: 'Settings'             },
 ];
 
 interface SidebarProps {

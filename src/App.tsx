@@ -18,6 +18,7 @@ import Tasks        from './pages/Tasks';
 import Progress     from './pages/Progress';
 import SettingsPage from './pages/Settings';
 import Onboarding   from './pages/Onboarding';
+import Assessment   from './pages/Assessment';
 import SignIn       from './pages/SignIn';
 import SignUp       from './pages/SignUp';
 import './App.css';
@@ -91,7 +92,8 @@ export default function App() {
             <Route path="tasks"      element={<Tasks />} />
             <Route path="progress"   element={<Progress />} />
             <Route path="settings"   element={<SettingsPage />} />
-            <Route path="onboarding" element={<Onboarding />} />
+            <Route path="onboarding"  element={<Onboarding />} />
+            <Route path="assessment"  element={<Assessment />} />
           </Route>
         </Routes>
       </AuthProvider>
