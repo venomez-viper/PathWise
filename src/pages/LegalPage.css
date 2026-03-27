@@ -1,0 +1,104 @@
+.legal-page {
+  min-height: 100vh;
+  padding-top: 7rem;
+  padding-bottom: 0;
+  background: var(--surface);
+  position: relative;
+}
+
+.legal-page__bg {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 340px;
+  background:
+    radial-gradient(circle at top center, rgba(167, 139, 250, 0.15), transparent 40%),
+    linear-gradient(180deg, var(--hero-bg-start) 0%, var(--surface) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.legal-page__container {
+  position: relative;
+  z-index: 1;
+}
+
+.legal-hero {
+  text-align: center;
+  padding: var(--spacing-8) 0 var(--spacing-12);
+}
+
+.legal-hero__title {
+  color: #fff;
+  margin: var(--spacing-3) auto var(--spacing-4);
+}
+
+.legal-hero__summary {
+  max-width: 760px;
+  margin: 0 auto;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.02rem;
+  line-height: 1.75;
+}
+
+.legal-hero__updated {
+  margin-top: var(--spacing-4);
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.legal-card {
+  max-width: 920px;
+  margin: 0 auto var(--spacing-16);
+  padding: var(--spacing-8);
+  border-top: 4px solid var(--primary);
+}
+
+.legal-card:hover {
+  transform: none;
+}
+
+.legal-section + .legal-section {
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-8);
+  border-top: 1px solid rgba(73, 69, 79, 0.1);
+}
+
+.legal-section__title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  margin-bottom: var(--spacing-4);
+  letter-spacing: -0.02em;
+}
+
+.legal-section__text {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--on-surface-variant);
+  max-width: 760px;
+}
+
+.legal-section__text + .legal-section__text {
+  margin-top: var(--spacing-4);
+}
+
+.legal-note {
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid rgba(73, 69, 79, 0.1);
+  color: var(--on-surface-muted);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 700px) {
+  .legal-page {
+    padding-top: 6rem;
+  }
+
+  .legal-card {
+    padding: var(--spacing-6);
+  }
+}

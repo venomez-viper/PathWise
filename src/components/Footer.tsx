@@ -8,6 +8,9 @@ const ROUTE_MAP: Record<string, string> = {
   'Pricing': '/pricing',
   'Early Access': '/signup',
   'Blog': '/blog',
+  'Privacy Policy': '/privacy-policy',
+  'Terms of Service': '/terms-of-service',
+  'Cookie Policy': '/cookie-policy',
 };
 
 const LINKS = {
@@ -25,12 +28,15 @@ export default function Footer() {
             <Logo size={36} />
           </div>
           <p className="footer__tagline">
-            "Your career is too important to leave to chance."<br />
-            AI-Powered Career Orientation & Professional Direction.
+            "Your career is too important to leave to chance."
+            <br />
+            AI-Powered Career Orientation &amp; Professional Direction.
           </p>
           <div className="footer__social">
             {['𝕏', 'in', '▶'].map((icon, i) => (
-              <a key={i} href="#" className="footer__social-link">{icon}</a>
+              <a key={i} href="#" className="footer__social-link">
+                {icon}
+              </a>
             ))}
           </div>
         </div>
@@ -44,7 +50,9 @@ export default function Footer() {
                 return (
                   <li key={i}>
                     {route ? (
-                      <Link to={route} className="footer__link">{item}</Link>
+                      <Link to={route} className="footer__link">
+                        {item}
+                      </Link>
                     ) : (
                       <span className="footer__link">{item}</span>
                     )}
