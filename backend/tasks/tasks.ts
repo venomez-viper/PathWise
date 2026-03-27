@@ -252,3 +252,88 @@ Requirements:
     return { tasks: createdTasks };
   }
 );
+
+export interface CustomGenerateTasksParams {
+  userId: string;
+  prompt: string;           // user's free-text description
+  targetRole?: string;
+  milestoneId?: string;
+  count?: number;           // how many tasks to generate (default 4)
+}
+
+// POST /tasks/custom-generate
+export const customGenerateTasks = api(
+  { expose: true, method: "POST", path: "/tasks/custom-generate" },
+  async (params: CustomGenerateTasksParams): Promise<{ tasks: Task[] }> => {
+    const client = new Anthropic({ apiKey: anthropicKey() });
+    const count = params.count ?? 4;
+
+    const prompt = `You are an expert career coach. The user wants help with: "${params.prompt}"
+${params.targetRole ? `Their target role is: ${params.targetRole}` : ''}
+
+Generate exactly ${count} specific, actionable tasks based on what they asked for.
+
+Respond with ONLY a valid JSON array:
+[
+  {
+    "title": "Specific task title (max 80 chars)",
+    "description": "Exactly what to do and the expected outcome (1-2 sentences)",
+    "priority": "high",
+    "category": "learning"
+  }
+]
+
+Categories: learning, portfolio, networking, interview_prep, research
+Priorities: high, medium, low
+Make each task concrete and completable within 1-3 days. No vague tasks.`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 800,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = message.content[0];
+    if (content.type !== "text") throw new Error("Unexpected AI response");
+
+    const jsonMatch = content.text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error("Could not parse AI tasks");
+
+    const aiTasks: { title: string; description: string; priority: string; category: string }[] =
+      JSON.parse(jsonMatch[0]);
+
+    const now = new Date().toISOString();
+    const createdTasks: Task[] = [];
+
+    for (const t of aiTasks.slice(0, count)) {
+      const id = crypto.randomUUID();
+      const priority = (["low", "medium", "high"].includes(t.priority) ? t.priority : "medium") as Task["priority"];
+      const category = t.category ?? "learning";
+
+      await db.exec`
+        INSERT INTO tasks (id, user_id, milestone_id, title, description, status, priority,
+                           category, due_date, ai_generated, created_at)
+        VALUES (
+          ${id}, ${params.userId}, ${params.milestoneId ?? null},
+          ${t.title}, ${t.description ?? null},
+          'todo', ${priority}, ${category},
+          null, true, ${now}
+        )
+      `;
+
+      createdTasks.push({
+        id,
+        userId: params.userId,
+        milestoneId: params.milestoneId,
+        title: t.title,
+        description: t.description,
+        status: "todo",
+        priority,
+        category,
+        createdAt: now,
+      });
+    }
+
+    return { tasks: createdTasks };
+  }
+);

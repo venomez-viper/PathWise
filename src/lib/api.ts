@@ -79,6 +79,8 @@ export const tasks = {
     request(`/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(data) }),
   aiGenerate: (data: unknown) =>
     request('/tasks/ai-generate', { method: 'POST', body: JSON.stringify(data) }),
+  customGenerate: (data: unknown) =>
+    request('/tasks/custom-generate', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // --- Progress ---

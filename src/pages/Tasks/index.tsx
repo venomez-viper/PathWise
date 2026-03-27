@@ -77,6 +77,14 @@ export default function Tasks() {
   const [newTaskMilestoneId, setNewTaskMilestoneId] = useState('');
   const [addingLoading, setAddingLoading] = useState(false);
 
+  // AI panel
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiMilestoneId, setAiMilestoneId] = useState('');
+  const [aiCount, setAiCount] = useState(4);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+
   // Mark all
   const [markingAll, setMarkingAll] = useState(false);
 
@@ -96,7 +104,7 @@ export default function Tasks() {
       setMilestones(fetchedMilestones);
       // Default new task milestone to the current in_progress one
       const active = fetchedMilestones.find((m: Milestone) => m.status === 'in_progress');
-      if (active) setNewTaskMilestoneId(active.id);
+      if (active) { setNewTaskMilestoneId(active.id); setAiMilestoneId(active.id); }
     } finally {
       setLoading(false);
     }
@@ -186,7 +194,30 @@ export default function Tasks() {
     setNewTaskCategory('');
     // restore default milestone to active one
     const active = milestones.find(m => m.status === 'in_progress');
-    if (active) setNewTaskMilestoneId(active.id);
+    if (active) { setNewTaskMilestoneId(active.id); setAiMilestoneId(active.id); }
+  };
+
+  /* ── Generate AI tasks from free-text prompt ── */
+  const generateAiTasks = async () => {
+    if (!aiPrompt.trim() || !user) return;
+    setAiLoading(true);
+    setAiError('');
+    try {
+      const res = await tasksApi.customGenerate({
+        userId: user.id,
+        prompt: aiPrompt.trim(),
+        milestoneId: aiMilestoneId || undefined,
+        count: aiCount,
+        targetRole: milestones.find(m => m.status === 'in_progress')?.title,
+      }) as { tasks: Task[] };
+      setTaskList(prev => [...prev, ...res.tasks]);
+      setAiPrompt('');
+      setAiPanelOpen(false);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Generation failed. Try again.');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   /* ================================================================
@@ -251,6 +282,14 @@ export default function Tasks() {
               List
             </button>
           </div>
+          <button
+            className="btn-page-secondary"
+            onClick={() => setAiPanelOpen(v => !v)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          >
+            <Sparkles size={14} />
+            {aiPanelOpen ? 'Close AI' : 'Generate with AI'}
+          </button>
           <button className="btn-page-action" onClick={() => setAddingTask(true)}>
             <Plus size={14} /> Add Task
           </button>
@@ -280,6 +319,128 @@ export default function Tasks() {
           </div>
         </div>
       </div>
+
+      {/* ── AI Generation Panel ── */}
+      {aiPanelOpen && (
+        <div className="panel" style={{ marginBottom: '1rem', padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1rem' }}>
+            <Sparkles size={16} color="#a78bfa" />
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
+              Generate Tasks with AI
+            </h3>
+          </div>
+
+          <textarea
+            value={aiPrompt}
+            onChange={e => setAiPrompt(e.target.value)}
+            placeholder='Describe what you need help with... e.g. "prepare me for a Google interview", "learn React hooks", "build a portfolio project with Python"'
+            rows={3}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1.5px solid var(--outline-variant)',
+              borderRadius: '12px',
+              background: 'var(--surface-container-low)',
+              color: 'var(--on-surface)',
+              fontSize: '0.9rem',
+              fontFamily: 'var(--font-body)',
+              resize: 'vertical',
+              outline: 'none',
+              boxSizing: 'border-box',
+              marginBottom: '0.75rem',
+              lineHeight: 1.5,
+            }}
+            onFocus={e => { e.target.style.borderColor = 'rgba(167,139,250,0.5)'; }}
+            onBlur={e => { e.target.style.borderColor = 'var(--outline-variant)'; }}
+            autoFocus
+          />
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            {/* Count selector */}
+            <select
+              value={aiCount}
+              onChange={e => setAiCount(Number(e.target.value))}
+              className="kanban-add-form__select"
+              aria-label="Number of tasks"
+            >
+              <option value={2}>2 tasks</option>
+              <option value={4}>4 tasks</option>
+              <option value={6}>6 tasks</option>
+            </select>
+
+            {/* Milestone selector */}
+            {milestones.length > 0 && (
+              <select
+                value={aiMilestoneId}
+                onChange={e => setAiMilestoneId(e.target.value)}
+                className="kanban-add-form__select"
+                style={{ flex: 1, minWidth: 160 }}
+                aria-label="Link to milestone"
+              >
+                <option value="">No milestone</option>
+                {milestones.map(m => (
+                  <option key={m.id} value={m.id} disabled={m.status === 'locked'}>
+                    {m.status === 'in_progress' ? '▶ ' : m.status === 'completed' ? '✓ ' : '🔒 '}
+                    {m.title}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+              <button
+                className="kanban-cancel-btn"
+                onClick={() => { setAiPanelOpen(false); setAiPrompt(''); setAiError(''); }}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-page-action"
+                onClick={generateAiTasks}
+                disabled={aiLoading || !aiPrompt.trim()}
+                style={{ opacity: (aiLoading || !aiPrompt.trim()) ? 0.6 : 1 }}
+                type="button"
+              >
+                {aiLoading
+                  ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Generating...</>
+                  : <><Sparkles size={14} /> Generate</>
+                }
+              </button>
+            </div>
+          </div>
+
+          {aiError && (
+            <p style={{ fontSize: '0.8rem', color: '#ef4444', marginTop: 8, margin: '8px 0 0' }}>{aiError}</p>
+          )}
+
+          {/* Prompt suggestions */}
+          <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {[
+              'Prepare for a technical interview',
+              'Build a portfolio project',
+              'Learn the top skills for my role',
+              'Practice networking outreach',
+              'Prepare my resume and LinkedIn',
+            ].map(suggestion => (
+              <button
+                key={suggestion}
+                onClick={() => setAiPrompt(suggestion)}
+                style={{
+                  fontSize: '0.75rem', padding: '3px 10px',
+                  borderRadius: 999, border: '1px solid var(--outline-variant)',
+                  background: 'var(--surface-container-low)',
+                  color: 'var(--on-surface-variant)',
+                  cursor: 'pointer', transition: 'background 0.15s',
+                }}
+                type="button"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Loading skeleton ── */}
       {loading && (
