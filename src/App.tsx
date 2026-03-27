@@ -24,6 +24,16 @@ import SignIn       from './pages/SignIn';
 import SignUp       from './pages/SignUp';
 import './App.css';
 
+function NotFound() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0f0b1e', color: '#fff', gap: '1rem' }}>
+      <h1 style={{ fontSize: '4rem', fontWeight: 900, color: '#a78bfa', margin: 0 }}>404</h1>
+      <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>Page not found.</p>
+      <a href="/" style={{ color: '#a78bfa', fontSize: '0.9rem' }}>← Back to home</a>
+    </div>
+  );
+}
+
 function MarketingLayout() {
   return (
     <div className="marketing-root">
@@ -104,6 +114,9 @@ export default function App() {
             <Route path="onboarding"  element={<Onboarding />} />
             <Route path="assessment"  element={<Assessment />} />
           </Route>
+
+          {/* ── 404 catch-all ── */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

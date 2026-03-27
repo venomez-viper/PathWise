@@ -87,9 +87,6 @@ export default function SignIn() {
             </div>
           </div>
 
-          <div className="auth-forgot-row">
-            <Link to="/forgot-password" className="auth-link-sm">Forgot password?</Link>
-          </div>
 
           <button type="submit" className="btn-auth-primary" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign In'}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CheckCircle2, Plus, Sparkles, Loader2 } from 'lucide-react';
+import { CheckCircle2, Plus, Sparkles, Loader2, X } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi } from '../../lib/api';
 
@@ -10,6 +10,10 @@ export default function Tasks() {
   const [taskList, setTaskList] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'todo' | 'done'>('all');
+  const [addingTask, setAddingTask] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [addingLoading, setAddingLoading] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -22,6 +26,33 @@ export default function Tasks() {
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+
+  const addTask = async () => {
+    if (!newTaskTitle.trim() || !user) return;
+    setAddingLoading(true);
+    try {
+      const res: any = await tasksApi.create({ userId: user.id, title: newTaskTitle.trim(), status: 'todo', priority: 'medium' });
+      setTaskList(p => [...p, res.task]);
+      setNewTaskTitle('');
+      setAddingTask(false);
+    } catch {
+      // keep form open on error
+    } finally {
+      setAddingLoading(false);
+    }
+  };
+
+  const markAllComplete = async () => {
+    if (markingAll) return;
+    const pending = taskList.filter(t => t.status !== 'done');
+    if (pending.length === 0) return;
+    setMarkingAll(true);
+    try {
+      await Promise.all(pending.map(t => toggle(t)));
+    } finally {
+      setMarkingAll(false);
+    }
+  };
 
   const toggle = async (task: Task) => {
     const newStatus = task.status === 'done' ? 'todo' : 'done';
@@ -44,7 +75,7 @@ export default function Tasks() {
           <h1 className="page-title">Tasks</h1>
           <p className="page-subtitle">Stay on track with your career priorities.</p>
         </div>
-        <button className="btn-page-action"><Plus size={14} /> Add Task</button>
+        <button className="btn-page-action" onClick={() => setAddingTask(true)}><Plus size={14} /> Add Task</button>
       </div>
 
       <div className="tasks-layout">
@@ -58,6 +89,27 @@ export default function Tasks() {
               <div className="stat-tile__fill" style={{ width: total > 0 ? `${(done / total) * 100}%` : '0%', background: 'var(--primary)', transition: 'width 0.6s ease' }} />
             </div>
           </div>
+
+          {addingTask && (
+            <div className="panel" style={{ padding: '1rem 1.25rem', display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input
+                type="text"
+                className="settings-input"
+                placeholder="Task title..."
+                value={newTaskTitle}
+                onChange={e => setNewTaskTitle(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') addTask(); if (e.key === 'Escape') { setAddingTask(false); setNewTaskTitle(''); } }}
+                autoFocus
+                style={{ flex: 1 }}
+              />
+              <button className="btn-page-action" onClick={addTask} disabled={addingLoading || !newTaskTitle.trim()}>
+                {addingLoading ? <Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> : 'Add'}
+              </button>
+              <button className="btn-icon" onClick={() => { setAddingTask(false); setNewTaskTitle(''); }} aria-label="Cancel">
+                <X size={16} />
+              </button>
+            </div>
+          )}
 
           <div className="tab-bar">
             {(['all', 'todo', 'done'] as const).map(f => (
@@ -100,9 +152,12 @@ export default function Tasks() {
             </div>
           )}
 
-          {total > 0 && (
-            <button className="btn-complete-all" onClick={() => Promise.all(taskList.filter(t => t.status !== 'done').map(t => toggle(t)))}>
-              <Sparkles size={15} /> Mark All Complete
+          {total > 0 && taskList.some(t => t.status !== 'done') && (
+            <button className="btn-complete-all" onClick={markAllComplete} disabled={markingAll}>
+              {markingAll
+                ? <><Loader2 size={15} style={{ animation: 'spin 0.8s linear infinite' }} /> Completing…</>
+                : <><Sparkles size={15} /> Mark All Complete</>
+              }
             </button>
           )}
         </div>

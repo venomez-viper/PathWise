@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList } from 'lucide-react';
 import Logo from './ui/Logo';
 import { tokenStore } from '../lib/api';
@@ -52,13 +52,13 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
       </nav>
 
       {user.plan === 'free' && (
-        <div className="sidebar__upgrade">
+        <Link to="/pricing" className="sidebar__upgrade" onClick={onClose}>
           <Sparkles size={14} />
           <div>
             <p className="sidebar__upgrade-title">Upgrade to Pro</p>
             <p className="sidebar__upgrade-sub">Unlock AI coaching & more</p>
           </div>
-        </div>
+        </Link>
       )}
 
       <div className="sidebar__footer">

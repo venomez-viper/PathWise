@@ -60,7 +60,9 @@ export const getAssessment = api(
   }
 );
 
-export interface QuestionnaireAnswers {
+// Flat params — compatible with deployed staging API (no nested `answers`)
+export interface SubmitAssessmentParams {
+  userId: string;
   workStyle: string;
   strengths: string[];
   values: string[];
@@ -68,26 +70,22 @@ export interface QuestionnaireAnswers {
   experienceLevel: string;
   interests: string[];
   currentRole?: string;
+  personalityType?: string; // accepted for backward compat but we derive our own
 }
 
-export interface SubmitAssessmentParams {
-  userId: string;
-  answers: QuestionnaireAnswers;
-}
-
-async function analyzeWithClaude(answers: QuestionnaireAnswers): Promise<{ careerMatches: CareerMatch[]; skillGaps: SkillGap[] }> {
+async function analyzeWithClaude(p: SubmitAssessmentParams): Promise<{ careerMatches: CareerMatch[]; skillGaps: SkillGap[] }> {
   const client = new Anthropic({ apiKey: anthropicKey() });
 
   const prompt = `You are an expert career counselor and labor market analyst. Analyze these career assessment answers and recommend the best career paths.
 
 Assessment:
-- Work style: ${answers.workStyle}
-- Top strengths: ${answers.strengths.join(", ")}
-- Core values: ${answers.values.join(", ")}
-- Current skills: ${answers.currentSkills.join(", ") || "None specified"}
-- Experience level: ${answers.experienceLevel}
-- Interests/domains: ${answers.interests.join(", ")}
-${answers.currentRole ? `- Current role: ${answers.currentRole}` : ""}
+- Work style: ${p.workStyle}
+- Top strengths: ${p.strengths.join(", ")}
+- Core values: ${p.values.join(", ")}
+- Current skills: ${p.currentSkills.join(", ") || "None specified"}
+- Experience level: ${p.experienceLevel}
+- Interests/domains: ${p.interests.join(", ")}
+${p.currentRole ? `- Current role: ${p.currentRole}` : ""}
 
 Respond with ONLY a valid JSON object (no markdown, no explanation):
 {
@@ -131,26 +129,24 @@ export const submitAssessment = api(
   { expose: true, method: "POST", path: "/assessment" },
   async (params: SubmitAssessmentParams): Promise<GetAssessmentResponse> => {
     const now = new Date().toISOString();
-    const { answers } = params;
 
-    const aiResult = await analyzeWithClaude(answers);
+    const aiResult = await analyzeWithClaude(params);
     const { careerMatches, skillGaps } = aiResult;
 
-    // Derive personalityType from work style + strengths for backward compat
-    const personalityType = `${answers.workStyle}-${answers.experienceLevel}`;
+    const personalityType = `${params.workStyle}-${params.experienceLevel}`;
 
     await db.exec`
       INSERT INTO assessments (user_id, completed_at, strengths, values, personality_type,
                                career_matches, raw_answers, skill_gaps, current_skills)
       VALUES (
         ${params.userId}, ${now},
-        ${JSON.stringify(answers.strengths)},
-        ${JSON.stringify(answers.values)},
+        ${JSON.stringify(params.strengths)},
+        ${JSON.stringify(params.values)},
         ${personalityType},
         ${JSON.stringify(careerMatches)},
-        ${JSON.stringify(answers)},
+        ${JSON.stringify(params)},
         ${JSON.stringify(skillGaps)},
-        ${JSON.stringify(answers.currentSkills)}
+        ${JSON.stringify(params.currentSkills)}
       )
       ON CONFLICT (user_id) DO UPDATE SET
         completed_at     = excluded.completed_at,
@@ -167,9 +163,9 @@ export const submitAssessment = api(
       result: {
         userId: params.userId,
         completedAt: now,
-        strengths: answers.strengths,
-        values: answers.values,
-        currentSkills: answers.currentSkills,
+        strengths: params.strengths,
+        values: params.values,
+        currentSkills: params.currentSkills,
         personalityType,
         careerMatches,
         skillGaps,

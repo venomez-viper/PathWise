@@ -33,7 +33,7 @@ export default function Onboarding() {
     setGenerating(true);
     setError('');
     try {
-      await roadmap.generate({ userId: user.id, targetRole: targetRole.trim() });
+      await roadmap.generate({ userId: user.id, targetRole: targetRole.trim(), timeline });
       setTimeout(() => navigate('/app', { replace: true }), 1000);
     } catch (err: unknown) {
       setGenerating(false);

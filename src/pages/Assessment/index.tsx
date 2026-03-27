@@ -82,22 +82,21 @@ export default function Assessment() {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user) { setError('You must be signed in to submit the assessment.'); return; }
     setStep(5);
     setLoading(true);
     setError('');
     try {
       const res: any = await assessmentApi.submit({
         userId: user.id,
-        answers: {
-          workStyle,
-          strengths,
-          values,
-          currentSkills,
-          experienceLevel,
-          interests,
-          currentRole: currentRole.trim() || undefined,
-        },
+        workStyle,
+        strengths,
+        values,
+        currentSkills,
+        experienceLevel,
+        interests,
+        currentRole: currentRole.trim() || undefined,
+        personalityType: workStyle,
       });
       setResult(res.result);
       setLoading(false);
@@ -109,7 +108,7 @@ export default function Assessment() {
     }
   };
 
-  const pct = Math.round(((step) / TOTAL_STEPS) * 100);
+  const pct = Math.round((step / (TOTAL_STEPS - 1)) * 100);
 
   return (
     <div className="assessment">
