@@ -10,6 +10,7 @@ import HowItWorksPage  from './pages/HowItWorksPage';
 import SolutionPage    from './pages/SolutionPage';
 import PricingPage     from './pages/PricingPage';
 import BlogPage        from './pages/BlogPage';
+import BlogArticlePage from './pages/BlogArticlePage';
 import LegalPage       from './pages/LegalPage';
 
 // Webapp components
@@ -98,6 +99,7 @@ export default function App() {
             <Route path="/solution"     element={<SolutionPage />} />
             <Route path="/pricing"      element={<PricingPage />} />
             <Route path="/blog"         element={<BlogPage />} />
+            <Route path="/blog/:slug"   element={<BlogArticlePage />} />
             <Route path="/privacy-policy" element={<LegalPage docKey="privacy" />} />
             <Route path="/terms-of-service" element={<LegalPage docKey="terms" />} />
             <Route path="/cookie-policy" element={<LegalPage docKey="cookies" />} />

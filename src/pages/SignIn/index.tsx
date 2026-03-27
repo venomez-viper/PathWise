@@ -4,6 +4,14 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { auth, tokenStore } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 
+type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+  plan: 'free' | 'premium';
+};
+
 export default function SignIn() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -22,7 +30,7 @@ export default function SignIn() {
     try {
       const res = await auth.signin({ email: form.email, password: form.password });
       tokenStore.set(res.token);
-      login(res.user as any);
+      login(res.user as AuthUser);
       navigate('/app');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');

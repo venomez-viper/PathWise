@@ -4,6 +4,14 @@ import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { auth, tokenStore } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 
+type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+  plan: 'free' | 'premium';
+};
+
 export default function SignUp() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -26,7 +34,7 @@ export default function SignUp() {
     try {
       const res = await auth.signup({ name: form.name, email: form.email, password: form.password });
       tokenStore.set(res.token);
-      login(res.user as any);
+      login(res.user as AuthUser);
       navigate('/app/onboarding');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');
@@ -132,8 +140,8 @@ export default function SignUp() {
 
         <p className="auth-terms">
           By signing up you agree to our{' '}
-          <span className="auth-link-bold">Terms</span> and{' '}
-          <span className="auth-link-bold">Privacy Policy</span>.
+          <Link to="/terms-of-service" className="auth-link-bold">Terms of Service</Link> and{' '}
+          <Link to="/privacy-policy" className="auth-link-bold">Privacy Policy</Link>.
         </p>
 
         <p className="auth-switch">

@@ -1,32 +1,22 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import { BLOG_ARTICLES, BLOG_CATEGORIES } from './blogData';
 import './Blog.css';
 
 export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [activeArticleId, setActiveArticleId] = useState(BLOG_ARTICLES[0].id);
-  const readerRef = useRef<HTMLElement | null>(null);
 
   const filteredArticles =
     activeCategory === 'All'
       ? BLOG_ARTICLES
       : BLOG_ARTICLES.filter((article) => article.category === activeCategory);
 
-  const activeArticle =
-    filteredArticles.find((article) => article.id === activeArticleId) ??
-    filteredArticles[0] ??
-    BLOG_ARTICLES[0];
-
   const featuredArticle = BLOG_ARTICLES.find((article) => article.featured) ?? BLOG_ARTICLES[0];
-  const gridArticles = filteredArticles.filter((article) => article.id !== activeArticle.id);
-
-  const openArticle = (articleId: number) => {
-    setActiveArticleId(articleId);
-    window.requestAnimationFrame(() => {
-      readerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  };
+  const gridArticles =
+    activeCategory === 'All'
+      ? filteredArticles.filter((article) => article.id !== featuredArticle.id)
+      : filteredArticles;
 
   return (
     <>
@@ -60,13 +50,9 @@ export default function BlogPage() {
                   <span>/</span>
                   <span>{featuredArticle.readTime}</span>
                 </div>
-                <button
-                  className="btn btn-primary blog-featured__cta"
-                  onClick={() => openArticle(featuredArticle.id)}
-                  type="button"
-                >
+                <Link className="btn btn-primary blog-featured__cta" to={`/blog/${featuredArticle.slug}`}>
                   Read featured article
-                </button>
+                </Link>
               </div>
               <div className="blog-featured__media">
                 <img
@@ -91,81 +77,6 @@ export default function BlogPage() {
             ))}
           </div>
 
-          <article
-            className="blog-reader card"
-            ref={readerRef}
-            style={{ '--blog-accent': activeArticle.accent } as CSSProperties}
-          >
-            <div className="blog-reader__intro">
-              <div className="blog-reader__eyebrow">
-                <span className="blog-post__cat">{activeArticle.category}</span>
-                <span className="blog-reader__eyebrow-line" />
-              </div>
-              <h2 className="blog-reader__title">{activeArticle.title}</h2>
-              <div className="blog-post__meta">
-                <span>{activeArticle.author}</span>
-                <span>/</span>
-                <span>{activeArticle.date}</span>
-                <span>/</span>
-                <span>{activeArticle.readTime}</span>
-              </div>
-            </div>
-
-            <figure className="blog-reader__figure">
-              <img
-                src={activeArticle.image.src}
-                alt={activeArticle.image.alt}
-                className="blog-reader__image"
-              />
-              <figcaption className="blog-reader__caption">
-                <a href={activeArticle.image.creditHref} target="_blank" rel="noreferrer">
-                  {activeArticle.image.credit}
-                </a>
-              </figcaption>
-            </figure>
-
-            <div className="blog-reader__body">
-              {activeArticle.intro.map((paragraph) => (
-                <p key={paragraph} className="blog-reader__lead">
-                  {paragraph}
-                </p>
-              ))}
-
-              {activeArticle.sections.map((section) => (
-                <div key={section.heading} className="blog-reader__section">
-                  <h3 className="blog-reader__section-title">{section.heading}</h3>
-                  {section.paragraphs.map((paragraph) => (
-                    <p key={paragraph}>{paragraph}</p>
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            <div className="blog-reader__footer">
-              <div className="blog-reader__takeaways">
-                <h3>What to keep in mind</h3>
-                <ul>
-                  {activeArticle.takeaways.map((takeaway) => (
-                    <li key={takeaway}>{takeaway}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="blog-reader__references">
-                <h3>References and further reading</h3>
-                <ol>
-                  {activeArticle.references.map((reference) => (
-                    <li key={reference.href}>
-                      <a href={reference.href} target="_blank" rel="noreferrer">
-                        {reference.label}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-          </article>
-
           <div className="blog-grid">
             {gridArticles.map((article) => (
               <article key={article.id} className="blog-card card">
@@ -180,20 +91,20 @@ export default function BlogPage() {
                 <span className="blog-post__cat" style={{ color: article.accent }}>
                   {article.category}
                 </span>
-                <h3 className="blog-card__title">{article.title}</h3>
+                <h3 className="blog-card__title">
+                  <Link to={`/blog/${article.slug}`} className="blog-card__title-link">
+                    {article.title}
+                  </Link>
+                </h3>
                 <p className="blog-card__excerpt">{article.excerpt}</p>
                 <div className="blog-post__meta">
                   <span>{article.date}</span>
                   <span>/</span>
                   <span>{article.readTime}</span>
                 </div>
-                <button
-                  className="blog-card__link"
-                  onClick={() => openArticle(article.id)}
-                  type="button"
-                >
+                <Link className="blog-card__link" to={`/blog/${article.slug}`}>
                   Read this article
-                </button>
+                </Link>
               </article>
             ))}
           </div>

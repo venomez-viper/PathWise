@@ -17,6 +17,7 @@ export type BlogImage = {
 
 export type BlogArticle = {
   id: number;
+  slug: string;
   category: string;
   title: string;
   excerpt: string;
@@ -35,6 +36,7 @@ export type BlogArticle = {
 export const BLOG_ARTICLES: BlogArticle[] = [
   {
     id: 1,
+    slug: 'how-to-find-your-career-identity-in-5-steps',
     category: 'Career Discovery',
     title: 'How to Find Your Career Identity in 5 Steps',
     excerpt:
@@ -101,6 +103,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
   },
   {
     id: 2,
+    slug: 'the-skill-gap-is-real-heres-how-to-close-it-faster',
     category: 'Skill Development',
     title: "The Skill Gap Is Real. Here's How to Close It Faster",
     excerpt:
@@ -166,6 +169,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
   },
   {
     id: 3,
+    slug: 'career-switching-at-30-what-no-one-tells-you',
     category: 'Career Switching',
     title: 'Career Switching at 30: What No One Tells You',
     excerpt:
@@ -231,6 +235,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
   },
   {
     id: 4,
+    slug: 'your-career-readiness-score-what-it-means-and-how-to-improve-it',
     category: 'Job Readiness',
     title: 'Your Career Readiness Score: What It Means and How to Improve It',
     excerpt:
@@ -296,6 +301,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
   },
   {
     id: 5,
+    slug: 'how-ai-is-changing-career-planning-forever',
     category: 'AI & Careers',
     title: 'How AI Is Changing Career Planning Forever',
     excerpt:
@@ -361,6 +367,7 @@ export const BLOG_ARTICLES: BlogArticle[] = [
   },
   {
     id: 6,
+    slug: 'strategic-networking-quality-over-quantity',
     category: 'Networking',
     title: 'Strategic Networking: Quality Over Quantity',
     excerpt:
@@ -427,3 +434,6 @@ export const BLOG_ARTICLES: BlogArticle[] = [
 ];
 
 export const BLOG_CATEGORIES = ['All', ...new Set(BLOG_ARTICLES.map((article) => article.category))];
+
+export const getBlogArticleBySlug = (slug: string) =>
+  BLOG_ARTICLES.find((article) => article.slug === slug);
