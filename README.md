@@ -2,7 +2,7 @@
 
 Welcome to the **PathWise** repository! 
 
-**[🔗 Live Demo (Vercel)](https://pathwise-mu.vercel.app/)**
+**[🔗 Live Demo](https://pathwise.fit)**
 
 PathWise is a modern SaaS platform designed to be a "Digital Atelier" for one's career. It transcends the traditional "utility app" aesthetic by acting as an Ethereal Mentor—providing aspirational career guidance, tracking roadmap progress, and recommending top career matches based on skills and personality assessments.
 
@@ -86,3 +86,11 @@ To get the project running locally:
 - **Webapp Framework**: Integrated the core webapp dashboard logic into the main repository. Established a dual-layout architecture in `App.tsx` separating the Marketing Site (`/`) from the Authenticated App (`/app`).
 - **Improved Build Pipeline**: Migrated to `@tailwindcss/postcss` for better build performance and compatibility.
 - **Updated Live Url**: [https://pathwise-mu.vercel.app/](https://pathwise-mu.vercel.app/)
+
+### **v0.5.0** — Custom Domain & Live Backend
+*Date: March 27, 2026*
+- **Custom Domain**: Launched on **[pathwise.fit](https://pathwise.fit)** via Porkbun + Vercel DNS configuration.
+- **Live Backend**: Connected Encore backend API to the React frontend via `encore.client.ts`.
+- **Skill Gap Assessment**: New dedicated page with full AI-driven assessment flow.
+- **AI Task Generation**: Custom task creation using free-text prompts on the Tasks page.
+- **Tailwind v4**: Upgraded to the latest Tailwind CSS import syntax for better build performance.
