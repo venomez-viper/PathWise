@@ -323,6 +323,7 @@ export default function Roadmap() {
   const [milestoneTaskMap, setMilestoneTaskMap] = useState<Record<string, Task[]>>({});
   const [completing, setCompleting] = useState<string | null>(null);
   const [generating, setGenerating] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   async function loadData(userId: string, silent = false) {
     if (!silent) setLoading(true);
@@ -367,6 +368,7 @@ export default function Roadmap() {
 
   async function handleGenerateTasks(m: any) {
     if (!user || generating || completing) return;
+    setActionError(null);
     setGenerating(m.id);
     try {
       await tasksApi.aiGenerate({
@@ -378,7 +380,7 @@ export default function Roadmap() {
       });
       await loadData(user.id, true);
     } catch (err) {
-      console.error('Failed to generate tasks', err);
+      setActionError(err instanceof Error ? err.message : 'Failed to generate tasks. Please try again.');
     } finally {
       setGenerating(null);
     }
@@ -386,12 +388,13 @@ export default function Roadmap() {
 
   async function handleComplete(milestoneId: string) {
     if (!user || completing) return;
+    setActionError(null);
     setCompleting(milestoneId);
     try {
       await roadmapApi.completeMilestone(milestoneId);
       await loadData(user.id, true);
     } catch (err) {
-      console.error('Failed to complete milestone', err);
+      setActionError(err instanceof Error ? err.message : 'Failed to mark milestone complete. Please try again.');
     } finally {
       setCompleting(null);
     }
@@ -438,6 +441,19 @@ export default function Roadmap() {
         </div>
         <Link to="/app/onboarding" className="btn-page-secondary"><Pencil size={14} /> Change Role</Link>
       </div>
+
+      {actionError && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1rem',
+          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+          borderRadius: 'var(--radius-xl)', marginBottom: '1rem', color: '#ef4444',
+          fontSize: '0.85rem', fontWeight: 500,
+        }}>
+          <AlertCircle size={16} />
+          {actionError}
+          <button onClick={() => setActionError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>✕</button>
+        </div>
+      )}
 
       <div className="roadmap-grid">
         {/* Left sidebar: progress ring + skill gaps */}
