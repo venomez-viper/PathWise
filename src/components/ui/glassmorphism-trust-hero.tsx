@@ -153,11 +153,11 @@ export default function GlassmorphismTrustHero() {
 
                 <div className="h-px w-full bg-white/10 mb-6" />
 
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-5 gap-0 text-center items-center">
                   <StatItem value="Free" label="To Start" />
-                  <div className="w-px h-full bg-white/10 mx-auto" />
+                  <div className="w-px h-10 bg-white/10 mx-auto" />
                   <StatItem value="AI" label="Powered" />
-                  <div className="w-px h-full bg-white/10 mx-auto" />
+                  <div className="w-px h-10 bg-white/10 mx-auto" />
                   <StatItem value="24/7" label="Guidance" />
                 </div>
 

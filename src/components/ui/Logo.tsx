@@ -32,22 +32,22 @@ export default function Logo({ variant = 'full', size = 32, className, ...props 
           strokeWidth="12" 
           strokeLinecap="round" 
           strokeLinejoin="round"
-          className={variant === 'white' ? "text-white" : "text-[var(--brand-blue)]"}
+          className={variant === 'white' ? "text-white" : "text-[var(--primary-light)]"}
         />
-        <path 
-          d="M35 45L50 65L75 25" 
-          stroke="currentColor" 
-          strokeWidth="12" 
-          strokeLinecap="round" 
+        <path
+          d="M35 45L50 65L75 25"
+          stroke="currentColor"
+          strokeWidth="12"
+          strokeLinecap="round"
           strokeLinejoin="round"
           className={variant === 'white' ? "text-white/80" : "text-[var(--brand-purple)]"}
         />
         {/* Arrow Tip */}
-        <path 
-          d="M75 25L90 10M90 10H70M90 10V30" 
-          stroke="currentColor" 
-          strokeWidth="12" 
-          strokeLinecap="round" 
+        <path
+          d="M75 25L90 10M90 10H70M90 10V30"
+          stroke="currentColor"
+          strokeWidth="12"
+          strokeLinecap="round"
           strokeLinejoin="round"
           className={variant === 'white' ? "text-white" : "text-[var(--accent-orange)]"}
         />
@@ -57,7 +57,7 @@ export default function Logo({ variant = 'full', size = 32, className, ...props 
       {(variant === 'full' || variant === 'white') && (
         <span className={cn(
           "tracking-tight mt-1",
-          variant === 'white' ? "text-white" : "text-[var(--brand-blue)]"
+          variant === 'white' ? "text-white" : "text-white"
         )}>
           pathwise
         </span>

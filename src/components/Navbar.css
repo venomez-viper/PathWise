@@ -136,10 +136,6 @@
 
 @media (max-width: 900px) {
   .navbar__links { display: none; }
-  .navbar__cta-secondary { display: none; }
-}
-
-@media (max-width: 768px) {
-  .navbar__links, .navbar__actions { display: none; }
+  .navbar__actions { display: none; }
   .navbar__hamburger { display: flex; }
 }

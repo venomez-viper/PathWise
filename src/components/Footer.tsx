@@ -1,5 +1,14 @@
+import { Link } from 'react-router-dom';
 import Logo from '@/components/ui/Logo';
 import './Footer.css';
+
+const ROUTE_MAP: Record<string, string> = {
+  'How It Works': '/how-it-works',
+  'Solution': '/solution',
+  'Pricing': '/pricing',
+  'Early Access': '/signup',
+  'Blog': '/blog',
+};
 
 const LINKS = {
   Product: ['How It Works', 'Solution', 'Pricing', 'Early Access'],
@@ -30,9 +39,18 @@ export default function Footer() {
           <div key={category} className="footer__col">
             <h4 className="footer__col-title">{category}</h4>
             <ul className="footer__col-links">
-              {items.map((item, i) => (
-                <li key={i}><a href="#" className="footer__link">{item}</a></li>
-              ))}
+              {items.map((item, i) => {
+                const route = ROUTE_MAP[item];
+                return (
+                  <li key={i}>
+                    {route ? (
+                      <Link to={route} className="footer__link">{item}</Link>
+                    ) : (
+                      <span className="footer__link">{item}</span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

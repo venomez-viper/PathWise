@@ -41,7 +41,7 @@ export default function CTA() {
           <Link to="/signup" className="btn btn-primary btn-lg">
             Create Free Account
           </Link>
-          <Link to="/signin" className="btn btn-outline btn-lg">
+          <Link to="/signin" className="btn btn-secondary btn-lg">
             Sign In
           </Link>
         </div>

@@ -152,6 +152,8 @@ section { padding: var(--section-padding); }
   color: var(--on-surface-variant);
   line-height: 1.7;
   max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ─────────────────────────────────────────────

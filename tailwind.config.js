@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        display: ['Manrope', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
         handwritten: ['Caveat', 'cursive'],
       },
       rotate: {

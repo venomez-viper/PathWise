@@ -47,13 +47,13 @@ function HandWrittenTitle({
             strokeLinecap="round"
             strokeLinejoin="round"
             variants={draw}
-            className="text-violet-400 opacity-60"
+            className="text-violet-300 opacity-40"
           />
         </motion.svg>
       </div>
       <div className="relative text-center z-10 flex flex-col items-center justify-center gap-4">
         <motion.h2
-          className="text-4xl md:text-6xl font-bold tracking-tight text-white font-handwritten"
+          className="text-4xl md:text-6xl font-bold tracking-tight text-[var(--on-surface)] font-handwritten"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}
@@ -62,7 +62,7 @@ function HandWrittenTitle({
         </motion.h2>
         {subtitle && (
           <motion.p
-            className="text-lg text-zinc-400 font-handwritten"
+            className="text-lg text-[var(--on-surface-variant)] font-handwritten"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.8 }}

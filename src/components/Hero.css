@@ -357,12 +357,16 @@
   }
 
   .hero__stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
   }
 
   .hero__stats-divider {
     display: none;
+  }
+
+  .hero__stat-value {
+    font-size: 1.5rem;
   }
 
   .hero__brand {
