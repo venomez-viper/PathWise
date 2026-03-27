@@ -40,7 +40,7 @@ export default function Footer() {
 
       <div className="footer__bottom">
         <div className="container footer__bottom-inner">
-          <p>© 2026 PathWise (Zafuture Group 5). All rights reserved.</p>
+          <p>© 2026 PathWise. All rights reserved.</p>
           <p>Built with ✦ for every professional who dares to aim higher.</p>
         </div>
       </div>
