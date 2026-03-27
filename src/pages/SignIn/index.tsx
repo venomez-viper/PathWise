@@ -20,7 +20,7 @@ export default function SignIn() {
     try {
       const res = await auth.signin({ email: form.email, password: form.password });
       tokenStore.set(res.token);
-      navigate('/');
+      navigate('/app');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
     } finally {
