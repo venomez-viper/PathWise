@@ -18,13 +18,38 @@ export default function Progress() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const roadmapCompletion  = stats?.roadmapCompletion  ?? 0;
-  const tasksFinished      = stats?.tasksFinished      ?? 0;
-  const tasksRemaining     = stats?.tasksRemaining     ?? 0;
-  const jobReadiness       = stats?.jobReadinessScore  ?? 0;
-  const careerReadiness    = stats?.careerReadinessScore ?? 0;
-  const tasksTotal         = tasksFinished + tasksRemaining;
-  const taskPct            = tasksTotal > 0 ? Math.round((tasksFinished / tasksTotal) * 100) : 0;
+  const roadmapCompletion = stats?.roadmapCompletion     ?? 0;
+  const tasksFinished     = stats?.tasksFinished         ?? 0;
+  const tasksRemaining    = stats?.tasksRemaining        ?? 0;
+  const jobReadiness      = stats?.jobReadinessScore     ?? 0;
+  const careerReadiness   = stats?.careerReadinessScore  ?? 0;
+  const breakdown         = stats?.breakdown             ?? null;
+  const tasksTotal        = tasksFinished + tasksRemaining;
+  const taskPct           = tasksTotal > 0 ? Math.round((tasksFinished / tasksTotal) * 100) : 0;
+
+  const breakdownItems = breakdown ? [
+    {
+      name: 'Milestone Progress', pct: breakdown.milestoneProgress, color: '#a78bfa', weight: '35%',
+      tip: breakdown.milestoneProgress < 20 ? 'Complete your first milestone to start building momentum.' : null,
+    },
+    {
+      name: 'Task Completion', pct: breakdown.taskCompletion, color: '#5ef6e6', weight: '20%',
+      tip: breakdown.taskCompletion < 30 ? 'Tick off tasks in your roadmap to raise this score.' : null,
+    },
+    {
+      name: 'Category Balance', pct: breakdown.categoryBalance, color: '#34d399', weight: '25%',
+      tip: breakdown.categoryBalance < 50 ? 'Complete networking and portfolio tasks — not just learning.' : null,
+    },
+    {
+      name: 'Momentum (last 14 days)', pct: breakdown.momentum, color: '#f59e0b', weight: '10%',
+      tip: breakdown.momentum === 0 ? 'No recent activity — complete 3+ tasks in the next 2 weeks.' : null,
+    },
+  ] : [
+    { name: 'Job Readiness',      pct: jobReadiness,      color: '#a78bfa', weight: '—', tip: null },
+    { name: 'Career Readiness',   pct: careerReadiness,   color: '#5ef6e6', weight: '—', tip: null },
+    { name: 'Roadmap Completion', pct: roadmapCompletion, color: '#34d399', weight: '—', tip: null },
+    { name: 'Task Completion',    pct: taskPct,           color: '#f59e0b', weight: '—', tip: null },
+  ];
 
   return (
     <div className="page">
@@ -81,25 +106,28 @@ export default function Progress() {
             <div className="panel">
               <div className="panel__header">
                 <div>
-                  <h2 className="panel__title">Completion Breakdown</h2>
-                  <p className="panel__sub">Your progress across key metrics</p>
+                  <h2 className="panel__title">Score Breakdown</h2>
+                  <p className="panel__sub">How your readiness score is calculated</p>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '8px' }}>
-                {[
-                  { name: 'Job Readiness Score',  pct: jobReadiness,    color: '#a78bfa' },
-                  { name: 'Career Readiness',      pct: careerReadiness, color: '#5ef6e6' },
-                  { name: 'Roadmap Completion',    pct: roadmapCompletion, color: '#34d399' },
-                  { name: 'Task Completion',       pct: taskPct,         color: '#f59e0b' },
-                ].map(s => (
+                {breakdownItems.map(s => (
                   <div key={s.name}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--on-surface)' }}>{s.name}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '5px' }}>
+                      <div>
+                        <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--on-surface)' }}>{s.name}</span>
+                        {s.weight !== '—' && (
+                          <span style={{ fontSize: '0.7rem', color: 'var(--on-surface-muted)', marginLeft: 6 }}>({s.weight})</span>
+                        )}
+                      </div>
                       <span style={{ fontSize: '0.875rem', fontWeight: 700, color: s.color }}>{s.pct}%</span>
                     </div>
                     <div className="stat-tile__bar">
                       <div className="stat-tile__fill" style={{ width: mounted ? `${s.pct}%` : '0%', background: s.color }} />
                     </div>
+                    {s.tip && (
+                      <p style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '4px' }}>⚡ {s.tip}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -112,8 +140,8 @@ export default function Progress() {
                 {jobReadiness >= 80
                   ? "You're in great shape! Keep completing tasks to hit 100%."
                   : jobReadiness >= 50
-                  ? "Good progress — keep building your skills and completing milestones."
-                  : "You're just getting started. Complete your roadmap milestones to grow faster."}
+                  ? "Good progress — keep building skills and completing milestones."
+                  : "You're just getting started. Complete milestones and balance your task categories to grow faster."}
               </p>
             </div>
           </div>

@@ -2,20 +2,40 @@ import { useState, useEffect } from 'react';
 import { Clock, TrendingUp, Pencil, Zap, GraduationCap, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { roadmap as roadmapApi } from '../../lib/api';
+import { roadmap as roadmapApi, assessment as assessmentApi } from '../../lib/api';
+
+const IMPORTANCE_COLOR: Record<string, string> = {
+  high: '#f87171',
+  medium: '#f59e0b',
+  low: '#34d399',
+};
 
 export default function Roadmap() {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
+  const [skillGaps, setSkillGaps] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    roadmapApi.get(user.id).then((res: any) => {
-      if (!cancelled) { setData(res.roadmap); setLoading(false); setTimeout(() => setMounted(true), 100); }
-    }).catch(() => { if (!cancelled) setLoading(false); });
+
+    Promise.allSettled([
+      roadmapApi.get(user.id),
+      assessmentApi.getResult(user.id),
+    ]).then(([roadmapRes, assessRes]) => {
+      if (cancelled) return;
+      const roadmap = roadmapRes.status === 'fulfilled' ? (roadmapRes.value as any).roadmap : null;
+      const gaps = assessRes.status === 'fulfilled'
+        ? ((assessRes.value as any).result?.skillGaps ?? [])
+        : [];
+      setData(roadmap);
+      setSkillGaps(gaps);
+      setLoading(false);
+      setTimeout(() => setMounted(true), 100);
+    });
+
     return () => { cancelled = true; };
   }, [user]);
 
@@ -84,17 +104,34 @@ export default function Roadmap() {
                 <Zap size={16} color="#f59e0b" />
                 <h2 className="panel__title">Skill Gaps</h2>
               </div>
-              <span className="badge-pill badge-pill--warning">Action needed</span>
+              {skillGaps.length > 0 && (
+                <span className="badge-pill badge-pill--warning">Action needed</span>
+              )}
             </div>
-            {[
-              { title: 'Google Data Analytics Professional Certificate', desc: 'Core technical foundation' },
-              { title: 'Meta Marketing Analytics Certificate', desc: 'Advanced tracking & attribution' },
-            ].map(item => (
-              <div className="skill-gap-row" key={item.title}>
+
+            {skillGaps.length === 0 ? (
+              <div style={{ padding: '1rem 0', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', marginBottom: 10 }}>
+                  Take the career assessment to see your personalised skill gaps.
+                </p>
+                <Link to="/app/assessment" style={{ fontSize: '0.82rem', color: '#a78bfa', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  Take Assessment <ChevronRight size={13} />
+                </Link>
+              </div>
+            ) : skillGaps.slice(0, 5).map((gap: any) => (
+              <div className="skill-gap-row" key={gap.skill}>
                 <div className="skill-gap-row__icon"><GraduationCap size={16} color="#a78bfa" /></div>
                 <div style={{ flex: 1 }}>
-                  <p className="skill-gap-row__title">{item.title}</p>
-                  <p className="skill-gap-row__desc">{item.desc}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <p className="skill-gap-row__title">{gap.skill}</p>
+                    <span style={{
+                      fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
+                      color: IMPORTANCE_COLOR[gap.importance] ?? '#a78bfa',
+                      background: `${IMPORTANCE_COLOR[gap.importance] ?? '#a78bfa'}18`,
+                      padding: '1px 6px', borderRadius: 999,
+                    }}>{gap.importance}</span>
+                  </div>
+                  <p className="skill-gap-row__desc">{gap.learningResource}</p>
                 </div>
                 <ChevronRight size={15} color="var(--on-surface-variant)" />
               </div>
