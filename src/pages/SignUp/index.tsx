@@ -6,7 +6,7 @@ import { useAuth } from '../../lib/auth-context';
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const { refresh } = useAuth();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm,  setShowConfirm]  = useState(false);
   const [form,  setForm]    = useState({ name: '', email: '', password: '', confirm: '' });
@@ -26,7 +26,7 @@ export default function SignUp() {
     try {
       const res = await auth.signup({ name: form.name, email: form.email, password: form.password });
       tokenStore.set(res.token);
-      await refresh();
+      login(res.user as any);
       navigate('/app/onboarding');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');

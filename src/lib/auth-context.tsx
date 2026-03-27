@@ -13,12 +13,14 @@ interface AuthContextValue {
   user: User | null;
   ready: boolean;
   refresh: () => Promise<void>;
+  login: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   ready: false,
   refresh: async () => {},
+  login: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -42,8 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { load(); }, []);
 
+  const login = (userData: User) => {
+    setUser(userData);
+    setReady(true);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, ready, refresh: load }}>
+    <AuthContext.Provider value={{ user, ready, refresh: load, login }}>
       {children}
     </AuthContext.Provider>
   );
