@@ -167,11 +167,34 @@ export const generateRoadmap = api(
     });
 
     const roadmapId = crypto.randomUUID();
+    const now = new Date();
+
+    const skillGap = aiResult.milestones
+      .flatMap(m => m.tasks ?? [])
+      .map(t => t.category)
+      .filter(Boolean);
+    void skillGap; // will be stored below after we know finalRoadmapId
 
     await db.exec`
-      INSERT INTO roadmaps (id, user_id, target_role, completion_percent)
-      VALUES (${roadmapId}, ${params.userId}, ${params.targetRole}, 0)
-      ON CONFLICT (user_id) DO UPDATE SET target_role = excluded.target_role, completion_percent = 0
+      INSERT INTO roadmaps (id, user_id, target_role, completion_percent,
+                            skill_gap_current, skill_gap_required, skill_gap_gaps,
+                            estimated_weeks, created_at)
+      VALUES (
+        ${roadmapId}, ${params.userId}, ${params.targetRole}, 0,
+        ${JSON.stringify(currentSkills)},
+        ${JSON.stringify([...currentSkills, ...skillGaps])},
+        ${JSON.stringify(skillGaps)},
+        ${aiResult.milestones.reduce((s, m) => s + (m.durationWeeks ?? 4), 0)},
+        ${now.toISOString()}
+      )
+      ON CONFLICT (user_id) DO UPDATE SET
+        target_role      = excluded.target_role,
+        completion_percent = 0,
+        skill_gap_current  = excluded.skill_gap_current,
+        skill_gap_required = excluded.skill_gap_required,
+        skill_gap_gaps     = excluded.skill_gap_gaps,
+        estimated_weeks    = excluded.estimated_weeks,
+        created_at         = excluded.created_at
     `;
 
     // Re-fetch after upsert to get stable id
@@ -184,7 +207,6 @@ export const generateRoadmap = api(
     await db.exec`DELETE FROM milestones WHERE roadmap_id = ${finalRoadmapId}`;
 
     const milestones: Milestone[] = [];
-    const now = new Date();
 
     for (let i = 0; i < aiResult.milestones.length; i++) {
       const m = aiResult.milestones[i];
@@ -200,8 +222,10 @@ export const generateRoadmap = api(
         .split("T")[0];
 
       await db.exec`
-        INSERT INTO milestones (id, roadmap_id, title, description, status, due_date, position)
-        VALUES (${milestoneId}, ${finalRoadmapId}, ${m.title}, ${m.description}, ${status}, ${dueDate}, ${i})
+        INSERT INTO milestones (id, roadmap_id, title, description, status, due_date, position,
+                                estimated_weeks)
+        VALUES (${milestoneId}, ${finalRoadmapId}, ${m.title}, ${m.description}, ${status}, ${dueDate}, ${i},
+                ${m.durationWeeks ?? 4})
       `;
 
       milestones.push({ id: milestoneId, title: m.title, description: m.description, status, dueDate });
@@ -214,7 +238,9 @@ export const generateRoadmap = api(
           title: t.title,
           description: t.description,
           priority: t.priority ?? "medium",
+          category: t.category ?? "learning",
           dueDate,
+          aiGenerated: true,
         });
       }
     }
