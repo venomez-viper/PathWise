@@ -96,3 +96,9 @@
   font-size: 0.82rem;
   color: rgba(255,255,255,0.4);
 }
+
+@media (max-width: 600px) {
+  .cta-section { padding: 5rem 1.25rem; }
+  .cta-section__form { flex-direction: column; width: 100%; }
+  .cta-section__form .btn { width: 100%; }
+}

@@ -266,6 +266,13 @@ section { padding: var(--section-padding); }
 @media (max-width: 768px) {
   section { padding: 4rem 1.25rem; }
   .section-subtitle { max-width: 100%; }
+  .container { padding: 0 1rem; }
+}
+
+@media (max-width: 400px) {
+  .container { padding: 0 0.75rem; }
+  .display-xl { font-size: clamp(2rem, 9vw, 3rem); }
+  .display-lg { font-size: clamp(1.6rem, 7vw, 2.2rem); }
 }
 
 /* Used by non-hero pages to offset fixed navbar */
