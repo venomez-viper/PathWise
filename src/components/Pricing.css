@@ -1,8 +1,8 @@
 .pricing-section {
-  background: linear-gradient(160deg, #0f0b1e 0%, #130d2a 50%, #0a0715 100%);
-  padding: 6rem 1rem 8rem;
+  background: linear-gradient(160deg, #0f0b1e 0%, #130d2a 55%, #0a0715 100%);
+  padding: 6rem 1.5rem 8rem;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* let rotated card badges breathe */
 }
 
 /* Subtle grid texture */
@@ -11,8 +11,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(93, 42, 128, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(93, 42, 128, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(93, 42, 128, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(93, 42, 128, 0.07) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
 }
@@ -20,4 +20,17 @@
 .pricing-section .container {
   position: relative;
   z-index: 1;
+  /* Extra side padding so rotated cards + badges don't clip */
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+@media (max-width: 640px) {
+  .pricing-section {
+    padding: 4rem 1rem 5rem;
+  }
+  .pricing-section .container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
 }

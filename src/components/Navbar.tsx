@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import SearchComponent from '@/components/ui/animated-glowing-search-bar';
 import Logo from '@/components/ui/Logo';
 import './Navbar.css';
 
@@ -51,11 +50,6 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Glowing Search Bar */}
-        <div className="navbar__search">
-          <SearchComponent />
-        </div>
-
         {/* CTA */}
         <div className="navbar__actions">
           <Link to="/pricing" className="btn btn-primary navbar__cta">
@@ -85,9 +79,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="navbar__mobile-search">
-            <SearchComponent />
-          </div>
           <Link to="/pricing" className="btn btn-primary">
             Get Started Free
           </Link>
