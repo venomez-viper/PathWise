@@ -72,7 +72,7 @@ export default function Solution() {
           <span className="section-label">Our Solution</span>
           <h2 className="section-title">One platform. Every step of your career.</h2>
           <p className="section-subtitle">
-            The complete Zafuture Product Experience Framework — from discovering who you are to landing your dream role.
+            The complete Zafuture Product Experience Framework - from discovering who you are to landing your dream role.
           </p>
         </div>
 

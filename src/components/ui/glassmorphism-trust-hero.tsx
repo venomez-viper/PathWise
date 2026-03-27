@@ -100,7 +100,7 @@ export default function GlassmorphismTrustHero() {
             {/* Description */}
             <p className="animate-fade-in delay-300 max-w-xl text-lg text-zinc-400 leading-relaxed">
               PathWise maps your career identity, predicts your highest-fit paths,
-              and builds a step-by-step roadmap — keeping you accountable every day.
+              and builds a step-by-step roadmap that keeps you accountable every day.
             </p>
 
             {/* CTA Buttons */}

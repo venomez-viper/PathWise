@@ -41,8 +41,8 @@ export default function Hero() {
           </h1>
 
           <p className="hero__description">
-            PathWise maps your career identity, predicts your highest-fit paths, and builds a step-by-step roadmap -
-            keeping you accountable every day.
+            PathWise maps your career identity, predicts your highest-fit paths, and builds a step-by-step roadmap
+            that keeps you accountable every day.
           </p>
 
           <div className="hero__actions">

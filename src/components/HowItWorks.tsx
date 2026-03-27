@@ -14,7 +14,7 @@ const STEPS = [
     step: '02',
     icon: '🛣️',
     title: 'Get Your Personalized Roadmap',
-    desc: 'PathWise generates a step-by-step career roadmap with curated skill development, certifications, and networking milestones — built for you.',
+    desc: 'PathWise generates a step-by-step career roadmap with curated skill development, certifications, and networking milestones - built for you.',
     color: '#5ef6e6',
   },
   {

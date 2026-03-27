@@ -12,7 +12,7 @@ const TOOLS = [
   {
     name: 'LinkedIn',
     icon: '🔗',
-    does: '1B+ users — but revenue from job clicks, not career clarity',
+    does: '1B+ users - but revenue from job clicks, not career clarity',
     missing: ['Career identity', 'Personalized direction', 'Daily action plans'],
     accent: '#f59e0b',
   },
