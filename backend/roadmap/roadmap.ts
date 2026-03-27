@@ -133,9 +133,9 @@ Requirements:
   return JSON.parse(jsonMatch[0]);
 }
 
-// PATCH /roadmap/milestones/:milestoneId — mark a milestone complete, unlock next
+// POST /roadmap/milestones/:milestoneId/complete — mark a milestone complete, unlock next
 export const completeMilestone = api(
-  { expose: true, method: "PATCH", path: "/roadmap/milestones/:milestoneId" },
+  { expose: true, method: "POST", path: "/roadmap/milestones/:milestoneId/complete" },
   async ({ milestoneId }: { milestoneId: string }): Promise<{ success: boolean; nextMilestoneId?: string }> => {
     // 1. Get the milestone and its roadmap
     const ms = await db.queryRow`

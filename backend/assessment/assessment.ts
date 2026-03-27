@@ -345,3 +345,95 @@ export const submitAssessment = api(
     };
   }
 );
+
+// ── Skill Gap Assessment ──────────────────────────────────────────────────────
+
+interface SkillGapAssessmentParams {
+  userId: string;
+  targetRole: string;
+  currentRole?: string;
+  technicalSkills: Record<string, string>;
+  softSkills: Record<string, string>;
+  tools: string[];
+  yearsExperience: string;
+  biggestGap: string;
+  learningStyle: string[];
+}
+
+interface SkillGapItem {
+  skill: string;
+  importance: "high" | "medium" | "low";
+  learningResource: string;
+  currentLevel: string;
+  targetLevel: string;
+}
+
+export const analyzeSkillGaps = api(
+  { expose: true, method: "POST", path: "/assessment/skill-gap-analysis" },
+  async (params: SkillGapAssessmentParams): Promise<{
+    result: { skillGaps: SkillGapItem[]; summary: string; topPriority: string };
+  }> => {
+    const client = new Anthropic({ apiKey: anthropicKey() });
+
+    const techList = Object.entries(params.technicalSkills)
+      .filter(([, v]) => v && v !== "none")
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(", ") || "None rated";
+
+    const softList = Object.entries(params.softSkills)
+      .filter(([, v]) => v && v !== "none")
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(", ") || "None rated";
+
+    const prompt = `You are an expert career coach performing a skill gap analysis.
+
+Target Role: ${params.targetRole}
+Current Role: ${params.currentRole || "Not specified"}
+Experience: ${params.yearsExperience}
+Technical Skills self-rated: ${techList}
+Soft Skills self-rated: ${softList}
+Tools used: ${params.tools.join(", ") || "None"}
+Biggest self-identified gap: ${params.biggestGap || "Not specified"}
+Preferred learning style: ${params.learningStyle.join(", ") || "Not specified"}
+
+Identify the key skill gaps for someone targeting "${params.targetRole}".
+
+Respond with ONLY valid JSON (no markdown):
+{
+  "skillGaps": [
+    {
+      "skill": "Skill name",
+      "importance": "high",
+      "currentLevel": "none",
+      "targetLevel": "intermediate",
+      "learningResource": "Specific real course name and platform"
+    }
+  ],
+  "summary": "2-3 sentence overall readiness assessment",
+  "topPriority": "The single most critical skill to develop first"
+}
+
+Generate 5-7 skill gaps ranked by importance. Use real course/resource names.`;
+
+    const msg = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1200,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = msg.content[0];
+    if (content.type !== "text") throw new Error("Unexpected AI response");
+
+    const match = content.text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("Could not parse skill gap analysis");
+
+    const parsed = JSON.parse(match[0]);
+    return {
+      result: {
+        skillGaps: parsed.skillGaps ?? [],
+        summary: parsed.summary ?? "",
+        topPriority: parsed.topPriority ?? "",
+      },
+    };
+  }
+);

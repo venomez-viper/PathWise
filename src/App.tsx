@@ -23,6 +23,7 @@ import SettingsPage from './pages/Settings';
 import Onboarding   from './pages/Onboarding';
 import Assessment   from './pages/Assessment';
 import SkillGaps    from './pages/SkillGaps';
+import SkillGapAssessment from './pages/SkillGapAssessment';
 import SignIn       from './pages/SignIn';
 import SignUp       from './pages/SignUp';
 import './App.css';
@@ -121,6 +122,7 @@ export default function App() {
             <Route path="onboarding"  element={<Onboarding />} />
             <Route path="assessment"  element={<Assessment />} />
             <Route path="skill-gaps" element={<SkillGaps />} />
+            <Route path="skill-gap-assessment" element={<SkillGapAssessment />} />
           </Route>
 
           {/* ── 404 catch-all ── */}

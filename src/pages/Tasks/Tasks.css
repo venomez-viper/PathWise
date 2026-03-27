@@ -75,7 +75,8 @@
   display: flex;
   gap: 1rem;
   align-items: flex-start;
-  min-height: 400px;
+  min-height: 500px;
+  overflow: visible;
 }
 
 .kanban-col {
@@ -164,7 +165,7 @@
   gap: 8px;
   min-height: 120px;
   overflow-y: auto;
-  max-height: calc(100vh - 340px);
+  max-height: calc(100vh - 280px);
 }
 
 .kanban-col__empty {

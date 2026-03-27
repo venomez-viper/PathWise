@@ -61,6 +61,8 @@ export const assessment = {
     request('/assessment/certificates', { method: 'POST', body: JSON.stringify(data) }),
   getCareerRecommendations: (data: unknown) =>
     request('/assessment/career-recommendations', { method: 'POST', body: JSON.stringify(data) }),
+  getSkillGapAnalysis: (data: unknown) =>
+    request('/assessment/skill-gap-analysis', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // --- Roadmap ---
@@ -68,7 +70,7 @@ export const roadmap = {
   get:      (userId: string) => request(`/roadmap/${userId}`),
   generate: (data: unknown)  => request('/roadmap', { method: 'POST', body: JSON.stringify(data) }),
   completeMilestone: (milestoneId: string) =>
-    request(`/roadmap/milestones/${milestoneId}`, { method: 'PATCH' }),
+    request(`/roadmap/milestones/${milestoneId}/complete`, { method: 'POST', body: JSON.stringify({}) }),
 };
 
 // --- Tasks ---
@@ -78,9 +80,9 @@ export const tasks = {
   update: (taskId: string, data: unknown) =>
     request(`/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(data) }),
   aiGenerate: (data: unknown) =>
-    request('/tasks/ai-generate', { method: 'POST', body: JSON.stringify(data) }),
+    request('/tasks/generate/milestone', { method: 'POST', body: JSON.stringify(data) }),
   customGenerate: (data: unknown) =>
-    request('/tasks/custom-generate', { method: 'POST', body: JSON.stringify(data) }),
+    request('/tasks/generate/custom', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // --- Progress ---

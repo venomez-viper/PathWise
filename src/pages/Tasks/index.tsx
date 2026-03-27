@@ -85,6 +85,9 @@ export default function Tasks() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
 
+  // Target role (from roadmap, used in AI generation)
+  const [_targetRole, _setTargetRole] = useState('');
+
   // Mark all
   const [markingAll, setMarkingAll] = useState(false);
 
@@ -97,11 +100,11 @@ export default function Tasks() {
         roadmapApi.get(user.id),
       ]);
       const fetchedTasks = tasksRes.status === 'fulfilled' ? ((tasksRes.value as any).tasks ?? []) : [];
-      const fetchedMilestones: Milestone[] = roadmapRes.status === 'fulfilled'
-        ? ((roadmapRes.value as any).roadmap?.milestones ?? [])
-        : [];
+      const roadmapData = roadmapRes.status === 'fulfilled' ? (roadmapRes.value as any).roadmap : null;
+      const fetchedMilestones: Milestone[] = roadmapData?.milestones ?? [];
       setTaskList(fetchedTasks);
       setMilestones(fetchedMilestones);
+      _setTargetRole(roadmapData?.targetRole ?? '');
       // Default new task milestone to the current in_progress one
       const active = fetchedMilestones.find((m: Milestone) => m.status === 'in_progress');
       if (active) { setNewTaskMilestoneId(active.id); setAiMilestoneId(active.id); }
@@ -208,7 +211,7 @@ export default function Tasks() {
         prompt: aiPrompt.trim(),
         milestoneId: aiMilestoneId || undefined,
         count: aiCount,
-        targetRole: milestones.find(m => m.status === 'in_progress')?.title,
+        targetRole: _targetRole || undefined,
       }) as { tasks: Task[] };
       setTaskList(prev => [...prev, ...res.tasks]);
       setAiPrompt('');
@@ -225,7 +228,7 @@ export default function Tasks() {
      ================================================================ */
 
   /* ── Empty state ── */
-  if (!loading && total === 0) {
+  if (!loading && total === 0 && milestones.length === 0) {
     return (
       <div className="page">
         <div className="page-header">

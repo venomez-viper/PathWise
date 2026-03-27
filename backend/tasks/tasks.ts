@@ -174,9 +174,9 @@ export interface GenerateTasksParams {
   targetRole: string;
 }
 
-// POST /tasks/ai-generate — use Claude to generate tasks for a milestone on demand
+// POST /tasks/generate/milestone — use Claude to generate tasks for a milestone on demand
 export const aiGenerateTasks = api(
-  { expose: true, method: "POST", path: "/tasks/ai-generate" },
+  { expose: true, method: "POST", path: "/tasks/generate/milestone" },
   async (params: GenerateTasksParams): Promise<{ tasks: Task[] }> => {
     const client = new Anthropic({ apiKey: anthropicKey() });
 
@@ -261,9 +261,9 @@ export interface CustomGenerateTasksParams {
   count?: number;           // how many tasks to generate (default 4)
 }
 
-// POST /tasks/custom-generate
+// POST /tasks/generate/custom
 export const customGenerateTasks = api(
-  { expose: true, method: "POST", path: "/tasks/custom-generate" },
+  { expose: true, method: "POST", path: "/tasks/generate/custom" },
   async (params: CustomGenerateTasksParams): Promise<{ tasks: Task[] }> => {
     const client = new Anthropic({ apiKey: anthropicKey() });
     const count = params.count ?? 4;

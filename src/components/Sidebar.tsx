@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, ClipboardCheck, GraduationCap } from 'lucide-react';
 import Logo from './ui/Logo';
 import { tokenStore } from '../lib/api';
 import './Sidebar.css';
@@ -7,7 +7,8 @@ import './Sidebar.css';
 const NAV_ITEMS = [
   { to: '/app',             icon: LayoutDashboard, label: 'Dashboard',  end: true },
   { to: '/app/assessment',  icon: ClipboardList,   label: 'Assessment'           },
-  { to: '/app/skill-gaps',  icon: GraduationCap,   label: 'Skill Gaps'           },
+  { to: '/app/skill-gap-assessment', icon: ClipboardCheck, label: 'Gap Assessment'  },
+  { to: '/app/skill-gaps',  icon: GraduationCap,   label: 'Skill Analysis'        },
   { to: '/app/roadmap',     icon: Compass,         label: 'Roadmap'              },
   { to: '/app/tasks',       icon: CheckSquare,     label: 'Tasks'                },
   { to: '/app/progress',    icon: BarChart2,       label: 'Progress'             },
