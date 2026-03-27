@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, TrendingUp, Pencil, Loader2, AlertCircle, Lock, CheckCircle2 } from 'lucide-react';
+import { Clock, TrendingUp, Pencil, Loader2, AlertCircle, Lock, CheckCircle2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
@@ -17,10 +17,13 @@ interface MilestoneCardProps {
   index: number;
   mTasks: Task[];
   completing: string | null;
+  generating: string | null;
+  targetRole: string;
   onComplete: (id: string) => void;
+  onGenerateTasks: (m: any) => void;
 }
 
-function MilestoneCard({ m, index, mTasks, completing, onComplete }: MilestoneCardProps) {
+function MilestoneCard({ m, index, mTasks, completing, generating, onComplete, onGenerateTasks }: MilestoneCardProps) {
   const color = MILESTONE_COLOR[m.status] ?? 'var(--outline-variant)';
   const doneTasks = mTasks.filter((t) => t.status === 'done').length;
   const totalTasks = mTasks.length;
@@ -232,6 +235,36 @@ function MilestoneCard({ m, index, mTasks, completing, onComplete }: MilestoneCa
             </div>
           )}
 
+          {/* AI Generate Tasks button */}
+          <button
+            onClick={() => onGenerateTasks(m)}
+            disabled={!!generating || !!completing}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              padding: '0.55rem 1rem',
+              borderRadius: 'var(--radius-xl)',
+              border: '1.5px solid rgba(167,139,250,0.35)',
+              cursor: (generating || completing) ? 'not-allowed' : 'pointer',
+              background: 'rgba(167,139,250,0.08)',
+              color: '#a78bfa',
+              opacity: (generating || completing) ? 0.6 : 1,
+              marginBottom: 8,
+              transition: 'background 0.15s',
+            }}
+          >
+            {generating === m.id ? (
+              <><Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Generating...</>
+            ) : (
+              <><Sparkles size={13} /> Generate AI Tasks</>
+            )}
+          </button>
+
           {/* Mark Complete button */}
           <button
             onClick={() => onComplete(m.id)}
@@ -289,6 +322,7 @@ export default function Roadmap() {
   const [data, setData] = useState<any>(null);
   const [milestoneTaskMap, setMilestoneTaskMap] = useState<Record<string, Task[]>>({});
   const [completing, setCompleting] = useState<string | null>(null);
+  const [generating, setGenerating] = useState<string | null>(null);
 
   async function loadData(userId: string, silent = false) {
     if (!silent) setLoading(true);
@@ -330,6 +364,25 @@ export default function Roadmap() {
 
     return () => { cancelled = true; };
   }, [user]);
+
+  async function handleGenerateTasks(m: any) {
+    if (!user || generating || completing) return;
+    setGenerating(m.id);
+    try {
+      await tasksApi.aiGenerate({
+        userId: user.id,
+        milestoneId: m.id,
+        milestoneTitle: m.title,
+        milestoneDescription: m.description,
+        targetRole: data?.targetRole ?? '',
+      });
+      await loadData(user.id, true);
+    } catch (err) {
+      console.error('Failed to generate tasks', err);
+    } finally {
+      setGenerating(null);
+    }
+  }
 
   async function handleComplete(milestoneId: string) {
     if (!user || completing) return;
@@ -478,7 +531,10 @@ export default function Roadmap() {
                   index={i}
                   mTasks={milestoneTaskMap[m.id] ?? []}
                   completing={completing}
+                  generating={generating}
+                  targetRole={data?.targetRole ?? ''}
                   onComplete={handleComplete}
+                  onGenerateTasks={handleGenerateTasks}
                 />
               ))}
             </div>

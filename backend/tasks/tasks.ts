@@ -1,7 +1,10 @@
 import { api } from "encore.dev/api";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
+import { secret } from "encore.dev/config";
+import Anthropic from "@anthropic-ai/sdk";
 
 const db = new SQLDatabase("tasks", { migrations: "./migrations" });
+const anthropicKey = secret("AnthropicAPIKey");
 
 export interface Task {
   id: string;
@@ -160,5 +163,92 @@ export const updateTask = api(
         createdAt: row.created_at,
       },
     };
+  }
+);
+
+export interface GenerateTasksParams {
+  userId: string;
+  milestoneId: string;
+  milestoneTitle: string;
+  milestoneDescription: string;
+  targetRole: string;
+}
+
+// POST /tasks/ai-generate — use Claude to generate tasks for a milestone on demand
+export const aiGenerateTasks = api(
+  { expose: true, method: "POST", path: "/tasks/ai-generate" },
+  async (params: GenerateTasksParams): Promise<{ tasks: Task[] }> => {
+    const client = new Anthropic({ apiKey: anthropicKey() });
+
+    const prompt = `You are an expert career coach. Generate exactly 4 specific, actionable tasks for someone working toward "${params.targetRole}" on this career milestone:
+
+Milestone: "${params.milestoneTitle}"
+Description: "${params.milestoneDescription}"
+
+Respond with ONLY a valid JSON array (no markdown, no explanation):
+[
+  {
+    "title": "Specific actionable task title",
+    "description": "Exactly what to do and expected outcome",
+    "priority": "high",
+    "category": "learning"
+  }
+]
+
+Requirements:
+- Exactly 4 tasks, each concrete and measurable
+- Categories: learning, portfolio, networking, interview_prep, research
+- Priorities: high, medium, low
+- Tasks must directly advance the milestone goal and target role
+- No vague tasks like "study X" — be specific (e.g. "Complete Coursera Machine Learning course Module 3 and take notes")`;
+
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = message.content[0];
+    if (content.type !== "text") throw new Error("Unexpected AI response");
+
+    const jsonMatch = content.text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error("Could not parse AI tasks response");
+
+    const aiTasks: { title: string; description: string; priority: string; category: string }[] =
+      JSON.parse(jsonMatch[0]);
+
+    const now = new Date().toISOString();
+    const createdTasks: Task[] = [];
+
+    for (const t of aiTasks.slice(0, 4)) {
+      const id = crypto.randomUUID();
+      const priority = (["low", "medium", "high"].includes(t.priority) ? t.priority : "medium") as Task["priority"];
+      const category = t.category ?? "learning";
+
+      await db.exec`
+        INSERT INTO tasks (id, user_id, milestone_id, title, description, status, priority,
+                           category, due_date, ai_generated, created_at)
+        VALUES (
+          ${id}, ${params.userId}, ${params.milestoneId},
+          ${t.title}, ${t.description ?? null},
+          'todo', ${priority}, ${category},
+          null, true, ${now}
+        )
+      `;
+
+      createdTasks.push({
+        id,
+        userId: params.userId,
+        milestoneId: params.milestoneId,
+        title: t.title,
+        description: t.description,
+        status: "todo",
+        priority,
+        category,
+        createdAt: now,
+      });
+    }
+
+    return { tasks: createdTasks };
   }
 );
