@@ -174,7 +174,7 @@ export interface GenerateTasksParams {
   targetRole: string;
 }
 
-// POST /tasks/generate/milestone — use Claude to generate tasks for a milestone on demand
+// POST /tasks/generate/milestone — AI task generation for a specific roadmap milestone
 export const aiGenerateTasks = api(
   { expose: true, method: "POST", path: "/tasks/generate/milestone" },
   async (params: GenerateTasksParams): Promise<{ tasks: Task[] }> => {
