@@ -61,6 +61,30 @@ export default function SkillGaps() {
     }
   }
 
+  async function handleCareerRecommendations() {
+    if (!user || skillGaps.length === 0) return;
+    setCareerRecsLoading(true);
+    setCareerRecsError('');
+    setCareerRecsVisible(true);
+    try {
+      const res = await assessmentApi.getCareerRecommendations({
+        userId: user.id,
+        skills: skillGaps.map((g: any) => g.skill),
+        targetRole: careerMatches[0]?.title ?? targetRole ?? 'your target role',
+        currentSkills: currentSkills,
+      }) as any;
+      setCareerRecs({
+        portfolio: res.portfolio ?? [],
+        networking: res.networking ?? [],
+        jobApplications: res.jobApplications ?? [],
+      });
+    } catch (err) {
+      setCareerRecsError(err instanceof Error ? err.message : 'Failed to fetch recommendations');
+    } finally {
+      setCareerRecsLoading(false);
+    }
+  }
+
   function setSkillStatus(skill: string, status: SkillStatus) {
     const updated = { ...skillProgress, [skill]: status };
     setSkillProgress(updated);
@@ -190,8 +214,8 @@ export default function SkillGaps() {
         </div>
       </div>
 
-      {/* Find Certificates button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+      {/* AI Recommendation buttons */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: 8, flexWrap: 'wrap' }}>
         <button
           onClick={handleFindCertificates}
           disabled={certsLoading || skillGaps.length === 0}
@@ -207,6 +231,24 @@ export default function SkillGaps() {
           {certsLoading
             ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Finding certificates...</>
             : <><Sparkles size={14} /> Find Recommended Certificates</>
+          }
+        </button>
+        <button
+          onClick={handleCareerRecommendations}
+          disabled={careerRecsLoading || skillGaps.length === 0}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '0.6rem 1.25rem',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            color: '#fff', border: 'none', borderRadius: 'var(--radius-full)',
+            fontSize: '0.875rem', fontWeight: 600,
+            cursor: (careerRecsLoading || skillGaps.length === 0) ? 'not-allowed' : 'pointer',
+            opacity: (careerRecsLoading || skillGaps.length === 0) ? 0.6 : 1,
+          }}
+        >
+          {careerRecsLoading
+            ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Generating...</>
+            : <><Target size={14} /> Portfolio, Network & Jobs</>
           }
         </button>
       </div>
@@ -597,6 +639,169 @@ export default function SkillGaps() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Career recommendations: loading & error */}
+      {careerRecsVisible && careerRecsLoading && (
+        <div className="panel" style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '3rem' }}>
+          <Loader2 size={24} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Claude is building your personalised career plan...</p>
+        </div>
+      )}
+      {careerRecsVisible && careerRecsError && (
+        <div className="panel" style={{ marginTop: '1.5rem', color: '#ef4444', fontSize: '0.875rem' }}>
+          {careerRecsError}
+        </div>
+      )}
+
+      {/* Portfolio & Projects */}
+      {careerRecsVisible && careerRecs && careerRecs.portfolio.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="panel">
+            <div className="panel__header" style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(167,139,250,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Code size={16} color="#a78bfa" />
+                </div>
+                <div>
+                  <h2 className="panel__title">Portfolio Projects to Build</h2>
+                  <p className="panel__sub">Role-specific projects to impress hiring managers</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '1rem' }}>
+              {careerRecs.portfolio.map((item, i) => (
+                <RecommendationCard key={i} item={item} accentColor="#a78bfa" accentBg="rgba(167,139,250,0.1)" />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Networking & Outreach */}
+      {careerRecsVisible && careerRecs && careerRecs.networking.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="panel">
+            <div className="panel__header" style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(94,246,230,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Users size={16} color="#5ef6e6" />
+                </div>
+                <div>
+                  <h2 className="panel__title">Networking & Outreach</h2>
+                  <p className="panel__sub">Communities and connections to build your reputation</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '1rem' }}>
+              {careerRecs.networking.map((item, i) => (
+                <RecommendationCard key={i} item={item} accentColor="#5ef6e6" accentBg="rgba(94,246,230,0.08)" />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Job Application Targets */}
+      {careerRecsVisible && careerRecs && careerRecs.jobApplications.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="panel">
+            <div className="panel__header" style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(52,211,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Briefcase size={16} color="#34d399" />
+                </div>
+                <div>
+                  <h2 className="panel__title">Job Application Targets</h2>
+                  <p className="panel__sub">Where and how to apply for your target role</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '1rem' }}>
+              {careerRecs.jobApplications.map((item, i) => (
+                <RecommendationCard key={i} item={item} accentColor="#34d399" accentBg="rgba(52,211,153,0.08)" />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecommendationCard({ item, accentColor, accentBg }: { item: any; accentColor: string; accentBg: string }) {
+  return (
+    <div style={{
+      background: 'var(--surface-container-low)',
+      border: '1px solid var(--outline-variant)',
+      borderLeft: `3px solid ${accentColor}`,
+      borderRadius: 'var(--radius-xl)',
+      padding: '1.25rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 8,
+    }}>
+      {/* Badges row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {item.platform && (
+          <span style={{
+            fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
+            color: accentColor, background: accentBg,
+            padding: '2px 8px', borderRadius: 999,
+          }}>{item.platform}</span>
+        )}
+        {item.difficulty && (
+          <span style={{
+            fontSize: '0.68rem', fontWeight: 600,
+            color: 'var(--on-surface-variant)', background: 'var(--surface-container-high)',
+            padding: '2px 8px', borderRadius: 999,
+          }}>{item.difficulty}</span>
+        )}
+        {item.timeEstimate && (
+          <span style={{
+            fontSize: '0.68rem', fontWeight: 600,
+            color: 'var(--on-surface-variant)', background: 'var(--surface-container-high)',
+            padding: '2px 8px', borderRadius: 999,
+          }}>{item.timeEstimate}</span>
+        )}
+      </div>
+
+      {/* Title */}
+      <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--on-surface)', lineHeight: 1.3, margin: 0 }}>
+        {item.title}
+      </p>
+
+      {/* Description */}
+      <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', lineHeight: 1.5, margin: 0 }}>
+        {item.description}
+      </p>
+
+      {/* Why */}
+      <div style={{ padding: '8px 10px', background: accentBg, borderRadius: 8 }}>
+        <p style={{ fontSize: '0.75rem', color: 'var(--on-surface)', fontWeight: 500, margin: 0, lineHeight: 1.5 }}>
+          {item.why}
+        </p>
+      </div>
+
+      {/* Action step */}
+      <p style={{ fontSize: '0.75rem', fontWeight: 600, color: accentColor, margin: 0 }}>
+        {item.actionStep}
+      </p>
+
+      {/* Link */}
+      {item.url && (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontSize: '0.78rem', fontWeight: 600, color: accentColor,
+            textDecoration: 'none', marginTop: 2,
+          }}
+        >
+          Visit →
+        </a>
       )}
     </div>
   );
