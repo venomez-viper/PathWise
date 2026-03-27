@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, AlertTriangle, CheckCircle2, GraduationCap, ArrowRight, Loader2, Target, Sparkles } from 'lucide-react';
+import { BookOpen, AlertTriangle, CheckCircle2, GraduationCap, ArrowRight, Loader2, Target, Sparkles, Code, Users, Briefcase } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, roadmap as roadmapApi } from '../../lib/api';
 
@@ -28,6 +28,15 @@ export default function SkillGaps() {
   const [certsLoading, setCertsLoading] = useState(false);
   const [certsError, setCertsError] = useState('');
   const [certsVisible, setCertsVisible] = useState(false);
+
+  const [careerRecs, setCareerRecs] = useState<{
+    portfolio: any[];
+    networking: any[];
+    jobApplications: any[];
+  } | null>(null);
+  const [careerRecsLoading, setCareerRecsLoading] = useState(false);
+  const [careerRecsError, setCareerRecsError] = useState('');
+  const [careerRecsVisible, setCareerRecsVisible] = useState(false);
 
   const [skillProgress, setSkillProgress] = useState<Record<string, SkillStatus>>(() => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}'); } catch { return {}; }

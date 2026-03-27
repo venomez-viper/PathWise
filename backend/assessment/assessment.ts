@@ -190,6 +190,112 @@ Include a mix of: free options (Coursera audit, Google certificates), paid certi
   }
 );
 
+// --- Career Recommendations ---
+
+interface CareerRecommendation {
+  type: "portfolio" | "networking" | "job_application";
+  title: string;
+  description: string;
+  platform?: string;
+  url?: string;
+  difficulty?: string;
+  timeEstimate?: string;
+  why: string;
+  actionStep: string;
+}
+
+interface CareerRecommendationsParams {
+  userId: string;
+  skills: string[];
+  targetRole: string;
+  currentSkills: string[];
+}
+
+interface CareerRecommendationsResponse {
+  portfolio: CareerRecommendation[];
+  networking: CareerRecommendation[];
+  jobApplications: CareerRecommendation[];
+}
+
+// POST /assessment/career-recommendations
+export const getCareerRecommendations = api(
+  { expose: true, method: "POST", path: "/assessment/career-recommendations" },
+  async (params: CareerRecommendationsParams): Promise<CareerRecommendationsResponse> => {
+    const client = new Anthropic({ apiKey: anthropicKey() });
+
+    const prompt = `You are an expert career coach for someone targeting "${params.targetRole}".
+Skill gaps to address: ${params.skills.slice(0, 5).join(", ")}
+Current skills: ${params.currentSkills.slice(0, 5).join(", ") || "Not specified"}
+
+Respond with ONLY a valid JSON object (no markdown):
+{
+  "portfolio": [
+    {
+      "type": "portfolio",
+      "title": "Project name",
+      "description": "What to build and what technologies to use",
+      "platform": "GitHub",
+      "url": "https://github.com",
+      "difficulty": "Intermediate",
+      "timeEstimate": "3 weeks",
+      "why": "Why this project impresses ${params.targetRole} hiring managers",
+      "actionStep": "First concrete step to start today"
+    }
+  ],
+  "networking": [
+    {
+      "type": "networking",
+      "title": "Community or action name",
+      "description": "What this networking opportunity is",
+      "platform": "LinkedIn",
+      "url": "Real URL if applicable",
+      "why": "Why this network matters for ${params.targetRole}",
+      "actionStep": "Specific first action (e.g. 'Send connection request with this message...')"
+    }
+  ],
+  "jobApplications": [
+    {
+      "type": "job_application",
+      "title": "Company or job board name",
+      "description": "What type of role to apply for and why this company",
+      "platform": "LinkedIn Jobs",
+      "url": "Real job board URL",
+      "why": "Why this is a great fit given their skills",
+      "actionStep": "What to highlight in the application"
+    }
+  ]
+}
+
+Requirements:
+- Exactly 3 portfolio projects (role-specific, using their skill gaps, buildable in 1-4 weeks)
+- Exactly 3 networking recommendations (real communities, LinkedIn groups, Slack/Discord communities, meetups)
+- Exactly 3 job application targets (mix of job boards and specific companies known for hiring ${params.targetRole}s)
+- All URLs must be real and working
+- Portfolio projects must use real tech stack relevant to skill gaps
+- Be very specific to "${params.targetRole}" — no generic advice`;
+
+    const message = await client.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = message.content[0];
+    if (content.type !== "text") throw new Error("Unexpected AI response");
+
+    const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Could not parse AI recommendations");
+
+    const result = JSON.parse(jsonMatch[0]);
+
+    return {
+      portfolio: result.portfolio ?? [],
+      networking: result.networking ?? [],
+      jobApplications: result.jobApplications ?? [],
+    };
+  }
+);
+
 // POST /assessment — Submit questionnaire answers, get AI career matches
 export const submitAssessment = api(
   { expose: true, method: "POST", path: "/assessment" },

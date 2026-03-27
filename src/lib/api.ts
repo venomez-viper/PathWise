@@ -59,6 +59,8 @@ export const assessment = {
   submit: (data: unknown)     => request('/assessment', { method: 'POST', body: JSON.stringify(data) }),
   getCertificates: (data: unknown) =>
     request('/assessment/certificates', { method: 'POST', body: JSON.stringify(data) }),
+  getCareerRecommendations: (data: unknown) =>
+    request('/assessment/career-recommendations', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // --- Roadmap ---
