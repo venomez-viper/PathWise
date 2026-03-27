@@ -12,11 +12,11 @@ const pathwiseTiers: PricingTier[] = [
     cta: "Start for Free",
     ctaHref: "/signup",
     features: [
-      "1 AI-generated career roadmap",
-      "Up to 3 career match suggestions",
+      "1 AI career roadmap",
+      "3 career match suggestions",
+      "5-step career assessment",
       "Basic task planner",
       "Career readiness score",
-      "5-step career assessment",
     ],
   },
   {
@@ -29,12 +29,11 @@ const pathwiseTiers: PricingTier[] = [
     cta: "Upgrade to Pro",
     ctaHref: "/signup",
     features: [
-      "Unlimited AI roadmap generations",
+      "Unlimited AI roadmaps",
       "Advanced Claude AI coaching",
-      "Personalised skill gap analysis",
-      "Priority AI response times",
+      "Skill gap analysis",
+      "Salary & market insights",
       "Shareable roadmap link",
-      "Labor market salary insights",
       "Priority support",
     ],
   },
@@ -45,7 +44,7 @@ function CreativePricingDemo() {
     <CreativePricing
       tag="Transparent Pricing"
       title="Invest in your career"
-      description="Start free. Upgrade when you're ready to accelerate."
+      description="Start free. Upgrade when you're ready."
       tiers={pathwiseTiers}
     />
   );
