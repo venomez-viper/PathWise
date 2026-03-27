@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Clock, Share2, FileText, ChevronRight, Sparkles } from 'lucide-react';
+import { Clock, Share2, FileText, Sparkles, Plus, CheckCircle2 } from 'lucide-react';
 
 type TaskItem = { id: string; title: string; meta: string; icon: 'clock' | 'share2' | 'file'; done: boolean };
 
 const DAILY: TaskItem[] = [
-  { id: 'd1', title: "Complete 'SQL Basics Module 1'",                    meta: '30 mins',        icon: 'clock',  done: false },
-  { id: 'd2', title: 'Connect with 1 Marketing Analyst on LinkedIn',      meta: 'Networking',     icon: 'share2', done: false },
-  { id: 'd3', title: 'Review 2 Job Descriptions',                         meta: 'Market Research', icon: 'file',  done: false },
+  { id: 'd1', title: "Complete 'SQL Basics Module 1'",               meta: '30 mins',        icon: 'clock',  done: false },
+  { id: 'd2', title: 'Connect with 1 Marketing Analyst on LinkedIn', meta: 'Networking',     icon: 'share2', done: true  },
+  { id: 'd3', title: 'Review 2 Job Descriptions',                    meta: 'Market Research', icon: 'file',  done: false },
 ];
 const WEEKLY: TaskItem[] = [
-  { id: 'w1', title: 'Complete Marketing Analytics module',               meta: '2 hours',        icon: 'clock',  done: false },
-  { id: 'w2', title: 'Update portfolio with E-commerce Data Project',     meta: 'Projects',       icon: 'file',   done: false },
-  { id: 'w3', title: 'Attend 1 industry webinar',                         meta: 'Networking',     icon: 'share2', done: false },
+  { id: 'w1', title: 'Complete Marketing Analytics module',           meta: '2 hours',    icon: 'clock',  done: false },
+  { id: 'w2', title: 'Update portfolio with E-commerce Data Project', meta: 'Projects',   icon: 'file',   done: false },
+  { id: 'w3', title: 'Attend 1 industry webinar',                    meta: 'Networking', icon: 'share2', done: false },
 ];
 
 const MetaIcon = ({ type }: { type: 'clock' | 'share2' | 'file' }) =>
@@ -19,67 +19,115 @@ const MetaIcon = ({ type }: { type: 'clock' | 'share2' | 'file' }) =>
 
 export default function Tasks() {
   const [tab, setTab] = useState<'daily' | 'weekly'>('daily');
-  const [tasks, setTasks] = useState<{ daily: TaskItem[]; weekly: TaskItem[] }>({ daily: DAILY, weekly: WEEKLY });
+  const [tasks, setTasks] = useState({ daily: DAILY, weekly: WEEKLY });
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
 
   const current = tasks[tab];
+  const done = current.filter(t => t.done).length;
   const toggle = (id: string) =>
     setTasks(p => ({ ...p, [tab]: p[tab].map(t => t.id === id ? { ...t, done: !t.done } : t) }));
 
   return (
-    <main className="main-content">
-
-      {/* ── Header ── */}
-      <div className={`tasks-header fade-in${mounted ? ' visible' : ''}`}>
-        <h1 className="tasks-title">Stay on track with today's priorities</h1>
-        <div className="tasks-meta-row">
-          <div className="tasks-meta-item">
-            <span className="label-caps">TARGETING</span>
-            <span className="tasks-meta-value" style={{ color: 'var(--primary)' }}>Marketing Analyst</span>
-          </div>
-          <div className="tasks-meta-divider" />
-          <div className="tasks-meta-item">
-            <span className="label-caps">PROGRESS</span>
-            <span className="tasks-meta-value" style={{ color: 'var(--secondary)' }}>32%</span>
-          </div>
+    <div className="page">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Tasks</h1>
+          <p className="page-subtitle">Stay on track with your daily priorities.</p>
         </div>
-        <div className="progress-track" style={{ marginTop: '10px' }}>
-          <div className="progress-fill fill-secondary" style={{ width: mounted ? '32%' : '0%' }} />
-        </div>
+        <button className="btn-page-action"><Plus size={14} /> Add Task</button>
       </div>
 
-      {/* ── Daily / Weekly Toggle ── */}
-      <div className="toggle-pill">
-        <button className={`toggle-option${tab === 'daily'  ? ' active' : ''}`} onClick={() => setTab('daily')}>Daily</button>
-        <button className={`toggle-option${tab === 'weekly' ? ' active' : ''}`} onClick={() => setTab('weekly')}>Weekly</button>
-      </div>
-
-      {/* ── Task List ── */}
-      <div className="task-list">
-        {current.map(task => (
-          <div className={`task-item${task.done ? ' done' : ''}`} key={task.id} onClick={() => toggle(task.id)}>
-            <div className={`task-checkbox${task.done ? ' checked' : ''}`} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p className="task-item-title">{task.title}</p>
-              <p className="task-item-meta">
-                <MetaIcon type={task.icon} />
-                {' '}{task.meta}
-              </p>
+      <div className="tasks-layout">
+        {/* Main task area */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Progress bar */}
+          <div className="panel" style={{ padding: '1.25rem 1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-variant)' }}>Targeting</span>
+                <span style={{ marginLeft: '8px', fontWeight: 700, color: 'var(--primary)' }}>Marketing Analyst</span>
+              </div>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
+                {done}/{current.length} done
+              </span>
             </div>
-            <ChevronRight size={16} color="var(--on-surface-variant)" style={{ flexShrink: 0 }} />
+            <div className="stat-tile__bar">
+              <div className="stat-tile__fill" style={{
+                width: mounted ? `${(done / current.length) * 100}%` : '0%',
+                background: 'var(--primary)',
+                transition: 'width 0.6s ease'
+              }} />
+            </div>
           </div>
-        ))}
-      </div>
 
-      {/* ── CTA ── */}
-      <div className="tasks-cta-area">
-        <button className="btn-complete-tasks">
-          COMPLETE TASKS <Sparkles size={16} />
-        </button>
-        <p className="tasks-estimated">ESTIMATED TIME: 45 MINUTES</p>
-      </div>
+          {/* Tab toggle */}
+          <div className="tab-bar">
+            <button className={`tab-btn${tab === 'daily' ? ' active' : ''}`} onClick={() => setTab('daily')}>
+              Daily Tasks
+            </button>
+            <button className={`tab-btn${tab === 'weekly' ? ' active' : ''}`} onClick={() => setTab('weekly')}>
+              Weekly Tasks
+            </button>
+          </div>
 
-    </main>
+          {/* Task list */}
+          <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+            {current.map((task, i) => (
+              <div
+                key={task.id}
+                className={`task-row${task.done ? ' task-row--done' : ''}`}
+                style={{ borderTop: i > 0 ? '1px solid var(--outline-variant)' : 'none' }}
+                onClick={() => toggle(task.id)}
+              >
+                <div className={`task-row__check${task.done ? ' checked' : ''}`}>
+                  {task.done && <CheckCircle2 size={16} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="task-row__title">{task.title}</p>
+                  <p className="task-row__meta">
+                    <MetaIcon type={task.icon} /> {task.meta}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button className="btn-complete-all">
+            <Sparkles size={15} /> Mark All Complete
+          </button>
+        </div>
+
+        {/* Sidebar info */}
+        <div className="tasks-sidebar">
+          <div className="panel">
+            <h3 className="panel__title">This Week</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+              {[
+                { label: 'Tasks Done',  value: '5 / 8',   color: '#a78bfa' },
+                { label: 'Est. Time',   value: '45 min',  color: '#5ef6e6' },
+                { label: 'On Streak',   value: '7 days',  color: '#34d399' },
+              ].map(s => (
+                <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>{s.label}</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.color }}>{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="panel">
+            <h3 className="panel__title">AI Suggestion</h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, marginTop: '8px' }}>
+              Focus on the SQL module first — it unlocks 3 more career paths in your roadmap.
+            </p>
+            <button className="panel-link" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              <Sparkles size={13} color="var(--primary)" />
+              <span style={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600 }}>Generate more suggestions</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

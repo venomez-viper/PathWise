@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Clock, TrendingUp, Pencil, Plus, Zap,
-  ChevronRight, GraduationCap, FolderOpen, Users,
-} from 'lucide-react';
-import CircularProgress from '../../components/CircularProgress';
+import { Clock, TrendingUp, Pencil, Plus, Zap, GraduationCap, FolderOpen, Users, ChevronRight } from 'lucide-react';
 
 const COURSES = [
   { title: 'Learn SQL basics', priority: 'high', meta: '4 of 12 modules completed' },
@@ -17,112 +13,123 @@ const NETWORKING = [
   { title: 'Industry Coffee Chat', priority: 'medium', meta: 'Reach out to 3 senior analysts at target companies.' },
 ];
 
+const PRIORITY_COLOR: Record<string, string> = {
+  high: '#ef4444',
+  medium: '#f59e0b',
+  low: '#34d399',
+};
+
 export default function Roadmap() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
 
   return (
-    <main className="main-content">
+    <div className="page">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Career Roadmap</h1>
+          <p className="page-subtitle">Your personalised path to Marketing Analyst.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn-page-secondary"><Pencil size={14} /> Adjust Timeline</button>
+          <button className="btn-page-action"><Plus size={14} /> Add Task</button>
+        </div>
+      </div>
 
-      {/* ── Current Target ── */}
-      <section className={`roadmap-target-card fade-in${mounted ? ' visible' : ''}`}>
-        <span className="label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '4px', display: 'block' }}>
-          CURRENT TARGET
-        </span>
-        <div className="roadmap-target-row">
-          <h1 className="roadmap-target-title">Marketing<br />Analyst</h1>
-          <CircularProgress value={32} />
-        </div>
-        <div className="chip-row">
-          <span className="chip">
-            <Clock size={13} style={{ flexShrink: 0 }} />
-            6 Months Timeline
-          </span>
-          <span className="chip chip-teal">
-            <TrendingUp size={13} style={{ flexShrink: 0 }} />
-            Advanced Track
-          </span>
-        </div>
-        <div className="roadmap-action-row">
-          <button className="btn-primary-sm">
-            <Pencil size={13} /> Adjust Timeline
-          </button>
-          <button className="btn-ghost-sm">
-            <Plus size={13} /> Add Custom Task
-          </button>
-        </div>
-      </section>
-
-      {/* ── Skill Gap Indicator ── */}
-      <section className="skill-gap-card">
-        <div className="skill-gap-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="skill-gap-icon">
-              <Zap size={18} color="var(--tertiary-container)" />
+      <div className="roadmap-grid">
+        {/* Left: target + skill gaps */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Target Card */}
+          <div className="panel">
+            <p className="panel__eyebrow">CURRENT TARGET</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '8px 0 12px' }}>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--on-surface)' }}>
+                Marketing Analyst
+              </h2>
+              <div className="roadmap-progress-ring">
+                <svg width="64" height="64" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="26" fill="none" stroke="var(--surface-container-high)" strokeWidth="6" />
+                  <circle
+                    cx="32" cy="32" r="26"
+                    fill="none" stroke="#a78bfa" strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray={163.4}
+                    strokeDashoffset={mounted ? 163.4 * 0.68 : 163.4}
+                    style={{ transform: 'rotate(-90deg)', transformOrigin: '32px 32px', transition: 'stroke-dashoffset 1s ease' }}
+                  />
+                </svg>
+                <span className="roadmap-progress-label">32%</span>
+              </div>
             </div>
-            <h2 className="skill-gap-title">Skill Gap Indicator</h2>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <span className="tag"><Clock size={12} /> 6 Months Timeline</span>
+              <span className="tag tag--teal"><TrendingUp size={12} /> Advanced Track</span>
+            </div>
           </div>
-          <span className="missing-badge">2 MISSING SKILLS IDENTIFIED</span>
+
+          {/* Skill Gap */}
+          <div className="panel">
+            <div className="panel__header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Zap size={16} color="#f59e0b" />
+                <h2 className="panel__title">Skill Gaps</h2>
+              </div>
+              <span className="badge-pill badge-pill--warning">2 Missing</span>
+            </div>
+            {[
+              { title: 'Google Data Analytics Professional Certificate', desc: 'Core technical foundation' },
+              { title: 'Meta Marketing Analytics Certificate', desc: 'Advanced tracking & attribution' },
+            ].map(item => (
+              <div className="skill-gap-row" key={item.title}>
+                <div className="skill-gap-row__icon"><GraduationCap size={16} color="#a78bfa" /></div>
+                <div style={{ flex: 1 }}>
+                  <p className="skill-gap-row__title">{item.title}</p>
+                  <p className="skill-gap-row__desc">{item.desc}</p>
+                </div>
+                <ChevronRight size={15} color="var(--on-surface-variant)" />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {[
-          { title: 'Google Data Analytics Professional Certificate', desc: 'Recommended for core technical foundation' },
-          { title: 'Meta Marketing Analytics Certificate', desc: 'Advanced tracking and attribution mastery' },
-        ].map((item) => (
-          <div className="skill-gap-item" key={item.title}>
-            <div className="skill-gap-item-icon">
-              <GraduationCap size={18} color="var(--primary)" />
-            </div>
-            <div style={{ flex: 1 }}>
-              <p className="skill-gap-item-title">{item.title}</p>
-              <p className="skill-gap-item-desc">{item.desc}</p>
-            </div>
-            <ChevronRight size={16} color="var(--primary)" style={{ flexShrink: 0 }} />
+        {/* Right: learning path */}
+        <div className="panel">
+          <div className="panel__header">
+            <h2 className="panel__title">Learning Path</h2>
+            <button className="btn-icon"><Plus size={15} /></button>
           </div>
-        ))}
-      </section>
 
-      {/* ── My Learning Path ── */}
-      <section style={{ marginBottom: '16px' }}>
-        <h2 className="section-title">My Learning Path</h2>
-
-        <PathSection icon={<GraduationCap size={14} />} label="COURSES"    items={COURSES}    />
-        <PathSection icon={<FolderOpen   size={14} />} label="PROJECTS"   items={PROJECTS}   />
-        <PathSection icon={<Users        size={14} />} label="NETWORKING" items={NETWORKING} addLabel="New Networking Task" />
-      </section>
-
-    </main>
+          <PathSection icon={<GraduationCap size={14} />} label="COURSES"    items={COURSES}    />
+          <PathSection icon={<FolderOpen   size={14} />} label="PROJECTS"   items={PROJECTS}   />
+          <PathSection icon={<Users        size={14} />} label="NETWORKING" items={NETWORKING} />
+        </div>
+      </div>
+    </div>
   );
 }
 
-function PathSection({
-  icon, label, items, addLabel,
-}: {
+function PathSection({ icon, label, items }: {
   icon: React.ReactNode;
   label: string;
   items: { title: string; priority: string; meta: string }[];
-  addLabel?: string;
 }) {
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <div className="path-section-header">
+    <div className="path-section">
+      <div className="path-section__header">
         {icon}
-        <span className="label-caps">{label}</span>
+        <span className="path-section__label">{label}</span>
       </div>
-      {items.map((item) => (
-        <div className={`path-item priority-${item.priority}-border`} key={item.title}>
-          <span className={`priority-badge priority-${item.priority}`}>
-            {item.priority.toUpperCase()} PRIORITY
-          </span>
-          <p className="path-item-title">{item.title}</p>
-          <p className="path-item-meta">{item.meta}</p>
+      {items.map(item => (
+        <div className="path-item" key={item.title} style={{ borderLeftColor: PRIORITY_COLOR[item.priority] }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <p className="path-item__title">{item.title}</p>
+            <span className="priority-tag" style={{ color: PRIORITY_COLOR[item.priority], background: `${PRIORITY_COLOR[item.priority]}15` }}>
+              {item.priority}
+            </span>
+          </div>
+          <p className="path-item__meta">{item.meta}</p>
         </div>
       ))}
-      {addLabel && (
-        <button className="add-item-btn">
-          <Plus size={13} /> {addLabel}
-        </button>
-      )}
     </div>
   );
 }
