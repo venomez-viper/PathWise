@@ -1,7 +1,10 @@
-import { api } from "encore.dev/api";
+import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "encore.dev/internal/codegen/auth";
+import { AuthData } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { secret } from "encore.dev/config";
 import Anthropic from "@anthropic-ai/sdk";
+import { sanitizeForPrompt } from "../shared/sanitize";
 
 const db = new SQLDatabase("tasks", { migrations: "./migrations" });
 const anthropicKey = secret("AnthropicAPIKey");
@@ -30,8 +33,13 @@ export interface TaskResponse {
 
 // GET /tasks?userId=
 export const listTasks = api(
-  { expose: true, method: "GET", path: "/tasks" },
+  { expose: true, method: "GET", path: "/tasks", auth: true },
   async ({ userId }: { userId: string }): Promise<ListTasksResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) {
+      throw APIError.permissionDenied("you can only view your own tasks");
+    }
+
     const tasks: Task[] = [];
     const rows = db.query`
       SELECT id, user_id, milestone_id, title, description, status, priority,
@@ -117,14 +125,20 @@ export interface UpdateTaskParams {
 
 // PATCH /tasks/:taskId
 export const updateTask = api(
-  { expose: true, method: "PATCH", path: "/tasks/:taskId" },
+  { expose: true, method: "PATCH", path: "/tasks/:taskId", auth: true },
   async ({ taskId, ...updates }: UpdateTaskParams): Promise<TaskResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+
     const row = await db.queryRow`
       SELECT id, user_id, milestone_id, title, description, status, priority,
              category, due_date, completed_at, created_at
       FROM tasks WHERE id = ${taskId}
     `;
     if (!row) throw new Error(`Task ${taskId} not found`);
+
+    if (row.user_id !== userID) {
+      throw APIError.permissionDenied("you can only update your own tasks");
+    }
 
     const newStatus   = updates.status      ?? row.status;
     const newPriority = updates.priority    ?? row.priority;
@@ -179,11 +193,14 @@ export const aiGenerateTasks = api(
   { expose: true, method: "POST", path: "/tasks/generate/milestone" },
   async (params: GenerateTasksParams): Promise<{ tasks: Task[] }> => {
     const client = new Anthropic({ apiKey: anthropicKey() });
+    const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
+    const safeMilestoneTitle = sanitizeForPrompt(params.milestoneTitle, 300);
+    const safeMilestoneDescription = sanitizeForPrompt(params.milestoneDescription, 500);
 
-    const prompt = `You are an expert career coach. Generate exactly 4 specific, actionable tasks for someone working toward "${params.targetRole}" on this career milestone:
+    const prompt = `You are an expert career coach. Generate exactly 4 specific, actionable tasks for someone working toward "${safeTargetRole}" on this career milestone:
 
-Milestone: "${params.milestoneTitle}"
-Description: "${params.milestoneDescription}"
+Milestone: "${safeMilestoneTitle}"
+Description: "${safeMilestoneDescription}"
 
 Respond with ONLY a valid JSON array (no markdown, no explanation):
 [
@@ -267,9 +284,11 @@ export const customGenerateTasks = api(
   async (params: CustomGenerateTasksParams): Promise<{ tasks: Task[] }> => {
     const client = new Anthropic({ apiKey: anthropicKey() });
     const count = params.count ?? 4;
+    const safePrompt = sanitizeForPrompt(params.prompt, 500);
+    const safeTargetRole = params.targetRole ? sanitizeForPrompt(params.targetRole, 200) : undefined;
 
-    const prompt = `You are an expert career coach. The user wants help with: "${params.prompt}"
-${params.targetRole ? `Their target role is: ${params.targetRole}` : ''}
+    const prompt = `You are an expert career coach. The user wants help with: "${safePrompt}"
+${safeTargetRole ? `Their target role is: ${safeTargetRole}` : ''}
 
 Generate exactly ${count} specific, actionable tasks based on what they asked for.
 

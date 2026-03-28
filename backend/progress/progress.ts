@@ -1,4 +1,6 @@
-import { api } from "encore.dev/api";
+import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "encore.dev/internal/codegen/auth";
+import { AuthData } from "../auth/auth";
 import { listTasks } from "../tasks/tasks";
 import { getRoadmap } from "../roadmap/roadmap";
 
@@ -25,8 +27,13 @@ export interface GetProgressResponse {
 
 // GET /progress/:userId
 export const getProgress = api(
-  { expose: true, method: "GET", path: "/progress/:userId" },
+  { expose: true, method: "GET", path: "/progress/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<GetProgressResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) {
+      throw APIError.permissionDenied("you can only view your own progress");
+    }
+
     const [{ roadmap }, { tasks }] = await Promise.all([
       getRoadmap({ userId }),
       listTasks({ userId }),

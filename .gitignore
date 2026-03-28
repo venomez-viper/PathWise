@@ -27,5 +27,8 @@ dist-ssr
 *.zip
 
 # Local env overrides (never commit real secrets)
+.env
+.env.*
+!.env.example
 .env.local
 .env.*.local

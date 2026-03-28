@@ -175,6 +175,20 @@ export const updateProfile = api(
     if (!row) throw APIError.notFound("user not found");
 
     const newName      = params.name      ?? row.name;
+
+    // Validate avatarUrl to prevent javascript:, data:, and file: URI attacks
+    if (params.avatarUrl !== undefined && params.avatarUrl !== null && params.avatarUrl !== "") {
+      try {
+        const parsed = new URL(params.avatarUrl);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+          throw APIError.invalidArgument("avatarUrl must use http or https protocol");
+        }
+      } catch (e) {
+        if (e instanceof APIError) throw e;
+        throw APIError.invalidArgument("avatarUrl must be a valid http or https URL");
+      }
+    }
+
     const newAvatarUrl = params.avatarUrl !== undefined ? params.avatarUrl : row.avatar_url;
 
     await db.exec`

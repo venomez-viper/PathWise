@@ -1,4 +1,6 @@
-import { api } from "encore.dev/api";
+import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "encore.dev/internal/codegen/auth";
+import { AuthData } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { secret } from "encore.dev/config";
 import Anthropic from "@anthropic-ai/sdk";
@@ -30,8 +32,13 @@ export interface GetRoadmapResponse {
 
 // GET /roadmap/:userId
 export const getRoadmap = api(
-  { expose: true, method: "GET", path: "/roadmap/:userId" },
+  { expose: true, method: "GET", path: "/roadmap/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<GetRoadmapResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) {
+      throw APIError.permissionDenied("you can only view your own roadmap");
+    }
+
     const roadmapRow = await db.queryRow`
       SELECT id, user_id, target_role, completion_percent
       FROM roadmaps WHERE user_id = ${userId}
@@ -135,13 +142,23 @@ Requirements:
 
 // POST /roadmap/milestones/:milestoneId/complete — mark a milestone complete, unlock next
 export const completeMilestone = api(
-  { expose: true, method: "POST", path: "/roadmap/milestones/:milestoneId/complete" },
+  { expose: true, method: "POST", path: "/roadmap/milestones/:milestoneId/complete", auth: true },
   async ({ milestoneId }: { milestoneId: string }): Promise<{ success: boolean; nextMilestoneId?: string }> => {
+    const { userID } = getAuthData<AuthData>()!;
+
     // 1. Get the milestone and its roadmap
     const ms = await db.queryRow`
       SELECT id, roadmap_id, position FROM milestones WHERE id = ${milestoneId}
     `;
     if (!ms) throw new Error("Milestone not found");
+
+    // Verify the milestone belongs to the authenticated user
+    const roadmapOwner = await db.queryRow`
+      SELECT user_id FROM roadmaps WHERE id = ${ms.roadmap_id}
+    `;
+    if (!roadmapOwner || roadmapOwner.user_id !== userID) {
+      throw APIError.permissionDenied("you can only complete your own milestones");
+    }
 
     // 2. Mark this milestone as completed
     await db.exec`UPDATE milestones SET status = 'completed' WHERE id = ${milestoneId}`;

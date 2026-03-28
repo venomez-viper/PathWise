@@ -75,7 +75,7 @@ export const roadmap = {
 
 // --- Tasks ---
 export const tasks = {
-  list:   (userId: string)              => request(`/tasks?userId=${userId}`),
+  list:   (userId: string)              => request(`/tasks?userId=${encodeURIComponent(userId)}`),
   create: (data: unknown)               => request('/tasks', { method: 'POST', body: JSON.stringify(data) }),
   update: (taskId: string, data: unknown) =>
     request(`/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(data) }),

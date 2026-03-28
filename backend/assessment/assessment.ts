@@ -1,7 +1,10 @@
-import { api } from "encore.dev/api";
+import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "encore.dev/internal/codegen/auth";
+import { AuthData } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { secret } from "encore.dev/config";
 import Anthropic from "@anthropic-ai/sdk";
+import { sanitizeForPrompt } from "../shared/sanitize";
 
 const db = new SQLDatabase("assessment", { migrations: "./migrations" });
 const anthropicKey = secret("AnthropicAPIKey");
@@ -37,8 +40,13 @@ export interface GetAssessmentResponse {
 
 // GET /assessment/:userId
 export const getAssessment = api(
-  { expose: true, method: "GET", path: "/assessment/:userId" },
+  { expose: true, method: "GET", path: "/assessment/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<GetAssessmentResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) {
+      throw APIError.permissionDenied("you can only view your own assessment");
+    }
+
     const row = await db.queryRow`
       SELECT user_id, completed_at, strengths, values, personality_type,
              career_matches, skill_gaps, current_skills
@@ -152,8 +160,10 @@ export const getCertificates = api(
   { expose: true, method: "POST", path: "/assessment/certificates" },
   async ({ userId, skills, targetRole }: GetCertificatesParams): Promise<GetCertificatesResponse> => {
     const client = new Anthropic({ apiKey: anthropicKey() });
+    const safeTargetRole = sanitizeForPrompt(targetRole, 200);
+    const safeSkills = skills.map(s => sanitizeForPrompt(s, 100));
 
-    const prompt = `You are a career advisor recommending real online certificates. For someone targeting "${targetRole}" with skill gaps in: ${skills.join(', ')}
+    const prompt = `You are a career advisor recommending real online certificates. For someone targeting "${safeTargetRole}" with skill gaps in: ${safeSkills.join(', ')}
 
 Recommend exactly ${Math.min(skills.length * 2, 8)} real, verifiable certificates from real platforms. Use ONLY real certificate programs that exist right now.
 
@@ -167,7 +177,7 @@ Respond with ONLY a valid JSON array:
     "duration": "e.g. 6 months part-time",
     "level": "Beginner|Intermediate|Advanced",
     "cost": "Free|$49/month|$300 exam fee|etc",
-    "whyRecommended": "One sentence on why this is the best choice for targeting ${targetRole}"
+    "whyRecommended": "One sentence on why this is the best choice for targeting ${safeTargetRole}"
   }
 ]
 
@@ -222,8 +232,9 @@ export const getCareerRecommendations = api(
   { expose: true, method: "POST", path: "/assessment/career-recommendations" },
   async (params: CareerRecommendationsParams): Promise<CareerRecommendationsResponse> => {
     const client = new Anthropic({ apiKey: anthropicKey() });
+    const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
 
-    const prompt = `You are an expert career coach for someone targeting "${params.targetRole}".
+    const prompt = `You are an expert career coach for someone targeting "${safeTargetRole}".
 Skill gaps to address: ${params.skills.slice(0, 5).join(", ")}
 Current skills: ${params.currentSkills.slice(0, 5).join(", ") || "Not specified"}
 
@@ -238,7 +249,7 @@ Respond with ONLY a valid JSON object (no markdown):
       "url": "https://github.com",
       "difficulty": "Intermediate",
       "timeEstimate": "3 weeks",
-      "why": "Why this project impresses ${params.targetRole} hiring managers",
+      "why": "Why this project impresses ${safeTargetRole} hiring managers",
       "actionStep": "First concrete step to start today"
     }
   ],
@@ -249,7 +260,7 @@ Respond with ONLY a valid JSON object (no markdown):
       "description": "What this networking opportunity is",
       "platform": "LinkedIn",
       "url": "Real URL if applicable",
-      "why": "Why this network matters for ${params.targetRole}",
+      "why": "Why this network matters for ${safeTargetRole}",
       "actionStep": "Specific first action (e.g. 'Send connection request with this message...')"
     }
   ],
@@ -269,10 +280,10 @@ Respond with ONLY a valid JSON object (no markdown):
 Requirements:
 - Exactly 3 portfolio projects (role-specific, using their skill gaps, buildable in 1-4 weeks)
 - Exactly 3 networking recommendations (real communities, LinkedIn groups, Slack/Discord communities, meetups)
-- Exactly 3 job application targets (mix of job boards and specific companies known for hiring ${params.targetRole}s)
+- Exactly 3 job application targets (mix of job boards and specific companies known for hiring ${safeTargetRole}s)
 - All URLs must be real and working
 - Portfolio projects must use real tech stack relevant to skill gaps
-- Be very specific to "${params.targetRole}" — no generic advice`;
+- Be very specific to "${safeTargetRole}" — no generic advice`;
 
     const message = await client.messages.create({
       model: "claude-opus-4-6",
@@ -374,6 +385,8 @@ export const analyzeSkillGaps = api(
     result: { skillGaps: SkillGapItem[]; summary: string; topPriority: string };
   }> => {
     const client = new Anthropic({ apiKey: anthropicKey() });
+    const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
+    const safeYearsExperience = sanitizeForPrompt(params.yearsExperience, 50);
 
     const techList = Object.entries(params.technicalSkills)
       .filter(([, v]) => v && v !== "none")
@@ -387,16 +400,16 @@ export const analyzeSkillGaps = api(
 
     const prompt = `You are an expert career coach performing a skill gap analysis.
 
-Target Role: ${params.targetRole}
+Target Role: ${safeTargetRole}
 Current Role: ${params.currentRole || "Not specified"}
-Experience: ${params.yearsExperience}
+Experience: ${safeYearsExperience}
 Technical Skills self-rated: ${techList}
 Soft Skills self-rated: ${softList}
 Tools used: ${params.tools.join(", ") || "None"}
 Biggest self-identified gap: ${params.biggestGap || "Not specified"}
 Preferred learning style: ${params.learningStyle.join(", ") || "Not specified"}
 
-Identify the key skill gaps for someone targeting "${params.targetRole}".
+Identify the key skill gaps for someone targeting "${safeTargetRole}".
 
 Respond with ONLY valid JSON (no markdown):
 {
