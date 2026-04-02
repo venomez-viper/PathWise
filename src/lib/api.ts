@@ -89,3 +89,28 @@ export const tasks = {
 export const progress = {
   getStats: (userId: string) => request(`/progress/${userId}`),
 };
+
+// --- Streaks ---
+export const streaks = {
+  get: (userId: string) => request(`/streaks/${userId}`),
+  recordActivity: (userId: string) => request('/streaks/record', { method: 'POST', body: JSON.stringify({ userId }) }),
+};
+
+// --- Achievements ---
+export const achievements = {
+  get: (userId: string) => request(`/streaks/achievements/${userId}`),
+  award: (data: { userId: string; badgeKey: string }) => request('/streaks/achievements/award', { method: 'POST', body: JSON.stringify(data) }),
+};
+
+// --- Notifications ---
+export const notifications = {
+  get: (userId: string) => request(`/streaks/notifications/${userId}`),
+  markRead: (userId: string) => request('/streaks/notifications/read', { method: 'POST', body: JSON.stringify({ userId }) }),
+};
+
+// --- Certificates ---
+export const certificates = {
+  get: (userId: string) => request(`/streaks/certificates/${userId}`),
+  add: (data: { userId: string; name: string; issuer: string; issuedDate?: string; url?: string }) =>
+    request('/streaks/certificates', { method: 'POST', body: JSON.stringify(data) }),
+};

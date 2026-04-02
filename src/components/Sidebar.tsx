@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Zap } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Zap, Flame, Award, FileText, HelpCircle } from 'lucide-react';
 import { tokenStore } from '../lib/api';
 import './Sidebar.css';
 
@@ -9,7 +9,11 @@ const NAV_ITEMS = [
   { to: '/app/roadmap',     icon: Compass,         label: 'Roadmap'              },
   { to: '/app/tasks',       icon: CheckSquare,     label: 'Tasks'                },
   { to: '/app/progress',    icon: BarChart2,       label: 'Progress'             },
+  { to: '/app/streaks',     icon: Flame,           label: 'Streaks'              },
+  { to: '/app/achievements',icon: Award,           label: 'Achievements'         },
+  { to: '/app/certificates',icon: FileText,        label: 'Certificates'         },
   { to: '/app/settings',    icon: Settings,        label: 'Settings'             },
+  { to: '/app/help',        icon: HelpCircle,      label: 'Help & FAQ'           },
 ];
 
 interface SidebarProps {

@@ -1,0 +1,276 @@
+import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "encore.dev/internal/codegen/auth";
+import { AuthData } from "../auth/auth";
+import { SQLDatabase } from "encore.dev/storage/sqldb";
+
+const db = new SQLDatabase("streaks", { migrations: "./migrations" });
+
+// ── BADGE DEFINITIONS ─────────────────────────────────────────────────────────
+const BADGES = [
+  { key: "first_steps", title: "First Steps", description: "Completed the career orientation module.", xp: 50 },
+  { key: "roadmap_starter", title: "Roadmap Starter", description: "Created your first customized career path.", xp: 100 },
+  { key: "streak_7", title: "7-Day Streak", description: "Used PathWise for seven consecutive days.", xp: 150 },
+  { key: "skill_master", title: "Skill Master", description: "Complete 5 technical assessment tasks.", xp: 200 },
+  { key: "networker", title: "Networker", description: "Connect with 3 industry mentors.", xp: 150 },
+  { key: "interview_ready", title: "Interview Ready", description: "Complete the AI interview simulation.", xp: 200 },
+  { key: "path_finisher", title: "Path Finisher", description: "Complete your entire career roadmap.", xp: 500 },
+  { key: "top_contributor", title: "Top Contributor", description: "Share 10 helpful resources in forums.", xp: 100 },
+];
+
+// ── STREAKS ───────────────────────────────────────────────────────────────────
+
+interface StreakData {
+  currentStreak: number;
+  bestStreak: number;
+  lastActiveDate: string | null;
+  consistencyScore: number;
+  totalXp: number;
+  weeklyProgress: boolean[];
+}
+
+export interface GetStreakResponse { streak: StreakData; }
+
+export const getStreak = api(
+  { expose: true, method: "GET", path: "/streaks/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<GetStreakResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+
+    let row = await db.queryRow`SELECT current_streak, best_streak, last_active_date, consistency_score, total_xp FROM streaks WHERE user_id = ${userId}`;
+    if (!row) {
+      await db.exec`INSERT INTO streaks (user_id) VALUES (${userId})`;
+      row = { current_streak: 0, best_streak: 0, last_active_date: null, consistency_score: 0, total_xp: 0 };
+    }
+
+    // Build weekly progress (M-S) based on streak
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0=Sun
+    const weeklyProgress: boolean[] = [];
+    for (let i = 0; i < 7; i++) {
+      // Mon=0..Sun=6 mapped from JS getDay
+      const d = i < 6 ? i + 1 : 0;
+      weeklyProgress.push(d <= dayOfWeek && (row as any).current_streak > 0 && i < (row as any).current_streak);
+    }
+
+    return {
+      streak: {
+        currentStreak: (row as any).current_streak,
+        bestStreak: (row as any).best_streak,
+        lastActiveDate: (row as any).last_active_date,
+        consistencyScore: (row as any).consistency_score,
+        totalXp: (row as any).total_xp,
+        weeklyProgress,
+      },
+    };
+  }
+);
+
+// Record daily activity (called when user completes a task)
+export const recordActivity = api(
+  { expose: true, method: "POST", path: "/streaks/record", auth: true },
+  async ({ userId }: { userId: string }): Promise<GetStreakResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+
+    const today = new Date().toISOString().split("T")[0];
+    let row = await db.queryRow`SELECT current_streak, best_streak, last_active_date, consistency_score, total_xp FROM streaks WHERE user_id = ${userId}`;
+
+    if (!row) {
+      await db.exec`INSERT INTO streaks (user_id, current_streak, best_streak, last_active_date, total_xp) VALUES (${userId}, 1, 1, ${today}, 10)`;
+      return getStreak({ userId });
+    }
+
+    const r = row as any;
+    const lastDate = r.last_active_date;
+    if (lastDate === today) return getStreak({ userId }); // already recorded today
+
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+    let newStreak = lastDate === yesterday ? r.current_streak + 1 : 1;
+    const newBest = Math.max(r.best_streak, newStreak);
+    const newXp = r.total_xp + 10;
+    const newConsistency = Math.min(100, Math.round((newStreak / 14) * 100));
+
+    await db.exec`UPDATE streaks SET current_streak = ${newStreak}, best_streak = ${newBest}, last_active_date = ${today}, consistency_score = ${newConsistency}, total_xp = ${newXp}, updated_at = datetime('now') WHERE user_id = ${userId}`;
+
+    // Award streak badges
+    if (newStreak >= 7) {
+      try { await awardAchievement({ userId, badgeKey: "streak_7" }); } catch {}
+    }
+
+    return getStreak({ userId });
+  }
+);
+
+// ── ACHIEVEMENTS ──────────────────────────────────────────────────────────────
+
+interface Achievement {
+  id: string;
+  badgeKey: string;
+  title: string;
+  description: string;
+  earnedAt: string | null;
+}
+
+export interface GetAchievementsResponse {
+  achievements: Achievement[];
+  totalBadges: number;
+  earnedCount: number;
+  totalXp: number;
+  seasonProgress: { level: string; currentXp: number; nextLevelXp: number };
+}
+
+export const getAchievements = api(
+  { expose: true, method: "GET", path: "/streaks/achievements/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<GetAchievementsResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+
+    const earnedRows = await db.query`SELECT badge_key, title, description, earned_at FROM achievements WHERE user_id = ${userId}`;
+    const earned = new Map<string, any>();
+    for await (const row of earnedRows) {
+      const r = row as any;
+      earned.set(r.badge_key, r);
+    }
+
+    const streakRow = await db.queryRow`SELECT total_xp FROM streaks WHERE user_id = ${userId}`;
+    const totalXp = (streakRow as any)?.total_xp ?? 0;
+
+    const achievements: Achievement[] = BADGES.map(b => ({
+      id: b.key,
+      badgeKey: b.key,
+      title: b.title,
+      description: b.description,
+      earnedAt: earned.has(b.key) ? earned.get(b.key).earned_at : null,
+    }));
+
+    const level = totalXp >= 2000 ? "Expert" : totalXp >= 1000 ? "Advanced" : totalXp >= 500 ? "Intermediate" : "Beginner";
+    const nextXp = totalXp >= 2000 ? 3000 : totalXp >= 1000 ? 2000 : totalXp >= 500 ? 1000 : 500;
+
+    return {
+      achievements,
+      totalBadges: BADGES.length,
+      earnedCount: earned.size,
+      totalXp,
+      seasonProgress: { level, currentXp: totalXp, nextLevelXp: nextXp },
+    };
+  }
+);
+
+export const awardAchievement = api(
+  { expose: true, method: "POST", path: "/streaks/achievements/award", auth: true },
+  async ({ userId, badgeKey }: { userId: string; badgeKey: string }): Promise<{ success: boolean }> => {
+    const badge = BADGES.find(b => b.key === badgeKey);
+    if (!badge) throw APIError.notFound("badge not found");
+
+    const exists = await db.queryRow`SELECT id FROM achievements WHERE user_id = ${userId} AND badge_key = ${badgeKey}`;
+    if (exists) return { success: true }; // already earned
+
+    const id = crypto.randomUUID();
+    await db.exec`INSERT INTO achievements (id, user_id, badge_key, title, description) VALUES (${id}, ${userId}, ${badgeKey}, ${badge.title}, ${badge.description})`;
+    await db.exec`UPDATE streaks SET total_xp = total_xp + ${badge.xp} WHERE user_id = ${userId}`;
+
+    // Create notification
+    await createNotification({ userId, type: "achievement", title: "New Achievement!", body: `You've unlocked the "${badge.title}" badge. Keep building that momentum.` });
+
+    return { success: true };
+  }
+);
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface GetNotificationsResponse {
+  notifications: Notification[];
+  unreadCount: number;
+}
+
+export const getNotifications = api(
+  { expose: true, method: "GET", path: "/streaks/notifications/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<GetNotificationsResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+
+    const rows = await db.query`SELECT id, type, title, body, read, created_at FROM notifications WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 50`;
+    const notifications: Notification[] = [];
+    let unreadCount = 0;
+    for await (const row of rows) {
+      const r = row as any;
+      const notif = { id: r.id, type: r.type, title: r.title, body: r.body, read: !!r.read, createdAt: r.created_at };
+      notifications.push(notif);
+      if (!notif.read) unreadCount++;
+    }
+    return { notifications, unreadCount };
+  }
+);
+
+export const markNotificationsRead = api(
+  { expose: true, method: "POST", path: "/streaks/notifications/read", auth: true },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+    await db.exec`UPDATE notifications SET read = 1 WHERE user_id = ${userId}`;
+    return { success: true };
+  }
+);
+
+export const createNotification = api(
+  { expose: false },
+  async ({ userId, type, title, body }: { userId: string; type: string; title: string; body: string }): Promise<{ id: string }> => {
+    const id = crypto.randomUUID();
+    await db.exec`INSERT INTO notifications (id, user_id, type, title, body) VALUES (${id}, ${userId}, ${type}, ${title}, ${body})`;
+    return { id };
+  }
+);
+
+// ── CERTIFICATES ──────────────────────────────────────────────────────────────
+
+interface Certificate {
+  id: string;
+  name: string;
+  issuer: string;
+  issuedDate: string | null;
+  verified: boolean;
+  url: string | null;
+  createdAt: string;
+}
+
+export interface GetCertificatesResponse { certificates: Certificate[]; }
+
+export const getCertificates = api(
+  { expose: true, method: "GET", path: "/streaks/certificates/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<GetCertificatesResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+
+    const rows = await db.query`SELECT id, name, issuer, issued_date, verified, url, created_at FROM certificates WHERE user_id = ${userId} ORDER BY created_at DESC`;
+    const certificates: Certificate[] = [];
+    for await (const row of rows) {
+      const r = row as any;
+      certificates.push({ id: r.id, name: r.name, issuer: r.issuer, issuedDate: r.issued_date, verified: !!r.verified, url: r.url, createdAt: r.created_at });
+    }
+    return { certificates };
+  }
+);
+
+export const addCertificate = api(
+  { expose: true, method: "POST", path: "/streaks/certificates", auth: true },
+  async ({ userId, name, issuer, issuedDate, url }: { userId: string; name: string; issuer: string; issuedDate?: string; url?: string }): Promise<{ certificate: Certificate }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+
+    const id = crypto.randomUUID();
+    await db.exec`INSERT INTO certificates (id, user_id, name, issuer, issued_date, url) VALUES (${id}, ${userId}, ${name}, ${issuer}, ${issuedDate ?? null}, ${url ?? null})`;
+
+    return {
+      certificate: { id, name, issuer, issuedDate: issuedDate ?? null, verified: false, url: url ?? null, createdAt: new Date().toISOString() },
+    };
+  }
+);

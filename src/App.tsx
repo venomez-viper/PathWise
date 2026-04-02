@@ -26,6 +26,11 @@ import SkillGaps    from './pages/SkillGaps';
 import SkillGapAssessment from './pages/SkillGapAssessment';
 import SignIn       from './pages/SignIn';
 import SignUp       from './pages/SignUp';
+import Streaks      from './pages/Streaks';
+import AchievementsPage from './pages/Achievements';
+import NotificationsPage from './pages/Notifications';
+import CertificatesPage from './pages/Certificates';
+import HelpFAQ      from './pages/HelpFAQ';
 import './App.css';
 
 function NotFound() {
@@ -123,6 +128,11 @@ export default function App() {
             <Route path="assessment"  element={<Assessment />} />
             <Route path="skill-gaps" element={<SkillGaps />} />
             <Route path="skill-gap-assessment" element={<SkillGapAssessment />} />
+            <Route path="streaks"       element={<Streaks />} />
+            <Route path="achievements"  element={<AchievementsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="certificates"  element={<CertificatesPage />} />
+            <Route path="help"          element={<HelpFAQ />} />
           </Route>
 
           {/* ── 404 catch-all ── */}
