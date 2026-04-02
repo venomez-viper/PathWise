@@ -30,16 +30,16 @@ export default function Progress() {
 
   const breakdownItems = breakdown ? [
     {
-      name: 'Data Analysis (SQL)', pct: breakdown.milestoneProgress, color: 'var(--primary)',
+      name: 'Milestone Progress', pct: breakdown.milestoneProgress, color: 'var(--primary)',
     },
     {
-      name: 'Market Research', pct: breakdown.taskCompletion, color: 'var(--primary)',
+      name: 'Task Completion', pct: breakdown.taskCompletion, color: 'var(--primary)',
     },
     {
-      name: 'Visualization (Tableau)', pct: breakdown.categoryBalance, color: 'var(--primary)',
+      name: 'Category Balance', pct: breakdown.categoryBalance, color: 'var(--primary)',
     },
     {
-      name: 'Digital Marketing', pct: breakdown.momentum, color: 'var(--primary)',
+      name: 'Momentum (14 days)', pct: breakdown.momentum, color: 'var(--primary)',
     },
   ] : [
     { name: 'Job Readiness',      pct: jobReadiness,      color: 'var(--primary)' },
@@ -78,10 +78,10 @@ export default function Progress() {
             </h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, maxWidth: '340px', marginTop: '0.5rem' }}>
               {jobReadiness >= 80
-                ? "You're making exceptional progress! Your profile strength is in the top 15%."
+                ? `You're making exceptional progress! Your readiness score of ${jobReadiness}% puts you ahead of most candidates.`
                 : jobReadiness >= 50
-                ? "Good progress — keep building skills and completing milestones."
-                : "You're just getting started. Complete milestones and balance your task categories to grow faster."}
+                ? `Good progress at ${jobReadiness}% — keep building skills and completing milestones.`
+                : `You're at ${jobReadiness}%. Complete milestones and balance your task categories to grow faster.`}
             </p>
             {jobReadiness > 0 && (
               <div style={{
@@ -126,7 +126,9 @@ export default function Progress() {
               </div>
               <div style={{ marginTop: 8 }}>
                 <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)' }}>Roadmap Completion</p>
-                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>Level 2: Strategic Specialist</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
+                  {roadmapCompletion >= 75 ? 'Level 4: Expert' : roadmapCompletion >= 50 ? 'Level 3: Advanced' : roadmapCompletion >= 25 ? 'Level 2: Strategic Specialist' : 'Level 1: Explorer'}
+                </p>
               </div>
               <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${roadmapCompletion}%` : '0%', background: 'var(--primary)' }} /></div>
             </div>

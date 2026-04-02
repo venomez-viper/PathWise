@@ -158,10 +158,10 @@ export default function Roadmap() {
             </h2>
             <div style={{ display: 'flex', gap: 8, marginTop: '0.75rem', flexWrap: 'wrap' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 12px', borderRadius: 'var(--radius-full)', background: 'var(--surface-container-low)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
-                📅 6 Months Timeline
+                📅 {data.estimatedWeeks ? `${Math.round(data.estimatedWeeks / 4)} Months` : '6 Months'} Timeline
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 12px', borderRadius: 'var(--radius-full)', background: 'var(--surface-container-low)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>
-                🎯 Advanced Track
+                🎯 {totalCount >= 8 ? 'Advanced' : totalCount >= 5 ? 'Standard' : 'Starter'} Track
               </span>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: '0.75rem' }}>

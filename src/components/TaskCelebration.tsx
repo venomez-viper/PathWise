@@ -39,7 +39,7 @@ export default function TaskCelebration({ userName, completedCount, streakDays, 
           <div style={{ background: 'var(--surface-container-low)', borderRadius: 'var(--radius-xl)', padding: '1rem', textAlign: 'center' }}>
             <TrendingUp size={18} color="var(--on-surface-variant)" style={{ marginBottom: 4 }} />
             <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>Growth</p>
-            <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 800, color: 'var(--on-surface)' }}>+5% job readiness</p>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 800, color: 'var(--on-surface)' }}>+{Math.max(1, Math.round(completedCount * 1.5))}% readiness</p>
           </div>
           <div style={{ background: 'var(--surface-container-low)', borderRadius: 'var(--radius-xl)', padding: '1rem', textAlign: 'center' }}>
             <Flame size={18} color="var(--on-surface-variant)" style={{ marginBottom: 4 }} />
@@ -52,14 +52,16 @@ export default function TaskCelebration({ userName, completedCount, streakDays, 
         <div style={{ background: 'var(--surface-container-low)', borderRadius: 'var(--radius-xl)', padding: '1rem', marginTop: '1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>Weekly Goal</p>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.9rem', color: 'var(--on-surface)' }}>85%</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.9rem', color: 'var(--on-surface)' }}>{Math.min(100, Math.round((completedCount / Math.max(completedCount + 2, 5)) * 100))}%</span>
           </div>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 800, color: 'var(--on-surface)', marginBottom: 6 }}>Mid-Week Milestone</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 800, color: 'var(--on-surface)', marginBottom: 6 }}>
+            {streakDays >= 5 ? 'Weekly Champion' : streakDays >= 3 ? 'Mid-Week Milestone' : 'Getting Started'}
+          </p>
           <div style={{ height: 6, background: 'var(--surface-container)', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
-            <div style={{ height: '100%', width: '85%', background: 'linear-gradient(90deg, #006a62, #5ef6e6)', borderRadius: 999 }} />
+            <div style={{ height: '100%', width: `${Math.min(100, Math.round((completedCount / Math.max(completedCount + 2, 5)) * 100))}%`, background: 'linear-gradient(90deg, #006a62, #5ef6e6)', borderRadius: 999 }} />
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
-            Only 2 more tasks to reach your weekly personal best!
+            Keep the momentum going — you're on a roll!
           </p>
         </div>
 

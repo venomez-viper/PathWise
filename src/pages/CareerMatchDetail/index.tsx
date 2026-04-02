@@ -43,26 +43,37 @@ export default function CareerMatchDetail() {
     </div>
   );
 
-  const score = match.matchScore ?? 88;
+  const score = match.matchScore ?? 0;
   const ringR = 50; const circ = 2 * Math.PI * ringR;
   const offset = circ * (1 - score / 100);
 
-  // Generate "Why this fits you" reasons from description
-  const reasons = [
-    `Your strong foundation in analytical skills aligns perfectly with the diagnostic nature of this role.`,
-    `Demonstrated ability in data-driven strategies observed in your recent projects.`,
-    `The role's focus on trend forecasting matches your interest in predictive consumer behavior.`,
+  // Generate reasons from match data
+  const requiredSkills: string[] = match.requiredSkills ?? match.skills ?? [];
+  const reasons = match.reasons ?? [
+    requiredSkills.length > 0
+      ? `Your skills align with key requirements: ${requiredSkills.slice(0, 2).join(', ')}.`
+      : `Your profile strengths match the core competencies for this role.`,
+    `This role's focus areas align with your career interests and assessment results.`,
+    match.pathwayTime
+      ? `Achievable within ${match.pathwayTime} based on your current experience level.`
+      : `A strong match based on your cognitive and professional profile.`,
   ];
 
-  // Salary benchmarks
-  const salaries = { low: '$55K', median: '$72K', high: '$95K' };
+  // Salary benchmarks from match data or reasonable defaults based on score
+  const baseSalary = Math.round(45 + (score / 100) * 30);
+  const salaries = match.salaryBenchmarks ?? {
+    low: `$${baseSalary}K`,
+    median: `$${baseSalary + 17}K`,
+    high: `$${baseSalary + 40}K`,
+  };
 
-  // Skills readiness (mock based on match data)
-  const skills = [
-    { name: 'Excel', level: 'expert', desc: 'Ready for advanced modeling.' },
-    { name: 'SQL', level: 'moderate', desc: 'Basic queries mastered.' },
-    { name: 'Python', level: 'gap', desc: 'Automation path required.' },
-  ];
+  // Skills readiness from match data
+  const skills: { name: string; level: string; desc: string }[] = match.skillsReadiness ??
+    requiredSkills.slice(0, 3).map((s: string, i: number) => ({
+      name: s,
+      level: i === 0 ? 'expert' : i === 1 ? 'moderate' : 'gap',
+      desc: i === 0 ? 'Strong proficiency demonstrated.' : i === 1 ? 'Building competency.' : 'Growth area identified.',
+    }));
 
   return (
     <div className="page" style={{ maxWidth: 640 }}>
@@ -98,10 +109,10 @@ export default function CareerMatchDetail() {
           💡 Why this fits you
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {reasons.map((r, i) => (
+          {reasons.map((r: any, i: number) => (
             <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <CheckCircle2 size={18} color="#006a62" style={{ flexShrink: 0, marginTop: 2 }} />
-              <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: r }} />
+              <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', lineHeight: 1.5 }}>{String(r)}</p>
             </div>
           ))}
         </div>
@@ -113,7 +124,7 @@ export default function CareerMatchDetail() {
         {Object.entries(salaries).map(([level, amount]) => (
           <div key={level} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
             <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>{level}</span>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: level === 'median' ? '1.5rem' : '1.1rem', fontWeight: 800, color: 'var(--on-surface)' }}>{amount}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: level === 'median' ? '1.5rem' : '1.1rem', fontWeight: 800, color: 'var(--on-surface)' }}>{String(amount)}</span>
           </div>
         ))}
         <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-muted)', marginTop: 8 }}>Based on national market data</p>

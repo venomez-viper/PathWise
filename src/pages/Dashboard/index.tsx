@@ -89,7 +89,9 @@ export default function Dashboard() {
           Welcome back, {user?.name?.split(' ')[0]}.
         </h1>
         <p style={{ fontSize: '0.85rem', opacity: 0.7, lineHeight: 1.5, maxWidth: 400 }}>
-          Your strategic roadmap is evolving. You are currently in the top {roadmapPct > 0 ? roadmapPct : 5}% of prepared candidates for {targetRole} roles.
+          {roadmapPct > 0
+            ? `Your strategic roadmap is evolving. You've completed ${roadmapPct}% of your path to ${targetRole}.`
+            : `Your career journey is about to begin. Start building your path to ${targetRole}.`}
         </p>
         <div style={{ display: 'flex', gap: 10, marginTop: '1.25rem' }}>
           <Link to="/app/roadmap" style={{
