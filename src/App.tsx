@@ -31,6 +31,8 @@ import AchievementsPage from './pages/Achievements';
 import NotificationsPage from './pages/Notifications';
 import CertificatesPage from './pages/Certificates';
 import HelpFAQ      from './pages/HelpFAQ';
+import CareerMatchDetail from './pages/CareerMatchDetail';
+import SearchPage   from './pages/Search';
 import './App.css';
 
 function NotFound() {
@@ -133,6 +135,8 @@ export default function App() {
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="certificates"  element={<CertificatesPage />} />
             <Route path="help"          element={<HelpFAQ />} />
+            <Route path="career-match"  element={<CareerMatchDetail />} />
+            <Route path="search"        element={<SearchPage />} />
           </Route>
 
           {/* ── 404 catch-all ── */}

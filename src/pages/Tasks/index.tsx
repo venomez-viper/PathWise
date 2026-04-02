@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { tasks as tasksApi, roadmap as roadmapApi } from '../../lib/api';
+import { tasks as tasksApi, roadmap as roadmapApi, streaks as streaksApi } from '../../lib/api';
+import TaskCelebration from '../../components/TaskCelebration';
 import './Tasks.css';
 
 /* ── Types ── */
@@ -88,8 +89,9 @@ export default function Tasks() {
   // Target role (from roadmap, used in AI generation)
   const [_targetRole, _setTargetRole] = useState('');
 
-  // Mark all
+  // Mark all + celebration
   const [markingAll, setMarkingAll] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   /* ── Load tasks + milestones ── */
   const load = useCallback(async () => {
@@ -173,6 +175,11 @@ export default function Tasks() {
     setMarkingAll(true);
     try {
       await Promise.all(pending.map(t => moveTask(t, 'done')));
+      // Record streak activity and show celebration
+      if (user) {
+        try { await streaksApi.recordActivity(user.id); } catch {}
+      }
+      setShowCelebration(true);
     } finally {
       setMarkingAll(false);
     }
@@ -669,6 +676,16 @@ export default function Tasks() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Celebration modal */}
+      {showCelebration && (
+        <TaskCelebration
+          userName={user?.name?.split(' ')[0] ?? 'You'}
+          completedCount={taskList.filter(t => t.status === 'done').length}
+          streakDays={1}
+          onDismiss={() => setShowCelebration(false)}
+        />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Zap, Flame, Award, FileText, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Zap, Flame, Award, FileText, HelpCircle, Search } from 'lucide-react';
 import { tokenStore } from '../lib/api';
 import './Sidebar.css';
 
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/app/streaks',     icon: Flame,           label: 'Streaks'              },
   { to: '/app/achievements',icon: Award,           label: 'Achievements'         },
   { to: '/app/certificates',icon: FileText,        label: 'Certificates'         },
+  { to: '/app/search',      icon: Search,          label: 'Search'               },
   { to: '/app/settings',    icon: Settings,        label: 'Settings'             },
   { to: '/app/help',        icon: HelpCircle,      label: 'Help & FAQ'           },
 ];
