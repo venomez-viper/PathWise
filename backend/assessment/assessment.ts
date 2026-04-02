@@ -157,8 +157,10 @@ export interface GetCertificatesResponse {
 
 // POST /assessment/certificates
 export const getCertificates = api(
-  { expose: true, method: "POST", path: "/assessment/certificates" },
+  { expose: true, method: "POST", path: "/assessment/certificates", auth: true },
   async ({ userId, skills, targetRole }: GetCertificatesParams): Promise<GetCertificatesResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
     const client = new Anthropic({ apiKey: anthropicKey() });
     const safeTargetRole = sanitizeForPrompt(targetRole, 200);
     const safeSkills = skills.map(s => sanitizeForPrompt(s, 100));
@@ -229,8 +231,10 @@ interface CareerRecommendationsResponse {
 
 // POST /assessment/career-recommendations
 export const getCareerRecommendations = api(
-  { expose: true, method: "POST", path: "/assessment/career-recommendations" },
+  { expose: true, method: "POST", path: "/assessment/career-recommendations", auth: true },
   async (params: CareerRecommendationsParams): Promise<CareerRecommendationsResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const client = new Anthropic({ apiKey: anthropicKey() });
     const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
 
@@ -309,8 +313,10 @@ Requirements:
 
 // POST /assessment — Submit questionnaire answers, get AI career matches
 export const submitAssessment = api(
-  { expose: true, method: "POST", path: "/assessment" },
+  { expose: true, method: "POST", path: "/assessment", auth: true },
   async (params: SubmitAssessmentParams): Promise<GetAssessmentResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const now = new Date().toISOString();
 
     const aiResult = await analyzeWithClaude(params);
@@ -380,7 +386,7 @@ interface SkillGapItem {
 }
 
 export const analyzeSkillGaps = api(
-  { expose: true, method: "POST", path: "/assessment/skill-gap-analysis" },
+  { expose: true, method: "POST", path: "/assessment/skill-gap-analysis", auth: true },
   async (params: SkillGapAssessmentParams): Promise<{
     result: { skillGaps: SkillGapItem[]; summary: string; topPriority: string };
   }> => {

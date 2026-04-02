@@ -79,8 +79,11 @@ export interface CreateTaskParams {
 
 // POST /tasks
 export const createTask = api(
-  { expose: true, method: "POST", path: "/tasks" },
+  { expose: true, method: "POST", path: "/tasks", auth: true },
   async (params: CreateTaskParams): Promise<TaskResponse> => {
+    // Auth check — getAuthData may be null for internal service-to-service calls
+    const auth = getAuthData<AuthData>();
+    if (auth && auth.userID !== params.userId) throw APIError.permissionDenied("not your data");
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
     const priority = params.priority ?? "medium";
@@ -190,8 +193,10 @@ export interface GenerateTasksParams {
 
 // POST /tasks/generate/milestone — AI task generation for a specific roadmap milestone
 export const aiGenerateTasks = api(
-  { expose: true, method: "POST", path: "/tasks/generate/milestone" },
+  { expose: true, method: "POST", path: "/tasks/generate/milestone", auth: true },
   async (params: GenerateTasksParams): Promise<{ tasks: Task[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const client = new Anthropic({ apiKey: anthropicKey() });
     const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
     const safeMilestoneTitle = sanitizeForPrompt(params.milestoneTitle, 300);
@@ -280,8 +285,10 @@ export interface CustomGenerateTasksParams {
 
 // POST /tasks/generate/custom
 export const customGenerateTasks = api(
-  { expose: true, method: "POST", path: "/tasks/generate/custom" },
+  { expose: true, method: "POST", path: "/tasks/generate/custom", auth: true },
   async (params: CustomGenerateTasksParams): Promise<{ tasks: Task[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const client = new Anthropic({ apiKey: anthropicKey() });
     const count = params.count ?? 4;
     const safePrompt = sanitizeForPrompt(params.prompt, 500);

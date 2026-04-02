@@ -141,7 +141,7 @@ export default function Dashboard() {
           </div>
           <div style={{ marginTop: '1rem', display: 'flex', gap: 8 }}>
             <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <TrendingUp size={12} /> Network Velocity
+              <TrendingUp size={12} /> Job Readiness
             </span>
             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.85rem', color: 'var(--on-surface)' }}>
               {data.stats.jobReadinessScore}%

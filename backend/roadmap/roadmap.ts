@@ -192,8 +192,10 @@ export interface GenerateRoadmapParams {
 
 // POST /roadmap — Generate AI-powered career roadmap
 export const generateRoadmap = api(
-  { expose: true, method: "POST", path: "/roadmap" },
+  { expose: true, method: "POST", path: "/roadmap", auth: true },
   async (params: GenerateRoadmapParams): Promise<GetRoadmapResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== params.userId) throw APIError.permissionDenied("you can only generate your own roadmap");
     const timeline = params.timeline ?? "6 months";
 
     // Pull assessment data if available for personalization
