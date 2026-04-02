@@ -70,7 +70,7 @@ export default function Progress() {
               fontFamily: 'var(--font-display)',
               fontSize: '1.5rem',
               fontWeight: 800,
-              color: 'var(--primary)',
+              color: '#334042',
               letterSpacing: '-0.02em',
               marginTop: '1rem',
             }}>

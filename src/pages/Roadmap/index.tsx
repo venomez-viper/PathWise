@@ -8,8 +8,8 @@ type Task = { id: string; title: string; status: string; milestoneId?: string; c
 
 const MILESTONE_COLOR: Record<string, string> = {
   completed: '#34d399',
-  in_progress: '#a78bfa',
-  locked: 'var(--outline-variant)',
+  in_progress: '#8b4f2c',
+  locked: 'var(--surface-container-high)',
 };
 
 interface MilestoneCardProps {
@@ -39,8 +39,8 @@ function MilestoneCard({ m, index, mTasks, completing, generating, onComplete, o
     opacity: m.status === 'locked' ? 0.45 : 1,
     boxShadow:
       m.status === 'in_progress'
-        ? '0 0 0 2px rgba(167,139,250,0.3), 0 4px 20px rgba(167,139,250,0.15)'
-        : undefined,
+        ? '0 0 0 2px rgba(139,79,44,0.25), 0 4px 20px rgba(139,79,44,0.10)'
+        : 'var(--shadow-sm)',
     transition: 'box-shadow 0.2s',
   };
 
@@ -79,8 +79,8 @@ function MilestoneCard({ m, index, mTasks, completing, generating, onComplete, o
               fontWeight: 700,
               textTransform: 'uppercase' as const,
               letterSpacing: '0.04em',
-              color: '#a78bfa',
-              background: 'rgba(167,139,250,0.12)',
+              color: '#8b4f2c',
+              background: 'rgba(139,79,44,0.10)',
               padding: '2px 8px',
               borderRadius: 999,
             }}
@@ -169,8 +169,8 @@ function MilestoneCard({ m, index, mTasks, completing, generating, onComplete, o
                           width: 14,
                           height: 14,
                           borderRadius: '50%',
-                          border: `2px solid ${done ? '#a78bfa' : 'var(--outline-variant)'}`,
-                          background: done ? 'rgba(167,139,250,0.2)' : 'transparent',
+                          border: `2px solid ${done ? '#8b4f2c' : 'var(--surface-container-high)'}`,
+                          background: done ? 'rgba(139,79,44,0.15)' : 'transparent',
                           flexShrink: 0,
                         }}
                       />
@@ -226,7 +226,7 @@ function MilestoneCard({ m, index, mTasks, completing, generating, onComplete, o
                   style={{
                     height: '100%',
                     width: `${(doneTasks / totalTasks) * 100}%`,
-                    background: '#a78bfa',
+                    background: '#8b4f2c',
                     borderRadius: 999,
                     transition: 'width 0.6s ease',
                   }}
@@ -249,10 +249,10 @@ function MilestoneCard({ m, index, mTasks, completing, generating, onComplete, o
               fontWeight: 600,
               padding: '0.55rem 1rem',
               borderRadius: 'var(--radius-xl)',
-              border: '1.5px solid rgba(167,139,250,0.35)',
+              border: '1.5px solid rgba(139,79,44,0.25)',
               cursor: (generating || completing) ? 'not-allowed' : 'pointer',
-              background: 'rgba(167,139,250,0.08)',
-              color: '#a78bfa',
+              background: 'rgba(139,79,44,0.06)',
+              color: '#8b4f2c',
               opacity: (generating || completing) ? 0.6 : 1,
               marginBottom: 8,
               transition: 'background 0.15s',
@@ -281,7 +281,7 @@ function MilestoneCard({ m, index, mTasks, completing, generating, onComplete, o
               borderRadius: 'var(--radius-xl)',
               border: 'none',
               cursor: completing ? 'not-allowed' : 'pointer',
-              background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+              background: 'linear-gradient(135deg, #334042 0%, #4a5759 100%)',
               color: '#fff',
               opacity: completing ? 0.7 : 1,
               transition: 'opacity 0.2s, transform 0.15s',
@@ -435,9 +435,9 @@ export default function Roadmap() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1 className="page-title">Career Roadmap</h1>
-          <p className="page-subtitle">Your personalised path to {data.targetRole}.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h1 className="page-title">Growth Roadmap</h1>
+          <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>Step {completedCount + 1} of {totalCount}</span>
         </div>
         <Link to="/app/onboarding" className="btn-page-secondary"><Pencil size={14} /> Change Role</Link>
       </div>
@@ -477,7 +477,7 @@ export default function Roadmap() {
                   <circle
                     cx={RING_CX} cy={RING_CY} r={RING_R}
                     fill="none"
-                    stroke="#a78bfa"
+                    stroke="#8b4f2c"
                     strokeWidth="7"
                     strokeLinecap="round"
                     strokeDasharray={CIRCUMFERENCE}
