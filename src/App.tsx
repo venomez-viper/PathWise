@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, useNavigate, Link } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './lib/auth-context';
 
@@ -97,6 +98,11 @@ function AuthLayout() {
 
 export default function App() {
   return (
+    <Sentry.ErrorBoundary fallback={<div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', gap: '1rem', padding: '2rem', textAlign: 'center' }}>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--on-surface)' }}>Something went wrong</h1>
+      <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>The error has been reported. Please refresh the page.</p>
+      <button onClick={() => window.location.reload()} style={{ padding: '0.6rem 1.5rem', borderRadius: '999px', background: '#334042', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Refresh Page</button>
+    </div>}>
     <BrowserRouter>
       <AuthProvider>
         <Routes>
@@ -144,5 +150,6 @@ export default function App() {
         </Routes>
       </AuthProvider>
     </BrowserRouter>
+    </Sentry.ErrorBoundary>
   );
 }
