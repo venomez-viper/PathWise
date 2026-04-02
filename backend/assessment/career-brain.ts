@@ -1,0 +1,335 @@
+/**
+ * Career Brain — Local AI-Free Matching Engine
+ *
+ * Scores 50 career profiles against user assessment answers
+ * using weighted multi-dimensional matching. No external API needed.
+ */
+
+import type { CareerProfile, SkillGapEntry, CertEntry, RecEntry, MilestoneEntry } from "./career-profiles";
+import { CAREER_PROFILES_PART1 } from "./career-profiles";
+import { CAREER_PROFILES_PART2 } from "./career-profiles-2";
+
+const ALL_PROFILES: CareerProfile[] = [...CAREER_PROFILES_PART1, ...CAREER_PROFILES_PART2];
+
+// ── Types matching existing backend interfaces ──────────────────────────
+
+export interface CareerMatch {
+  title: string;
+  matchScore: number;
+  description: string;
+  requiredSkills: string[];
+  pathwayTime: string;
+}
+
+export interface SkillGap {
+  skill: string;
+  importance: "high" | "medium" | "low";
+  learningResource: string;
+}
+
+export interface AssessmentInput {
+  workStyle: string;
+  strengths: string[];
+  values: string[];
+  currentSkills: string[];
+  experienceLevel: string;
+  interests: string[];       // selected domains
+  currentRole?: string;
+  personalityType?: string;
+  // Raw answer IDs from the questionnaire
+  answers?: Record<string, string>;
+}
+
+// ── Scoring Engine ──────────────────────────────────────────────────────
+
+/** Check if a user answer value exists in a profile's trait array */
+function traitMatch(userValue: string | undefined, profileTraits: string[]): number {
+  if (!userValue) return 0;
+  return profileTraits.includes(userValue) ? 1 : 0;
+}
+
+/** Calculate overlap percentage between two string arrays */
+function overlapScore(userItems: string[], profileItems: string[]): number {
+  if (profileItems.length === 0) return 0;
+  const userSet = new Set(userItems.map(s => s.toLowerCase()));
+  const matches = profileItems.filter(p => userSet.has(p.toLowerCase())).length;
+  return matches / profileItems.length;
+}
+
+/** Extract raw answer values from personalityType and strengths */
+function extractAnswers(input: AssessmentInput): Record<string, string> {
+  if (input.answers && Object.keys(input.answers).length > 0) return input.answers;
+
+  // Reconstruct from personalityType format: "int1-ws2-car1"
+  const parts = (input.personalityType || "").split("-");
+  const extracted: Record<string, string> = {};
+
+  if (parts[0] && parts[0] !== "mixed") extracted.int1 = parts[0];
+  if (parts[1] && parts[1] !== "balanced") extracted.ws2 = parts[1];
+  if (parts[2]) extracted.car1 = parts[2];
+
+  // Extract from strengths array (format: "technical problem-solving", "open mindset", etc.)
+  for (const s of input.strengths) {
+    const lower = s.toLowerCase();
+    // int2 extraction
+    if (lower.includes("technical")) extracted.int2 = "technical";
+    else if (lower.includes("human")) extracted.int2 = "human";
+    else if (lower.includes("creative")) extracted.int2 = "creative";
+    else if (lower.includes("strategic")) extracted.int2 = "strategic";
+    else if (lower.includes("scientific")) extracted.int2 = "scientific";
+    // ws1 extraction
+    if (lower.includes("open")) extracted.ws1 = "open";
+    else if (lower.includes("cautious")) extracted.ws1 = "cautious";
+    else if (lower.includes("organized")) extracted.ws1 = "organized";
+    else if (lower.includes("empathetic")) extracted.ws1 = "empathetic";
+    // car4 extraction
+    if (lower.includes("leader")) extracted.car4 = "leader";
+    else if (lower.includes("ideator")) extracted.car4 = "ideator";
+    else if (lower.includes("doer")) extracted.car4 = "doer";
+    else if (lower.includes("harmonizer")) extracted.car4 = "harmonizer";
+    // ws4 extraction
+    if (lower.includes("structure")) extracted.ws4 = "structure";
+    else if (lower.includes("experiment")) extracted.ws4 = "experiment";
+    else if (lower.includes("consult")) extracted.ws4 = "consult";
+  }
+
+  // Extract from values array
+  for (const v of input.values) {
+    if (["autonomy", "prestige", "purpose", "mastery"].includes(v)) extracted.val1 = v;
+    if (["purpose_over_wealth", "wealth_over_stability", "balance_over_creativity"].includes(v)) extracted.val2 = v;
+    if (["monotony", "no_impact", "micromanaged", "isolation"].includes(v)) extracted.val3 = v;
+    if (["wealth", "recognition", "learning", "impact"].includes(v)) extracted.val4 = v;
+  }
+
+  // workStyle maps to ws3
+  extracted.ws3 = input.workStyle || "mixed";
+
+  return extracted;
+}
+
+/** Score a single career profile against user input */
+function scoreProfile(profile: CareerProfile, input: AssessmentInput): number {
+  const a = extractAnswers(input);
+  let score = 0;
+
+  // ── Interest dimension (25 points max) ──
+  score += traitMatch(a.int1, profile.interests) * 8;
+  score += traitMatch(a.int2, profile.problemTypes) * 8;
+  score += traitMatch(a.int3, profile.archetypes) * 9;
+
+  // ── Work style dimension (15 points max) ──
+  score += traitMatch(a.ws1, profile.workStyles) * 4;
+  score += traitMatch(a.ws2, profile.decisionStyle) * 4;
+  score += traitMatch(a.ws3, profile.collaboration) * 4;
+  score += traitMatch(a.ws4, profile.ambiguityStyle) * 3;
+
+  // ── Values dimension (20 points max) ──
+  score += traitMatch(a.val1, profile.coreValues) * 6;
+  score += traitMatch(a.val2, profile.tradeoffs) * 5;
+  score += traitMatch(a.val3, profile.frustrations) * 4;
+  score += traitMatch(a.val4, profile.rewards) * 5;
+
+  // ── Environment dimension (10 points max) ──
+  score += traitMatch(a.env1, profile.environments) * 3;
+  score += traitMatch(a.env2, profile.teamSizes) * 3;
+  score += traitMatch(a.env3, profile.paces) * 2;
+  score += traitMatch(a.env4, profile.managementStyles) * 2;
+
+  // ── Career stage dimension (15 points max) ──
+  score += traitMatch(a.car1, profile.careerStages) * 5;
+  score += traitMatch(a.car2, profile.riskLevels) * 3;
+  score += traitMatch(a.car3, profile.trajectories) * 4;
+  score += traitMatch(a.car4, profile.groupRoles) * 3;
+
+  // ── Skills/domain overlap (15 points max) ──
+  score += overlapScore(input.currentSkills, profile.requiredSkills) * 8;
+  score += overlapScore(input.interests, profile.domains) * 4;
+  score += (profile.experienceLevels.includes(input.experienceLevel) ? 1 : 0) * 3;
+
+  // Normalize to 0-100 range, with floor of 45 and ceiling of 97
+  // Max theoretical raw score is ~100 (all dimensions match perfectly)
+  const normalized = Math.round(Math.min(97, Math.max(45, score)));
+
+  return normalized;
+}
+
+// ── Public API ──────────────────────────────────────────────────────────
+
+/** Get top N career matches for user input */
+export function getTopCareerMatches(input: AssessmentInput, count = 3): {
+  careerMatches: CareerMatch[];
+  skillGaps: SkillGap[];
+} {
+  const scored = ALL_PROFILES.map(profile => ({
+    profile,
+    score: scoreProfile(profile, input),
+  }));
+
+  // Sort by score descending
+  scored.sort((a, b) => b.score - a.score);
+
+  const topProfiles = scored.slice(0, count);
+
+  const careerMatches: CareerMatch[] = topProfiles.map(({ profile, score }) => ({
+    title: profile.title,
+    matchScore: score,
+    description: profile.description,
+    requiredSkills: profile.requiredSkills,
+    pathwayTime: profile.pathwayTime,
+  }));
+
+  // Combine skill gaps from top match, deduped
+  const topProfile = topProfiles[0].profile;
+  const userSkillsLower = new Set(input.currentSkills.map(s => s.toLowerCase()));
+
+  // Filter out skills user already has, take from top profile + supplement from #2
+  const allGaps: SkillGap[] = [];
+  const seen = new Set<string>();
+
+  for (const p of topProfiles) {
+    for (const gap of p.profile.skillGaps) {
+      const key = gap.skill.toLowerCase();
+      if (!seen.has(key) && !userSkillsLower.has(key)) {
+        seen.add(key);
+        allGaps.push(gap);
+      }
+    }
+  }
+
+  return {
+    careerMatches,
+    skillGaps: allGaps.slice(0, 5),
+  };
+}
+
+/** Get certificate recommendations for a target role */
+export function getCertificatesForRole(targetRole: string, skillGaps: string[]): CertEntry[] {
+  const profile = findProfileByTitle(targetRole);
+  if (!profile) return getGenericCerts(skillGaps);
+  return profile.certifications;
+}
+
+/** Get career recommendations (portfolio, networking, job targets) for a role */
+export function getCareerRecsForRole(targetRole: string): {
+  portfolio: RecEntry[];
+  networking: RecEntry[];
+  jobApplications: RecEntry[];
+} {
+  const profile = findProfileByTitle(targetRole);
+  if (!profile) return getGenericRecs(targetRole);
+  return {
+    portfolio: profile.portfolioProjects,
+    networking: profile.networkingRecs,
+    jobApplications: profile.jobTargets,
+  };
+}
+
+/** Get skill gap analysis for a target role given current skills */
+export function analyzeSkillGapsForRole(
+  targetRole: string,
+  currentSkills: string[],
+  technicalSkills: Record<string, string>,
+  softSkills: Record<string, string>,
+): {
+  skillGaps: Array<SkillGap & { currentLevel: string; targetLevel: string }>;
+  summary: string;
+  topPriority: string;
+} {
+  const profile = findProfileByTitle(targetRole);
+  const userSkillsLower = new Set(currentSkills.map(s => s.toLowerCase()));
+
+  if (!profile) {
+    return {
+      skillGaps: [
+        { skill: "Core Technical Skills", importance: "high", learningResource: "Coursera Professional Certificate", currentLevel: "beginner", targetLevel: "intermediate" },
+        { skill: "Industry Knowledge", importance: "high", learningResource: "LinkedIn Learning", currentLevel: "beginner", targetLevel: "intermediate" },
+      ],
+      summary: `To transition into ${targetRole}, focus on building core competencies through structured learning paths.`,
+      topPriority: "Core technical skills for your target role",
+    };
+  }
+
+  const gaps = profile.skillGaps
+    .filter(g => !userSkillsLower.has(g.skill.toLowerCase()))
+    .map(g => {
+      const techLevel = technicalSkills[g.skill] || "none";
+      const softLevel = softSkills[g.skill] || "none";
+      const currentLevel = techLevel !== "none" ? techLevel : softLevel !== "none" ? softLevel : "beginner";
+      return {
+        ...g,
+        currentLevel,
+        targetLevel: g.importance === "high" ? "advanced" : "intermediate",
+      };
+    });
+
+  const highPriority = gaps.find(g => g.importance === "high");
+
+  return {
+    skillGaps: gaps,
+    summary: `Based on your current skills, you have a solid foundation for ${profile.title}. Focus on closing ${gaps.length} key skill gaps to become competitive. Your strongest area is your existing experience, and your biggest growth opportunity is in ${highPriority?.skill || "technical depth"}.`,
+    topPriority: highPriority?.skill || gaps[0]?.skill || "Industry-specific knowledge",
+  };
+}
+
+/** Get pre-built roadmap milestones for a target role */
+export function getMilestonesForRole(targetRole: string): MilestoneEntry[] {
+  const profile = findProfileByTitle(targetRole);
+  if (!profile) return getGenericMilestones(targetRole);
+  return profile.milestones;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────
+
+function findProfileByTitle(title: string): CareerProfile | undefined {
+  const lower = title.toLowerCase();
+  return ALL_PROFILES.find(p =>
+    p.title.toLowerCase() === lower ||
+    p.title.toLowerCase().includes(lower) ||
+    lower.includes(p.title.toLowerCase())
+  );
+}
+
+function getGenericCerts(skillGaps: string[]): CertEntry[] {
+  return skillGaps.slice(0, 4).map(skill => ({
+    skill,
+    certName: `${skill} Professional Certificate`,
+    provider: "Coursera",
+    url: "https://www.coursera.org/professional-certificates",
+    duration: "3-6 months part-time",
+    level: "Beginner",
+    cost: "Free to audit, $49/month for certificate",
+    whyRecommended: `Build foundational ${skill} skills recognized by employers.`,
+  }));
+}
+
+function getGenericRecs(targetRole: string): {
+  portfolio: RecEntry[];
+  networking: RecEntry[];
+  jobApplications: RecEntry[];
+} {
+  return {
+    portfolio: [
+      { type: "portfolio", title: `${targetRole} Showcase Project`, description: "Build a portfolio project demonstrating key skills for this role.", platform: "GitHub", url: "https://github.com", why: "Portfolio projects are the #1 way to stand out.", actionStep: "Create a project brief and start building today." },
+      { type: "portfolio", title: "Personal Website", description: "Create a professional portfolio site showcasing your work.", platform: "GitHub Pages", url: "https://pages.github.com", why: "A personal site establishes your professional presence.", actionStep: "Set up a GitHub Pages site with your resume and projects." },
+    ],
+    networking: [
+      { type: "networking", title: "LinkedIn Industry Groups", description: "Join professional groups related to your target role.", platform: "LinkedIn", url: "https://www.linkedin.com/groups/", why: "70% of jobs are found through networking.", actionStep: "Send 3 connection requests to people in your target role today." },
+      { type: "networking", title: "Industry Meetups", description: "Attend local or virtual meetups in your field.", platform: "Meetup", url: "https://www.meetup.com", why: "In-person connections lead to referrals.", actionStep: "Find and RSVP to one meetup happening this month." },
+    ],
+    jobApplications: [
+      { type: "job_application", title: "LinkedIn Jobs", description: `Search for ${targetRole} positions.`, platform: "LinkedIn", url: "https://www.linkedin.com/jobs/", why: "Largest professional job board.", actionStep: "Set up job alerts for your target role and apply to 3 positions this week." },
+      { type: "job_application", title: "Indeed", description: `Browse ${targetRole} openings across industries.`, platform: "Indeed", url: "https://www.indeed.com", why: "Wide range of positions from startups to enterprises.", actionStep: "Upload your resume and apply to 2 positions today." },
+    ],
+  };
+}
+
+function getGenericMilestones(targetRole: string): MilestoneEntry[] {
+  return [
+    { title: "Foundation", description: `Build core skills for ${targetRole}`, tasks: ["Research role requirements", "Identify top 3 skills to learn", "Set up learning environment", "Start first online course"], estimatedWeeks: 3 },
+    { title: "Core Skills", description: "Develop primary technical competencies", tasks: ["Complete foundational course", "Build first practice project", "Join relevant online community"], estimatedWeeks: 4 },
+    { title: "Applied Learning", description: "Apply skills to real-world scenarios", tasks: ["Build portfolio project #1", "Get feedback from peers", "Iterate on project quality"], estimatedWeeks: 4 },
+    { title: "Professional Portfolio", description: "Create materials for job applications", tasks: ["Polish portfolio project", "Update resume for target role", "Write role-specific cover letter template"], estimatedWeeks: 3 },
+    { title: "Networking & Outreach", description: "Build professional connections", tasks: ["Attend 2 industry events", "Connect with 10 professionals on LinkedIn", "Request 2 informational interviews"], estimatedWeeks: 3 },
+    { title: "Job Search", description: "Active application and interview preparation", tasks: ["Apply to 10+ positions", "Practice common interview questions", "Prepare technical portfolio walkthrough", "Follow up on applications"], estimatedWeeks: 4 },
+  ];
+}

@@ -2,13 +2,10 @@ import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { AuthData } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
-import { secret } from "encore.dev/config";
-import Anthropic from "@anthropic-ai/sdk";
 import { sanitizeForPrompt } from "../shared/sanitize";
-import { callClaudeWithRetry } from "../shared/ai-utils";
+import { getMilestonesForRole } from "../assessment/career-brain";
 
 const db = new SQLDatabase("tasks", { migrations: "./migrations" });
-const anthropicKey = secret("AnthropicAPIKey");
 
 export interface Task {
   id: string;
@@ -36,7 +33,9 @@ export interface TaskResponse {
 export const listTasks = api(
   { expose: true, method: "GET", path: "/tasks", auth: true },
   async ({ userId }: { userId: string }): Promise<ListTasksResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     if (userID !== userId) {
       throw APIError.permissionDenied("you can only view your own tasks");
     }
@@ -131,7 +130,9 @@ export interface UpdateTaskParams {
 export const updateTask = api(
   { expose: true, method: "PATCH", path: "/tasks/:taskId", auth: true },
   async ({ taskId, ...updates }: UpdateTaskParams): Promise<TaskResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
 
     const row = await db.queryRow`
       SELECT id, user_id, milestone_id, title, description, status, priority,
@@ -192,55 +193,36 @@ export interface GenerateTasksParams {
   targetRole: string;
 }
 
-// POST /tasks/generate/milestone — AI task generation for a specific roadmap milestone
+// POST /tasks/generate/milestone — Generate tasks from career brain for a milestone
 export const aiGenerateTasks = api(
   { expose: true, method: "POST", path: "/tasks/generate/milestone", auth: true },
   async (params: GenerateTasksParams): Promise<{ tasks: Task[] }> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
-    const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
-    const safeMilestoneTitle = sanitizeForPrompt(params.milestoneTitle, 300);
-    const safeMilestoneDescription = sanitizeForPrompt(params.milestoneDescription, 500);
 
-    const prompt = `You are an expert career coach. Generate exactly 4 specific, actionable tasks for someone working toward "${safeTargetRole}" on this career milestone:
+    // Find matching milestone from brain and extract its tasks
+    const milestones = getMilestonesForRole(params.targetRole);
+    const match = milestones.find(m =>
+      m.title.toLowerCase().includes(params.milestoneTitle.toLowerCase()) ||
+      params.milestoneTitle.toLowerCase().includes(m.title.toLowerCase())
+    );
 
-Milestone: "${safeMilestoneTitle}"
-Description: "${safeMilestoneDescription}"
-
-Respond with ONLY a valid JSON array (no markdown, no dashes, no code fences):
-[
-  {
-    "title": "Specific actionable task title",
-    "description": "Exactly what to do and expected outcome",
-    "priority": "high",
-    "category": "learning"
-  }
-]
-
-Requirements:
-- Exactly 4 tasks, each concrete and measurable
-- Categories: learning, portfolio, networking, interview_prep, research
-- Priorities: high, medium, low
-- Tasks must directly advance the milestone goal and target role`;
-
-    const fallback = [
-      { title: `Research ${safeTargetRole} requirements`, description: "Study job descriptions and core competencies.", priority: "high", category: "research" },
-      { title: `Complete a relevant online course module`, description: "Pick a course addressing your primary skill gap.", priority: "high", category: "learning" },
-      { title: `Build a mini portfolio piece`, description: "Create a small project demonstrating a key skill.", priority: "medium", category: "portfolio" },
-      { title: `Connect with a professional in the field`, description: "Send a personalized LinkedIn message.", priority: "medium", category: "networking" },
-    ];
-
-    const aiTasks: { title: string; description: string; priority: string; category: string }[] =
-      await callClaudeWithRetry({
-        apiKey: anthropicKey(),
-        model: "claude-haiku-4-5-20251001",
-        maxTokens: 1000,
-        prompt,
-        retries: 2,
-        fallback,
-      });
-
-    const taskArray = Array.isArray(aiTasks) ? aiTasks : (aiTasks as any).tasks ?? fallback;
+    const categories = ["learning", "portfolio", "networking", "interview_prep", "research"];
+    const taskArray = match
+      ? match.tasks.map((t, i) => ({
+          title: t,
+          description: t,
+          priority: i === 0 ? "high" : i === 1 ? "high" : "medium",
+          category: categories[i % categories.length],
+        }))
+      : [
+          { title: `Research ${params.targetRole} requirements`, description: "Study job descriptions and core competencies.", priority: "high", category: "research" },
+          { title: "Complete a relevant online course module", description: "Pick a course addressing your primary skill gap.", priority: "high", category: "learning" },
+          { title: "Build a mini portfolio piece", description: "Create a small project demonstrating a key skill.", priority: "medium", category: "portfolio" },
+          { title: "Connect with a professional in the field", description: "Send a personalized LinkedIn message.", priority: "medium", category: "networking" },
+        ];
 
     const now = new Date().toISOString();
     const createdTasks: Task[] = [];
@@ -290,46 +272,31 @@ export interface CustomGenerateTasksParams {
 export const customGenerateTasks = api(
   { expose: true, method: "POST", path: "/tasks/generate/custom", auth: true },
   async (params: CustomGenerateTasksParams): Promise<{ tasks: Task[] }> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const count = params.count ?? 4;
     const safePrompt = sanitizeForPrompt(params.prompt, 500);
-    const safeTargetRole = params.targetRole ? sanitizeForPrompt(params.targetRole, 200) : undefined;
 
-    const prompt = `You are an expert career coach. The user wants help with: "${safePrompt}"
-${safeTargetRole ? `Their target role is: ${safeTargetRole}` : ''}
-
-Generate exactly ${count} specific, actionable tasks based on what they asked for.
-
-Respond with ONLY a valid JSON array (no markdown, no dashes, no code fences):
-[
-  {
-    "title": "Specific task title (max 80 chars)",
-    "description": "Exactly what to do and the expected outcome (1-2 sentences)",
-    "priority": "high",
-    "category": "learning"
-  }
-]
-
-Categories: learning, portfolio, networking, interview_prep, research
-Priorities: high, medium, low
-Make each task concrete and completable within 1-3 days.`;
-
-    const fallbackTasks = [
-      { title: `Work on: ${safePrompt.slice(0, 60)}`, description: "Break this down into a concrete first step.", priority: "high", category: "learning" },
-    ];
-
-    const rawResult = await callClaudeWithRetry({
-      apiKey: anthropicKey(),
-      model: "claude-haiku-4-5-20251001",
-      maxTokens: 800,
-      prompt,
-      retries: 2,
-      fallback: fallbackTasks,
-    });
+    // Generate tasks from brain milestones if target role available, else generic
+    const milestones = params.targetRole ? getMilestonesForRole(params.targetRole) : [];
+    const brainTasks = milestones.flatMap(m => m.tasks);
 
     const aiTasks: { title: string; description: string; priority: string; category: string }[] =
-      Array.isArray(rawResult) ? rawResult : (rawResult as any).tasks ?? fallbackTasks;
+      brainTasks.length > 0
+        ? brainTasks.slice(0, count).map((t, i) => ({
+            title: t,
+            description: t,
+            priority: i < 2 ? "high" : "medium",
+            category: ["learning", "portfolio", "networking", "research"][i % 4],
+          }))
+        : [
+            { title: `Research: ${safePrompt.slice(0, 60)}`, description: "Study requirements and identify key skills needed.", priority: "high", category: "research" },
+            { title: "Find an online course for your top skill gap", description: "Search Coursera, LinkedIn Learning, or Udemy.", priority: "high", category: "learning" },
+            { title: "Build a small demo project", description: "Create something that demonstrates your learning.", priority: "medium", category: "portfolio" },
+            { title: "Connect with someone in this field", description: "Send a personalized LinkedIn message to a professional.", priority: "medium", category: "networking" },
+          ].slice(0, count);
 
     const now = new Date().toISOString();
     const createdTasks: Task[] = [];

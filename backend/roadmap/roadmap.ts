@@ -2,14 +2,11 @@ import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { AuthData } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
-import { secret } from "encore.dev/config";
-import Anthropic from "@anthropic-ai/sdk";
 import { getAssessment } from "../assessment/assessment";
 import { createTask } from "../tasks/tasks";
-import { callClaudeWithRetry } from "../shared/ai-utils";
+import { getMilestonesForRole } from "../assessment/career-brain";
 
 const db = new SQLDatabase("roadmap", { migrations: "./migrations" });
-const anthropicKey = secret("AnthropicAPIKey");
 
 export interface Milestone {
   id: string;
@@ -35,7 +32,9 @@ export interface GetRoadmapResponse {
 export const getRoadmap = api(
   { expose: true, method: "GET", path: "/roadmap/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<GetRoadmapResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     if (userID !== userId) {
       throw APIError.permissionDenied("you can only view your own roadmap");
     }
@@ -86,69 +85,40 @@ interface AIMilestone {
   }[];
 }
 
-async function generateWithClaude(params: {
+function generateFromBrain(params: {
   targetRole: string;
   timeline: string;
   currentSkills: string[];
   skillGaps: string[];
-}): Promise<{ milestones: AIMilestone[] }> {
-  const prompt = `You are an expert career coach. Create a personalized career roadmap for someone targeting "${params.targetRole}" with a ${params.timeline} timeline.
+}): { milestones: AIMilestone[] } {
+  const brainMilestones = getMilestonesForRole(params.targetRole);
 
-Current skills: ${params.currentSkills.join(", ") || "Not provided"}
-Key skill gaps to address: ${params.skillGaps.join(", ") || "General upskilling needed"}
-
-Respond with ONLY a valid JSON object (no markdown, no dashes, no code fences):
-{
-  "milestones": [
-    {
-      "title": "Milestone title (action-oriented)",
-      "description": "What you'll accomplish and why it matters for ${params.targetRole}",
-      "durationWeeks": 4,
-      "tasks": [
-        {
-          "title": "Specific actionable task",
-          "description": "Exactly what to do and the expected outcome",
-          "priority": "high",
-          "category": "learning"
-        }
-      ]
-    }
-  ]
-}
-
-Requirements:
-- Exactly 6 milestones, covering the full ${params.timeline} timeline
-- Each milestone has 3-5 specific, measurable tasks
-- Tasks are concrete and role-specific
-- Task categories: learning, portfolio, networking, interview_prep, research
-- Milestones progress: foundations → skills → projects → networking → job search → landing the role`;
-
-  const fallback = {
-    milestones: [
-      { title: "Foundations & Research", description: `Build foundational knowledge for ${params.targetRole}.`, durationWeeks: 4, tasks: [{ title: `Research ${params.targetRole} role requirements`, description: "Study job descriptions and identify core competencies.", priority: "high", category: "research" }] },
-      { title: "Core Skill Building", description: "Develop the most critical technical skills.", durationWeeks: 4, tasks: [{ title: "Start an online course in your top skill gap", description: "Enroll on Coursera, Udemy, or LinkedIn Learning.", priority: "high", category: "learning" }] },
-      { title: "Portfolio Development", description: "Build projects that demonstrate your abilities.", durationWeeks: 4, tasks: [{ title: "Create a portfolio project", description: "Build something relevant to your target role.", priority: "high", category: "portfolio" }] },
-      { title: "Networking & Community", description: "Build professional connections.", durationWeeks: 4, tasks: [{ title: "Connect with 5 professionals in your field", description: "Reach out on LinkedIn with personalized messages.", priority: "medium", category: "networking" }] },
-      { title: "Interview Preparation", description: "Prepare for the job search process.", durationWeeks: 4, tasks: [{ title: "Practice interview questions", description: "Use AI mock interviews and practice common questions.", priority: "high", category: "interview_prep" }] },
-      { title: "Job Search & Applications", description: "Apply strategically to your target roles.", durationWeeks: 4, tasks: [{ title: "Apply to 10 relevant positions", description: "Tailor your resume for each application.", priority: "high", category: "research" }] },
-    ],
-  };
-
-  return callClaudeWithRetry({
-    apiKey: anthropicKey(),
-    model: "claude-opus-4-6",
-    maxTokens: 3000,
-    prompt,
-    retries: 2,
-    fallback,
+  // Convert brain milestones to AIMilestone format with tasks
+  const milestones: AIMilestone[] = brainMilestones.map((m, i) => {
+    const categories = ["research", "learning", "portfolio", "networking", "interview_prep", "research"];
+    return {
+      title: m.title,
+      description: m.description,
+      durationWeeks: m.estimatedWeeks,
+      tasks: m.tasks.map((t, j) => ({
+        title: t,
+        description: t,
+        priority: (j === 0 ? "high" : j === 1 ? "medium" : "low") as "high" | "medium" | "low",
+        category: categories[i] ?? "learning",
+      })),
+    };
   });
+
+  return { milestones };
 }
 
 // POST /roadmap/milestones/:milestoneId/complete — mark a milestone complete, unlock next
 export const completeMilestone = api(
   { expose: true, method: "POST", path: "/roadmap/milestones/:milestoneId/complete", auth: true },
   async ({ milestoneId }: { milestoneId: string }): Promise<{ success: boolean; nextMilestoneId?: string }> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
 
     // 1. Get the milestone and its roadmap
     const ms = await db.queryRow`
@@ -198,7 +168,9 @@ export interface GenerateRoadmapParams {
 export const generateRoadmap = api(
   { expose: true, method: "POST", path: "/roadmap", auth: true },
   async (params: GenerateRoadmapParams): Promise<GetRoadmapResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     if (userID !== params.userId) throw APIError.permissionDenied("you can only generate your own roadmap");
     const timeline = params.timeline ?? "6 months";
 
@@ -215,8 +187,8 @@ export const generateRoadmap = api(
       // Assessment not required — proceed without it
     }
 
-    // Generate AI roadmap
-    const aiResult = await generateWithClaude({
+    // Generate roadmap from career brain (local, no API)
+    const aiResult = generateFromBrain({
       targetRole: params.targetRole,
       timeline,
       currentSkills,

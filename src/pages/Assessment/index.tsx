@@ -174,6 +174,7 @@ export default function Assessment() {
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
+  const [isPartial, setIsPartial] = useState(false);
 
   const setAnswer = (id: string, value: string) => setAnswers(prev => ({ ...prev, [id]: value }));
   const toggleMulti = (val: string, list: string[], setList: (v: string[]) => void, max = 8) => {
@@ -201,9 +202,8 @@ export default function Assessment() {
 
   const handleSubmit = async () => {
     if (!user) { setError('You must be signed in.'); return; }
-    setStep(6); setError('');
+    setStep(6); setError(''); setIsPartial(false);
 
-    // Map answers to the backend's expected format
     const workStyle = answers.ws3 || 'mixed';
     const strengths = [
       answers.int2 && `${answers.int2} problem-solving`,
@@ -225,31 +225,23 @@ export default function Assessment() {
       personalityType: `${answers.int1 || 'mixed'}-${answers.ws2 || 'balanced'}-${answers.car1 || 'building'}`,
     };
 
-    // Try up to 2 times
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const res: any = await assessmentApi.submit(payload);
-        setResult(res.result);
-        setStep(7);
-        return;
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : '';
-        // On first attempt, retry after 2s
-        if (attempt === 0) {
-          await new Promise(r => setTimeout(r, 2000));
-          continue;
-        }
-        // Second attempt failed — show error
-        setStep(5);
-        if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('network')) {
-          setError('Could not reach the server. The backend may be starting up — please wait 10 seconds and try again.');
-        } else if (msg.includes('401') || msg.includes('unauthenticated')) {
-          setError('Your session expired. Please sign in again.');
-        } else if (msg.includes('decode') || msg.includes('missing field')) {
-          setError('There was a data format issue. Please try again — the system will auto-correct.');
-        } else {
-          setError(msg || 'Analysis failed. Please try again.');
-        }
+    try {
+      const res: any = await assessmentApi.submit(payload);
+      setResult(res.result);
+      setIsPartial(!!res.partial);
+      setStep(7);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      setStep(5);
+      if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('network')) {
+        setError('Could not reach the server. The backend may be starting up — please wait 10 seconds and try again.');
+      } else if (msg.includes('401') || msg.includes('unauthenticated')) {
+        setError('Your session expired. Please sign in again.');
+        navigate('/signin');
+      } else if (msg.includes('decode') || msg.includes('missing field')) {
+        setError('There was a data format issue. Please try again — the system will auto-correct.');
+      } else {
+        setError(msg || 'Analysis failed. Please try again.');
       }
     }
   };
@@ -293,11 +285,11 @@ export default function Assessment() {
             ))}
             <div className="assessment__nav" style={{ marginTop: '1.5rem' }}>
               {step > 0 && (
-                <button className="assessment__btn assessment__btn--back" onClick={() => setStep(s => s - 1)}>
+                <button className="assessment__btn assessment__btn--back" onClick={() => { setError(''); setStep(s => s - 1); }}>
                   <ArrowLeft size={15} /> Back
                 </button>
               )}
-              <button className="assessment__btn" disabled={!canNext()} onClick={() => setStep(s => s + 1)}>
+              <button className="assessment__btn" disabled={!canNext()} onClick={() => { setError(''); setStep(s => s + 1); }}>
                 Continue <ArrowRight size={15} />
               </button>
             </div>
@@ -354,7 +346,7 @@ export default function Assessment() {
 
             {error && <p className="assessment__error">{error}</p>}
             <div className="assessment__nav">
-              <button className="assessment__btn assessment__btn--back" onClick={() => setStep(4)}>
+              <button className="assessment__btn assessment__btn--back" onClick={() => { setError(''); setStep(4); }}>
                 <ArrowLeft size={15} /> Back
               </button>
               <button className="assessment__btn" disabled={!canNext()} onClick={handleSubmit}>
@@ -384,20 +376,25 @@ export default function Assessment() {
           <div className="assessment__card">
             <p className="assessment__eyebrow">Your Results</p>
             <h1 className="assessment__title">Your top career matches</h1>
+            {isPartial && (
+              <p className="assessment__error" style={{ marginBottom: '1rem' }}>
+                AI analysis was temporarily unavailable. These are placeholder results — please retake the assessment later for personalized matches.
+              </p>
+            )}
             <p className="assessment__sub" style={{ marginBottom: '1.25rem' }}>
               Based on your RIASEC profile, cognitive style, values, and experience — here are the roles we recommend.
             </p>
 
             <div className="assessment__results">
               {(result.careerMatches ?? []).map((match: any, i: number) => (
-                <div key={match.title} className={`assessment__match${i === 0 ? ' assessment__match--top' : ''}`}>
+                <div key={match.title ?? i} className={`assessment__match${i === 0 ? ' assessment__match--top' : ''}`}>
                   <div className="assessment__match-score">
-                    {match.matchScore}<span>%</span>
+                    {match.matchScore ?? '—'}<span>%</span>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p className="assessment__match-title">{match.title}</p>
-                    <p className="assessment__match-desc">{match.description}</p>
-                    <p className="assessment__match-time">⏱ {match.pathwayTime} pathway</p>
+                    <p className="assessment__match-title">{match.title ?? 'Career Match'}</p>
+                    <p className="assessment__match-desc">{match.description ?? 'No description available'}</p>
+                    <p className="assessment__match-time">⏱ {match.pathwayTime ?? 'Timeline TBD'} pathway</p>
                   </div>
                   {i === 0 && <CheckCircle2 size={18} color="#006a62" style={{ flexShrink: 0 }} />}
                 </div>

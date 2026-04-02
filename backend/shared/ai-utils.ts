@@ -13,7 +13,7 @@ export async function callClaudeWithRetry(opts: {
   fallback?: any;
 }): Promise<any> {
   const { apiKey, model, maxTokens, prompt, retries = 2, fallback } = opts;
-  const client = new Anthropic({ apiKey });
+  const client = new Anthropic({ apiKey, timeout: 25_000 });
 
   let lastError: Error | null = null;
 
@@ -50,6 +50,10 @@ export async function callClaudeWithRetry(opts: {
   // If we have a fallback, use it instead of crashing
   if (fallback !== undefined) {
     console.error(`AI call failed after ${retries + 1} attempts, using fallback:`, lastError?.message);
+    // Attach a flag so callers can detect fallback usage
+    if (typeof fallback === "object" && fallback !== null) {
+      fallback._isFallback = true;
+    }
     return fallback;
   }
 
