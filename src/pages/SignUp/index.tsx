@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, Rocket } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import Logo from '../../components/ui/Logo';
 import { auth, tokenStore } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 
@@ -46,10 +47,7 @@ export default function SignUp() {
   return (
     <div className="auth-page">
       <div className="auth-brand">
-        <div className="auth-logo-icon">
-          <Rocket size={20} />
-        </div>
-        <span className="auth-brand-name">PathWise</span>
+        <Logo size={32} variant="full" />
       </div>
 
       <div className="auth-card">
