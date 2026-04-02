@@ -78,6 +78,7 @@ export default function SignIn() {
           <div className="input-group">
             <div className="input-label-row">
               <label className="input-label">Password</label>
+              <span className="auth-link-sm" style={{ cursor: 'default' }}>Forgot password?</span>
             </div>
             <div className="input-wrap">
               <Lock size={16} className="input-icon" />
@@ -106,6 +107,15 @@ export default function SignIn() {
           </button>
         </form>
 
+        <div className="auth-divider">
+          <span>Or continue with</span>
+        </div>
+
+        <div className="auth-social-row">
+          <button type="button" className="btn-auth-social">Google</button>
+          <button type="button" className="btn-auth-social">Apple</button>
+        </div>
+
         <p className="auth-switch" style={{ marginTop: '1.5rem' }}>
           Don't have an account?{' '}
           <Link to="/signup" className="auth-link-bold">Sign Up</Link>
@@ -115,6 +125,7 @@ export default function SignIn() {
       <div className="auth-footer">
         <Link to="/privacy-policy">Privacy Policy</Link>
         <Link to="/terms-of-service">Terms of Service</Link>
+        <span style={{ cursor: 'default' }}>Support</span>
       </div>
 
       <div className="auth-glow" />

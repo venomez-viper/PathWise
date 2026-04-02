@@ -285,7 +285,7 @@ export default function Assessment() {
           <div className="assessment__card" style={{ textAlign: 'center' }}>
             <div className="assessment__generating">
               <div className="assessment__generating-spinner">
-                <Loader2 size={30} color="#a78bfa" style={{ animation: 'spin 0.8s linear infinite' }} />
+                <Loader2 size={30} color="#8b4f2c" style={{ animation: 'spin 0.8s linear infinite' }} />
               </div>
               <div>
                 <h1 className="assessment__title">Analysing your profile…</h1>

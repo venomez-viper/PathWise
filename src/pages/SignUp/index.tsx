@@ -58,6 +58,16 @@ export default function SignUp() {
           <p className="auth-subtitle">Join the professional growth ecosystem.</p>
         </div>
 
+        {/* Social login */}
+        <div className="auth-social-row" style={{ marginBottom: 0 }}>
+          <button type="button" className="btn-auth-social">Google</button>
+          <button type="button" className="btn-auth-social">Apple</button>
+        </div>
+
+        <div className="auth-divider">
+          <span>Or continue with email</span>
+        </div>
+
         {error && <div className="auth-error">{error}</div>}
 
         <form className="auth-form" onSubmit={handleSubmit}>

@@ -1,15 +1,72 @@
+/* ─────────────────────────────────────────────
+   ASSESSMENT — Zen Stone Aesthetic
+   Teal background, copper accents, organic cards
+───────────────────────────────────────────── */
 .assessment {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0f0b1e 0%, #1a1235 60%, #0d1a2e 100%);
+  min-height: calc(100vh - 4rem);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 2rem 1rem;
 }
 
+/* ── Top bar ── */
+.assessment__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.assessment__topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assessment__topbar-module {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--on-surface-variant);
+}
+
+.assessment__topbar-phase {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: -0.01em;
+}
+
+.assessment__topbar-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--on-surface-variant);
+}
+
+.assessment__topbar-progress-bar {
+  width: 120px;
+  height: 4px;
+  background: var(--surface-container);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.assessment__topbar-progress-fill {
+  height: 100%;
+  background: #8b4f2c;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* ── Progress bar (legacy compat) ── */
 .assessment__progress {
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
   margin: 0 auto 1.5rem;
   display: flex;
   align-items: center;
@@ -19,100 +76,104 @@
 .assessment__progress-bar {
   flex: 1;
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-container);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .assessment__progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #a78bfa, #5ef6e6);
+  background: #8b4f2c;
   border-radius: 999px;
   transition: width 0.4s ease;
 }
 
 .assessment__progress-label {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--on-surface-variant);
   white-space: nowrap;
 }
 
+/* ── Card ── */
 .assessment__card {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  background: var(--surface-container-lowest);
+  border-radius: 2rem;
   padding: 2.5rem 2rem;
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
   margin: 0 auto;
+  box-shadow: var(--shadow-sm);
 }
 
+/* ── Eyebrow ── */
 .assessment__eyebrow {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a78bfa;
+  color: var(--on-surface-variant);
   margin-bottom: 0.75rem;
 }
 
+/* ── Title — Zen Stone editorial ── */
 .assessment__title {
   font-family: var(--font-display);
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 800;
-  color: #fff;
-  line-height: 1.2;
+  color: var(--on-surface);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
   margin-bottom: 0.5rem;
 }
 
 .assessment__sub {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.88rem;
+  color: var(--on-surface-variant);
   margin-bottom: 1.5rem;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-/* Option chips */
+/* ── Option cards (single-select) ── */
 .assessment__options {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 1.5rem;
 }
 
 .assessment__option {
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.85rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-xl);
+  border: none;
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+  font-size: 0.88rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .assessment__option:hover {
-  border-color: rgba(167, 139, 250, 0.5);
-  background: rgba(167, 139, 250, 0.08);
-  color: #fff;
+  background: var(--surface-container);
 }
 
 .assessment__option.selected {
-  border-color: #a78bfa;
-  background: rgba(167, 139, 250, 0.2);
-  color: #a78bfa;
+  background: rgba(139, 79, 44, 0.08);
+  color: #8b4f2c;
   font-weight: 600;
+  box-shadow: inset 0 0 0 2px rgba(139, 79, 44, 0.25);
 }
 
-/* Multi-select chips with checkmark */
+/* ── Multi-select chips ── */
 .assessment__chip {
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.6);
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
@@ -123,21 +184,21 @@
 }
 
 .assessment__chip:hover {
-  border-color: rgba(167, 139, 250, 0.4);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--surface-container);
+  color: var(--on-surface);
 }
 
 .assessment__chip.selected {
-  border-color: #a78bfa;
-  background: rgba(167, 139, 250, 0.15);
-  color: #a78bfa;
+  background: rgba(139, 79, 44, 0.08);
+  color: #8b4f2c;
+  font-weight: 600;
 }
 
 .assessment__chip-check {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #a78bfa;
+  background: #8b4f2c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -146,33 +207,36 @@
   flex-shrink: 0;
 }
 
-/* Text input */
+/* ── Text input ── */
 .assessment__input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  color: #fff;
+  background: var(--surface-container-low);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--on-surface);
   font-size: 0.9rem;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.25rem;
   outline: none;
-  transition: border-color 0.15s;
+  transition: background 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
   font-family: var(--font-body);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
-.assessment__input::placeholder { color: rgba(255, 255, 255, 0.3); }
-.assessment__input:focus { border-color: #a78bfa; }
+.assessment__input::placeholder { color: var(--on-surface-muted); }
+.assessment__input:focus {
+  background: var(--surface-container-lowest);
+  box-shadow: 0 0 0 2px rgba(139, 79, 44, 0.15);
+}
 
-/* Hint text */
+/* ── Hint ── */
 .assessment__hint {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--on-surface-muted);
   margin-bottom: 1.5rem;
 }
 
-/* Navigation buttons */
+/* ── Navigation buttons ── */
 .assessment__nav {
   display: flex;
   gap: 10px;
@@ -184,28 +248,27 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0.7rem 1.5rem;
-  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
   border: none;
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  background: linear-gradient(135deg, #334042, #4a5759);
   color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.15s;
 }
 
-.assessment__btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.9; }
+.assessment__btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.92; }
 .assessment__btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .assessment__btn--back {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
 }
-.assessment__btn--back:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.assessment__btn--back:hover { background: var(--surface-container); color: var(--on-surface); }
 
-/* Generating state */
+/* ── Generating / Processing ── */
 .assessment__generating {
   display: flex;
   flex-direction: column;
@@ -219,13 +282,13 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: rgba(167, 139, 250, 0.1);
+  background: rgba(139, 79, 44, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Results */
+/* ── Results ── */
 .assessment__results {
   display: flex;
   flex-direction: column;
@@ -234,24 +297,23 @@
 }
 
 .assessment__match {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
+  background: var(--surface-container-low);
+  border-radius: var(--radius-xl);
+  padding: 1.15rem 1.25rem;
   display: flex;
   gap: 12px;
   align-items: flex-start;
 }
 
 .assessment__match--top {
-  border-color: rgba(167, 139, 250, 0.3);
-  background: rgba(167, 139, 250, 0.06);
+  background: rgba(139, 79, 44, 0.06);
+  box-shadow: inset 0 0 0 1.5px rgba(139, 79, 44, 0.15);
 }
 
 .assessment__match-score {
   font-size: 1.2rem;
   font-weight: 800;
-  color: #a78bfa;
+  color: #8b4f2c;
   font-family: var(--font-display);
   line-height: 1;
   min-width: 44px;
@@ -260,40 +322,67 @@
 .assessment__match-score span {
   font-size: 0.65rem;
   font-weight: 600;
-  color: rgba(167, 139, 250, 0.7);
+  color: rgba(139, 79, 44, 0.6);
 }
 
 .assessment__match-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--on-surface);
   margin-bottom: 3px;
 }
 
 .assessment__match-desc {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--on-surface-variant);
   line-height: 1.45;
 }
 
 .assessment__match-time {
   font-size: 0.72rem;
-  color: #34d399;
+  color: var(--secondary);
   font-weight: 600;
   margin-top: 5px;
 }
 
 .assessment__error {
-  color: #f87171;
+  color: #ef4444;
   font-size: 0.85rem;
   margin-bottom: 1rem;
   text-align: center;
 }
 
+/* ── Resonance Ring (bottom gauge) ── */
+.assessment__resonance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+.assessment__resonance-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--on-surface-variant);
+  margin-top: 8px;
+}
+
+.assessment__resonance-archetype {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  margin-top: 4px;
+}
+
 @media (max-width: 480px) {
   .assessment__card {
     padding: 1.75rem 1.25rem;
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
   }
-  .assessment__title { font-size: 1.35rem; }
+  .assessment__title { font-size: 1.4rem; }
 }
