@@ -1,14 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
-import { roadmap } from '../../lib/api';
+import { roadmap, assessment } from '../../lib/api';
 import './Onboarding.css';
-
-const POPULAR_ROLES = [
-  'Software Engineer', 'Data Analyst', 'Product Manager', 'UX Designer',
-  'Marketing Analyst', 'Business Analyst', 'Data Scientist', 'DevOps Engineer',
-];
 
 const TIMELINES = [
   { label: '3 months', value: '3mo', desc: 'Fast track' },
@@ -19,13 +14,43 @@ const TIMELINES = [
 export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(0);
   const [targetRole, setTargetRole] = useState('');
   const [timeline, setTimeline] = useState('6mo');
   const [_generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [assessmentMatches, setAssessmentMatches] = useState<{ title: string; matchScore: number; pathwayTime?: string }[]>([]);
 
   const firstName = user?.name?.split(' ')[0] ?? 'there';
+
+  // Pre-fill from assessment if navigated from results page
+  useEffect(() => {
+    const state = location.state as { targetRole?: string; pathwayTime?: string } | null;
+    if (state?.targetRole) {
+      setTargetRole(state.targetRole);
+      // Map pathwayTime to timeline
+      const pt = state.pathwayTime?.toLowerCase() ?? '';
+      if (pt.includes('3') || pt.includes('short')) setTimeline('3mo');
+      else if (pt.includes('12') || pt.includes('year') || pt.includes('long')) setTimeline('12mo');
+      else setTimeline('6mo');
+      // Skip welcome, go straight to role confirmation
+      setStep(1);
+    }
+
+    // Also load assessment matches for role suggestions
+    if (user) {
+      assessment.getResult(user.id).then((res: any) => {
+        if (res?.result?.careerMatches?.length) {
+          setAssessmentMatches(res.result.careerMatches);
+          // If no role pre-filled, default to top match
+          if (!state?.targetRole && res.result.careerMatches[0]?.title) {
+            setTargetRole(res.result.careerMatches[0].title);
+          }
+        }
+      }).catch(() => {});
+    }
+  }, []);
 
   const handleGenerate = async () => {
     if (!targetRole.trim() || !user) return;
@@ -76,18 +101,44 @@ export default function Onboarding() {
       {step === 1 && (
         <div className="onboarding__card">
           <p className="onboarding__eyebrow">STEP 1 OF 2</p>
-          <h1 className="onboarding__title">What role are you<br />working towards?</h1>
-          <p className="onboarding__sub">Choose from the list or type your own.</p>
+          <h1 className="onboarding__title">
+            {assessmentMatches.length > 0 ? 'Confirm your career path' : 'What role are you\nworking towards?'}
+          </h1>
+          <p className="onboarding__sub">
+            {assessmentMatches.length > 0
+              ? 'Based on your assessment — pick the role to build your roadmap around.'
+              : 'Choose from the list or type your own.'}
+          </p>
 
-          <div className="onboarding__chips">
-            {POPULAR_ROLES.map(role => (
-              <button
-                key={role}
-                className={`onboarding__chip${targetRole === role ? ' selected' : ''}`}
-                onClick={() => setTargetRole(role)}
-              >{role}</button>
-            ))}
-          </div>
+          {assessmentMatches.length > 0 && (
+            <div className="onboarding__chips" style={{ flexDirection: 'column', gap: '0.5rem' }}>
+              {assessmentMatches.map((m: any) => (
+                <button
+                  key={m.title}
+                  className={`onboarding__chip${targetRole === m.title ? ' selected' : ''}`}
+                  style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem' }}
+                  onClick={() => setTargetRole(m.title)}
+                >
+                  <span>{m.title}</span>
+                  <span style={{ opacity: 0.6, fontSize: '0.85rem' }}>{m.matchScore}% match</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {assessmentMatches.length === 0 && (
+            <div className="onboarding__chips">
+              {['Frontend Developer', 'Backend Developer', 'Data Scientist', 'UX Designer',
+                'Product Manager', 'Digital Marketer', 'Business Analyst', 'DevOps/SRE Engineer'
+              ].map(role => (
+                <button
+                  key={role}
+                  className={`onboarding__chip${targetRole === role ? ' selected' : ''}`}
+                  onClick={() => setTargetRole(role)}
+                >{role}</button>
+              ))}
+            </div>
+          )}
 
           <input
             type="text"

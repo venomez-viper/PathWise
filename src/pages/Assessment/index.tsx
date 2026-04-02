@@ -175,6 +175,7 @@ export default function Assessment() {
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
   const [isPartial, setIsPartial] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(0);
 
   const setAnswer = (id: string, value: string) => setAnswers(prev => ({ ...prev, [id]: value }));
   const toggleMulti = (val: string, list: string[], setList: (v: string[]) => void, max = 8) => {
@@ -386,9 +387,15 @@ export default function Assessment() {
               Based on your RIASEC profile, cognitive style, values, and experience — here are the roles we recommend.
             </p>
 
+            <p className="assessment__sub" style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: '0.5rem' }}>
+              Tap a match to select it for your roadmap
+            </p>
             <div className="assessment__results">
               {(result.careerMatches ?? []).map((match: any, i: number) => (
-                <div key={match.title ?? i} className={`assessment__match${i === 0 ? ' assessment__match--top' : ''}`}>
+                <div key={match.title ?? i}
+                  className={`assessment__match${i === selectedMatch ? ' assessment__match--top' : ''}`}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => setSelectedMatch(i)}>
                   <div className="assessment__match-score">
                     {match.matchScore ?? '—'}<span>%</span>
                   </div>
@@ -397,15 +404,18 @@ export default function Assessment() {
                     <p className="assessment__match-desc">{match.description ?? 'No description available'}</p>
                     <p className="assessment__match-time">⏱ {match.pathwayTime ?? 'Timeline TBD'} pathway</p>
                   </div>
-                  {i === 0 && <CheckCircle2 size={18} color="#006a62" style={{ flexShrink: 0 }} />}
+                  {i === selectedMatch && <CheckCircle2 size={18} color="#006a62" style={{ flexShrink: 0 }} />}
                 </div>
               ))}
             </div>
 
             <div className="assessment__nav" style={{ flexDirection: 'column', gap: 8 }}>
               <button className="assessment__btn" style={{ width: '100%', justifyContent: 'center' }}
-                onClick={() => navigate('/app/onboarding')}>
-                Build My Roadmap <ArrowRight size={15} />
+                onClick={() => {
+                  const chosen = result.careerMatches[selectedMatch];
+                  navigate('/app/onboarding', { state: { targetRole: chosen?.title, pathwayTime: chosen?.pathwayTime } });
+                }}>
+                Build Roadmap for {result.careerMatches?.[selectedMatch]?.title ?? 'this role'} <ArrowRight size={15} />
               </button>
               <button className="assessment__btn assessment__btn--back"
                 style={{ width: '100%', justifyContent: 'center' }}
