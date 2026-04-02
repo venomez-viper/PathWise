@@ -213,27 +213,43 @@ export default function Assessment() {
     ].filter(Boolean) as string[];
     const values = [answers.val1, answers.val2, answers.val3, answers.val4].filter(Boolean) as string[];
 
-    try {
-      const res: any = await assessmentApi.submit({
-        userId: user.id,
-        workStyle,
-        strengths,
-        values,
-        currentSkills: [...selectedSkills, ...currentSkills],
-        experienceLevel,
-        interests: selectedDomains,
-        currentRole: currentRole.trim() || undefined,
-        personalityType: `${answers.int1 || 'mixed'}-${answers.ws2 || 'balanced'}-${answers.car1 || 'building'}`,
-      });
-      setResult(res.result);
-      setStep(7);
-    } catch (err: unknown) {
-      setStep(5);
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      if (msg.includes('fetch') || msg.includes('network') || msg.includes('Network')) {
-        setError('Could not reach the server. Please check your connection and try again.');
-      } else {
-        setError(msg || 'Analysis failed. Please try again.');
+    const payload = {
+      userId: user.id,
+      workStyle,
+      strengths,
+      values,
+      currentSkills: [...selectedSkills, ...currentSkills],
+      experienceLevel,
+      interests: selectedDomains,
+      currentRole: currentRole.trim() || '',
+      personalityType: `${answers.int1 || 'mixed'}-${answers.ws2 || 'balanced'}-${answers.car1 || 'building'}`,
+    };
+
+    // Try up to 2 times
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res: any = await assessmentApi.submit(payload);
+        setResult(res.result);
+        setStep(7);
+        return;
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : '';
+        // On first attempt, retry after 2s
+        if (attempt === 0) {
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+        // Second attempt failed — show error
+        setStep(5);
+        if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('network')) {
+          setError('Could not reach the server. The backend may be starting up — please wait 10 seconds and try again.');
+        } else if (msg.includes('401') || msg.includes('unauthenticated')) {
+          setError('Your session expired. Please sign in again.');
+        } else if (msg.includes('decode') || msg.includes('missing field')) {
+          setError('There was a data format issue. Please try again — the system will auto-correct.');
+        } else {
+          setError(msg || 'Analysis failed. Please try again.');
+        }
       }
     }
   };
