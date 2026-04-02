@@ -38,7 +38,8 @@ export default function SignUp() {
       login(res.user as AuthUser);
       navigate('/app/onboarding');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Sign up failed. Please try again.');
+      const msg = err instanceof Error ? err.message : '';
+      setError(msg.includes('fetch') ? 'Could not reach the server. Check your connection.' : (msg || 'Sign up failed. Please try again.'));
     } finally {
       setLoading(false);
     }

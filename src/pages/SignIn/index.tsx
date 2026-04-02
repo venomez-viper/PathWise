@@ -34,7 +34,8 @@ export default function SignIn() {
       login(res.user as AuthUser);
       navigate('/app');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
+      const msg = err instanceof Error ? err.message : '';
+      setError(msg.includes('fetch') ? 'Could not reach the server. Check your connection.' : (msg || 'Sign in failed. Please try again.'));
     } finally {
       setLoading(false);
     }

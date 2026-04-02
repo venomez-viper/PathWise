@@ -229,7 +229,12 @@ export default function Assessment() {
       setStep(7);
     } catch (err: unknown) {
       setStep(5);
-      setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      if (msg.includes('fetch') || msg.includes('network') || msg.includes('Network')) {
+        setError('Could not reach the server. Please check your connection and try again.');
+      } else {
+        setError(msg || 'Analysis failed. Please try again.');
+      }
     }
   };
 

@@ -1,10 +1,23 @@
 /**
  * PathWise API Client
  * Connects to the Encore.dev backend.
- * Base URL is set via VITE_API_BASE_URL environment variable.
+ * Auto-detects environment: localhost for dev, Encore cloud for production.
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api';
+function getBaseUrl(): string {
+  // 1. Explicit env var always wins
+  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL;
+
+  // 2. Production: use Encore staging API
+  if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+    return 'https://staging-pathwise-4mxi.encr.app';
+  }
+
+  // 3. Local dev
+  return 'http://localhost:4000';
+}
+
+const BASE_URL = getBaseUrl();
 
 const TOKEN_KEY = 'pathwise_token';
 
@@ -14,23 +27,37 @@ export const tokenStore = {
   clear: ()            => localStorage.removeItem(TOKEN_KEY),
 };
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+async function request<T>(path: string, options?: RequestInit, retries = 1): Promise<T> {
   const token = tokenStore.get();
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options?.headers,
-    },
-    ...options,
-  });
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.message ?? `API error ${res.status}: ${res.statusText}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}${path}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...options?.headers,
+        },
+        ...options,
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message ?? body?.code ?? `API error ${res.status}: ${res.statusText}`);
+      }
+
+      return res.json() as Promise<T>;
+    } catch (err) {
+      // Network error (failed to fetch) — retry once
+      if (attempt < retries && err instanceof TypeError && err.message.includes('fetch')) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      throw err;
+    }
   }
 
-  return res.json() as Promise<T>;
+  throw new Error('Request failed after retries');
 }
 
 // --- Auth ---
