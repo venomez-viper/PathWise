@@ -31,14 +31,18 @@
   --brand-purple: #6245a4;
   --brand-teal: #006a62;
 
-  /* Surface hierarchy — frosted glass layers */
-  --surface: #faf9fe;
+  /* Surface hierarchy — Zen Stone teal-tinted layers */
+  --surface: #eefcfe;
   --surface-container-lowest: #ffffff;
-  --surface-container-low: #f4f3f8;
-  --surface-container: #efecf5;
-  --surface-container-high: #e8e6ef;
-  --surface-container-highest: #e0deea;
+  --surface-container-low: #e8f6f8;
+  --surface-container: #ddebed;
+  --surface-container-high: #d0e3e6;
+  --surface-container-highest: #c3d8db;
   --surface-bright: #ffffff;
+
+  /* Lumina purple surfaces (for cards/overlays) */
+  --surface-lumina: #faf9fe;
+  --surface-lumina-low: #f4f3f8;
 
   /* Text */
   --on-surface: #1a1c1f;

@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Zap } from 'lucide-react';
 import { tokenStore } from '../lib/api';
 import './Sidebar.css';
 
@@ -31,8 +31,13 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
     {open && <div className="sidebar-backdrop" onClick={onClose} />}
     <aside className={`sidebar${open ? ' sidebar--open' : ''}`}>
       <div className="sidebar__logo">
-        <span className="sidebar__brand-name">PathWise</span>
-        <span className="sidebar__brand-sub">Strategic Growth</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="sidebar__logo-icon"><Zap size={18} /></div>
+          <div>
+            <span className="sidebar__brand-name">PathWise</span>
+            <span className="sidebar__brand-sub">Strategic Growth</span>
+          </div>
+        </div>
       </div>
 
       <nav className="sidebar__nav">

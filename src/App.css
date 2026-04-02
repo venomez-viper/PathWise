@@ -338,7 +338,7 @@
 .saas-layout {
   display: flex;
   min-height: 100vh;
-  background: var(--surface);
+  background: var(--surface); /* Zen Stone teal-tinted #eefcfe */
 }
 
 .saas-main {
@@ -568,7 +568,7 @@
   gap: 4px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--primary);
+  color: #8b4f2c;
   margin-top: 12px;
   text-decoration: none;
   transition: opacity 0.15s;

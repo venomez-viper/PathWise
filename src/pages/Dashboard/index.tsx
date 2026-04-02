@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle2, Trophy, ClipboardList, Zap, ArrowRight, TrendingUp, Clock, Loader2, Target } from 'lucide-react';
+import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
@@ -16,377 +16,252 @@ export default function Dashboard() {
     recentTasks: { id: string; title: string; status: string; priority: string }[];
     stats: { tasksFinished: number; tasksTotal: number; jobReadinessScore: number };
     milestones: any[];
-    todoCount: number;
-    inProgCount: number;
-    doneCount: number;
     activeMilestone: any;
     activeMilestoneTasks: any[];
     activeDone: number;
+    doneCount: number;
   }>({
-    roadmapPct: 0,
-    targetRole: '—',
-    hasAssessment: false,
-    careerMatches: [],
-    recentTasks: [],
+    roadmapPct: 0, targetRole: '—', hasAssessment: false, careerMatches: [], recentTasks: [],
     stats: { tasksFinished: 0, tasksTotal: 0, jobReadinessScore: 0 },
-    milestones: [],
-    todoCount: 0,
-    inProgCount: 0,
-    doneCount: 0,
-    activeMilestone: null,
-    activeMilestoneTasks: [],
-    activeDone: 0,
+    milestones: [], activeMilestone: null, activeMilestoneTasks: [], activeDone: 0, doneCount: 0,
   });
 
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-
     async function load() {
       try {
         const [assessRes, roadmapRes, tasksRes, progressRes] = await Promise.allSettled([
-          assessment.getResult(user!.id),
-          roadmap.get(user!.id),
-          tasks.list(user!.id),
-          progress.getStats(user!.id),
+          assessment.getResult(user!.id), roadmap.get(user!.id),
+          tasks.list(user!.id), progress.getStats(user!.id),
         ]);
-
         if (cancelled) return;
-
         const assessResult = assessRes.status === 'fulfilled' ? (assessRes.value as any).result : null;
-        const careerMatches = assessResult?.careerMatches ?? [];
-        const hasAssessment = !!assessResult;
-
         const roadmapData = roadmapRes.status === 'fulfilled' ? (roadmapRes.value as any).roadmap : null;
-        const taskList    = tasksRes.status === 'fulfilled'   ? (tasksRes.value as any).tasks ?? [] : [];
-        const statsData   = progressRes.status === 'fulfilled' ? (progressRes.value as any).stats : null;
-
+        const taskList = tasksRes.status === 'fulfilled' ? (tasksRes.value as any).tasks ?? [] : [];
+        const statsData = progressRes.status === 'fulfilled' ? (progressRes.value as any).stats : null;
         const milestones = roadmapData?.milestones ?? [];
         const activeMilestone = milestones.find((m: any) => m.status === 'in_progress') ?? null;
-        const completedMilestones = milestones.filter((m: any) => m.status === 'completed').length;
-
-        const todoCount = taskList.filter((t: any) => t.status === 'todo').length;
-        const inProgCount = taskList.filter((t: any) => t.status === 'in_progress').length;
         const doneCount = taskList.filter((t: any) => t.status === 'done').length;
-
-        const activeMilestoneTasks = activeMilestone
-          ? taskList.filter((t: any) => t.milestoneId === activeMilestone.id)
-          : [];
+        const activeMilestoneTasks = activeMilestone ? taskList.filter((t: any) => t.milestoneId === activeMilestone.id) : [];
         const activeDone = activeMilestoneTasks.filter((t: any) => t.status === 'done').length;
-
         setData({
-          roadmapPct:    roadmapData?.completionPercent ?? 0,
-          targetRole:    roadmapData?.targetRole ?? '—',
-          hasAssessment,
-          careerMatches: careerMatches.slice(0, 3),
-          recentTasks:   taskList.slice(0, 3),
-          stats: {
-            tasksFinished:     statsData?.tasksFinished ?? doneCount,
-            tasksTotal:        taskList.length,
-            jobReadinessScore: statsData?.jobReadinessScore ?? 0,
-          },
-          milestones,
-          todoCount,
-          inProgCount,
-          doneCount,
-          activeMilestone: activeMilestone ? { ...activeMilestone, completedCount: completedMilestones, totalCount: milestones.length } : null,
-          activeMilestoneTasks,
-          activeDone,
+          roadmapPct: roadmapData?.completionPercent ?? 0,
+          targetRole: roadmapData?.targetRole ?? '—',
+          hasAssessment: !!assessResult,
+          careerMatches: (assessResult?.careerMatches ?? []).slice(0, 3),
+          recentTasks: taskList.slice(0, 4),
+          stats: { tasksFinished: statsData?.tasksFinished ?? doneCount, tasksTotal: taskList.length, jobReadinessScore: statsData?.jobReadinessScore ?? 0 },
+          milestones, activeMilestone, activeMilestoneTasks, activeDone, doneCount,
         });
-      } finally {
-        if (!cancelled) { setLoading(false); setTimeout(() => setMounted(true), 100); }
-      }
+      } finally { if (!cancelled) { setLoading(false); setTimeout(() => setMounted(true), 100); } }
     }
-
     load();
     return () => { cancelled = true; };
   }, [user]);
 
-  const {
-    roadmapPct, hasAssessment, careerMatches, recentTasks,
-    doneCount,
-    activeMilestone, activeMilestoneTasks, activeDone,
-  } = data;
+  const { roadmapPct, targetRole, hasAssessment, careerMatches, recentTasks, activeMilestone, activeMilestoneTasks, activeDone } = data;
+  const ringSize = 90; const ringR = 38; const circ = 2 * Math.PI * ringR;
+  const strokeOff = mounted ? circ * (1 - roadmapPct / 100) : circ;
 
-  const activeMilestoneTotal = activeMilestoneTasks.length;
-  const activeMilestoneRemaining = activeMilestoneTotal - activeDone;
-  const activeMilestonePct = activeMilestoneTotal > 0 ? (activeDone / activeMilestoneTotal) * 100 : 0;
+  if (loading) return (
+    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+      <Loader2 size={28} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
 
   return (
     <div className="page">
-
-      {/* CTA for users without assessment */}
-      {!loading && !hasAssessment && (
-        <div className="panel panel--accent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div>
-            <p style={{ fontWeight: 700, color: 'var(--on-surface)', marginBottom: 4 }}>Take the Career Assessment</p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>AI-analyse your strengths and get your top 3 career matches.</p>
-          </div>
-          <Link to="/app/assessment" className="btn-page-action" style={{ whiteSpace: 'nowrap' }}>
-            Start <ArrowRight size={14} />
-          </Link>
+      {/* ── HERO BANNER — Zen Stone gradient ── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #334042 0%, #4a5759 60%, #5a6b6e 100%)',
+        borderRadius: '2.5rem',
+        padding: '2.25rem 2.5rem',
+        marginBottom: '1.5rem',
+        color: '#fff',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.6, marginBottom: 6 }}>
+          CLUSTER HUB &middot; Main Dashboard
+        </p>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>
+          Welcome back, {user?.name?.split(' ')[0]}.
+        </h1>
+        <p style={{ fontSize: '0.85rem', opacity: 0.7, lineHeight: 1.5, maxWidth: 400 }}>
+          Your strategic roadmap is evolving. You are currently in the top {roadmapPct > 0 ? roadmapPct : 5}% of prepared candidates for {targetRole} roles.
+        </p>
+        <div style={{ display: 'flex', gap: 10, marginTop: '1.25rem' }}>
+          <Link to="/app/roadmap" style={{
+            padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
+            background: '#8b4f2c', color: '#fff', fontWeight: 700, fontSize: '0.82rem',
+          }}>View Roadmap</Link>
+          <Link to="/app/onboarding" style={{
+            padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
+            background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 600, fontSize: '0.82rem',
+          }}>Update Goals</Link>
         </div>
-      )}
+      </div>
 
-      {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-          <Loader2 size={28} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
-        </div>
-      ) : (
-        <>
-          {/* ── HERO BANNER ── */}
-          <div style={{
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
-            borderRadius: 'var(--radius-2xl)',
-            padding: '2rem 2rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1.5rem',
-            color: '#fff',
-          }}>
+      {/* ── MAIN GRID — Progress + Career Matches ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+
+        {/* PROGRESS FILES */}
+        <div className="panel" style={{ borderRadius: '2rem' }}>
+          <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>
+            Progress Files
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            {/* Roadmap ring */}
             <div>
-              <h1 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '1.65rem',
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                lineHeight: 1.2,
-                marginBottom: '0.5rem',
-              }}>
-                Welcome back, {user?.name?.split(' ')[0]}!
-              </h1>
-              <p style={{ fontSize: '0.88rem', opacity: 0.85, lineHeight: 1.5 }}>
-                Your journey to the top of your career is accelerating.
-              </p>
-              {hasAssessment && (
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  marginTop: '0.75rem',
-                  background: 'rgba(255,255,255,0.15)',
-                  borderRadius: 'var(--radius-full)',
-                  padding: '5px 12px',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase' as const,
-                }}>
-                  <CheckCircle2 size={12} /> Career Assessment Completed
+              <p style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface)', marginBottom: 6 }}>Roadmap Completion</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ position: 'relative', width: ringSize, height: ringSize }}>
+                  <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`}>
+                    <circle cx={ringSize/2} cy={ringSize/2} r={ringR} fill="none" stroke="var(--surface-container)" strokeWidth={6} />
+                    <circle cx={ringSize/2} cy={ringSize/2} r={ringR} fill="none" stroke="#8b4f2c" strokeWidth={6}
+                      strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={strokeOff}
+                      style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 1s cubic-bezier(0.33, 1, 0.68, 1)' }}
+                    />
+                  </svg>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800 }}>
+                    {roadmapPct}%
+                  </div>
                 </div>
-              )}
-              <div style={{ marginTop: '1rem' }}>
-                <Link to="/app/roadmap" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '0.6rem 1.25rem',
-                  background: '#fff',
-                  color: 'var(--primary)',
-                  borderRadius: 'var(--radius-full)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  letterSpacing: '0.02em',
-                  textTransform: 'uppercase' as const,
-                }}>
-                  View My Roadmap
-                </Link>
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', lineHeight: 1.4 }}>
+                    You've completed {roadmapPct}% of milestones in your pathway.
+                  </p>
+                  <p style={{ fontSize: '0.72rem', color: '#8b4f2c', fontWeight: 600, marginTop: 4 }}>Optional Guidance</p>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* ── 3-STAT CARDS ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
-            {/* Roadmap Completion */}
-            <div className="stat-tile">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div className="stat-tile__icon" style={{ background: 'rgba(98, 69, 164, 0.10)', color: 'var(--primary)' }}>
-                  <Zap size={18} />
-                </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>{roadmapPct}%</span>
-              </div>
-              <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)', marginTop: 4 }}>Roadmap Completion</p>
-              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${roadmapPct}%` : '0%', background: 'var(--primary)' }} /></div>
-            </div>
-
-            {/* Tasks Finished */}
-            <div className="stat-tile">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div className="stat-tile__icon" style={{ background: 'rgba(0, 106, 98, 0.08)', color: 'var(--secondary)' }}>
-                  <ClipboardList size={18} />
-                </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--secondary)' }}>{String(doneCount).padStart(2, '0')}</span>
-              </div>
-              <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)', marginTop: 4 }}>Tasks Finished</p>
-              <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>{data.stats.tasksTotal - doneCount} tasks remaining this week</p>
-            </div>
-
-            {/* Job Readiness */}
-            <div className="stat-tile">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div className="stat-tile__icon" style={{ background: 'rgba(202, 168, 66, 0.08)', color: '#8b6914' }}>
-                  <Trophy size={18} />
-                </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: '#8b6914' }}>{data.stats.jobReadinessScore}%</span>
-              </div>
-              <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)', marginTop: 4 }}>Job Readiness</p>
-              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${data.stats.jobReadinessScore}%` : '0%', background: 'linear-gradient(90deg, #caa842, #8b6914)' }} /></div>
-            </div>
+          <div style={{ marginTop: '1rem', display: 'flex', gap: 8 }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <TrendingUp size={12} /> Network Velocity
+            </span>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.85rem', color: 'var(--on-surface)' }}>
+              {data.stats.jobReadinessScore}%
+            </span>
           </div>
+        </div>
 
-          {/* ── CAREER MATCHES ── */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.02em', marginBottom: 4 }}>
-              Top Career Matches
-            </h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>
-              Based on your skills and personality assessment
+        {/* ALIGNED NEW JOBS */}
+        <div className="panel" style={{ borderRadius: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)' }}>
+              Aligned New Jobs
             </p>
-
-            {careerMatches.length === 0 ? (
-              <div className="panel" style={{ textAlign: 'center', padding: '2rem' }}>
-                <Target size={28} color="var(--on-surface-variant)" style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-                <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', marginBottom: '8px' }}>
-                  No assessment yet.
-                </p>
-                <Link to="/app/assessment" className="panel-link" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  Take the assessment <ArrowRight size={13} />
-                </Link>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {careerMatches.map((m: any) => (
-                  <div className="panel" key={m.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.75rem' }}>
-                    {/* Circular gauge */}
-                    <div style={{ position: 'relative', width: 80, height: 80, marginBottom: '0.75rem' }}>
-                      <svg width="80" height="80" viewBox="0 0 80 80">
-                        <circle cx="40" cy="40" r="34" fill="none" stroke="var(--surface-container-high)" strokeWidth="5" />
-                        <circle cx="40" cy="40" r="34" fill="none" stroke="var(--secondary)" strokeWidth="5"
-                          strokeLinecap="round"
-                          strokeDasharray={2 * Math.PI * 34}
-                          strokeDashoffset={mounted ? (2 * Math.PI * 34) * (1 - m.matchScore / 100) : 2 * Math.PI * 34}
-                          style={{ transform: 'rotate(-90deg)', transformOrigin: '40px 40px', transition: 'stroke-dashoffset 1s cubic-bezier(0.33, 1, 0.68, 1)' }}
-                        />
-                      </svg>
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--secondary)' }}>
-                        {m.matchScore}%
-                      </div>
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.01em' }}>{m.title}</h3>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', marginTop: 4, lineHeight: 1.5 }}>{m.description}</p>
-                    <Link to="/app/assessment" style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      marginTop: '0.75rem',
-                      padding: '0.5rem 1.25rem',
-                      borderRadius: 'var(--radius-full)',
-                      background: 'transparent',
-                      color: 'var(--on-surface)',
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      boxShadow: 'var(--shadow-sm)',
-                    }}>
-                      View Details <ArrowRight size={13} />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* ── ACTIVE MILESTONE ── */}
-          <div className="panel" style={{ marginBottom: '1rem' }}>
-            <div className="panel__header">
-              <h2 className="panel__title">Active Milestone</h2>
-              <Zap size={15} color="#caa842" />
-            </div>
-
-            {!activeMilestone ? (
-              <div style={{ padding: '1.5rem 0', textAlign: 'center' }}>
-                <TrendingUp size={28} color="var(--on-surface-variant)" style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-                <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', lineHeight: 1.5 }}>
-                  Complete onboarding to generate your roadmap
-                </p>
-                <Link to="/app/roadmap" className="panel-link" style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  Go to Roadmap <ArrowRight size={13} />
-                </Link>
-              </div>
-            ) : (
-              <div>
-                <div style={{
-                  borderLeft: '3px solid var(--primary)',
-                  paddingLeft: '12px',
-                  marginBottom: '1rem',
-                  borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
-                }}>
-                  <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--on-surface)', lineHeight: 1.3 }}>
-                    {activeMilestone.title ?? activeMilestone.name ?? 'Current Milestone'}
-                  </p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', marginTop: '4px' }}>
-                    {activeDone} / {activeMilestoneTotal} tasks done
-                    {activeMilestoneRemaining > 0 && ` (${activeMilestoneRemaining} remaining)`}
-                  </p>
-                </div>
-
-                <div style={{
-                  height: '6px',
-                  background: 'var(--surface-container-high)',
-                  borderRadius: 'var(--radius-full)',
-                  overflow: 'hidden',
-                  marginBottom: '1rem',
-                }}>
-                  <div style={{
-                    height: '100%',
-                    width: mounted ? `${activeMilestonePct}%` : '0%',
-                    background: 'linear-gradient(90deg, var(--primary), var(--primary-container))',
-                    borderRadius: 'var(--radius-full)',
-                    transition: 'width 0.9s cubic-bezier(0.33, 1, 0.68, 1)',
-                  }} />
-                </div>
-
-                <Link to="/app/roadmap" className="panel-link">
-                  Go to Roadmap <ArrowRight size={13} />
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* ── RECENT TASKS ── */}
-          <div className="panel">
-            <div className="panel__header">
-              <div>
-                <h2 className="panel__title">Recent Tasks</h2>
-                <p className="panel__sub">{data.stats.tasksFinished} of {data.stats.tasksTotal} done</p>
-              </div>
-              <Clock size={15} color="var(--on-surface-variant)" />
-            </div>
-
-            {recentTasks.length === 0 ? (
-              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', padding: '12px 0' }}>
-                No tasks yet — your roadmap will generate them.
-              </p>
-            ) : (
-              <div className="quick-tasks">
-                {recentTasks.map((t: any) => (
-                  <div className={`quick-task${t.status === 'done' ? ' done' : ''}`} key={t.id}>
-                    <div className={`quick-task__check${t.status === 'done' ? ' checked' : ''}`} />
-                    <div className="quick-task__info">
-                      <p className="quick-task__title">{t.title}</p>
-                      <span className="quick-task__meta">{t.priority} priority</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Link to="/app/tasks" className="panel-link">
-              See all tasks <ArrowRight size={13} />
+            <Link to="/app/assessment" style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8b4f2c' }}>
+              Explore All Matches &rarr;
             </Link>
           </div>
-        </>
+
+          {careerMatches.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              <Target size={28} color="var(--on-surface-variant)" style={{ marginBottom: 8, opacity: 0.4 }} />
+              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>Take the assessment to see matches.</p>
+              <Link to="/app/assessment" className="panel-link">Start Assessment <ArrowRight size={13} /></Link>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+              {careerMatches.map((m, i) => (
+                <Link to="/app/assessment" key={m.title} style={{
+                  background: 'var(--surface-container-low)',
+                  borderRadius: 'var(--radius-xl)',
+                  padding: '1.25rem 1rem',
+                  textAlign: 'center',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 'var(--radius-md)',
+                    background: i === 0 ? 'rgba(139, 79, 44, 0.1)' : 'var(--surface-container)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Target size={20} color={i === 0 ? '#8b4f2c' : 'var(--on-surface-variant)'} />
+                  </div>
+                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--on-surface)' }}>{m.title}</p>
+                  <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', lineHeight: 1.4 }}>{m.description?.slice(0, 60)}</p>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8b4f2c' }}>{m.matchScore}% match</p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── BOTTOM ROW — Active Milestone + Recent Tasks + Insights ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+
+        {/* ACTIVE MILESTONE */}
+        <div className="panel" style={{ borderRadius: '2rem' }}>
+          <div className="panel__header">
+            <h2 className="panel__title">Active Milestone</h2>
+          </div>
+          {!activeMilestone ? (
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>Complete onboarding to generate your roadmap.</p>
+              <Link to="/app/roadmap" className="panel-link">Go to Roadmap <ArrowRight size={13} /></Link>
+            </div>
+          ) : (
+            <div>
+              <div style={{ borderLeft: '3px solid #8b4f2c', paddingLeft: 12, marginBottom: '1rem' }}>
+                <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>{activeMilestone.title ?? 'Current Milestone'}</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', marginTop: 3 }}>
+                  {activeDone} / {activeMilestoneTasks.length} tasks done
+                </p>
+              </div>
+              <div style={{ height: 5, background: 'var(--surface-container)', borderRadius: 999, overflow: 'hidden', marginBottom: '0.75rem' }}>
+                <div style={{ height: '100%', width: mounted ? `${activeMilestoneTasks.length > 0 ? (activeDone/activeMilestoneTasks.length)*100 : 0}%` : '0%', background: '#8b4f2c', borderRadius: 999, transition: 'width 0.9s ease' }} />
+              </div>
+              <Link to="/app/roadmap" className="panel-link">Go to Roadmap <ArrowRight size={13} /></Link>
+            </div>
+          )}
+        </div>
+
+        {/* EXPERT INSIGHTS / RECENT TASKS */}
+        <div className="panel" style={{ borderRadius: '2rem' }}>
+          <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)', marginBottom: '0.75rem' }}>
+            Recent Tasks
+          </p>
+          {recentTasks.length === 0 ? (
+            <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>No tasks yet — your roadmap will generate them.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {recentTasks.map((t: any) => (
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                    border: `2px solid ${t.status === 'done' ? '#8b4f2c' : 'var(--surface-container-high)'}`,
+                    background: t.status === 'done' ? 'rgba(139,79,44,0.15)' : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {t.status === 'done' && <CheckCircle2 size={10} color="#8b4f2c" />}
+                  </div>
+                  <span style={{
+                    fontSize: '0.82rem', fontWeight: 500, color: t.status === 'done' ? 'var(--on-surface-variant)' : 'var(--on-surface)',
+                    textDecoration: t.status === 'done' ? 'line-through' : 'none',
+                  }}>{t.title}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <Link to="/app/tasks" className="panel-link" style={{ marginTop: '0.75rem' }}>
+            See all tasks <ArrowRight size={13} />
+          </Link>
+        </div>
+      </div>
+
+      {/* CTA for no assessment */}
+      {!hasAssessment && (
+        <div className="panel panel--accent" style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', borderRadius: '2rem' }}>
+          <div>
+            <p style={{ fontWeight: 700, color: 'var(--on-surface)', marginBottom: 4 }}>Take the Career Assessment</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>AI-analyse your strengths and get career matches.</p>
+          </div>
+          <Link to="/app/assessment" className="btn-page-action">Start <ArrowRight size={14} /></Link>
+        </div>
       )}
     </div>
   );
