@@ -1,6 +1,7 @@
 /* ─────────────────────────────────────────────
-   ASSESSMENT — Zen Stone Aesthetic
-   Teal background, copper accents, organic cards
+   ASSESSMENT — Zen Stone Desktop Design
+   Matches the Stitch assessment_zen_stone_desktop render exactly.
+   Teal bg, copper accents, 2x2 option grid, large typography.
 ───────────────────────────────────────────── */
 .assessment {
   min-height: calc(100vh - 4rem);
@@ -10,67 +11,15 @@
   padding: 2rem 1rem;
 }
 
-/* ── Top bar ── */
-.assessment__topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-
-.assessment__topbar-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.assessment__topbar-module {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--on-surface-variant);
-}
-
-.assessment__topbar-phase {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--on-surface);
-  letter-spacing: -0.01em;
-}
-
-.assessment__topbar-progress {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.78rem;
-  color: var(--on-surface-variant);
-}
-
-.assessment__topbar-progress-bar {
-  width: 120px;
-  height: 4px;
-  background: var(--surface-container);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.assessment__topbar-progress-fill {
-  height: 100%;
-  background: #8b4f2c;
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
-
-/* ── Progress bar (legacy compat) ── */
+/* ── Top progress bar ── */
 .assessment__progress {
   width: 100%;
   max-width: 640px;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 0.5rem;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .assessment__progress-bar {
@@ -83,25 +32,27 @@
 
 .assessment__progress-fill {
   height: 100%;
-  background: #8b4f2c;
+  background: #334042;
   border-radius: 999px;
   transition: width 0.4s ease;
 }
 
 .assessment__progress-label {
-  font-size: 0.75rem;
-  color: var(--on-surface-variant);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  font-family: var(--font-display);
   white-space: nowrap;
 }
 
 /* ── Card ── */
 .assessment__card {
   background: var(--surface-container-lowest);
-  border-radius: 2rem;
-  padding: 2.5rem 2rem;
+  border-radius: 2.5rem;
+  padding: 2.5rem 2.5rem;
   width: 100%;
   max-width: 640px;
-  margin: 0 auto;
+  margin: 1rem auto 0;
   box-shadow: var(--shadow-sm);
 }
 
@@ -109,62 +60,72 @@
 .assessment__eyebrow {
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--on-surface-variant);
-  margin-bottom: 0.75rem;
+  color: #8b4f2c;
+  margin-bottom: 1.25rem;
+  text-align: center;
 }
 
-/* ── Title — Zen Stone editorial ── */
+/* ── Title ── */
 .assessment__title {
   font-family: var(--font-display);
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: var(--on-surface);
   line-height: 1.15;
   letter-spacing: -0.03em;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
 }
 
 .assessment__sub {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--on-surface-variant);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   line-height: 1.6;
 }
 
-/* ── Option cards (single-select) ── */
+/* ── Option cards — 2x2 GRID matching Zen Stone ── */
 .assessment__options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
 
 .assessment__option {
-  padding: 0.85rem 1.25rem;
-  border-radius: var(--radius-xl);
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--radius-2xl);
   border: none;
   background: var(--surface-container-low);
   color: var(--on-surface);
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s cubic-bezier(0.33, 1, 0.68, 1);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
+  text-align: left;
+  line-height: 1.35;
+  min-height: 70px;
 }
 
 .assessment__option:hover {
   background: var(--surface-container);
+  transform: translateY(-1px);
 }
 
+/* SELECTED — copper background, white text */
 .assessment__option.selected {
-  background: rgba(139, 79, 44, 0.08);
-  color: #8b4f2c;
-  font-weight: 600;
-  box-shadow: inset 0 0 0 2px rgba(139, 79, 44, 0.25);
+  background: #8b4f2c;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(139, 79, 44, 0.2);
+}
+
+.assessment__option.selected svg {
+  color: #fff;
 }
 
 /* ── Multi-select chips ── */
@@ -189,16 +150,15 @@
 }
 
 .assessment__chip.selected {
-  background: rgba(139, 79, 44, 0.08);
-  color: #8b4f2c;
-  font-weight: 600;
+  background: #8b4f2c;
+  color: #fff;
 }
 
 .assessment__chip-check {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #8b4f2c;
+  background: rgba(255,255,255,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,23 +200,24 @@
 .assessment__nav {
   display: flex;
   gap: 10px;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 .assessment__btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0.75rem 1.5rem;
+  padding: 0.8rem 2rem;
   border-radius: var(--radius-full);
   border: none;
   background: linear-gradient(135deg, #334042, #4a5759);
   color: #fff;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.15s;
+  box-shadow: 0 4px 16px rgba(51, 64, 66, 0.2);
 }
 
 .assessment__btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.92; }
@@ -265,24 +226,25 @@
 .assessment__btn--back {
   background: var(--surface-container-low);
   color: var(--on-surface-variant);
+  box-shadow: none;
 }
 .assessment__btn--back:hover { background: var(--surface-container); color: var(--on-surface); }
 
-/* ── Generating / Processing ── */
+/* ── Generating ── */
 .assessment__generating {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
-  padding: 2rem 0;
+  padding: 3rem 0;
   text-align: center;
 }
 
 .assessment__generating-spinner {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: rgba(139, 79, 44, 0.08);
+  background: rgba(139, 79, 44, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,7 +260,7 @@
 
 .assessment__match {
   background: var(--surface-container-low);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   padding: 1.15rem 1.25rem;
   display: flex;
   gap: 12px;
@@ -311,18 +273,18 @@
 }
 
 .assessment__match-score {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #8b4f2c;
   font-family: var(--font-display);
   line-height: 1;
-  min-width: 44px;
+  min-width: 48px;
 }
 
 .assessment__match-score span {
   font-size: 0.65rem;
   font-weight: 600;
-  color: rgba(139, 79, 44, 0.6);
+  color: rgba(139, 79, 44, 0.5);
 }
 
 .assessment__match-title {
@@ -352,37 +314,19 @@
   text-align: center;
 }
 
-/* ── Resonance Ring (bottom gauge) ── */
-.assessment__resonance {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-}
-
-.assessment__resonance-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--on-surface-variant);
-  margin-top: 8px;
-}
-
-.assessment__resonance-archetype {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--on-surface);
-  margin-top: 4px;
-}
-
-@media (max-width: 480px) {
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .assessment__options {
+    grid-template-columns: 1fr;
+  }
   .assessment__card {
     padding: 1.75rem 1.25rem;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-2xl);
   }
-  .assessment__title { font-size: 1.4rem; }
+  .assessment__title { font-size: 1.3rem; }
+}
+
+@media (max-width: 400px) {
+  .assessment__card { padding: 1.25rem 1rem; }
+  .assessment__title { font-size: 1.15rem; }
 }
