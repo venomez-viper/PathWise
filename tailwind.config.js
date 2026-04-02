@@ -11,6 +11,40 @@ export default {
         body: ['Inter', 'sans-serif'],
         handwritten: ['Caveat', 'cursive'],
       },
+      colors: {
+        primary: {
+          DEFAULT: '#6245a4',
+          dark: '#4a3280',
+          light: '#a78bfa',
+          container: '#7b5ebf',
+          fixed: '#e9ddff',
+        },
+        secondary: {
+          DEFAULT: '#006a62',
+          container: '#5ef6e6',
+          light: '#00a396',
+        },
+        copper: '#8b4f2c',
+        surface: {
+          DEFAULT: '#faf9fe',
+          lowest: '#ffffff',
+          low: '#f4f3f8',
+          container: '#efecf5',
+          high: '#e8e6ef',
+          highest: '#e0deea',
+        },
+      },
+      borderRadius: {
+        'xl': '1.5rem',
+        '2xl': '2rem',
+        '3xl': '2.5rem',
+      },
+      boxShadow: {
+        'ambient-sm': '0 2px 20px rgba(98, 69, 164, 0.04)',
+        'ambient-md': '0 4px 40px rgba(98, 69, 164, 0.06)',
+        'ambient-lg': '0 12px 60px rgba(98, 69, 164, 0.10)',
+        'ambient-glow': '0 0 40px rgba(98, 69, 164, 0.20)',
+      },
       rotate: {
         '60': '60deg',
         '70': '70deg',

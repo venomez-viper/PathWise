@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Outlet, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, useNavigate, Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './lib/auth-context';
 
@@ -30,10 +30,10 @@ import './App.css';
 
 function NotFound() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0f0b1e', color: '#fff', gap: '1rem' }}>
-      <h1 style={{ fontSize: '4rem', fontWeight: 900, color: '#a78bfa', margin: 0 }}>404</h1>
-      <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>Page not found.</p>
-      <a href="/" style={{ color: '#a78bfa', fontSize: '0.9rem' }}>← Back to home</a>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', color: 'var(--on-surface)', gap: '1rem' }}>
+      <h1 style={{ fontSize: '4rem', fontWeight: 900, color: 'var(--primary)', margin: 0 }}>404</h1>
+      <p style={{ color: 'var(--on-surface-variant)', margin: 0 }}>Page not found.</p>
+      <Link to="/" style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>← Back to home</Link>
     </div>
   );
 }
@@ -57,8 +57,8 @@ function AppLayout() {
   }, [ready, user, navigate]);
 
   if (!ready) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0b1e' }}>
-      <div style={{ width: 32, height: 32, border: '3px solid rgba(167,139,250,0.3)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)' }}>
+      <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
   if (!user) return null;

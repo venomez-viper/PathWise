@@ -1,30 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800;900&family=Caveat:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800;900&display=swap');
 
 /* Tailwind */
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
 /* ─────────────────────────────────────────────
-   DESIGN TOKENS
+   DESIGN TOKENS — "The Guided Path" + "Zen Stone"
 ───────────────────────────────────────────── */
 :root {
-  --primary: #5d2a80;
-  --primary-dark: #1a2b5f;
+  /* Primary — Deep purple (Lumina) */
+  --primary: #6245a4;
+  --primary-dark: #4a3280;
   --primary-light: #a78bfa;
-  --primary-container: #5d2a80;
+  --primary-container: #7b5ebf;
   --primary-fixed: #e9ddff;
   --on-primary-container: #ffffff;
 
-  --secondary: #008080;
+  /* Secondary — Teal (career growth) */
+  --secondary: #006a62;
   --secondary-container: #5ef6e6;
   --secondary-light: #00a396;
-  --tertiary-container: #ff7f50;
+
+  /* Tertiary — Ochre/gold (attention) */
+  --tertiary-container: #caa842;
+
+  /* Copper accent (Zen Stone sidebar active) */
+  --copper: #8b4f2c;
 
   --accent-orange: #ff7f50;
-  --brand-blue: #1a2b5f;
-  --brand-purple: #5d2a80;
-  --brand-teal: #008080;
+  --brand-purple: #6245a4;
+  --brand-teal: #006a62;
 
+  /* Surface hierarchy — frosted glass layers */
   --surface: #faf9fe;
   --surface-container-lowest: #ffffff;
   --surface-container-low: #f4f3f8;
@@ -33,18 +40,24 @@
   --surface-container-highest: #e0deea;
   --surface-bright: #ffffff;
 
+  /* Text */
   --on-surface: #1a1c1f;
   --on-surface-variant: #49454f;
   --on-surface-muted: #78747e;
-  --outline-variant: rgba(73, 69, 79, 0.15);
 
+  /* Borders — ghost only */
+  --outline-variant: rgba(73, 69, 79, 0.10);
+
+  /* Hero (marketing pages) */
   --hero-bg-start: #0f0b1e;
   --hero-bg-mid: #1a1235;
   --hero-bg-end: #0d1a2e;
 
+  /* Typography */
   --font-display: 'Manrope', sans-serif;
   --font-body: 'Inter', sans-serif;
 
+  /* Spacing */
   --spacing-2: 0.5rem;
   --spacing-3: 0.75rem;
   --spacing-4: 1rem;
@@ -57,21 +70,26 @@
   --max-width: 1200px;
   --section-padding: 6rem 1.5rem;
 
-  --radius-sm: 0.5rem;
-  --radius-md: 1rem;
+  /* Radii — massive, organic */
+  --radius-sm: 0.75rem;
+  --radius-md: 1.25rem;
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
   --radius-full: 9999px;
 
-  --glass-bg: rgba(244, 243, 248, 0.7);
+  /* Glassmorphism */
+  --glass-bg: rgba(244, 243, 248, 0.70);
   --glass-bg-dark: rgba(255, 255, 255, 0.06);
   --glass-blur: blur(16px);
 
-  --shadow-sm: 0 2px 8px rgba(98, 69, 164, 0.08);
-  --shadow-md: 0 8px 32px rgba(98, 69, 164, 0.12);
-  --shadow-lg: 0 24px 64px rgba(98, 69, 164, 0.18);
-  --shadow-glow: 0 0 40px rgba(98, 69, 164, 0.3);
+  /* Ambient shadows — primary-tinted, never black */
+  --shadow-sm: 0 2px 20px rgba(98, 69, 164, 0.04);
+  --shadow-md: 0 4px 40px rgba(98, 69, 164, 0.06);
+  --shadow-lg: 0 12px 60px rgba(98, 69, 164, 0.10);
+  --shadow-glow: 0 0 40px rgba(98, 69, 164, 0.20);
 
+  /* Transitions — natural ease-out */
   --transition-base: all 0.3s cubic-bezier(0.33, 1, 0.68, 1);
   --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -109,13 +127,13 @@ a { text-decoration: none; color: inherit; }
 section { padding: var(--section-padding); }
 
 /* ─────────────────────────────────────────────
-   TYPOGRAPHY
+   TYPOGRAPHY — Editorial Authority
 ───────────────────────────────────────────── */
 .display-xl {
   font-family: var(--font-display);
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 900;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   line-height: 1.05;
 }
 
@@ -123,7 +141,7 @@ section { padding: var(--section-padding); }
   font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.1;
 }
 
@@ -132,14 +150,14 @@ section { padding: var(--section-padding); }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--primary-light);
+  color: var(--primary);
 }
 
 .section-title {
   font-family: var(--font-display);
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.15;
   color: var(--on-surface);
   margin-top: var(--spacing-3);
@@ -156,7 +174,7 @@ section { padding: var(--section-padding); }
 }
 
 /* ─────────────────────────────────────────────
-   BUTTONS
+   BUTTONS — Rounded-full, gradient
 ───────────────────────────────────────────── */
 .btn {
   display: inline-flex;
@@ -184,7 +202,6 @@ section { padding: var(--section-padding); }
 .btn-secondary {
   background: rgba(255,255,255,0.1);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.25);
   backdrop-filter: blur(8px);
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.18); transform: translateY(-2px); }
@@ -192,20 +209,18 @@ section { padding: var(--section-padding); }
 .btn-outline {
   background: transparent;
   color: var(--primary);
-  border: 1.5px solid var(--primary);
 }
 .btn-outline:hover { background: var(--primary-fixed); transform: translateY(-2px); }
 
 .btn-lg { padding: 1rem 2.25rem; font-size: 1rem; }
 
 /* ─────────────────────────────────────────────
-   CARDS / GLASS
+   CARDS / GLASS — Tonal layering, no borders
 ───────────────────────────────────────────── */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--outline-variant);
   border-radius: var(--radius-xl);
 }
 
@@ -255,7 +270,7 @@ section { padding: var(--section-padding); }
 }
 
 .chip-primary { background: var(--primary-fixed); color: var(--primary); }
-.chip-dark { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.15); }
+.chip-dark { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); }
 
 .section-header { text-align: center; margin-bottom: var(--spacing-12); }
 
@@ -278,8 +293,6 @@ section { padding: var(--section-padding); }
   .display-lg { font-size: clamp(1.6rem, 7vw, 2.2rem); }
 }
 
-/* Used by non-hero pages to offset fixed navbar */
 .page-hero-pad {
   height: 72px;
 }
-

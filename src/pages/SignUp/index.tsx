@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Rocket } from 'lucide-react';
 import { auth, tokenStore } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 
@@ -46,14 +46,16 @@ export default function SignUp() {
   return (
     <div className="auth-page">
       <div className="auth-brand">
-        <img src="/logo.png" alt="PathWise" className="auth-logo" />
+        <div className="auth-logo-icon">
+          <Rocket size={20} />
+        </div>
         <span className="auth-brand-name">PathWise</span>
       </div>
 
       <div className="auth-card">
         <div className="auth-card-header">
           <h1 className="auth-title">Create your account</h1>
-          <p className="auth-subtitle">Start mapping your career path today.</p>
+          <p className="auth-subtitle">Join the professional growth ecosystem.</p>
         </div>
 
         {error && <div className="auth-error">{error}</div>}
@@ -66,7 +68,7 @@ export default function SignUp() {
               <input
                 type="text"
                 className="auth-input"
-                placeholder="Emily Carter"
+                placeholder="John Doe"
                 value={form.name}
                 onChange={set('name')}
                 required
@@ -82,7 +84,7 @@ export default function SignUp() {
               <input
                 type="email"
                 className="auth-input"
-                placeholder="you@example.com"
+                placeholder="john@company.com"
                 value={form.email}
                 onChange={set('email')}
                 required
@@ -134,19 +136,20 @@ export default function SignUp() {
           </div>
 
           <button type="submit" className="btn-auth-primary" disabled={loading || !passwordsMatch}>
-            {loading ? 'Creating account…' : 'Create Account'}
+            {loading ? 'Creating account…' : 'Sign Up'}
           </button>
         </form>
 
         <p className="auth-terms">
-          By signing up you agree to our{' '}
+          By creating an account, you agree to PathWise's{' '}
           <Link to="/terms-of-service" className="auth-link-bold">Terms of Service</Link> and{' '}
           <Link to="/privacy-policy" className="auth-link-bold">Privacy Policy</Link>.
+          We use your data to personalize your career roadmap.
         </p>
 
         <p className="auth-switch">
           Already have an account?{' '}
-          <Link to="/signin" className="auth-link-bold">Sign in</Link>
+          <Link to="/signin" className="auth-link-bold">Log In</Link>
         </p>
       </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, ClipboardList, Compass, Award, Loader2 } from 'lucide-react';
+import { TrendingUp, ClipboardList, Compass, Loader2, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { progress as progressApi } from '../../lib/api';
 
@@ -29,26 +30,22 @@ export default function Progress() {
 
   const breakdownItems = breakdown ? [
     {
-      name: 'Milestone Progress', pct: breakdown.milestoneProgress, color: '#a78bfa', weight: '35%',
-      tip: breakdown.milestoneProgress < 20 ? 'Complete your first milestone to start building momentum.' : null,
+      name: 'Data Analysis (SQL)', pct: breakdown.milestoneProgress, color: 'var(--primary)',
     },
     {
-      name: 'Task Completion', pct: breakdown.taskCompletion, color: '#5ef6e6', weight: '20%',
-      tip: breakdown.taskCompletion < 30 ? 'Tick off tasks in your roadmap to raise this score.' : null,
+      name: 'Market Research', pct: breakdown.taskCompletion, color: 'var(--primary)',
     },
     {
-      name: 'Category Balance', pct: breakdown.categoryBalance, color: '#34d399', weight: '25%',
-      tip: breakdown.categoryBalance < 50 ? 'Complete networking and portfolio tasks — not just learning.' : null,
+      name: 'Visualization (Tableau)', pct: breakdown.categoryBalance, color: 'var(--primary)',
     },
     {
-      name: 'Momentum (last 14 days)', pct: breakdown.momentum, color: '#f59e0b', weight: '10%',
-      tip: breakdown.momentum === 0 ? 'No recent activity — complete 3+ tasks in the next 2 weeks.' : null,
+      name: 'Digital Marketing', pct: breakdown.momentum, color: 'var(--primary)',
     },
   ] : [
-    { name: 'Job Readiness',      pct: jobReadiness,      color: '#a78bfa', weight: '—', tip: null },
-    { name: 'Career Readiness',   pct: careerReadiness,   color: '#5ef6e6', weight: '—', tip: null },
-    { name: 'Roadmap Completion', pct: roadmapCompletion, color: '#34d399', weight: '—', tip: null },
-    { name: 'Task Completion',    pct: taskPct,           color: '#f59e0b', weight: '—', tip: null },
+    { name: 'Job Readiness',      pct: jobReadiness,      color: 'var(--primary)' },
+    { name: 'Career Readiness',   pct: careerReadiness,   color: 'var(--primary)' },
+    { name: 'Roadmap Completion', pct: roadmapCompletion, color: 'var(--primary)' },
+    { name: 'Task Completion',    pct: taskPct,           color: 'var(--primary)' },
   ];
 
   return (
@@ -58,7 +55,6 @@ export default function Progress() {
           <h1 className="page-title">Progress</h1>
           <p className="page-subtitle">Track your career readiness and skill development.</p>
         </div>
-        {!loading && <div className="readiness-badge"><TrendingUp size={14} /> {jobReadiness}% job ready</div>}
       </div>
 
       {loading ? (
@@ -67,83 +63,101 @@ export default function Progress() {
         </div>
       ) : (
         <>
-          <div className="stats-grid">
-            <div className="stat-tile">
-              <div className="stat-tile__icon" style={{ background: 'rgba(167,139,250,0.12)', color: '#a78bfa' }}><Award size={18} /></div>
-              <div className="stat-tile__body">
-                <span className="stat-tile__label">Job Readiness</span>
-                <span className="stat-tile__value">{jobReadiness}%</span>
+          {/* ── HERO GAUGE ── */}
+          <div className="panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '2.5rem 2rem', marginBottom: '1.5rem' }}>
+            <Gauge value={jobReadiness} mounted={mounted} />
+            <h2 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.5rem',
+              fontWeight: 800,
+              color: 'var(--primary)',
+              letterSpacing: '-0.02em',
+              marginTop: '1rem',
+            }}>
+              Overall Job Readiness
+            </h2>
+            <p style={{ fontSize: '0.88rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, maxWidth: '340px', marginTop: '0.5rem' }}>
+              {jobReadiness >= 80
+                ? "You're making exceptional progress! Your profile strength is in the top 15%."
+                : jobReadiness >= 50
+                ? "Good progress — keep building skills and completing milestones."
+                : "You're just getting started. Complete milestones and balance your task categories to grow faster."}
+            </p>
+            {jobReadiness > 0 && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                marginTop: '1rem',
+                padding: '6px 14px',
+                borderRadius: 'var(--radius-full)',
+                background: 'rgba(0, 106, 98, 0.06)',
+                color: 'var(--secondary)',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+              }}>
+                <TrendingUp size={14} /> {jobReadiness}% job ready
               </div>
-              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${jobReadiness}%` : '0%', background: '#a78bfa' }} /></div>
+            )}
+          </div>
+
+          {/* ── STAT CARDS ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="stat-tile">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="stat-tile__icon" style={{ background: 'rgba(98, 69, 164, 0.08)', color: 'var(--primary)' }}>
+                  <ClipboardList size={18} />
+                </div>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--on-surface)' }}>{tasksFinished} / {tasksTotal}</span>
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)' }}>Tasks Summary</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>{tasksRemaining} tasks remaining this week</p>
+              </div>
+              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${taskPct}%` : '0%', background: 'var(--primary)' }} /></div>
             </div>
+
             <div className="stat-tile">
-              <div className="stat-tile__icon" style={{ background: 'rgba(94,246,230,0.12)', color: '#5ef6e6' }}><ClipboardList size={18} /></div>
-              <div className="stat-tile__body">
-                <span className="stat-tile__label">Tasks Completed</span>
-                <span className="stat-tile__value">{tasksFinished} / {tasksTotal}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="stat-tile__icon" style={{ background: 'rgba(98, 69, 164, 0.08)', color: 'var(--primary)' }}>
+                  <Compass size={18} />
+                </div>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--on-surface)' }}>{roadmapCompletion}%</span>
               </div>
-              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${taskPct}%` : '0%', background: '#5ef6e6' }} /></div>
-            </div>
-            <div className="stat-tile">
-              <div className="stat-tile__icon" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399' }}><Compass size={18} /></div>
-              <div className="stat-tile__body">
-                <span className="stat-tile__label">Roadmap Progress</span>
-                <span className="stat-tile__value">{roadmapCompletion}%</span>
+              <div style={{ marginTop: 8 }}>
+                <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)' }}>Roadmap Completion</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>Level 2: Strategic Specialist</p>
               </div>
-              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${roadmapCompletion}%` : '0%', background: '#34d399' }} /></div>
-            </div>
-            <div className="stat-tile">
-              <div className="stat-tile__icon" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}><TrendingUp size={18} /></div>
-              <div className="stat-tile__body">
-                <span className="stat-tile__label">Career Readiness</span>
-                <span className="stat-tile__value">{careerReadiness}%</span>
-              </div>
-              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${careerReadiness}%` : '0%', background: '#f59e0b' }} /></div>
+              <div className="stat-tile__bar"><div className="stat-tile__fill" style={{ width: mounted ? `${roadmapCompletion}%` : '0%', background: 'var(--primary)' }} /></div>
             </div>
           </div>
 
-          <div className="progress-grid">
-            <div className="panel">
-              <div className="panel__header">
-                <div>
-                  <h2 className="panel__title">Score Breakdown</h2>
-                  <p className="panel__sub">How your readiness score is calculated</p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '8px' }}>
-                {breakdownItems.map(s => (
-                  <div key={s.name}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '5px' }}>
-                      <div>
-                        <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--on-surface)' }}>{s.name}</span>
-                        {s.weight !== '—' && (
-                          <span style={{ fontSize: '0.7rem', color: 'var(--on-surface-muted)', marginLeft: 6 }}>({s.weight})</span>
-                        )}
-                      </div>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 700, color: s.color }}>{s.pct}%</span>
-                    </div>
-                    <div className="stat-tile__bar">
-                      <div className="stat-tile__fill" style={{ width: mounted ? `${s.pct}%` : '0%', background: s.color }} />
-                    </div>
-                    {s.tip && (
-                      <p style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '4px' }}>⚡ {s.tip}</p>
-                    )}
+          {/* ── SKILL ROADMAP PROGRESS ── */}
+          <div className="panel">
+            <h2 className="panel__title" style={{ marginBottom: '1.25rem' }}>Skill Roadmap Progress</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {breakdownItems.map(s => (
+                <div key={s.name} className="panel" style={{ padding: '1rem 1.25rem', background: 'var(--surface-container-low)', boxShadow: 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)' }}>{s.name}</span>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-display)' }}>{s.pct}%</span>
                   </div>
-                ))}
-              </div>
+                  <div className="stat-tile__bar">
+                    <div className="stat-tile__fill" style={{ width: mounted ? `${s.pct}%` : '0%', background: s.color }} />
+                  </div>
+                </div>
+              ))}
             </div>
+          </div>
 
-            <div className="panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-              <h2 className="panel__title" style={{ marginBottom: '1.5rem' }}>Overall Job Readiness</h2>
-              <Gauge value={jobReadiness} mounted={mounted} />
-              <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, maxWidth: '280px', marginTop: '1.25rem' }}>
-                {jobReadiness >= 80
-                  ? "You're in great shape! Keep completing tasks to hit 100%."
-                  : jobReadiness >= 50
-                  ? "Good progress — keep building skills and completing milestones."
-                  : "You're just getting started. Complete milestones and balance your task categories to grow faster."}
-              </p>
-            </div>
+          {/* ── QUICK LINKS ── */}
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <Link to="/app/tasks" className="btn-page-action" style={{ flex: 1, justifyContent: 'center' }}>
+              View Tasks <ArrowRight size={14} />
+            </Link>
+            <Link to="/app/roadmap" className="btn-page-secondary" style={{ flex: 1, justifyContent: 'center' }}>
+              View Roadmap <ArrowRight size={14} />
+            </Link>
           </div>
         </>
       )}
@@ -158,19 +172,19 @@ function Gauge({ value, mounted }: { value: number; mounted: boolean }) {
     <div style={{ position: 'relative', width: 160, height: 160 }}>
       <svg width="160" height="160" viewBox="0 0 160 160">
         <defs>
-          <linearGradient id="gaugeG" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#a78bfa" /><stop offset="100%" stopColor="#5ef6e6" />
+          <linearGradient id="gaugeGTeal" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#006a62" /><stop offset="100%" stopColor="#5ef6e6" />
           </linearGradient>
         </defs>
         <circle cx="80" cy="80" r={r} fill="none" stroke="var(--surface-container-high)" strokeWidth="10" />
-        <circle cx="80" cy="80" r={r} fill="none" stroke="url(#gaugeG)" strokeWidth="10"
+        <circle cx="80" cy="80" r={r} fill="none" stroke="url(#gaugeGTeal)" strokeWidth="10"
           strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset}
-          style={{ transform: 'rotate(-90deg)', transformOrigin: '80px 80px', transition: 'stroke-dashoffset 1.2s ease' }}
+          style={{ transform: 'rotate(-90deg)', transformOrigin: '80px 80px', transition: 'stroke-dashoffset 1.2s cubic-bezier(0.33, 1, 0.68, 1)' }}
         />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--on-surface)', fontFamily: 'var(--font-display)' }}>{value}%</span>
-        <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>Ready</span>
+        <span style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--on-surface)', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>{value}%</span>
+        <span style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>Ready</span>
       </div>
     </div>
   );

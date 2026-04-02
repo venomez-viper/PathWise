@@ -1,11 +1,14 @@
+/* ─────────────────────────────────────────────
+   SIDEBAR — Zen Stone Aesthetic
+   Light, calm, tonal layering. No hard borders.
+───────────────────────────────────────────── */
 .sidebar {
   width: 220px;
   height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
-  background: #0f0b1e;
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--surface-container-low);
   display: flex;
   flex-direction: column;
   z-index: 200;
@@ -13,100 +16,125 @@
 }
 
 .sidebar__logo {
-  padding: 1.25rem 1.25rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.5rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__brand-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: -0.02em;
+}
+
+.sidebar__brand-sub {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--on-surface-muted);
 }
 
 .sidebar__nav {
   flex: 1;
-  padding: 1rem 0.75rem;
+  padding: 0.75rem 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
   overflow-y: auto;
 }
 
-.sidebar__section-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.25);
-  padding: 0 0.5rem;
-  margin-bottom: 6px;
-}
-
 .sidebar__link {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0.6rem 0.75rem;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.5);
+  padding: 0.65rem 1.25rem;
+  color: var(--on-surface-variant);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  transition: color 0.15s, background 0.15s;
+  position: relative;
+  border-radius: 0;
 }
 
 .sidebar__link:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--on-surface);
+  background: rgba(0, 0, 0, 0.03);
 }
 
+/* Active state — copper pill indicator */
 .sidebar__link.active {
-  background: rgba(167, 139, 250, 0.15);
-  color: #a78bfa;
+  color: var(--on-surface);
   font-weight: 600;
+  background: transparent;
+}
+
+.sidebar__link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  background: var(--copper);
 }
 
 .sidebar__link.active svg {
-  color: #a78bfa;
+  color: var(--copper);
 }
 
 .sidebar__upgrade {
   margin: 0 0.75rem 0.75rem;
   padding: 0.75rem;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(93, 42, 128, 0.5) 0%, rgba(26, 43, 95, 0.5) 100%);
-  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(98, 69, 164, 0.08) 0%, rgba(0, 106, 98, 0.06) 100%);
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  color: #a78bfa;
+  color: var(--primary);
   cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.sidebar__upgrade:hover {
+  background: linear-gradient(135deg, rgba(98, 69, 164, 0.12) 0%, rgba(0, 106, 98, 0.08) 100%);
 }
 
 .sidebar__upgrade-title {
   font-size: 0.8rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--on-surface);
   line-height: 1.2;
 }
 
 .sidebar__upgrade-sub {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--on-surface-variant);
   margin-top: 2px;
 }
 
 .sidebar__footer {
-  padding: 0.875rem 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.875rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .sidebar__avatar {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .sidebar__avatar--initials {
-  background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -125,7 +153,7 @@
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--on-surface);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -134,14 +162,14 @@
 .sidebar__user-plan {
   display: block;
   font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--on-surface-muted);
   margin-top: 1px;
 }
 
 .sidebar__logout {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--on-surface-muted);
   cursor: pointer;
   padding: 5px;
   border-radius: 6px;
@@ -153,7 +181,7 @@
 
 .sidebar__logout:hover {
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 /* ── Mobile sidebar (overlay) ── */
@@ -166,6 +194,7 @@
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     z-index: 300;
+    box-shadow: var(--shadow-lg);
   }
 
   .sidebar--open {
@@ -176,7 +205,8 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
     z-index: 299;
   }
 }
