@@ -5,6 +5,7 @@ import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { secret } from "encore.dev/config";
 import Anthropic from "@anthropic-ai/sdk";
 import { sanitizeForPrompt } from "../shared/sanitize";
+import { callClaudeWithRetry } from "../shared/ai-utils";
 
 const db = new SQLDatabase("assessment", { migrations: "./migrations" });
 const anthropicKey = secret("AnthropicAPIKey");
@@ -82,20 +83,18 @@ export interface SubmitAssessmentParams {
 }
 
 async function analyzeWithClaude(p: SubmitAssessmentParams): Promise<{ careerMatches: CareerMatch[]; skillGaps: SkillGap[] }> {
-  const client = new Anthropic({ apiKey: anthropicKey() });
-
   const prompt = `You are an expert career counselor and labor market analyst. Analyze these career assessment answers and recommend the best career paths.
 
 Assessment:
-- Work style: ${p.workStyle}
-- Top strengths: ${p.strengths.join(", ")}
-- Core values: ${p.values.join(", ")}
-- Current skills: ${p.currentSkills.join(", ") || "None specified"}
-- Experience level: ${p.experienceLevel}
-- Interests/domains: ${p.interests.join(", ")}
-${p.currentRole ? `- Current role: ${p.currentRole}` : ""}
+- Work style: ${sanitizeForPrompt(p.workStyle, 100)}
+- Top strengths: ${p.strengths.map(s => sanitizeForPrompt(s, 100)).join(", ")}
+- Core values: ${p.values.map(v => sanitizeForPrompt(v, 100)).join(", ")}
+- Current skills: ${p.currentSkills.map(s => sanitizeForPrompt(s, 100)).join(", ") || "None specified"}
+- Experience level: ${sanitizeForPrompt(p.experienceLevel, 100)}
+- Interests/domains: ${p.interests.map(i => sanitizeForPrompt(i, 100)).join(", ")}
+${p.currentRole ? `- Current role: ${sanitizeForPrompt(p.currentRole, 200)}` : ""}
 
-Respond with ONLY a valid JSON object (no markdown, no explanation):
+Respond with ONLY a valid JSON object (no markdown, no explanation, no dashes, no code fences):
 {
   "careerMatches": [
     {
@@ -115,21 +114,26 @@ Respond with ONLY a valid JSON object (no markdown, no explanation):
   ]
 }
 
-Provide exactly 3 career matches ranked by match score (highest first). Identify 5 key skill gaps based on what they currently know vs what the top match requires. Be specific and actionable.`;
+Provide exactly 3 career matches ranked by match score (highest first). Identify 5 key skill gaps. Be specific and actionable.`;
 
-  const message = await client.messages.create({
+  const fallback = {
+    careerMatches: [
+      { title: "General Professional", matchScore: 70, description: "Based on your skills and interests, a general professional role could be a good starting point. Complete the assessment with more detail for better matches.", requiredSkills: p.currentSkills.slice(0, 5), pathwayTime: "6-12 months" },
+    ],
+    skillGaps: [
+      { skill: "Industry Knowledge", importance: "high" as const, learningResource: "LinkedIn Learning - Industry Foundations" },
+      { skill: "Technical Proficiency", importance: "medium" as const, learningResource: "Coursera - Professional Certificate" },
+    ],
+  };
+
+  return callClaudeWithRetry({
+    apiKey: anthropicKey(),
     model: "claude-opus-4-6",
-    max_tokens: 1500,
-    messages: [{ role: "user", content: prompt }],
+    maxTokens: 1500,
+    prompt,
+    retries: 2,
+    fallback,
   });
-
-  const content = message.content[0];
-  if (content.type !== "text") throw new Error("Unexpected AI response type");
-
-  const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("Could not parse AI response");
-
-  return JSON.parse(jsonMatch[0]);
 }
 
 // --- Certificate Recommendations ---
@@ -161,7 +165,6 @@ export const getCertificates = api(
   async ({ userId, skills, targetRole }: GetCertificatesParams): Promise<GetCertificatesResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     if (userID !== userId) throw APIError.permissionDenied("not your data");
-    const client = new Anthropic({ apiKey: anthropicKey() });
     const safeTargetRole = sanitizeForPrompt(targetRole, 200);
     const safeSkills = skills.map(s => sanitizeForPrompt(s, 100));
 
@@ -185,20 +188,16 @@ Respond with ONLY a valid JSON array:
 
 Include a mix of: free options (Coursera audit, Google certificates), paid certificates (AWS, etc). Prioritize industry-recognized certifications.`;
 
-    const message = await client.messages.create({
+    const recommendations = await callClaudeWithRetry({
+      apiKey: anthropicKey(),
       model: "claude-opus-4-6",
-      max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }],
+      maxTokens: 2000,
+      prompt,
+      retries: 2,
+      fallback: [],
     });
 
-    const content = message.content[0];
-    if (content.type !== "text") throw new Error("Unexpected AI response type");
-
-    const jsonMatch = content.text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error("Could not parse AI response");
-
-    const recommendations: CertificateRecommendation[] = JSON.parse(jsonMatch[0]);
-    return { recommendations };
+    return { recommendations: Array.isArray(recommendations) ? recommendations : recommendations.recommendations ?? [] };
   }
 );
 
@@ -235,7 +234,6 @@ export const getCareerRecommendations = api(
   async (params: CareerRecommendationsParams): Promise<CareerRecommendationsResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
-    const client = new Anthropic({ apiKey: anthropicKey() });
     const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
 
     const prompt = `You are an expert career coach for someone targeting "${safeTargetRole}".
@@ -289,19 +287,20 @@ Requirements:
 - Portfolio projects must use real tech stack relevant to skill gaps
 - Be very specific to "${safeTargetRole}" — no generic advice`;
 
-    const message = await client.messages.create({
+    const fallback = {
+      portfolio: [{ type: "portfolio", title: `${safeTargetRole} Portfolio Project`, description: "Build a showcase project demonstrating your key skills.", why: "Portfolio projects are the #1 way to stand out.", actionStep: "Start with a project brief today." }],
+      networking: [{ type: "networking", title: "Industry LinkedIn Groups", description: "Join relevant professional groups.", why: "Networking opens 70% of job opportunities.", actionStep: "Send 3 connection requests today." }],
+      jobApplications: [{ type: "job_application", title: "LinkedIn Jobs", description: `Search for ${safeTargetRole} positions.`, why: "Active applications show intent.", actionStep: "Set up job alerts for your target role." }],
+    };
+
+    const result = await callClaudeWithRetry({
+      apiKey: anthropicKey(),
       model: "claude-opus-4-6",
-      max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }],
+      maxTokens: 2000,
+      prompt,
+      retries: 2,
+      fallback,
     });
-
-    const content = message.content[0];
-    if (content.type !== "text") throw new Error("Unexpected AI response");
-
-    const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("Could not parse AI recommendations");
-
-    const result = JSON.parse(jsonMatch[0]);
 
     return {
       portfolio: result.portfolio ?? [],
@@ -390,7 +389,6 @@ export const analyzeSkillGaps = api(
   async (params: SkillGapAssessmentParams): Promise<{
     result: { skillGaps: SkillGapItem[]; summary: string; topPriority: string };
   }> => {
-    const client = new Anthropic({ apiKey: anthropicKey() });
     const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
     const safeYearsExperience = sanitizeForPrompt(params.yearsExperience, 50);
 
@@ -417,7 +415,7 @@ Preferred learning style: ${params.learningStyle.join(", ") || "Not specified"}
 
 Identify the key skill gaps for someone targeting "${safeTargetRole}".
 
-Respond with ONLY valid JSON (no markdown):
+Respond with ONLY valid JSON (no markdown, no dashes, no code fences):
 {
   "skillGaps": [
     {
@@ -434,19 +432,24 @@ Respond with ONLY valid JSON (no markdown):
 
 Generate 5-7 skill gaps ranked by importance. Use real course/resource names.`;
 
-    const msg = await client.messages.create({
+    const fallback = {
+      skillGaps: [
+        { skill: "Core Technical Skills", importance: "high", currentLevel: "beginner", targetLevel: "intermediate", learningResource: "Coursera Professional Certificate" },
+        { skill: "Industry Knowledge", importance: "high", currentLevel: "beginner", targetLevel: "intermediate", learningResource: "LinkedIn Learning" },
+      ],
+      summary: "Assessment could not be fully analyzed. Please try again for detailed results.",
+      topPriority: "Core technical skills for your target role",
+    };
+
+    const parsed = await callClaudeWithRetry({
+      apiKey: anthropicKey(),
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 1200,
-      messages: [{ role: "user", content: prompt }],
+      maxTokens: 1200,
+      prompt,
+      retries: 2,
+      fallback,
     });
 
-    const content = msg.content[0];
-    if (content.type !== "text") throw new Error("Unexpected AI response");
-
-    const match = content.text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Could not parse skill gap analysis");
-
-    const parsed = JSON.parse(match[0]);
     return {
       result: {
         skillGaps: parsed.skillGaps ?? [],

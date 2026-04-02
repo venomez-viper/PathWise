@@ -6,6 +6,7 @@ import { secret } from "encore.dev/config";
 import Anthropic from "@anthropic-ai/sdk";
 import { getAssessment } from "../assessment/assessment";
 import { createTask } from "../tasks/tasks";
+import { callClaudeWithRetry } from "../shared/ai-utils";
 
 const db = new SQLDatabase("roadmap", { migrations: "./migrations" });
 const anthropicKey = secret("AnthropicAPIKey");
@@ -91,14 +92,12 @@ async function generateWithClaude(params: {
   currentSkills: string[];
   skillGaps: string[];
 }): Promise<{ milestones: AIMilestone[] }> {
-  const client = new Anthropic({ apiKey: anthropicKey() });
-
   const prompt = `You are an expert career coach. Create a personalized career roadmap for someone targeting "${params.targetRole}" with a ${params.timeline} timeline.
 
 Current skills: ${params.currentSkills.join(", ") || "Not provided"}
 Key skill gaps to address: ${params.skillGaps.join(", ") || "General upskilling needed"}
 
-Respond with ONLY a valid JSON object (no markdown, no explanation):
+Respond with ONLY a valid JSON object (no markdown, no dashes, no code fences):
 {
   "milestones": [
     {
@@ -120,24 +119,29 @@ Respond with ONLY a valid JSON object (no markdown, no explanation):
 Requirements:
 - Exactly 6 milestones, covering the full ${params.timeline} timeline
 - Each milestone has 3-5 specific, measurable tasks
-- Tasks are concrete and role-specific (e.g., "Build a portfolio project using React" not "Learn coding")
+- Tasks are concrete and role-specific
 - Task categories: learning, portfolio, networking, interview_prep, research
-- Tasks should directly address the skill gaps and build toward "${params.targetRole}"
-- Milestones should progress logically: foundations → skills → projects → networking → job search → landing the role`;
+- Milestones progress: foundations → skills → projects → networking → job search → landing the role`;
 
-  const message = await client.messages.create({
+  const fallback = {
+    milestones: [
+      { title: "Foundations & Research", description: `Build foundational knowledge for ${params.targetRole}.`, durationWeeks: 4, tasks: [{ title: `Research ${params.targetRole} role requirements`, description: "Study job descriptions and identify core competencies.", priority: "high", category: "research" }] },
+      { title: "Core Skill Building", description: "Develop the most critical technical skills.", durationWeeks: 4, tasks: [{ title: "Start an online course in your top skill gap", description: "Enroll on Coursera, Udemy, or LinkedIn Learning.", priority: "high", category: "learning" }] },
+      { title: "Portfolio Development", description: "Build projects that demonstrate your abilities.", durationWeeks: 4, tasks: [{ title: "Create a portfolio project", description: "Build something relevant to your target role.", priority: "high", category: "portfolio" }] },
+      { title: "Networking & Community", description: "Build professional connections.", durationWeeks: 4, tasks: [{ title: "Connect with 5 professionals in your field", description: "Reach out on LinkedIn with personalized messages.", priority: "medium", category: "networking" }] },
+      { title: "Interview Preparation", description: "Prepare for the job search process.", durationWeeks: 4, tasks: [{ title: "Practice interview questions", description: "Use AI mock interviews and practice common questions.", priority: "high", category: "interview_prep" }] },
+      { title: "Job Search & Applications", description: "Apply strategically to your target roles.", durationWeeks: 4, tasks: [{ title: "Apply to 10 relevant positions", description: "Tailor your resume for each application.", priority: "high", category: "research" }] },
+    ],
+  };
+
+  return callClaudeWithRetry({
+    apiKey: anthropicKey(),
     model: "claude-opus-4-6",
-    max_tokens: 3000,
-    messages: [{ role: "user", content: prompt }],
+    maxTokens: 3000,
+    prompt,
+    retries: 2,
+    fallback,
   });
-
-  const content = message.content[0];
-  if (content.type !== "text") throw new Error("Unexpected AI response type");
-
-  const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("Could not parse AI roadmap response");
-
-  return JSON.parse(jsonMatch[0]);
 }
 
 // POST /roadmap/milestones/:milestoneId/complete — mark a milestone complete, unlock next

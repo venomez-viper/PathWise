@@ -5,6 +5,7 @@ import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { secret } from "encore.dev/config";
 import Anthropic from "@anthropic-ai/sdk";
 import { sanitizeForPrompt } from "../shared/sanitize";
+import { callClaudeWithRetry } from "../shared/ai-utils";
 
 const db = new SQLDatabase("tasks", { migrations: "./migrations" });
 const anthropicKey = secret("AnthropicAPIKey");
@@ -197,7 +198,6 @@ export const aiGenerateTasks = api(
   async (params: GenerateTasksParams): Promise<{ tasks: Task[] }> => {
     const { userID } = getAuthData<AuthData>()!;
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
-    const client = new Anthropic({ apiKey: anthropicKey() });
     const safeTargetRole = sanitizeForPrompt(params.targetRole, 200);
     const safeMilestoneTitle = sanitizeForPrompt(params.milestoneTitle, 300);
     const safeMilestoneDescription = sanitizeForPrompt(params.milestoneDescription, 500);
@@ -207,7 +207,7 @@ export const aiGenerateTasks = api(
 Milestone: "${safeMilestoneTitle}"
 Description: "${safeMilestoneDescription}"
 
-Respond with ONLY a valid JSON array (no markdown, no explanation):
+Respond with ONLY a valid JSON array (no markdown, no dashes, no code fences):
 [
   {
     "title": "Specific actionable task title",
@@ -221,28 +221,31 @@ Requirements:
 - Exactly 4 tasks, each concrete and measurable
 - Categories: learning, portfolio, networking, interview_prep, research
 - Priorities: high, medium, low
-- Tasks must directly advance the milestone goal and target role
-- No vague tasks like "study X" — be specific (e.g. "Complete Coursera Machine Learning course Module 3 and take notes")`;
+- Tasks must directly advance the milestone goal and target role`;
 
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1000,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const content = message.content[0];
-    if (content.type !== "text") throw new Error("Unexpected AI response");
-
-    const jsonMatch = content.text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error("Could not parse AI tasks response");
+    const fallback = [
+      { title: `Research ${safeTargetRole} requirements`, description: "Study job descriptions and core competencies.", priority: "high", category: "research" },
+      { title: `Complete a relevant online course module`, description: "Pick a course addressing your primary skill gap.", priority: "high", category: "learning" },
+      { title: `Build a mini portfolio piece`, description: "Create a small project demonstrating a key skill.", priority: "medium", category: "portfolio" },
+      { title: `Connect with a professional in the field`, description: "Send a personalized LinkedIn message.", priority: "medium", category: "networking" },
+    ];
 
     const aiTasks: { title: string; description: string; priority: string; category: string }[] =
-      JSON.parse(jsonMatch[0]);
+      await callClaudeWithRetry({
+        apiKey: anthropicKey(),
+        model: "claude-haiku-4-5-20251001",
+        maxTokens: 1000,
+        prompt,
+        retries: 2,
+        fallback,
+      });
+
+    const taskArray = Array.isArray(aiTasks) ? aiTasks : (aiTasks as any).tasks ?? fallback;
 
     const now = new Date().toISOString();
     const createdTasks: Task[] = [];
 
-    for (const t of aiTasks.slice(0, 4)) {
+    for (const t of taskArray.slice(0, 4)) {
       const id = crypto.randomUUID();
       const priority = (["low", "medium", "high"].includes(t.priority) ? t.priority : "medium") as Task["priority"];
       const category = t.category ?? "learning";
@@ -289,7 +292,6 @@ export const customGenerateTasks = api(
   async (params: CustomGenerateTasksParams): Promise<{ tasks: Task[] }> => {
     const { userID } = getAuthData<AuthData>()!;
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
-    const client = new Anthropic({ apiKey: anthropicKey() });
     const count = params.count ?? 4;
     const safePrompt = sanitizeForPrompt(params.prompt, 500);
     const safeTargetRole = params.targetRole ? sanitizeForPrompt(params.targetRole, 200) : undefined;
@@ -299,7 +301,7 @@ ${safeTargetRole ? `Their target role is: ${safeTargetRole}` : ''}
 
 Generate exactly ${count} specific, actionable tasks based on what they asked for.
 
-Respond with ONLY a valid JSON array:
+Respond with ONLY a valid JSON array (no markdown, no dashes, no code fences):
 [
   {
     "title": "Specific task title (max 80 chars)",
@@ -311,22 +313,23 @@ Respond with ONLY a valid JSON array:
 
 Categories: learning, portfolio, networking, interview_prep, research
 Priorities: high, medium, low
-Make each task concrete and completable within 1-3 days. No vague tasks.`;
+Make each task concrete and completable within 1-3 days.`;
 
-    const message = await client.messages.create({
+    const fallbackTasks = [
+      { title: `Work on: ${safePrompt.slice(0, 60)}`, description: "Break this down into a concrete first step.", priority: "high", category: "learning" },
+    ];
+
+    const rawResult = await callClaudeWithRetry({
+      apiKey: anthropicKey(),
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 800,
-      messages: [{ role: "user", content: prompt }],
+      maxTokens: 800,
+      prompt,
+      retries: 2,
+      fallback: fallbackTasks,
     });
 
-    const content = message.content[0];
-    if (content.type !== "text") throw new Error("Unexpected AI response");
-
-    const jsonMatch = content.text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error("Could not parse AI tasks");
-
     const aiTasks: { title: string; description: string; priority: string; category: string }[] =
-      JSON.parse(jsonMatch[0]);
+      Array.isArray(rawResult) ? rawResult : (rawResult as any).tasks ?? fallbackTasks;
 
     const now = new Date().toISOString();
     const createdTasks: Task[] = [];
