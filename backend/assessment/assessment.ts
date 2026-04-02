@@ -84,6 +84,7 @@ export interface SubmitAssessmentParams {
   interests: string[];
   currentRole?: string;
   personalityType?: string;
+  rawAnswers?: Record<string, string>;
 }
 
 // POST /assessment — Submit questionnaire answers, get career matches via local brain
@@ -105,6 +106,7 @@ export const submitAssessment = api(
       interests: params.interests,
       currentRole: params.currentRole,
       personalityType: params.personalityType,
+      answers: params.rawAnswers,
     });
 
     const personalityType = `${params.workStyle}-${params.experienceLevel}`;

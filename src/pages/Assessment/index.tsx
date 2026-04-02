@@ -223,6 +223,7 @@ export default function Assessment() {
       interests: selectedDomains,
       currentRole: currentRole.trim() || '',
       personalityType: `${answers.int1 || 'mixed'}-${answers.ws2 || 'balanced'}-${answers.car1 || 'building'}`,
+      rawAnswers: { ...answers },
     };
 
     try {
