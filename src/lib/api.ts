@@ -27,7 +27,12 @@ export const tokenStore = {
   clear: ()            => localStorage.removeItem(TOKEN_KEY),
 };
 
-async function request<T>(path: string, options?: RequestInit, retries = 1): Promise<T> {
+/** Wake up the backend (Encore cold starts can take 5-15s) */
+export async function warmup(): Promise<void> {
+  try { await fetch(`${BASE_URL}/auth/me`, { method: 'GET' }); } catch {}
+}
+
+async function request<T>(path: string, options?: RequestInit, retries = 2): Promise<T> {
   const token = tokenStore.get();
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -48,9 +53,9 @@ async function request<T>(path: string, options?: RequestInit, retries = 1): Pro
 
       return res.json() as Promise<T>;
     } catch (err) {
-      // Network error (failed to fetch) — retry once
-      if (attempt < retries && err instanceof TypeError && err.message.includes('fetch')) {
-        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+      // Network error (failed to fetch) — retry with increasing delay for cold starts
+      if (attempt < retries && err instanceof TypeError) {
+        await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
         continue;
       }
       throw err;

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
-import { assessment as assessmentApi } from '../../lib/api';
+import { assessment as assessmentApi, warmup } from '../../lib/api';
 import './Assessment.css';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -165,6 +165,9 @@ export default function Assessment() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Wake up Encore backend on page load (cold starts take 5-15s)
+  useEffect(() => { warmup(); }, []);
+
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentSkillsText, setCurrentSkillsText] = useState('');
@@ -233,17 +236,20 @@ export default function Assessment() {
       setIsPartial(!!res.partial);
       setStep(7);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '';
       setStep(5);
-      if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('network')) {
+      if (err instanceof TypeError) {
+        // TypeError: Failed to fetch — actual network failure / cold start
         setError('Could not reach the server. The backend may be starting up — please wait 10 seconds and try again.');
-      } else if (msg.includes('401') || msg.includes('unauthenticated')) {
-        setError('Your session expired. Please sign in again.');
-        navigate('/signin');
-      } else if (msg.includes('decode') || msg.includes('missing field')) {
-        setError('There was a data format issue. Please try again — the system will auto-correct.');
       } else {
-        setError(msg || 'Analysis failed. Please try again.');
+        const msg = err instanceof Error ? err.message : '';
+        if (msg.includes('401') || msg.includes('unauthenticated')) {
+          setError('Your session expired. Please sign in again.');
+          navigate('/signin');
+        } else if (msg.includes('decode') || msg.includes('missing field')) {
+          setError('There was a data format issue. Please try again — the system will auto-correct.');
+        } else {
+          setError(msg || 'Analysis failed. Please try again.');
+        }
       }
     }
   };
