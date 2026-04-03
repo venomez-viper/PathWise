@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS streaks (
   last_active_date TEXT,
   consistency_score INTEGER NOT NULL DEFAULT 0,
   total_xp INTEGER NOT NULL DEFAULT 0,
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  updated_at TEXT NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS achievements (
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS achievements (
   badge_key TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
-  earned_at TEXT NOT NULL DEFAULT (datetime('now')),
+  earned_at TEXT NOT NULL DEFAULT NOW(),
   UNIQUE(user_id, badge_key)
 );
 
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   read INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS certificates (
@@ -36,5 +36,5 @@ CREATE TABLE IF NOT EXISTS certificates (
   issued_date TEXT,
   verified INTEGER NOT NULL DEFAULT 0,
   url TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT NOW()
 );
