@@ -35,8 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await auth.me();
       setUser(res.user as User);
-    } catch {
-      tokenStore.clear();
+    } catch (err) {
+      // Only clear token on auth errors, NOT on network failures (cold starts)
+      if (!(err instanceof TypeError)) {
+        tokenStore.clear();
+      }
     } finally {
       setReady(true);
     }

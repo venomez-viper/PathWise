@@ -242,7 +242,7 @@ export default function Assessment() {
         setError('Could not reach the server. The backend may be starting up — please wait 10 seconds and try again.');
       } else {
         const msg = err instanceof Error ? err.message : '';
-        if (msg.includes('401') || msg.includes('unauthenticated')) {
+        if (msg.includes('401') || msg.includes('unauthenticated') || msg.includes('requires auth')) {
           setError('Your session expired. Please sign in again.');
           navigate('/signin');
         } else if (msg.includes('decode') || msg.includes('missing field')) {
