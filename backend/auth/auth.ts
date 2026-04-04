@@ -1,4 +1,4 @@
-import { api, APIError, Header } from "encore.dev/api";
+import { api, APIError, Gateway, Header } from "encore.dev/api";
 import { authHandler } from "encore.dev/auth";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { secret } from "encore.dev/config";
@@ -52,6 +52,9 @@ export const authHandlerDef = authHandler<AuthParams, AuthData>(
     }
   }
 );
+
+// Register the auth handler with Encore's Gateway
+export const gateway = new Gateway({ authHandler: authHandlerDef });
 
 // ── Sign Up ───────────────────────────────────────────────────────────────────
 

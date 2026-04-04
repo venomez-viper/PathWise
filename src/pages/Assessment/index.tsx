@@ -243,8 +243,7 @@ export default function Assessment() {
       } else {
         const msg = err instanceof Error ? err.message : '';
         if (msg.includes('401') || msg.includes('unauthenticated') || msg.includes('requires auth')) {
-          setError('Your session expired. Please sign in again.');
-          navigate('/signin');
+          setError('Your session expired. Please sign in and retake the assessment.');
         } else if (msg.includes('decode') || msg.includes('missing field')) {
           setError('There was a data format issue. Please try again — the system will auto-correct.');
         } else {
