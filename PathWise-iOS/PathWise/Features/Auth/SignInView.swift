@@ -26,7 +26,7 @@ struct SignInView: View {
                             InputField(label: "EMAIL ADDRESS", icon: "envelope", placeholder: "name@example.com", text: $email)
                                 .textContentType(.emailAddress)
                                 .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
+                                .textInputAutocapitalization(.never)
 
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {

@@ -35,7 +35,7 @@ struct SignUpView: View {
                         InputField(label: "FULL NAME", icon: "person", placeholder: "John Doe", text: $name)
                             .textContentType(.name)
                         InputField(label: "EMAIL", icon: "envelope", placeholder: "john@company.com", text: $email)
-                            .textContentType(.emailAddress).keyboardType(.emailAddress).autocapitalization(.none)
+                            .textContentType(.emailAddress).keyboardType(.emailAddress).textInputAutocapitalization(.never)
                         InputField(label: "PASSWORD", icon: "lock", placeholder: "8+ characters", text: $password, isSecure: true)
                             .textContentType(.newPassword)
 

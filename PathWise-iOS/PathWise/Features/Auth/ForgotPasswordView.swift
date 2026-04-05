@@ -23,7 +23,7 @@ struct ForgotPasswordView: View {
                 CardView {
                     VStack(spacing: 16) {
                         InputField(label: "EMAIL ADDRESS", icon: "envelope", placeholder: "name@career.com", text: $email)
-                            .keyboardType(.emailAddress).autocapitalization(.none)
+                            .keyboardType(.emailAddress).textInputAutocapitalization(.never)
                         PillButton(title: "Send Reset Link", disabled: email.isEmpty) { showSent = true }
                     }
                 }
