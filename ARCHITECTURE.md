@@ -346,3 +346,197 @@ Design tokens live in `src/index.css` (`:root`). Key ones:
 | `--on-surface` | `#1a1c1f` | Body text |
 
 Sidebar/dark areas use hardcoded `#0f0b1e` (not a token — intentional).
+
+---
+
+## 14. iOS App
+
+### 14.1 Overview
+
+The iOS app is a native Swift/SwiftUI client that connects to the **same Encore backend** as the web frontend. It lives in `PathWise-iOS/` alongside the rest of the monorepo.
+
+| Attribute | Detail |
+|---|---|
+| Language | Swift 5.9+ |
+| UI framework | SwiftUI |
+| State management | Swift `@Observable` (iOS 17+, no Combine/ObservableObject) |
+| Pattern | MVVM — Views own no business logic; ViewModels drive state |
+| Min target | iOS 17 |
+| Backend | Same Encore staging API (`staging-pathwise-4mxi.encr.app`) |
+| Auth storage | JWT in iOS Keychain (`kSecClassGenericPassword`) |
+
+---
+
+### 14.2 Project Structure
+
+```
+PathWise-iOS/
+├── PathWise/
+│   ├── PathWiseApp.swift          # @main — creates AuthManager, injects into environment
+│   ├── ContentView.swift          # Root router: Splash → Onboarding → Auth/App
+│   │
+│   ├── Core/
+│   │   ├── Auth/
+│   │   │   ├── AuthManager.swift  # @Observable — sign in/up/out, session check
+│   │   │   └── KeychainHelper.swift # JWT read/write/delete via Security framework
+│   │   ├── Models/                # Codable structs: User, TaskItem, Roadmap, etc.
+│   │   └── Network/
+│   │       ├── APIClient.swift    # Generic async/await HTTP client (@Observable)
+│   │       ├── Endpoints.swift    # Typed enum of all API paths + HTTP methods
+│   │       └── APIError.swift     # Typed error cases (unauthenticated, notFound, …)
+│   │
+│   ├── Features/
+│   │   ├── MainTabView.swift      # Tab bar (iPhone) + sidebar (iPad) root
+│   │   ├── Auth/                  # SignInView, SignUpView, ForgotPasswordView, …
+│   │   ├── Onboarding/            # OnboardingCarouselView (first-launch only)
+│   │   ├── ProfileSetup/          # AboutYouView, YourGoalsView, PhotoUploadView
+│   │   ├── Dashboard/             # DashboardView + DashboardViewModel
+│   │   ├── Assessment/            # Intro → Questions → Processing → Results
+│   │   ├── Roadmap/               # RoadmapView + detail sheets (course/project/networking)
+│   │   ├── Tasks/                 # TasksView + celebration overlay
+│   │   ├── Progress/              # ProgressDashboardView + ProgressViewModel
+│   │   ├── Streaks/               # StreakTrackerView + StreaksViewModel
+│   │   ├── Achievements/          # AchievementsView + AchievementsViewModel
+│   │   ├── Certificates/          # CertificatesView + CertificatesViewModel
+│   │   ├── Notifications/         # NotificationsView + NotificationsViewModel
+│   │   ├── Search/                # SearchView + SearchViewModel
+│   │   ├── Settings/              # SettingsView, EditProfileView, ChangeTargetRoleView
+│   │   ├── CareerMatch/           # CareerMatchDetailView
+│   │   ├── Help/                  # HelpFAQView
+│   │   └── Splash/                # SplashView (shown on cold launch)
+│   │
+│   ├── Components/                # Reusable SwiftUI atoms
+│   │   ├── CardView, BadgeView, ChipView
+│   │   ├── CircularProgressView, ProgressBarView
+│   │   ├── InputField, OutlinedButton, PillButton
+│   │   ├── LoadingView, MentorTipCard, SocialAuthButtons
+│   │
+│   └── Theme/
+│       ├── AppColors.swift        # Color palette + gradients (mirrors web CSS tokens)
+│       ├── AppTypography.swift    # Font styles
+│       └── AppTheme.swift         # Shared modifiers / theme helpers
+│
+└── PathWiseTests/
+    ├── Core/
+    │   ├── APIClientTests.swift
+    │   └── KeychainHelperTests.swift
+    └── Features/
+        ├── AssessmentViewModelTests.swift
+        ├── DashboardViewModelTests.swift
+        ├── RoadmapViewModelTests.swift
+        └── TasksViewModelTests.swift
+```
+
+---
+
+### 14.3 How It Connects to the Backend
+
+`APIClient` is a generic `async/await` HTTP client marked `@Observable`. It targets:
+
+- **Debug:** `http://localhost:4000` (local `encore run`)
+- **Release:** `https://staging-pathwise-4mxi.encr.app`
+
+Every request is typed via the `Endpoint` enum which encodes the path and HTTP method. The client automatically:
+- Attaches `Authorization: Bearer <token>` when `authToken` is set
+- Snake-cases request bodies and camel-cases response keys via `JSONEncoder`/`JSONDecoder` strategies
+- Maps HTTP status codes to typed `APIError` cases (`unauthenticated`, `notFound`, `invalidArgument`, etc.)
+
+The iOS app calls the **same backend endpoints** as the web frontend — no iOS-specific backend changes were required.
+
+---
+
+### 14.4 Navigation Pattern
+
+`MainTabView` adapts layout based on device idiom:
+
+**iPhone — Tab Bar**
+```
+TabView (5 tabs)
+  ├── Home        → DashboardView
+  ├── Roadmap     → RoadmapView
+  ├── Tasks       → TasksView
+  ├── Progress    → ProgressDashboardView
+  └── Settings    → SettingsView
+```
+Each tab is wrapped in its own `NavigationStack` so each tab has independent navigation state.
+
+**iPad — Sidebar (`NavigationSplitView`)**
+```
+Sidebar (List, two sections)
+  ├── Main
+  │   ├── Home / Roadmap / Tasks / Progress / Settings
+  └── More
+      ├── Streaks / Achievements / Certificates
+      ├── Notifications / Search / Help & FAQ
+Detail pane → NavigationStack wrapping the selected view
+```
+
+The secondary destinations (Streaks, Achievements, etc.) are only reachable as sidebar items on iPad; on iPhone they are accessed via navigation pushes from within the main tabs.
+
+---
+
+### 14.5 Auth Flow
+
+```
+App cold-launch
+    │
+    ▼
+PathWiseApp injects AuthManager into SwiftUI environment
+    │
+    ▼
+ContentView shows SplashView
+    │
+    ├─ authManager.checkSession()
+    │       │
+    │       ├─ KeychainHelper.getToken() → found
+    │       │       └─ GET /auth/me → sets currentUser
+    │       │
+    │       └─ no token → no-op (user = nil)
+    │
+    ▼
+After splash delay:
+    ├─ first launch?  → OnboardingCarouselView (carousel, stored in @AppStorage)
+    ├─ isAuthenticated (currentUser != nil) → MainTabView
+    └─ not authenticated → SignInView
+```
+
+**Sign in / sign up:**
+```
+User submits credentials
+    │
+    ▼
+AuthManager.signIn / signUp
+    │  POST /auth/signin or /auth/signup
+    ▼
+API returns { token, user }
+    │
+    ├─ KeychainHelper.saveToken(token)   ← persisted in Keychain
+    ├─ api.authToken = token             ← injected into APIClient
+    └─ currentUser = user                ← triggers isAuthenticated → MainTabView
+```
+
+**Sign out:**
+```
+AuthManager.signOut()
+    ├─ KeychainHelper.deleteToken()
+    ├─ api.authToken = nil
+    └─ currentUser = nil  →  ContentView routes back to SignInView
+```
+
+Token is stored using `kSecClassGenericPassword` under service `com.pathwise.ios`, key `auth_token`. It survives app restarts and device reboots (but not device restore without iCloud Keychain).
+
+---
+
+### 14.6 Theme & Design Tokens
+
+iOS design tokens mirror the web CSS variables:
+
+| Web token | iOS equivalent | Value |
+|---|---|---|
+| `--primary` (`#5d2a80`) | `AppColors.darkPurple` | `#5B21B6` |
+| `--primary-light` | `AppColors.primaryPurple` | `#7C3AED` |
+| `--secondary` (teal) | `AppColors.tealAccent` | `#14B8A6` |
+| `--surface` | `AppColors.offWhiteBg` | `#F8F7FC` |
+| `--on-surface` | `AppColors.darkText` | `#1F2937` |
+
+Gradients (`purpleGradient`, `tealPurpleGradient`, `progressGradient`) are defined in `AppColors` as `LinearGradient` constants and reused across views.
