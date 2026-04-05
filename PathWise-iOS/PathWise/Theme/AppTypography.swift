@@ -13,7 +13,7 @@ enum AppTypography {
     static let button = Font.system(size: 17, weight: .semibold)
 
     static func capsLabel(_ size: CGFloat = 10) -> Font {
-        .system(size: size, weight: .semibold).leading(.tight)
+        .system(size: size, weight: .semibold)
     }
 }
 

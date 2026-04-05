@@ -12,6 +12,9 @@ enum AppTheme {
     static let buttonRadius: CGFloat = 28
     static let inputRadius: CGFloat = 14
     static let tabBarRadius: CGFloat = 20
-    static let cardShadow = ShadowStyle.drop(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
+    static let cardShadowColor = Color.black.opacity(0.06)
+    static let cardShadowRadius: CGFloat = 4
+    static let cardShadowX: CGFloat = 0
+    static let cardShadowY: CGFloat = 2
     static let ctaShadowColor = AppColors.primaryPurple.opacity(0.3)
 }
