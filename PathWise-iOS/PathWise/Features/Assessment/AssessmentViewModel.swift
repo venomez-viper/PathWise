@@ -1,5 +1,6 @@
 // PathWise-iOS/PathWise/Features/Assessment/AssessmentViewModel.swift
 import Foundation
+import Observation
 
 @Observable
 class AssessmentViewModel {
