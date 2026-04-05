@@ -1,0 +1,36 @@
+name: PathWise
+options:
+  bundleIdPrefix: com.pathwise
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+
+targets:
+  PathWise:
+    type: application
+    platform: iOS
+    sources:
+      - PathWise
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1,2"
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        PRODUCT_BUNDLE_IDENTIFIER: com.pathwise.ios
+
+  PathWiseTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - PathWiseTests
+    dependencies:
+      - target: PathWise
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pathwise.ios.tests
