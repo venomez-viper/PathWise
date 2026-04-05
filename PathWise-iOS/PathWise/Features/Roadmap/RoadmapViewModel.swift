@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+@MainActor
 @Observable
 class RoadmapViewModel {
     let api: APIClient

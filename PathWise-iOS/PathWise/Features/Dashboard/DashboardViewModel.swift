@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+@MainActor
 @Observable
 class DashboardViewModel {
     let api: APIClient

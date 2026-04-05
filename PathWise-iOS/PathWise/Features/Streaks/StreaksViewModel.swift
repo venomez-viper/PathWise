@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+@MainActor
 @Observable
 class StreaksViewModel {
     let api: APIClient
