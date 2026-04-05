@@ -111,38 +111,23 @@ struct MainTabView: View {
     @ViewBuilder
     private func tabContent(for tab: AppTab) -> some View {
         switch tab {
-        case .home: PlaceholderView(name: "Dashboard")
-        case .roadmap: PlaceholderView(name: "Roadmap")
-        case .tasks: PlaceholderView(name: "Tasks")
-        case .progress: PlaceholderView(name: "Progress")
-        case .settings: PlaceholderView(name: "Settings")
+        case .home: DashboardView()
+        case .roadmap: RoadmapView()
+        case .tasks: TasksView()
+        case .progress: ProgressDashboardView()
+        case .settings: SettingsView()
         }
     }
 
     @ViewBuilder
     private func secondaryContent(for dest: SecondaryDestination) -> some View {
         switch dest {
-        case .streaks: PlaceholderView(name: "Streaks")
-        case .achievements: PlaceholderView(name: "Achievements")
-        case .certificates: PlaceholderView(name: "Certificates")
-        case .notifications: PlaceholderView(name: "Notifications")
-        case .search: PlaceholderView(name: "Search")
-        case .help: PlaceholderView(name: "Help & FAQ")
+        case .streaks: StreakTrackerView()
+        case .achievements: AchievementsView()
+        case .certificates: CertificatesView()
+        case .notifications: NotificationsView()
+        case .search: SearchView()
+        case .help: HelpFAQView()
         }
-    }
-}
-
-// Temporary placeholder until real views are built
-private struct PlaceholderView: View {
-    let name: String
-    var body: some View {
-        VStack {
-            Text(name)
-                .font(AppTypography.title1)
-                .foregroundStyle(AppColors.primaryPurple)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppColors.offWhiteBg)
-        .navigationTitle(name)
     }
 }
