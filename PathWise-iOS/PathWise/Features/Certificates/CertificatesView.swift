@@ -288,10 +288,10 @@ struct AddCertificateSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    InputField(label: "Certificate Name", placeholder: "e.g. Google Data Analytics", text: $name)
-                    InputField(label: "Issuing Organization", placeholder: "e.g. Google, Coursera", text: $issuer)
-                    InputField(label: "Issue Date (optional)", placeholder: "e.g. Oct 2023", text: $issuedDate)
-                    InputField(label: "Certificate URL (optional)", placeholder: "https://...", text: $url)
+                    InputField(label: "Certificate Name", icon: "rosette", placeholder: "e.g. Google Data Analytics", text: $name)
+                    InputField(label: "Issuing Organization", icon: "building.2.fill", placeholder: "e.g. Google, Coursera", text: $issuer)
+                    InputField(label: "Issue Date (optional)", icon: "calendar", placeholder: "e.g. Oct 2023", text: $issuedDate)
+                    InputField(label: "Certificate URL (optional)", icon: "link", placeholder: "https://...", text: $url)
                         .keyboardType(.URL)
                         .autocorrectionDisabled()
                 }

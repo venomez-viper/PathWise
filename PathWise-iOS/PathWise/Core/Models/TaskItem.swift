@@ -1,6 +1,6 @@
 import Foundation
 
-struct TaskItem: Codable, Identifiable {
+struct TaskItem: Codable, Identifiable, Hashable {
     let id: String
     let userId: String
     let milestoneId: String?

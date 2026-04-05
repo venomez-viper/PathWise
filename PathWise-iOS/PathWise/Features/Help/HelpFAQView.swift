@@ -6,13 +6,13 @@ struct HelpFAQView: View {
 
     // MARK: - FAQ Data
 
-    private struct FAQItem: Identifiable {
+    fileprivate struct FAQItem: Identifiable {
         let id = UUID()
         let question: String
         let answer: String
     }
 
-    private struct FAQSection: Identifiable {
+    fileprivate struct FAQSection: Identifiable {
         let id = UUID()
         let title: String
         let items: [FAQItem]
