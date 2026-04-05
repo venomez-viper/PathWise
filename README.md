@@ -17,10 +17,21 @@ PathWise is built on a validated business concept from our founding pitch deck. 
 
 ## 🛠 Tech Stack
 
-- **Frontend Framework**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Vanilla CSS (CSS Variables based on a custom Design System)
+### Web App
+- **Frontend**: React 19 + TypeScript + Vite
+- **Styling**: TailwindCSS 4 + custom "Ethereal Mentor" design system
 - **Icons**: `lucide-react`
+- **Backend**: Encore.dev (TypeScript) — REST API with JWT auth
+- **AI**: Local career-brain matching engine (50 career profiles, multi-dimensional scoring)
+- **Database**: SQLite with SQL migrations
+
+### iOS App (`ios-app` branch)
+- **Framework**: Swift + SwiftUI (iOS 17+)
+- **Architecture**: @Observable ViewModels, native URLSession networking
+- **Auth**: JWT stored in iOS Keychain — same backend, same accounts
+- **Navigation**: Tab Bar (iPhone) + Sidebar (iPad)
+- **Design**: Pixel-perfect match to stitch UI frames
+- **Dependencies**: Zero third-party — pure SwiftUI + native APIs
 
 ## 🎨 Design System: "The Ethereal Mentor"
 
@@ -59,6 +70,50 @@ To get the project running locally:
 
 ---
 
+## 📱 iOS App
+
+The PathWise iOS app is a native Swift/SwiftUI app on the `ios-app` branch. It connects to the same Encore.dev backend — users can seamlessly switch between web and iOS.
+
+### Building the iOS App
+
+> Requires a Mac with Xcode 15+ and XcodeGen installed.
+
+1. **Switch to the iOS branch**:
+   ```bash
+   git checkout ios-app
+   ```
+
+2. **Generate the Xcode project**:
+   ```bash
+   cd PathWise-iOS
+   brew install xcodegen  # if not installed
+   xcodegen generate
+   ```
+
+3. **Open and run**:
+   ```bash
+   open PathWise.xcodeproj
+   ```
+   Select an iPhone simulator and press Cmd+R.
+
+4. **Start the backend** (in a separate terminal):
+   ```bash
+   cd backend && encore run
+   ```
+
+### iOS Screens (35+)
+All screens match the stitch design frames:
+
+| Flow | Screens |
+|------|---------|
+| Auth | Splash, Onboarding, Sign In/Up, Forgot Password, Email Verification |
+| Setup | Profile Setup (About You, Goals, Photo), Assessment (Intro, Questions, Processing, Results) |
+| Main | Dashboard, Roadmap, Tasks, Progress |
+| Engagement | Streaks, Achievements, Certificates, Notifications |
+| Other | Career Match Detail, Search, Settings, Edit Profile, Change Target Role, Help & FAQ |
+
+---
+
 ## 🚨 MANDATORY PUSH RULE: Version History 🚨
 
 **CRITICAL:** It is a **strict mandatory rule** for all developers that **every push MUST be accompanied by an update to the Version History** below. If you are adding a new feature, fixing a bug, or making architectural changes, you must log it in the Version History section with the version number, date, and a description of the changes before pushing your branch or merging a Pull Request.
@@ -94,3 +149,13 @@ To get the project running locally:
 - **Skill Gap Assessment**: New dedicated page with full AI-driven assessment flow.
 - **AI Task Generation**: Custom task creation using free-text prompts on the Tasks page.
 - **Tailwind v4**: Upgraded to the latest Tailwind CSS import syntax for better build performance.
+
+### **v0.6.0** — Native iOS App
+*Date: April 5, 2026*
+- **Native iOS App**: Built a complete Swift/SwiftUI iOS app (82 files) on the `ios-app` branch with pixel-perfect fidelity to the stitch UI design frames.
+- **Full Feature Parity**: All 35+ screens from the web app — auth, assessment, dashboard, roadmap, tasks, progress, streaks, achievements, certificates, notifications, search, settings, help.
+- **Same Backend**: Connects to the same Encore.dev REST API with JWT authentication. Users share accounts across web and iOS.
+- **Adaptive Navigation**: Tab Bar on iPhone, Sidebar on iPad via NavigationSplitView.
+- **Zero Dependencies**: Pure SwiftUI with native URLSession, Keychain Services, and SF Symbols.
+- **Design System**: Exact color tokens (#7C3AED purple, #14B8A6 teal, #F8F7FC background), typography, spacing, and component styles from the stitch frames.
+- **AI Career Brain**: Same local career-matching engine — assessment, roadmap generation, and task generation all via the shared backend.
