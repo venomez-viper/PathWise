@@ -1,0 +1,233 @@
+/* ─────────────────────────────────────────────
+   ACHIEVEMENTS PAGE — Apple Fitness-inspired badges
+───────────────────────────────────────────── */
+
+.achievements {
+  max-width: 640px;
+  background: var(--surface-lumina);
+}
+
+/* ── Season Progress Card ────────────────── */
+.achievements__season {
+  background: linear-gradient(135deg, var(--secondary) 0%, #00a396 100%);
+  border-radius: 2rem;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  color: #fff;
+}
+
+.achievements__season-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.65;
+  margin-bottom: 0.25rem;
+}
+
+.achievements__season-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.achievements__season-track {
+  margin-top: 0.75rem;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.achievements__season-fill {
+  height: 100%;
+  background: #5ef6e6;
+  border-radius: 999px;
+  transition: width 0.8s ease;
+}
+
+.achievements__season-xp {
+  font-size: 0.78rem;
+  opacity: 0.7;
+  margin-top: 6px;
+}
+
+/* ── Stats Row ───────────────────────────── */
+.achievements__stats {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.achievements__stat-card {
+  flex: 1;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.75rem;
+  text-align: center;
+}
+
+.achievements__stat-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  line-height: 1.2;
+}
+
+.achievements__stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-variant);
+  margin-top: 2px;
+}
+
+.achievements__stat-badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--secondary);
+  background: rgba(0, 106, 98, 0.08);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+}
+
+/* ── Badge Grid ──────────────────────────── */
+.achievements__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.achievements__badge {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: 2rem;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.achievements__badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.achievements__badge--locked {
+  opacity: 0.6;
+}
+
+/* ── Icon circle ─────────────────────────── */
+.achievements__icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  margin: 0 auto 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.achievements__icon-wrap--earned {
+  color: #fff;
+  box-shadow: 0 0 0 6px var(--ring-color, rgba(0, 106, 98, 0.15));
+}
+
+.achievements__icon-wrap--locked {
+  background: var(--surface-container);
+  color: var(--on-surface-variant);
+}
+
+.achievements__lock-overlay {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-container-lowest);
+  border: 2px solid var(--outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Badge text ──────────────────────────── */
+.achievements__badge-title {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  margin-bottom: 4px;
+}
+
+.achievements__badge-date {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.achievements__badge-desc {
+  font-size: 0.72rem;
+  color: var(--on-surface-variant);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.achievements__badge-progress {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--on-surface-muted);
+}
+
+.achievements__progress-track {
+  height: 4px;
+  background: var(--surface-container);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.achievements__progress-fill {
+  height: 100%;
+  background: var(--secondary);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+/* ── Loading ─────────────────────────────── */
+.achievements__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+}
+
+.achievements__spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ──────────────────────────── */
+@media (max-width: 480px) {
+  .achievements__grid {
+    grid-template-columns: 1fr;
+  }
+  .achievements__stats {
+    flex-direction: column;
+  }
+}
