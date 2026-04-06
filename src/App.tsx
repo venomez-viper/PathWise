@@ -16,6 +16,7 @@ import LegalPage       from './pages/LegalPage';
 
 // Webapp components
 import Sidebar      from './components/Sidebar';
+import { AppWidgetPanel } from './components/widgets';
 import Dashboard    from './pages/Dashboard';
 import Roadmap      from './pages/Roadmap';
 import Tasks        from './pages/Tasks';
@@ -82,7 +83,12 @@ function AppLayout() {
         >
           <Menu size={22} />
         </button>
-        <Outlet />
+        <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Outlet />
+          </div>
+          <AppWidgetPanel />
+        </div>
       </main>
     </div>
   );

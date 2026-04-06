@@ -3,8 +3,6 @@ import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2 } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
-import { WidgetSidebar } from '../../components/widgets';
-import type { Task as WidgetTask, Milestone as WidgetMilestone } from '../../components/widgets';
 import { PandaSpot } from '../../components/panda';
 
 export default function Dashboard() {
@@ -17,7 +15,7 @@ export default function Dashboard() {
     hasAssessment: boolean;
     careerMatches: { title: string; matchScore: number; description: string }[];
     recentTasks: { id: string; title: string; status: string; priority: string }[];
-    allTasks: WidgetTask[];
+    allTasks: any[];
     stats: { tasksFinished: number; tasksTotal: number; jobReadinessScore: number };
     milestones: any[];
     activeMilestone: any;
@@ -264,16 +262,6 @@ export default function Dashboard() {
             See all tasks <ArrowRight size={13} />
           </Link>
         </div>
-      </div>
-
-      {/* ── WIDGET SIDEBAR ── */}
-      <div style={{ marginTop: '1.5rem' }}>
-        <WidgetSidebar
-          widgets={['dailyFocus', 'streak', 'milestoneMap', 'weeklyOverview']}
-          tasks={data.allTasks}
-          milestones={data.milestones as WidgetMilestone[]}
-          userId={user?.id ?? ''}
-        />
       </div>
 
       {/* CTA for no assessment */}

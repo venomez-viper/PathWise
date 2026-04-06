@@ -8,8 +8,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi, roadmap as roadmapApi, streaks as streaksApi } from '../../lib/api';
 import TaskCelebration from '../../components/TaskCelebration';
-import { WidgetSidebar } from '../../components/widgets';
-import type { Task as WidgetTask } from '../../components/widgets';
 import { PandaSpot } from '../../components/panda';
 import './Tasks.css';
 
@@ -287,19 +285,6 @@ export default function Tasks() {
     );
   }
 
-  /* ── Sidebar widgets ── */
-  const sidebarWidgets = (
-    <WidgetSidebar
-      widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
-      tasks={taskList as WidgetTask[]}
-      milestones={milestones}
-      userId={user?.id ?? ''}
-      onMoveTask={(task, status) => moveTask(task as Task, status)}
-      filterMilestoneId={filterMilestoneId}
-      onFilterChange={setFilterMilestoneId}
-    />
-  );
-
   return (
     <div className="page">
       {/* ── Header ── */}
@@ -525,9 +510,8 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* ── Board view with sidebar ── */}
+      {/* ── Board view ── */}
       {!loading && view === 'board' && (
-        <div className="tasks-board-wrapper">
           <div className="kanban-board" role="region" aria-label="Kanban task board">
             {COLUMNS.map(col => {
               const colTasks = tasksByStatus(col.key);
@@ -579,13 +563,10 @@ export default function Tasks() {
               );
             })}
           </div>
-          {sidebarWidgets}
-        </div>
       )}
 
-      {/* ── List view (original) with sidebar ── */}
+      {/* ── List view ── */}
       {!loading && view === 'list' && (
-        <div className="tasks-board-wrapper">
           <div className="tasks-layout" style={{ flex: 1, minWidth: 0 }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {/* Inline add form for list view */}
@@ -712,8 +693,6 @@ export default function Tasks() {
               )}
             </div>
           </div>
-          {sidebarWidgets}
-        </div>
       )}
 
       {/* Celebration modal */}

@@ -7,5 +7,6 @@ export { default as MotivationalQuote } from './MotivationalQuote';
 export { default as ResourceTip } from './ResourceTip';
 export { default as WeeklyOverview } from './WeeklyOverview';
 export { default as WidgetSidebar } from './WidgetSidebar';
+export { default as AppWidgetPanel } from './AppWidgetPanel';
 export type { WidgetName } from './WidgetSidebar';
 export type { Task, Milestone } from './types';
