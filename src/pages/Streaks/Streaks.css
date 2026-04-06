@@ -1,0 +1,271 @@
+/* ── Streaks / Momentum Page ── */
+
+.streaks {
+  max-width: 640px;
+  padding-bottom: 3rem;
+}
+
+.streaks__header {
+  margin-bottom: 1.5rem;
+}
+
+.streaks__title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: -0.02em;
+}
+
+.streaks__subtitle {
+  font-size: 0.88rem;
+  color: var(--on-surface-muted);
+  margin-top: 0.25rem;
+}
+
+/* ── Streak Hero Card ── */
+
+.streaks__hero {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.streaks__hero-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.streaks__flame-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(0, 106, 98, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.streaks__count {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  line-height: 1.2;
+}
+
+.streaks__best {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--on-surface-muted);
+  margin-top: 0.15rem;
+}
+
+/* ── Weekly Grid ── */
+
+.streaks__weekly {
+  margin-top: 1.25rem;
+  background: var(--surface-lumina);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.streaks__weekly-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.streaks__weekly-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-muted);
+}
+
+.streaks__weekly-count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.streaks__days {
+  display: flex;
+  justify-content: space-between;
+}
+
+.streaks__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.streaks__day-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--on-surface-muted);
+  text-transform: uppercase;
+}
+
+.streaks__day-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.streaks__day-circle--done {
+  background: var(--secondary);
+}
+
+.streaks__day-circle--today {
+  background: var(--surface-container-lowest);
+  box-shadow:
+    0 0 0 2px var(--secondary),
+    0 0 12px rgba(0, 106, 98, 0.15);
+}
+
+.streaks__day-circle--empty {
+  background: var(--surface-container);
+}
+
+/* ── Stats Grid ── */
+
+.streaks__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.streaks__stat-card {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.streaks__stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--on-surface-muted);
+  margin-bottom: 0.5rem;
+}
+
+.streaks__stat-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--on-surface);
+  line-height: 1;
+}
+
+.streaks__stat-detail {
+  font-size: 0.78rem;
+  color: var(--on-surface-variant);
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
+/* ── Consistency Bar ── */
+
+.streaks__consistency {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.streaks__consistency-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.streaks__consistency-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.streaks__consistency-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.streaks__consistency-label {
+  font-size: 0.8rem;
+  color: var(--on-surface-variant);
+}
+
+.streaks__consistency-pct {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.streaks__bar-track {
+  height: 6px;
+  background: var(--surface-container);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.streaks__bar-fill {
+  height: 100%;
+  background: var(--secondary);
+  border-radius: 999px;
+  transition: width 0.8s ease;
+}
+
+/* ── CTA ── */
+
+.streaks__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: var(--radius-full);
+  background: var(--secondary);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: opacity 0.15s, transform 0.15s;
+  border: none;
+  cursor: pointer;
+}
+
+.streaks__cta:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 480px) {
+  .streaks__stats { grid-template-columns: 1fr; }
+  .streaks__day-circle { width: 32px; height: 32px; }
+}

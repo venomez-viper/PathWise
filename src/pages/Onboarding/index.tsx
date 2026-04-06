@@ -81,14 +81,14 @@ export default function Onboarding() {
       {/* Step 0: Welcome */}
       {step === 0 && (
         <div className="onboarding__card">
-          <div className="onboarding__icon"><Sparkles size={28} color="#a78bfa" /></div>
+          <div className="onboarding__icon"><Sparkles size={28} color="#6245a4" /></div>
           <h1 className="onboarding__title">Hey {firstName}, let's build<br />your career roadmap.</h1>
           <p className="onboarding__sub">
             PathWise will generate a personalised roadmap with milestones, tasks, and skill guidance — all tailored to your target role.
           </p>
           <div className="onboarding__features">
             {['AI-generated career milestones', 'Skill gap analysis', 'Daily task planner'].map(f => (
-              <div key={f} className="onboarding__feature"><CheckCircle2 size={16} color="#34d399" /><span>{f}</span></div>
+              <div key={f} className="onboarding__feature"><CheckCircle2 size={16} color="#006a62" /><span>{f}</span></div>
             ))}
           </div>
           <button className="onboarding__btn" onClick={() => setStep(1)}>
@@ -174,7 +174,7 @@ export default function Onboarding() {
       {step === 2 && (
         <div className="onboarding__card onboarding__card--center">
           <div className="onboarding__generating">
-            <Loader2 size={40} color="#a78bfa" style={{ animation: 'spin 0.8s linear infinite' }} />
+            <Loader2 size={40} color="#006a62" style={{ animation: 'spin 0.8s linear infinite' }} />
           </div>
           <h1 className="onboarding__title">Building your roadmap…</h1>
           <p className="onboarding__sub">Creating personalised milestones and tasks for <strong>{targetRole}</strong>.</p>

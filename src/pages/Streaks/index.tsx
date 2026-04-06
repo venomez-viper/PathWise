@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Flame, TrendingUp, Zap, Loader2, CheckCircle2 } from 'lucide-react';
+import { Flame, TrendingUp, Zap, Clock, Loader2, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { streaks as streaksApi } from '../../lib/api';
+import './Streaks.css';
 
 export default function Streaks() {
   const { user } = useAuth();
@@ -12,62 +13,65 @@ export default function Streaks() {
   useEffect(() => {
     if (!user) return;
     streaksApi.get(user.id).then((res: any) => { setData(res.streak); setLoading(false); })
-      .catch(() => { setData({ currentStreak: 0, bestStreak: 0, consistencyScore: 0, weeklyProgress: [false,false,false,false,false,false,false] }); setLoading(false); });
+      .catch(() => { setData({ currentStreak: 0, bestStreak: 0, consistencyScore: 0, totalXp: 0, weeklyProgress: [false,false,false,false,false,false,false] }); setLoading(false); });
   }, [user]);
 
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const todayIdx = new Date().getDay();
   const todayMapped = todayIdx === 0 ? 6 : todayIdx - 1;
+  const weeklyDone = data?.weeklyProgress?.filter(Boolean).length ?? 0;
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <Loader2 size={28} color="#8b4f2c" style={{ animation: 'spin 0.8s linear infinite' }} />
+      <Loader2 size={28} color="var(--secondary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 
   return (
-    <div className="page" style={{ maxWidth: 640 }}>
-      <h1 className="page-title">Momentum</h1>
-      <p className="page-subtitle">You're building momentum!</p>
+    <div className="page streaks">
+      {/* Header */}
+      <div className="streaks__header">
+        <h1 className="streaks__title">Momentum</h1>
+        <p className="streaks__subtitle">
+          {data?.currentStreak > 0
+            ? "You're building momentum — keep it going!"
+            : "Start completing tasks to build your streak."}
+        </p>
+      </div>
 
-      {/* Streak card */}
-      <div className="panel" style={{ borderRadius: '2rem', padding: '2rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(0,106,98,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Streak Hero */}
+      <div className="streaks__hero">
+        <div className="streaks__hero-top">
+          <div className="streaks__flame-icon">
             <Flame size={24} color="var(--secondary)" />
           </div>
           <div>
-            <p style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--on-surface)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              🔥 {data?.currentStreak ?? 0}-day streak
-            </p>
-            <p style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>
-              Your Best: {data?.bestStreak ?? 0} Days
-            </p>
+            <p className="streaks__count">{data?.currentStreak ?? 0}-day streak</p>
+            <p className="streaks__best">Personal best: {data?.bestStreak ?? 0} days</p>
           </div>
         </div>
 
-        {/* Weekly progress */}
-        <div style={{ marginTop: '1.5rem', background: 'var(--surface-container-low)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>Weekly Progress</span>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--secondary)' }}>
-              {data?.weeklyProgress?.filter(Boolean).length ?? 0}/7 Complete
-            </span>
+        {/* Weekly Progress */}
+        <div className="streaks__weekly">
+          <div className="streaks__weekly-header">
+            <span className="streaks__weekly-label">This Week</span>
+            <span className="streaks__weekly-count">{weeklyDone}/7 complete</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+          <div className="streaks__days">
             {days.map((d, i) => {
               const active = data?.weeklyProgress?.[i];
               const isToday = i === todayMapped;
+              let circleClass = 'streaks__day-circle';
+              if (active) circleClass += ' streaks__day-circle--done';
+              else if (isToday) circleClass += ' streaks__day-circle--today';
+              else circleClass += ' streaks__day-circle--empty';
+
               return (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>{d}</span>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: '50%',
-                    background: active ? 'var(--secondary)' : isToday ? 'linear-gradient(135deg, var(--secondary), #5ef6e6)' : 'var(--surface-container)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: isToday ? '0 0 0 3px rgba(0,106,98,0.2)' : 'none',
-                  }}>
-                    {active ? <CheckCircle2 size={18} color="#fff" /> : isToday ? <Zap size={16} color="#fff" /> : null}
+                <div key={i} className="streaks__day">
+                  <span className="streaks__day-label">{d}</span>
+                  <div className={circleClass}>
+                    {active && <CheckCircle2 size={16} color="#fff" strokeWidth={2.5} />}
+                    {isToday && !active && <Zap size={14} color="var(--secondary)" />}
                   </div>
                 </div>
               );
@@ -76,39 +80,43 @@ export default function Streaks() {
         </div>
       </div>
 
-      {/* Power Hour */}
-      <div style={{
-        background: 'linear-gradient(135deg, var(--primary), var(--primary-container))',
-        borderRadius: '2rem', padding: '1.5rem', marginBottom: '1.5rem', color: '#fff',
-      }}>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800 }}>Power Hour</h3>
-        <p style={{ fontSize: '0.85rem', opacity: 0.8, marginTop: 4, lineHeight: 1.5 }}>
-          You're most active at 9:00 AM. Keep the morning momentum!
-        </p>
+      {/* Stats Grid */}
+      <div className="streaks__stats">
+        <div className="streaks__stat-card">
+          <p className="streaks__stat-label">Peak Hour</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Clock size={18} color="var(--secondary)" />
+            <span className="streaks__stat-value">9 AM</span>
+          </div>
+          <p className="streaks__stat-detail">Your most productive time</p>
+        </div>
+        <div className="streaks__stat-card">
+          <p className="streaks__stat-label">Total XP</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Zap size={18} color="var(--primary)" />
+            <span className="streaks__stat-value">{data?.totalXp ?? 0}</span>
+          </div>
+          <p className="streaks__stat-detail">Experience points earned</p>
+        </div>
       </div>
 
       {/* Consistency */}
-      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1rem', color: 'var(--on-surface)' }}>Consistency</h3>
+      <div className="streaks__consistency">
+        <div className="streaks__consistency-header">
+          <span className="streaks__consistency-title">Consistency Score</span>
           <TrendingUp size={18} color="var(--secondary)" />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <span style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>Consistency Score</span>
-          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--on-surface)' }}>{data?.consistencyScore ?? 0}%</span>
+        <div className="streaks__consistency-row">
+          <span className="streaks__consistency-label">14-day rolling average</span>
+          <span className="streaks__consistency-pct">{data?.consistencyScore ?? 0}%</span>
         </div>
-        <div style={{ height: 6, background: 'var(--surface-container)', borderRadius: 999, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${data?.consistencyScore ?? 0}%`, background: 'var(--secondary)', borderRadius: 999, transition: 'width 0.8s ease' }} />
+        <div className="streaks__bar-track">
+          <div className="streaks__bar-fill" style={{ width: `${data?.consistencyScore ?? 0}%` }} />
         </div>
       </div>
 
       {/* CTA */}
-      <Link to="/app/tasks" style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        width: '100%', padding: '0.85rem', borderRadius: 'var(--radius-full)',
-        background: 'linear-gradient(135deg, #334042, #4a5759)', color: '#fff',
-        fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none',
-      }}>
+      <Link to="/app/tasks" className="streaks__cta">
         <Zap size={16} /> Complete Today's Tasks
       </Link>
     </div>
