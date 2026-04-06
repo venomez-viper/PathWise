@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Lock, CheckCircle2, Sparkles, ArrowRight, BookOpen, Briefcase, Users, Plus, MoreHorizontal } from 'lucide-react';
+import { Loader2, AlertCircle, Lock, CheckCircle2, Sparkles, ArrowRight, BookOpen, Briefcase, Users, Plus, MoreHorizontal, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
@@ -50,6 +50,9 @@ export default function Roadmap() {
   const [completing, setCompleting] = useState<string | null>(null);
   const [generating, setGenerating] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium', category: 'learning' });
+  const [savingTask, setSavingTask] = useState(false);
 
   async function loadData(userId: string, silent = false) {
     if (!silent) setLoading(true);
@@ -93,6 +96,27 @@ export default function Roadmap() {
     try { await roadmapApi.completeMilestone(milestoneId); await loadData(user.id, true); }
     catch (err) { setActionError(err instanceof Error ? err.message : 'Failed to complete milestone.'); }
     finally { setCompleting(null); }
+  }
+
+  async function handleAddCustomTask() {
+    if (!user || !newTask.title.trim() || !activeMilestone) return;
+    setSavingTask(true);
+    setActionError(null);
+    try {
+      await tasksApi.create({
+        userId: user.id,
+        milestoneId: activeMilestone.id,
+        title: newTask.title.trim(),
+        description: newTask.description.trim() || undefined,
+        priority: newTask.priority,
+        category: newTask.category,
+      });
+      await loadData(user.id, true);
+      setNewTask({ title: '', description: '', priority: 'medium', category: 'learning' });
+      setShowAddTask(false);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to add task.');
+    } finally { setSavingTask(false); }
   }
 
   if (loading) return (
@@ -168,7 +192,7 @@ export default function Roadmap() {
               <Link to="/app/onboarding" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: '#8b4f2c', color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>
                 ✏️ Adjust Timeline
               </Link>
-              <button onClick={() => activeMilestone && handleGenerateTasks(activeMilestone)} disabled={!activeMilestone || !!generating}
+              <button onClick={() => setShowAddTask(true)} disabled={!activeMilestone}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontSize: '0.78rem', fontWeight: 600, border: 'none', cursor: activeMilestone ? 'pointer' : 'default', opacity: activeMilestone ? 1 : 0.5 }}>
                 <Plus size={14} /> Add Custom Task
               </button>
@@ -349,6 +373,118 @@ export default function Roadmap() {
             </div>
             <ArrowRight size={20} />
           </Link>
+        </div>
+      )}
+
+      {/* ── ADD CUSTOM TASK MODAL ── */}
+      {showAddTask && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          {/* Backdrop */}
+          <div onClick={() => setShowAddTask(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }} />
+          {/* Modal */}
+          <div style={{
+            position: 'relative', width: '100%', maxWidth: 480,
+            background: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--outline-variant)', padding: '2rem',
+            boxShadow: '0 12px 60px rgba(0,0,0,0.15)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--on-surface)' }}>Add Custom Task</h3>
+              <button onClick={() => setShowAddTask(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 4 }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {activeMilestone && (
+              <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>
+                Adding to: <strong style={{ color: 'var(--on-surface)' }}>{activeMilestone.title}</strong>
+              </p>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Title */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-muted)', marginBottom: 4 }}>Task Title</label>
+                <input
+                  value={newTask.title}
+                  onChange={e => setNewTask(f => ({ ...f, title: e.target.value }))}
+                  placeholder="e.g. Complete SQL basics course"
+                  style={{ width: '100%', padding: '0.7rem 0.9rem', border: '1.5px solid var(--outline-variant)', borderRadius: 'var(--radius-sm)', background: 'var(--surface-lumina)', color: 'var(--on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-muted)', marginBottom: 4 }}>Description (optional)</label>
+                <textarea
+                  value={newTask.description}
+                  onChange={e => setNewTask(f => ({ ...f, description: e.target.value }))}
+                  placeholder="Brief description of what to do..."
+                  rows={3}
+                  style={{ width: '100%', padding: '0.7rem 0.9rem', border: '1.5px solid var(--outline-variant)', borderRadius: 'var(--radius-sm)', background: 'var(--surface-lumina)', color: 'var(--on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.88rem', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Priority & Category row */}
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-muted)', marginBottom: 4 }}>Priority</label>
+                  <select
+                    value={newTask.priority}
+                    onChange={e => setNewTask(f => ({ ...f, priority: e.target.value }))}
+                    style={{ width: '100%', padding: '0.6rem 0.9rem', border: '1.5px solid var(--outline-variant)', borderRadius: 'var(--radius-sm)', background: 'var(--surface-lumina)', color: 'var(--on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
+                  >
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-muted)', marginBottom: 4 }}>Category</label>
+                  <select
+                    value={newTask.category}
+                    onChange={e => setNewTask(f => ({ ...f, category: e.target.value }))}
+                    style={{ width: '100%', padding: '0.6rem 0.9rem', border: '1.5px solid var(--outline-variant)', borderRadius: 'var(--radius-sm)', background: 'var(--surface-lumina)', color: 'var(--on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
+                  >
+                    <option value="learning">Learning</option>
+                    <option value="portfolio">Portfolio</option>
+                    <option value="networking">Networking</option>
+                    <option value="interview_prep">Interview Prep</option>
+                    <option value="certification">Certification</option>
+                    <option value="research">Research</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <button
+                  onClick={handleAddCustomTask}
+                  disabled={savingTask || !newTask.title.trim()}
+                  style={{
+                    flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)',
+                    background: 'var(--secondary)', color: '#fff', border: 'none',
+                    fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.88rem',
+                    cursor: 'pointer', opacity: savingTask || !newTask.title.trim() ? 0.4 : 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  }}
+                >
+                  {savingTask ? <Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Plus size={14} />}
+                  {savingTask ? 'Adding...' : 'Add Task'}
+                </button>
+                <button
+                  onClick={() => setShowAddTask(false)}
+                  style={{
+                    padding: '0.75rem 1.25rem', borderRadius: 'var(--radius-sm)',
+                    background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
+                    border: 'none', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

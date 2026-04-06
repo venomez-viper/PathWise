@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type JSX } from 'react';
 import { Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { achievements as achievementsApi } from '../../lib/api';
