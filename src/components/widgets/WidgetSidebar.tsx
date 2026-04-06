@@ -58,7 +58,7 @@ export default function WidgetSidebar({
   const widgetSet = new Set(widgets);
 
   return (
-    <div className="tasks-widget-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: 320, flexShrink: 0 }}>
+    <div className="tasks-widget-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flexShrink: 0 }}>
       {widgetSet.has('dailyFocus') && (
         <DailyFocus tasks={tasks} onMoveTask={handleMoveTask} />
       )}

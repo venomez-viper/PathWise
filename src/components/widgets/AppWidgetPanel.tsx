@@ -1,6 +1,8 @@
 /**
- * App-level Widget Panel — self-contained right sidebar
- * Fetches its own data and renders widgets.
+ * App-level Widget Panel — fixed right gutter sidebar
+ * Fetches its own data and renders widgets in the empty space
+ * to the right of the main content area.
+ *
  * Shown on: Roadmap, Tasks, Progress, Streaks, Achievements, Certificates, Search, Help
  * Hidden on: Dashboard, Assessment, Settings, Onboarding, SkillGapAssessment
  */
@@ -20,6 +22,11 @@ const HIDDEN_ROUTES = new Set([
   '/app/onboarding',
 ]);
 
+/**
+ * Layout: left sidebar = 220px, page content max-width = ~900px with padding.
+ * The widget panel sits fixed on the right side of the viewport,
+ * in the empty gutter space. It only shows when viewport is wide enough (>1400px).
+ */
 export default function AppWidgetPanel() {
   const { user } = useAuth();
   const location = useLocation();
@@ -47,7 +54,7 @@ export default function AppWidgetPanel() {
     loadData();
   }, [loadData]);
 
-  // Re-fetch when navigating to a new page (lightweight refresh)
+  // Re-fetch when navigating to a new page
   useEffect(() => {
     if (loaded) loadData();
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -60,35 +67,25 @@ export default function AppWidgetPanel() {
   if (!user || !loaded) return null;
 
   const handleMoveTask = async (task: Task, newStatus: Task['status']) => {
-    // Optimistic update
     setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
     try {
       await tasksApi.update(task.id, { status: newStatus });
     } catch {
-      // Revert on error
       setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: task.status } : t));
     }
   };
 
   return (
-    <aside
-      style={{
-        width: 300,
-        flexShrink: 0,
-        padding: '1.5rem 1rem 1.5rem 0',
-        overflowY: 'auto',
-        maxHeight: '100vh',
-        position: 'sticky',
-        top: 0,
-      }}
-    >
-      <WidgetSidebar
-        widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
-        tasks={tasks}
-        milestones={milestones}
-        userId={user.id}
-        onMoveTask={handleMoveTask}
-      />
+    <aside className="app-widget-panel">
+      <div className="app-widget-panel__inner">
+        <WidgetSidebar
+          widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
+          tasks={tasks}
+          milestones={milestones}
+          userId={user.id}
+          onMoveTask={handleMoveTask}
+        />
+      </div>
     </aside>
   );
 }

@@ -83,12 +83,8 @@ function AppLayout() {
         >
           <Menu size={22} />
         </button>
-        <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Outlet />
-          </div>
-          <AppWidgetPanel />
-        </div>
+        <Outlet />
+        <AppWidgetPanel />
       </main>
     </div>
   );
