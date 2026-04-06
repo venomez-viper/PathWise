@@ -31,13 +31,13 @@
   --brand-purple: #6245a4;
   --brand-teal: #006a62;
 
-  /* Surface hierarchy — clean white layers */
-  --surface: #ffffff;
+  /* Surface hierarchy — Zen Stone teal-tinted layers (matches Stitch desktop designs) */
+  --surface: #eefcfe;
   --surface-container-lowest: #ffffff;
-  --surface-container-low: #f5f5f5;
-  --surface-container: #efefef;
-  --surface-container-high: #e8e8e8;
-  --surface-container-highest: #e0e0e0;
+  --surface-container-low: #e8f6f8;
+  --surface-container: #ddebed;
+  --surface-container-high: #d0e3e6;
+  --surface-container-highest: #c3d8db;
   --surface-bright: #ffffff;
 
   /* Lumina purple surfaces (for cards/overlays) */
