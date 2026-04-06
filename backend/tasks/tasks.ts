@@ -4,6 +4,7 @@ import { AuthData } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { sanitizeForPrompt } from "../shared/sanitize";
 import { getMilestonesForRole } from "../assessment/career-brain";
+import { awardAchievement } from "../streaks/streaks";
 
 const db = new SQLDatabase("tasks", { migrations: "./migrations" });
 
@@ -166,6 +167,22 @@ export const updateTask = api(
           due_date = ${newDueDate}, completed_at = ${newCompletedAt}
       WHERE id = ${taskId}
     `;
+
+    // Award task-based achievements when transitioning to done
+    if (newStatus === "done" && row.status !== "done") {
+      try {
+        const doneCountRow = await db.queryRow`SELECT COUNT(*) as cnt FROM tasks WHERE user_id = ${row.user_id} AND status = 'done'`;
+        const doneCount = Number(doneCountRow?.cnt ?? 0);
+
+        if (doneCount >= 5) await awardAchievement({ userId: row.user_id, badgeKey: "skill_master" });
+        if (doneCount >= 10) await awardAchievement({ userId: row.user_id, badgeKey: "task_10" });
+        if (doneCount >= 25) await awardAchievement({ userId: row.user_id, badgeKey: "task_25" });
+
+        // Early bird: completed before 9 AM local server time
+        const hour = new Date().getHours();
+        if (hour < 9) await awardAchievement({ userId: row.user_id, badgeKey: "early_bird" });
+      } catch {}
+    }
 
     return {
       task: {

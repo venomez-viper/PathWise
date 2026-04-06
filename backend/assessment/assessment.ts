@@ -8,6 +8,7 @@ import {
   getCareerRecsForRole,
   analyzeSkillGapsForRole,
 } from "./career-brain";
+import { awardAchievement } from "../streaks/streaks";
 
 const db = new SQLDatabase("assessment", { migrations: "./migrations" });
 
@@ -134,6 +135,9 @@ export const submitAssessment = api(
         skill_gaps       = excluded.skill_gaps,
         current_skills   = excluded.current_skills
     `;
+
+    // Award "First Steps" achievement for completing the assessment
+    try { await awardAchievement({ userId: params.userId, badgeKey: "first_steps" }); } catch {}
 
     return {
       result: {

@@ -7,14 +7,18 @@ const db = new SQLDatabase("streaks", { migrations: "./migrations" });
 
 // ── BADGE DEFINITIONS ─────────────────────────────────────────────────────────
 const BADGES = [
-  { key: "first_steps", title: "First Steps", description: "Completed the career orientation module.", xp: 50 },
-  { key: "roadmap_starter", title: "Roadmap Starter", description: "Created your first customized career path.", xp: 100 },
-  { key: "streak_7", title: "7-Day Streak", description: "Used PathWise for seven consecutive days.", xp: 150 },
-  { key: "skill_master", title: "Skill Master", description: "Complete 5 technical assessment tasks.", xp: 200 },
+  { key: "first_steps", title: "First Steps", description: "Complete your career assessment and discover your strengths.", xp: 50 },
+  { key: "roadmap_starter", title: "Roadmap Starter", description: "Generate your first personalized career roadmap.", xp: 100 },
+  { key: "streak_7", title: "7-Day Streak", description: "Show up for 7 days in a row — consistency beats intensity.", xp: 150 },
+  { key: "skill_master", title: "Skill Master", description: "Finish 5 tasks and prove you can execute.", xp: 200 },
   { key: "networker", title: "Networker", description: "Connect with 3 industry mentors.", xp: 150 },
   { key: "interview_ready", title: "Interview Ready", description: "Complete the AI interview simulation.", xp: 200 },
-  { key: "path_finisher", title: "Path Finisher", description: "Complete your entire career roadmap.", xp: 500 },
+  { key: "path_finisher", title: "Path Finisher", description: "Complete every milestone in your career roadmap.", xp: 500 },
   { key: "top_contributor", title: "Top Contributor", description: "Share 10 helpful resources in forums.", xp: 100 },
+  { key: "task_10", title: "Task Crusher", description: "Complete 10 tasks — you're building real momentum.", xp: 100 },
+  { key: "task_25", title: "Productivity Machine", description: "Complete 25 tasks — unstoppable.", xp: 250 },
+  { key: "early_bird", title: "Early Bird", description: "Complete a task before 9 AM — the early career-changer gets the job.", xp: 75 },
+  { key: "milestone_3", title: "Halfway There", description: "Complete 3 milestones on your roadmap.", xp: 200 },
 ];
 
 // ── STREAKS ───────────────────────────────────────────────────────────────────

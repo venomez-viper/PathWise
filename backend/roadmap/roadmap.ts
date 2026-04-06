@@ -5,6 +5,7 @@ import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { getAssessment } from "../assessment/assessment";
 import { createTask } from "../tasks/tasks";
 import { getMilestonesForRole } from "../assessment/career-brain";
+import { awardAchievement } from "../streaks/streaks";
 
 const db = new SQLDatabase("roadmap", { migrations: "./migrations" });
 
@@ -154,6 +155,17 @@ export const completeMilestone = api(
     const pct = totalRow && doneRow ? Math.round((Number(doneRow.cnt) / Number(totalRow.cnt)) * 100) : 0;
     await db.exec`UPDATE roadmaps SET completion_percent = ${pct} WHERE id = ${ms.roadmap_id}`;
 
+    // Award milestone-based achievements
+    const completedCount = Number(doneRow!.cnt);
+    try {
+      if (completedCount >= 3) {
+        await awardAchievement({ userId: userID, badgeKey: "milestone_3" });
+      }
+      if (pct >= 100) {
+        await awardAchievement({ userId: userID, badgeKey: "path_finisher" });
+      }
+    } catch {}
+
     return { success: true, nextMilestoneId };
   }
 );
@@ -273,6 +285,9 @@ export const generateRoadmap = api(
         });
       }
     }
+
+    // Award "Roadmap Starter" achievement for generating a roadmap
+    try { await awardAchievement({ userId: params.userId, badgeKey: "roadmap_starter" }); } catch {}
 
     return {
       roadmap: {
