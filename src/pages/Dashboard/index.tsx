@@ -5,6 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
 import { WidgetSidebar } from '../../components/widgets';
 import type { Task as WidgetTask, Milestone as WidgetMilestone } from '../../components/widgets';
+import { PandaSpot } from '../../components/panda';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -70,8 +71,9 @@ export default function Dashboard() {
   const strokeOff = mounted ? circ * (1 - roadmapPct / 100) : circ;
 
   if (loading) return (
-    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <Loader2 size={28} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+    <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
+      <PandaSpot context="loading" position="inline" size={44} animate />
+      <Loader2 size={22} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 
@@ -108,6 +110,7 @@ export default function Dashboard() {
             background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 600, fontSize: '0.82rem',
           }}>Update Goals</Link>
         </div>
+        <PandaSpot context="welcome" position="corner-br" size={44} />
       </div>
 
       {/* ── MAIN GRID — Progress + Career Matches ── */}
@@ -167,8 +170,8 @@ export default function Dashboard() {
 
           {careerMatches.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-              <Target size={28} color="var(--on-surface-variant)" style={{ marginBottom: 8, opacity: 0.4 }} />
-              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>Take the assessment to see matches.</p>
+              <PandaSpot context="tip" position="inline" size={40} opacity={0.7} />
+              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', marginTop: 8 }}>Take the assessment to see matches.</p>
               <Link to="/app/assessment" className="panel-link">Start Assessment <ArrowRight size={13} /></Link>
             </div>
           ) : (
@@ -233,7 +236,10 @@ export default function Dashboard() {
             Recent Tasks
           </p>
           {recentTasks.length === 0 ? (
-            <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>No tasks yet — your roadmap will generate them.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <PandaSpot context="empty-state" position="inline" size={36} opacity={0.6} />
+              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>No tasks yet — your roadmap will generate them.</p>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {recentTasks.map((t: any) => (

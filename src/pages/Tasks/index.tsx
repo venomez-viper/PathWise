@@ -10,6 +10,7 @@ import { tasks as tasksApi, roadmap as roadmapApi, streaks as streaksApi } from 
 import TaskCelebration from '../../components/TaskCelebration';
 import { WidgetSidebar } from '../../components/widgets';
 import type { Task as WidgetTask } from '../../components/widgets';
+import { PandaSpot } from '../../components/panda';
 import './Tasks.css';
 
 /* ── Types ── */
@@ -271,6 +272,7 @@ export default function Tasks() {
             <div className="tasks-empty__icon">
               <ClipboardList size={28} />
             </div>
+            <PandaSpot context="empty-state" position="inline" message="No tasks yet! Let's get started." animate />
             <h2 className="tasks-empty__title">No tasks yet</h2>
             <p className="tasks-empty__desc">
               Complete onboarding to generate your personalized career roadmap and tasks.
@@ -562,6 +564,7 @@ export default function Tasks() {
 
                     {colTasks.length === 0 && !(col.key === 'todo' && addingTask) && (
                       <div className="kanban-col__empty">
+                        <PandaSpot context="idle" position="inline" size={36} opacity={0.5} />
                         {col.key === 'todo' && 'No pending tasks'}
                         {col.key === 'in_progress' && 'Nothing in progress'}
                         {col.key === 'done' && 'No completed tasks'}

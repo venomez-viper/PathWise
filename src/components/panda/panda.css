@@ -1,0 +1,165 @@
+/* ── Panda Mascot Animations ── */
+
+@keyframes panda-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes panda-wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(8deg); }
+  75% { transform: rotate(-4deg); }
+}
+
+@keyframes panda-peek {
+  0% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes panda-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes panda-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes panda-zzz {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Mood-specific animation mappings */
+.panda--animated[data-mood="happy"] {
+  animation: panda-bounce 3s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="thinking"] {
+  animation: panda-tilt 3s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="sleepy"] {
+  animation: panda-float 4s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="curious"] {
+  animation: panda-tilt 3s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="celebrating"] {
+  animation: panda-bounce 3s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="confused"] {
+  animation: panda-tilt 3s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="waving"] {
+  animation: panda-bounce 3s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="reading"] {
+  animation: panda-float 4s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="working"] {
+  animation: panda-float 4s ease-in-out infinite;
+}
+
+.panda--animated .panda-zzz {
+  animation: panda-zzz 2s ease-in-out infinite;
+}
+
+.panda--animated[data-mood="waving"] .panda-wave-arm {
+  animation: panda-wave 2s ease-in-out infinite;
+  transform-origin: 50% 85%;
+}
+
+/* PandaSpot positioning */
+.panda-spot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.panda-spot--inline {
+  justify-content: center;
+}
+
+.panda-spot--corner-br {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+}
+
+.panda-spot--corner-bl {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+}
+
+.panda-spot--peek-right {
+  position: absolute;
+  right: -12px;
+  bottom: 16px;
+  clip-path: inset(0 0 0 0);
+}
+
+.panda-spot--peek-bottom {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Speech bubble */
+.panda-spot__bubble {
+  position: relative;
+  background: var(--surface-container-lowest, #fff);
+  border: 1px solid var(--outline-variant, #e0e0e0);
+  border-radius: 12px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--on-surface-variant, #555);
+  line-height: 1.4;
+  max-width: 180px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  pointer-events: auto;
+}
+
+.panda-spot__bubble::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 5px solid var(--outline-variant, #e0e0e0);
+}
+
+.panda-spot__bubble::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-right: 4px solid var(--surface-container-lowest, #fff);
+}
+
+/* Peek entrance */
+.panda-spot--peek-right .panda,
+.panda-spot--peek-bottom .panda {
+  animation: panda-peek 0.6s ease-out both;
+}

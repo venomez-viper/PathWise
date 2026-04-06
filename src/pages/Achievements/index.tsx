@@ -2,6 +2,7 @@ import { useState, useEffect, type JSX } from 'react';
 import { Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { achievements as achievementsApi } from '../../lib/api';
+import { PandaSpot } from '../../components/panda';
 import './Achievements.css';
 
 /* ─────────────────────────────────────────────
@@ -215,8 +216,9 @@ export default function Achievements() {
 
   if (loading) {
     return (
-      <div className="page achievements__loading">
-        <Loader2 size={28} color="#006a62" className="achievements__spinner" />
+      <div className="page achievements__loading" style={{ flexDirection: 'column', gap: 12 }}>
+        <PandaSpot context="loading" position="inline" size={44} animate />
+        <Loader2 size={22} color="#006a62" className="achievements__spinner" />
       </div>
     );
   }
@@ -293,9 +295,12 @@ export default function Achievements() {
               <p className="achievements__badge-title">{a.title}</p>
 
               {earned ? (
-                <p className="achievements__badge-date">
-                  Earned {formatEarnedDate(a.earnedAt)}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                  <p className="achievements__badge-date">
+                    Earned {formatEarnedDate(a.earnedAt)}
+                  </p>
+                  <PandaSpot context="achievement" position="inline" size={20} opacity={0.6} />
+                </div>
               ) : (
                 <>
                   <p className="achievements__badge-desc">{a.description}</p>

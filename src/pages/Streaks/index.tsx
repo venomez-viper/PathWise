@@ -3,6 +3,7 @@ import { Flame, TrendingUp, Zap, Clock, Loader2, CheckCircle2 } from 'lucide-rea
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { streaks as streaksApi } from '../../lib/api';
+import { PandaSpot } from '../../components/panda';
 import './Streaks.css';
 
 export default function Streaks() {
@@ -22,8 +23,9 @@ export default function Streaks() {
   const weeklyDone = data?.weeklyProgress?.filter(Boolean).length ?? 0;
 
   if (loading) return (
-    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <Loader2 size={28} color="var(--secondary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+    <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
+      <PandaSpot context="loading" position="inline" size={44} animate />
+      <Loader2 size={22} color="var(--secondary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 
@@ -40,7 +42,7 @@ export default function Streaks() {
       </div>
 
       {/* Streak Hero */}
-      <div className="streaks__hero">
+      <div className="streaks__hero" style={{ position: 'relative' }}>
         <div className="streaks__hero-top">
           <div className="streaks__flame-icon">
             <Flame size={24} color="var(--secondary)" />
@@ -49,6 +51,13 @@ export default function Streaks() {
             <p className="streaks__count">{data?.currentStreak ?? 0}-day streak</p>
             <p className="streaks__best">Personal best: {data?.bestStreak ?? 0} days</p>
           </div>
+          <PandaSpot
+            context={data?.currentStreak > 0 ? 'achievement' : 'idle'}
+            position="inline"
+            size={36}
+            opacity={0.65}
+            animate
+          />
         </div>
 
         {/* Weekly Progress */}

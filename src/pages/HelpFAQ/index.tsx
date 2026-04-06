@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { PandaSpot } from '../../components/panda';
 
 const FAQ_SECTIONS = [
   {
@@ -47,7 +48,10 @@ export default function HelpFAQ() {
 
   return (
     <div className="page" style={{ maxWidth: 640 }}>
-      <h1 className="page-title">Help & FAQ</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <h1 className="page-title">Help & FAQ</h1>
+        <PandaSpot context="welcome" position="inline" size={36} opacity={0.7} />
+      </div>
       <p className="page-subtitle">Search for articles or browse categories below.</p>
 
       {/* Search */}

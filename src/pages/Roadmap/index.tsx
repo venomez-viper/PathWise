@@ -5,6 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
 import { WidgetSidebar } from '../../components/widgets';
 import type { Task as WidgetTask, Milestone as WidgetMilestone } from '../../components/widgets';
+import { PandaSpot } from '../../components/panda';
 
 type Task = { id: string; title: string; status: string; milestoneId?: string; category?: string; priority?: string; description?: string };
 
@@ -127,8 +128,9 @@ export default function Roadmap() {
   }
 
   if (loading) return (
-    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <Loader2 size={28} color="#8b4f2c" style={{ animation: 'spin 0.8s linear infinite' }} />
+    <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
+      <PandaSpot context="loading" position="inline" size={44} animate />
+      <Loader2 size={22} color="#8b4f2c" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 
@@ -136,8 +138,8 @@ export default function Roadmap() {
     <div className="page">
       <h1 className="page-title">Growth Roadmap</h1>
       <div className="panel" style={{ textAlign: 'center', padding: '3rem', borderRadius: '2rem' }}>
-        <AlertCircle size={32} color="var(--on-surface-variant)" style={{ margin: '0 auto 12px' }} />
-        <p style={{ fontWeight: 600, color: 'var(--on-surface)', marginBottom: 8 }}>No roadmap yet</p>
+        <PandaSpot context="empty-state" position="inline" message="Complete onboarding to start your journey!" animate />
+        <p style={{ fontWeight: 600, color: 'var(--on-surface)', marginBottom: 8, marginTop: 12 }}>No roadmap yet</p>
         <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', marginBottom: 16 }}>Complete onboarding to generate your career roadmap.</p>
         <Link to="/app/onboarding" className="btn-page-action" style={{ background: '#8b4f2c' }}>Start Onboarding</Link>
       </div>
@@ -149,6 +151,7 @@ export default function Roadmap() {
   const completedCount = milestones.filter((m) => m.status === 'completed').length;
   const totalCount = milestones.length;
   const activeMilestone = milestones.find((m) => m.status === 'in_progress');
+  const isFullyComplete = completionPct === 100;
 
   // Collect all tasks across milestones, grouped by category
   const allTasks: Task[] = Object.values(milestoneTaskMap).flat();
@@ -217,6 +220,7 @@ export default function Roadmap() {
               {completionPct}%
             </div>
           </div>
+          {isFullyComplete && <PandaSpot context="success" position="inline" size={40} animate />}
         </div>
       </div>
 
