@@ -3,7 +3,6 @@ import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2 } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
-import { PandaSpot } from '../../components/panda';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -69,8 +68,7 @@ export default function Dashboard() {
   const strokeOff = mounted ? circ * (1 - roadmapPct / 100) : circ;
 
   if (loading) return (
-    <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-      <PandaSpot context="loading" position="inline" size={90} animate />
+    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
       <Loader2 size={22} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
@@ -108,7 +106,6 @@ export default function Dashboard() {
             background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 600, fontSize: '0.82rem',
           }}>Update Goals</Link>
         </div>
-        <PandaSpot context="welcome" position="corner-br" size={90} />
       </div>
 
       {/* ── MAIN GRID — Progress + Career Matches ── */}
@@ -168,8 +165,7 @@ export default function Dashboard() {
 
           {careerMatches.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-              <PandaSpot context="tip" position="inline" size={80} opacity={0.7} />
-              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', marginTop: 8 }}>Take the assessment to see matches.</p>
+              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>Take the assessment to see matches.</p>
               <Link to="/app/assessment" className="panel-link">Start Assessment <ArrowRight size={13} /></Link>
             </div>
           ) : (
@@ -235,7 +231,6 @@ export default function Dashboard() {
           </p>
           {recentTasks.length === 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <PandaSpot context="empty-state" position="inline" size={70} opacity={0.6} />
               <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>No tasks yet — your roadmap will generate them.</p>
             </div>
           ) : (
