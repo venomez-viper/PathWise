@@ -1,0 +1,11 @@
+export { default as DailyFocus } from './DailyFocus';
+export { default as QuickStart } from './QuickStart';
+export { default as SkillProgress } from './SkillProgress';
+export { default as StreakWidget } from './StreakWidget';
+export { default as MilestoneMap } from './MilestoneMap';
+export { default as MotivationalQuote } from './MotivationalQuote';
+export { default as ResourceTip } from './ResourceTip';
+export { default as WeeklyOverview } from './WeeklyOverview';
+export { default as WidgetSidebar } from './WidgetSidebar';
+export type { WidgetName } from './WidgetSidebar';
+export type { Task, Milestone } from './types';

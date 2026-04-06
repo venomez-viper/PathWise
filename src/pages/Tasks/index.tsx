@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   CheckCircle2, Plus, Sparkles, Loader2, X,
   LayoutGrid, List, ArrowRight, ArrowLeft,
-  Calendar, ClipboardList,
-  Flame, Zap, Target, BookOpen, BarChart3, MessageCircle,
-  Shuffle, Lock, ChevronRight, Check,
+  Calendar, ClipboardList, Target,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi, roadmap as roadmapApi, streaks as streaksApi } from '../../lib/api';
 import TaskCelebration from '../../components/TaskCelebration';
+import { WidgetSidebar } from '../../components/widgets';
+import type { Task as WidgetTask } from '../../components/widgets';
 import './Tasks.css';
 
 /* ── Types ── */
@@ -60,61 +60,6 @@ function formatDate(dateStr: string): string {
   });
 }
 
-/* ── Motivational quotes ── */
-const MOTIVATIONAL_QUOTES = [
-  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
-  { text: "Your career is a marathon, not a sprint. Pace yourself and keep moving.", author: "Unknown" },
-  { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
-  { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
-  { text: "Opportunities don't happen. You create them.", author: "Chris Grosser" },
-  { text: "The future depends on what you do today.", author: "Mahatma Gandhi" },
-  { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
-  { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
-  { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
-  { text: "The expert in anything was once a beginner.", author: "Helen Hayes" },
-  { text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
-  { text: "A person who never made a mistake never tried anything new.", author: "Albert Einstein" },
-  { text: "Your limitation is only your imagination.", author: "Unknown" },
-  { text: "Hard work beats talent when talent doesn't work hard.", author: "Tim Notke" },
-  { text: "Dream big, start small, act now.", author: "Robin Sharma" },
-];
-
-/* ── Resource tips by category ── */
-const RESOURCE_TIPS: Record<string, string> = {
-  learning: "Try a focused 25-min study session (Pomodoro technique)",
-  portfolio: "Commit one small improvement to a project today",
-  networking: "Send one LinkedIn message to someone in your target field",
-  interview_prep: "Practice one behavioral question using the STAR method",
-  certification: "Review 10 flashcards for your certification exam",
-  research: "Read one industry article and summarize key takeaways",
-  reflection: "Write a 5-minute journal entry about your career progress",
-};
-
-/* ── Category colors for progress bars ── */
-const CATEGORY_COLORS: Record<string, string> = {
-  learning: '#7c3aed',
-  portfolio: '#2563eb',
-  networking: '#0d9488',
-  interview_prep: '#b45309',
-  certification: '#059669',
-  reflection: '#6b7280',
-  research: '#8b4f2c',
-};
-
-/* ── Widget title style helper ── */
-const widgetTitleStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontSize: '0.85rem',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  color: 'var(--on-surface)',
-  margin: 0,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-};
 
 /* ================================================================
    Tasks Page Component
@@ -153,12 +98,7 @@ export default function Tasks() {
   const [showCelebration, setShowCelebration] = useState(false);
 
   // ── Sidebar widget state ──
-  const [streakData, setStreakData] = useState<any>(null);
   const [filterMilestoneId, setFilterMilestoneId] = useState<string | null>(null);
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(() => Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length));
-  const [resourceTipIndex, setResourceTipIndex] = useState(0);
-  const [tipNoted, setTipNoted] = useState(false);
-  const [shuffleAnimating, setShuffleAnimating] = useState(false);
 
   /* ── Load tasks + milestones ── */
   const load = useCallback(async () => {
@@ -185,14 +125,6 @@ export default function Tasks() {
   useEffect(() => {
     load();
   }, [load]);
-
-  /* ── Fetch streak data on mount ── */
-  useEffect(() => {
-    if (!user) return;
-    streaksApi.get(user.id).then((data: any) => {
-      setStreakData(data);
-    }).catch(() => {});
-  }, [user]);
 
   /* ── Add task ── */
   const addTask = async () => {
@@ -319,85 +251,6 @@ export default function Tasks() {
     }
   };
 
-  /* ── Widget helpers ── */
-  const activeMilestone = milestones.find(m => m.status === 'in_progress');
-
-  // Daily Focus: highest priority todo from active milestone
-  const dailyFocusTask = useMemo(() => {
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    const activeTodos = taskList
-      .filter(t => t.status === 'todo' && (!activeMilestone || t.milestoneId === activeMilestone.id))
-      .sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-    if (activeTodos.length > 0) return { task: activeTodos[0], type: 'todo' as const };
-    const inProgress = taskList.filter(t => t.status === 'in_progress');
-    if (inProgress.length > 0) return { task: inProgress[0], type: 'in_progress' as const };
-    return null;
-  }, [taskList, activeMilestone]);
-
-  // Skill progress by category
-  const skillProgress = useMemo(() => {
-    const cats: Record<string, { done: number; total: number }> = {};
-    taskList.forEach(t => {
-      const cat = t.category || 'uncategorized';
-      if (!cats[cat]) cats[cat] = { done: 0, total: 0 };
-      cats[cat].total++;
-      if (t.status === 'done') cats[cat].done++;
-    });
-    return Object.entries(cats).map(([cat, data]) => ({ category: cat, ...data }));
-  }, [taskList]);
-
-  // Resource tips based on task categories
-  const availableTips = useMemo(() => {
-    const cats = new Set(taskList.map(t => t.category).filter(Boolean));
-    const tips: { category: string; tip: string }[] = [];
-    cats.forEach(cat => {
-      if (cat && RESOURCE_TIPS[cat]) tips.push({ category: cat, tip: RESOURCE_TIPS[cat] });
-    });
-    // Always include at least a few
-    if (tips.length === 0) {
-      Object.entries(RESOURCE_TIPS).forEach(([cat, tip]) => tips.push({ category: cat, tip }));
-    }
-    return tips;
-  }, [taskList]);
-
-  // Weekly overview data
-  const weeklyData = useMemo(() => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const now = new Date();
-    const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ...
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + mondayOffset);
-    monday.setHours(0, 0, 0, 0);
-
-    const counts = new Array(7).fill(0);
-    taskList.forEach(t => {
-      if (t.status === 'done' && t.completedAt) {
-        const d = new Date(t.completedAt);
-        const diff = Math.floor((d.getTime() - monday.getTime()) / (1000 * 60 * 60 * 24));
-        if (diff >= 0 && diff < 7) counts[diff]++;
-      }
-    });
-    const max = Math.max(...counts, 1);
-    return days.map((day, i) => ({ day, count: counts[i], pct: (counts[i] / max) * 100 }));
-  }, [taskList]);
-
-  const hasWeeklyActivity = weeklyData.some(d => d.count > 0);
-
-  // Todo count for quick-start
-  const todoCount = taskList.filter(t => t.status === 'todo').length;
-
-  // Pick random todo task
-  const pickRandomTask = () => {
-    const todos = taskList.filter(t => t.status === 'todo');
-    if (todos.length === 0) return;
-    setShuffleAnimating(true);
-    setTimeout(() => {
-      const random = todos[Math.floor(Math.random() * todos.length)];
-      moveTask(random, 'in_progress');
-      setShuffleAnimating(false);
-    }, 400);
-  };
 
   /* ================================================================
      RENDER
@@ -433,350 +286,16 @@ export default function Tasks() {
   }
 
   /* ── Sidebar widgets ── */
-  const renderSidebar = () => (
-    <div className="tasks-widget-sidebar">
-      {/* Widget 1: Daily Focus */}
-      <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-        <h4 style={widgetTitleStyle}>
-          <Zap size={15} color="#8b4f2c" /> Daily Focus
-        </h4>
-        <div style={{ marginTop: 10 }}>
-          {taskList.every(t => t.status === 'done') ? (
-            <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
-              <CheckCircle2 size={28} color="#34d399" style={{ marginBottom: 6 }} />
-              <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#059669', margin: 0 }}>
-                All tasks complete!
-              </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>
-                Outstanding work today.
-              </p>
-            </div>
-          ) : dailyFocusTask ? (
-            <>
-              <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)', margin: '0 0 8px', lineHeight: 1.4 }}>
-                {dailyFocusTask.task.title}
-              </p>
-              {dailyFocusTask.task.category && (
-                <span className={`kanban-badge kanban-badge--${dailyFocusTask.task.category}`} style={{ marginBottom: 8, display: 'inline-flex' }}>
-                  {CATEGORY_LABELS[dailyFocusTask.task.category] ?? dailyFocusTask.task.category}
-                </span>
-              )}
-              <button
-                onClick={() => moveTask(dailyFocusTask.task, dailyFocusTask.type === 'todo' ? 'in_progress' : 'done')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  width: '100%', padding: '8px 12px', marginTop: 6,
-                  border: 'none', borderRadius: '0.75rem',
-                  background: dailyFocusTask.type === 'todo' ? 'rgba(139,79,44,0.1)' : 'rgba(52,211,153,0.12)',
-                  color: dailyFocusTask.type === 'todo' ? '#8b4f2c' : '#059669',
-                  fontSize: '0.78rem', fontWeight: 700, fontFamily: 'var(--font-body)',
-                  cursor: 'pointer', transition: 'background 0.15s',
-                  justifyContent: 'center',
-                }}
-              >
-                {dailyFocusTask.type === 'todo' ? (
-                  <><ArrowRight size={13} /> Start This Task</>
-                ) : (
-                  <><CheckCircle2 size={13} /> Complete</>
-                )}
-              </button>
-            </>
-          ) : (
-            <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>No tasks available.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Widget 2: Quick-Start Prompt */}
-      <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-        <h4 style={widgetTitleStyle}>
-          <Shuffle size={15} color="#006a62" /> Quick Start
-        </h4>
-        <div style={{ marginTop: 10 }}>
-          <p style={{ fontSize: '0.82rem', color: 'var(--on-surface)', margin: '0 0 10px' }}>
-            You have <strong style={{ color: '#8b4f2c' }}>{todoCount}</strong> task{todoCount !== 1 ? 's' : ''} ready
-          </p>
-          <button
-            onClick={pickRandomTask}
-            disabled={todoCount === 0}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center',
-              width: '100%', padding: '8px 12px',
-              border: '1.5px solid rgba(0,106,98,0.2)', borderRadius: '0.75rem',
-              background: 'rgba(0,106,98,0.06)', color: '#006a62',
-              fontSize: '0.78rem', fontWeight: 700, fontFamily: 'var(--font-body)',
-              cursor: todoCount > 0 ? 'pointer' : 'not-allowed',
-              transition: 'all 0.2s', opacity: todoCount === 0 ? 0.5 : 1,
-            }}
-          >
-            <Shuffle size={13} style={{ transition: 'transform 0.4s', transform: shuffleAnimating ? 'rotate(360deg)' : 'none' }} />
-            {shuffleAnimating ? 'Picking...' : 'Pick a random task'}
-          </button>
-        </div>
-      </div>
-
-      {/* Widget 3: Skill Progress */}
-      {skillProgress.length > 0 && (
-        <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-          <h4 style={widgetTitleStyle}>
-            <Target size={15} color="#8b4f2c" /> Skill Progress
-          </h4>
-          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {skillProgress.map(({ category, done: catDone, total: catTotal }) => {
-              const catPct = catTotal > 0 ? Math.round((catDone / catTotal) * 100) : 0;
-              const color = CATEGORY_COLORS[category] || '#8b4f2c';
-              return (
-                <div key={category}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface)', textTransform: 'capitalize' }}>
-                      {CATEGORY_LABELS[category] ?? category}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)' }}>
-                      {catDone}/{catTotal}
-                    </span>
-                  </div>
-                  <div style={{
-                    height: 6, borderRadius: 3, background: 'var(--surface-container)',
-                    overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%', borderRadius: 3, background: color,
-                      width: `${catPct}%`, transition: 'width 0.5s ease',
-                    }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Widget 4: Streak Widget */}
-      <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-        <h4 style={widgetTitleStyle}>
-          <Flame size={15} color="#ef4444" /> Streak
-        </h4>
-        <div style={{ marginTop: 10 }}>
-          {streakData ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-                <div style={{ textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#8b4f2c', fontFamily: 'var(--font-display)' }}>
-                    {streakData.currentStreak ?? streakData.streak?.currentStreak ?? 0}
-                  </span>
-                  <p style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', margin: '2px 0 0', fontWeight: 600 }}>CURRENT</p>
-                </div>
-                <div style={{ width: 1, height: 32, background: 'var(--outline-variant)' }} />
-                <div style={{ textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#006a62', fontFamily: 'var(--font-display)' }}>
-                    {streakData.bestStreak ?? streakData.streak?.bestStreak ?? 0}
-                  </span>
-                  <p style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', margin: '2px 0 0', fontWeight: 600 }}>BEST</p>
-                </div>
-              </div>
-              {/* 7-day indicator */}
-              <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-                {Array.from({ length: 7 }).map((_, i) => {
-                  const activeDays = streakData.activeDays ?? streakData.streak?.activeDays ?? [];
-                  const isActive = i < (streakData.currentStreak ?? streakData.streak?.currentStreak ?? 0) || activeDays[i];
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        width: 10, height: 10, borderRadius: '50%',
-                        background: isActive ? '#8b4f2c' : 'var(--surface-container)',
-                        border: `1.5px solid ${isActive ? '#8b4f2c' : 'var(--outline-variant)'}`,
-                        transition: 'background 0.2s',
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>Loading streak data...</p>
-          )}
-        </div>
-      </div>
-
-      {/* Widget 5: Milestone Mini-Map */}
-      {milestones.length > 0 && (
-        <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-          <h4 style={widgetTitleStyle}>
-            <Target size={15} color="#006a62" /> Milestone Map
-          </h4>
-          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {filterMilestoneId && (
-              <button
-                onClick={() => setFilterMilestoneId(null)}
-                style={{
-                  fontSize: '0.7rem', color: '#8b4f2c', background: 'rgba(139,79,44,0.08)',
-                  border: '1px solid rgba(139,79,44,0.15)', borderRadius: '0.5rem',
-                  padding: '3px 10px', cursor: 'pointer', marginBottom: 4,
-                  fontFamily: 'var(--font-body)', fontWeight: 600,
-                }}
-              >
-                Clear filter
-              </button>
-            )}
-            {milestones.map(m => {
-              const isActive = m.status === 'in_progress';
-              const isCompleted = m.status === 'completed';
-              const isLocked = m.status === 'locked';
-              const isFiltered = filterMilestoneId === m.id;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => setFilterMilestoneId(isFiltered ? null : m.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '6px 10px', borderRadius: '0.6rem',
-                    border: isFiltered ? '1.5px solid #8b4f2c' : '1px solid transparent',
-                    background: isFiltered ? 'rgba(139,79,44,0.06)' : 'transparent',
-                    cursor: isLocked ? 'default' : 'pointer',
-                    transition: 'all 0.15s', width: '100%', textAlign: 'left',
-                    fontFamily: 'var(--font-body)', opacity: isLocked ? 0.5 : 1,
-                  }}
-                >
-                  {isCompleted && <Check size={13} color="#059669" />}
-                  {isActive && (
-                    <span style={{
-                      width: 10, height: 10, borderRadius: '50%', background: '#8b4f2c',
-                      display: 'inline-block', flexShrink: 0,
-                      boxShadow: '0 0 0 3px rgba(139,79,44,0.2)',
-                      animation: 'pulse-dot 2s ease-in-out infinite',
-                    }} />
-                  )}
-                  {isLocked && <Lock size={13} color="var(--on-surface-variant)" />}
-                  <span style={{
-                    fontSize: '0.75rem', fontWeight: isActive ? 700 : 500,
-                    color: isActive ? '#8b4f2c' : isCompleted ? '#059669' : 'var(--on-surface-variant)',
-                    flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    {m.title}
-                  </span>
-                  {!isLocked && <ChevronRight size={12} color="var(--on-surface-variant)" style={{ opacity: 0.5 }} />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Widget 6: Motivational Quote */}
-      <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-        <h4 style={widgetTitleStyle}>
-          <MessageCircle size={15} color="#8b4f2c" /> Motivation
-        </h4>
-        <div style={{ marginTop: 10 }}>
-          <div style={{ position: 'relative', padding: '0 4px' }}>
-            <span style={{ position: 'absolute', top: -4, left: -2, fontSize: '1.8rem', color: 'rgba(139,79,44,0.15)', fontFamily: 'Georgia, serif', lineHeight: 1 }}>&ldquo;</span>
-            <p style={{
-              fontSize: '0.8rem', fontStyle: 'italic', color: 'var(--on-surface)',
-              lineHeight: 1.55, margin: '0 0 6px', paddingLeft: 14,
-            }}>
-              {MOTIVATIONAL_QUOTES[currentQuoteIndex].text}
-            </p>
-            <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', margin: 0, paddingLeft: 14, fontWeight: 600 }}>
-              -- {MOTIVATIONAL_QUOTES[currentQuoteIndex].author}
-            </p>
-          </div>
-          <button
-            onClick={() => setCurrentQuoteIndex((currentQuoteIndex + 1) % MOTIVATIONAL_QUOTES.length)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center',
-              width: '100%', marginTop: 10, padding: '6px',
-              border: '1px solid var(--outline-variant)', borderRadius: '0.5rem',
-              background: 'transparent', color: 'var(--on-surface-variant)',
-              fontSize: '0.72rem', fontWeight: 600, fontFamily: 'var(--font-body)',
-              cursor: 'pointer', transition: 'background 0.15s',
-            }}
-          >
-            <Shuffle size={11} /> Next
-          </button>
-        </div>
-      </div>
-
-      {/* Widget 7: Resource of the Day */}
-      <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-        <h4 style={widgetTitleStyle}>
-          <BookOpen size={15} color="#006a62" /> Resource Tip
-        </h4>
-        <div style={{ marginTop: 10 }}>
-          {availableTips.length > 0 ? (
-            <>
-              <div
-                onClick={() => !tipNoted && setTipNoted(true)}
-                style={{
-                  padding: '10px 12px', borderRadius: '0.75rem',
-                  background: tipNoted ? 'rgba(52,211,153,0.08)' : 'rgba(0,106,98,0.05)',
-                  border: `1px solid ${tipNoted ? 'rgba(52,211,153,0.2)' : 'rgba(0,106,98,0.1)'}`,
-                  cursor: tipNoted ? 'default' : 'pointer', transition: 'all 0.2s',
-                }}
-              >
-                <span className={`kanban-badge kanban-badge--${availableTips[resourceTipIndex % availableTips.length].category}`} style={{ marginBottom: 6, display: 'inline-flex' }}>
-                  {CATEGORY_LABELS[availableTips[resourceTipIndex % availableTips.length].category] ?? availableTips[resourceTipIndex % availableTips.length].category}
-                </span>
-                <p style={{ fontSize: '0.8rem', color: 'var(--on-surface)', margin: '6px 0 0', lineHeight: 1.45 }}>
-                  {availableTips[resourceTipIndex % availableTips.length].tip}
-                </p>
-                {tipNoted && (
-                  <p style={{ fontSize: '0.7rem', color: '#059669', margin: '6px 0 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Check size={11} /> Noted!
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => { setResourceTipIndex(i => i + 1); setTipNoted(false); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center',
-                  width: '100%', marginTop: 8, padding: '6px',
-                  border: '1px solid var(--outline-variant)', borderRadius: '0.5rem',
-                  background: 'transparent', color: 'var(--on-surface-variant)',
-                  fontSize: '0.72rem', fontWeight: 600, fontFamily: 'var(--font-body)',
-                  cursor: 'pointer', transition: 'background 0.15s',
-                }}
-              >
-                <Shuffle size={11} /> New Tip
-              </button>
-            </>
-          ) : (
-            <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>Add tasks to get personalized tips.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Widget 8: Weekly Overview */}
-      <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
-        <h4 style={widgetTitleStyle}>
-          <BarChart3 size={15} color="#8b4f2c" /> Weekly Overview
-        </h4>
-        <div style={{ marginTop: 10 }}>
-          {hasWeeklyActivity ? (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 60 }}>
-              {weeklyData.map(d => (
-                <div key={d.day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <div style={{
-                    width: '100%', maxWidth: 24, borderRadius: 3,
-                    background: d.count > 0 ? '#8b4f2c' : 'var(--surface-container)',
-                    height: `${Math.max(d.pct, d.count > 0 ? 15 : 4)}%`,
-                    minHeight: 3,
-                    transition: 'height 0.4s ease',
-                  }} />
-                  <span style={{ fontSize: '0.6rem', color: 'var(--on-surface-variant)', fontWeight: 600 }}>
-                    {d.day}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', textAlign: 'center', padding: '0.5rem 0' }}>
-              Complete tasks to see your weekly activity
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
+  const sidebarWidgets = (
+    <WidgetSidebar
+      widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
+      tasks={taskList as WidgetTask[]}
+      milestones={milestones}
+      userId={user?.id ?? ''}
+      onMoveTask={(task, status) => moveTask(task as Task, status)}
+      filterMilestoneId={filterMilestoneId}
+      onFilterChange={setFilterMilestoneId}
+    />
   );
 
   return (
@@ -1057,7 +576,7 @@ export default function Tasks() {
               );
             })}
           </div>
-          {renderSidebar()}
+          {sidebarWidgets}
         </div>
       )}
 
@@ -1190,7 +709,7 @@ export default function Tasks() {
               )}
             </div>
           </div>
-          {renderSidebar()}
+          {sidebarWidgets}
         </div>
       )}
 

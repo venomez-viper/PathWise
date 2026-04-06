@@ -3,6 +3,8 @@ import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2 } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
+import { WidgetSidebar } from '../../components/widgets';
+import type { Task as WidgetTask, Milestone as WidgetMilestone } from '../../components/widgets';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -14,6 +16,7 @@ export default function Dashboard() {
     hasAssessment: boolean;
     careerMatches: { title: string; matchScore: number; description: string }[];
     recentTasks: { id: string; title: string; status: string; priority: string }[];
+    allTasks: WidgetTask[];
     stats: { tasksFinished: number; tasksTotal: number; jobReadinessScore: number };
     milestones: any[];
     activeMilestone: any;
@@ -22,6 +25,7 @@ export default function Dashboard() {
     doneCount: number;
   }>({
     roadmapPct: 0, targetRole: '—', hasAssessment: false, careerMatches: [], recentTasks: [],
+    allTasks: [],
     stats: { tasksFinished: 0, tasksTotal: 0, jobReadinessScore: 0 },
     milestones: [], activeMilestone: null, activeMilestoneTasks: [], activeDone: 0, doneCount: 0,
   });
@@ -51,6 +55,7 @@ export default function Dashboard() {
           hasAssessment: !!assessResult,
           careerMatches: (assessResult?.careerMatches ?? []).slice(0, 3),
           recentTasks: taskList.slice(0, 4),
+          allTasks: taskList,
           stats: { tasksFinished: statsData?.tasksFinished ?? doneCount, tasksTotal: taskList.length, jobReadinessScore: statsData?.jobReadinessScore ?? 0 },
           milestones, activeMilestone, activeMilestoneTasks, activeDone, doneCount,
         });
@@ -253,6 +258,16 @@ export default function Dashboard() {
             See all tasks <ArrowRight size={13} />
           </Link>
         </div>
+      </div>
+
+      {/* ── WIDGET SIDEBAR ── */}
+      <div style={{ marginTop: '1.5rem' }}>
+        <WidgetSidebar
+          widgets={['dailyFocus', 'streak', 'milestoneMap', 'weeklyOverview']}
+          tasks={data.allTasks}
+          milestones={data.milestones as WidgetMilestone[]}
+          userId={user?.id ?? ''}
+        />
       </div>
 
       {/* CTA for no assessment */}

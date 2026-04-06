@@ -3,6 +3,8 @@ import { Loader2, AlertCircle, Lock, CheckCircle2, Sparkles, ArrowRight, BookOpe
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
+import { WidgetSidebar } from '../../components/widgets';
+import type { Task as WidgetTask, Milestone as WidgetMilestone } from '../../components/widgets';
 
 type Task = { id: string; title: string; status: string; milestoneId?: string; category?: string; priority?: string; description?: string };
 
@@ -360,6 +362,16 @@ export default function Roadmap() {
           })}
         </div>
       )}
+
+      {/* ── WIDGET SIDEBAR ── */}
+      <div style={{ marginTop: '1.5rem' }}>
+        <WidgetSidebar
+          widgets={['skillProgress', 'resourceTip', 'streak']}
+          tasks={allTasks as WidgetTask[]}
+          milestones={milestones as WidgetMilestone[]}
+          userId={user?.id ?? ''}
+        />
+      </div>
 
       {/* ── CONTINUE JOURNEY CTA (Zen Stone) ── */}
       {activeMilestone && (
