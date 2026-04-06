@@ -68,24 +68,13 @@ export default function AppWidgetPanel() {
 
   return (
     <aside className="app-widget-panel">
-      <div style={{
-        position: 'sticky',
-        top: '1rem',
-        maxHeight: 'calc(100vh - 2rem)',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        padding: '0.5rem',
-        scrollbarWidth: 'thin',
-        scrollbarColor: 'rgba(0,0,0,0.06) transparent',
-      }}>
-        <WidgetSidebar
-          widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
-          tasks={tasks}
-          milestones={milestones}
-          userId={user.id}
-          onMoveTask={handleMoveTask}
-        />
-      </div>
+      <WidgetSidebar
+        widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
+        tasks={tasks}
+        milestones={milestones}
+        userId={user.id}
+        onMoveTask={handleMoveTask}
+      />
     </aside>
   );
 }
