@@ -230,6 +230,7 @@ export function analyzeSkillGapsForRole(
   currentSkills: string[],
   technicalSkills: Record<string, string>,
   softSkills: Record<string, string>,
+  biggestGap?: string,
 ): {
   skillGaps: Array<SkillGap & { currentLevel: string; targetLevel: string }>;
   summary: string;
@@ -264,9 +265,26 @@ export function analyzeSkillGapsForRole(
 
   const highPriority = gaps.find(g => g.importance === "high");
 
+  // If user described their biggest gap, prioritize it in the analysis
+  if (biggestGap && biggestGap.trim()) {
+    const userGapLower = biggestGap.trim().toLowerCase();
+    // Boost any matching gap to the top
+    const matchIdx = gaps.findIndex(g =>
+      g.skill.toLowerCase().includes(userGapLower) || userGapLower.includes(g.skill.toLowerCase())
+    );
+    if (matchIdx > 0) {
+      const [matched] = gaps.splice(matchIdx, 1);
+      gaps.unshift(matched);
+    }
+  }
+
+  const selfIdentifiedNote = biggestGap?.trim()
+    ? ` You mentioned "${biggestGap.trim()}" as a key challenge — we've factored that into your priorities.`
+    : "";
+
   return {
     skillGaps: gaps,
-    summary: `Based on your current skills, you have a solid foundation for ${profile.title}. Focus on closing ${gaps.length} key skill gaps to become competitive. Your strongest area is your existing experience, and your biggest growth opportunity is in ${highPriority?.skill || "technical depth"}.`,
+    summary: `Based on your current skills, you have a solid foundation for ${profile.title}. Focus on closing ${gaps.length} key skill gaps to become competitive. Your strongest area is your existing experience, and your biggest growth opportunity is in ${highPriority?.skill || "technical depth"}.${selfIdentifiedNote}`,
     topPriority: highPriority?.skill || gaps[0]?.skill || "Industry-specific knowledge",
   };
 }

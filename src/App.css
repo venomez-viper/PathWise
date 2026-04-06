@@ -338,7 +338,7 @@
 .saas-layout {
   display: flex;
   min-height: 100vh;
-  background: var(--surface); /* Zen Stone teal-tinted #eefcfe */
+  background: var(--surface);
 }
 
 .saas-main {

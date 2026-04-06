@@ -53,6 +53,8 @@ export default function Roadmap() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium', category: 'learning' });
   const [savingTask, setSavingTask] = useState(false);
+  const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   async function loadData(userId: string, silent = false) {
     if (!silent) setLoading(true);
@@ -98,14 +100,15 @@ export default function Roadmap() {
     finally { setCompleting(null); }
   }
 
-  async function handleAddCustomTask() {
-    if (!user || !newTask.title.trim() || !activeMilestone) return;
+  async function handleAddCustomTask(milestones: any[]) {
+    const targetMilestoneId = selectedMilestoneId || milestones.find((m: any) => m.status === 'in_progress')?.id || milestones[0]?.id;
+    if (!user || !newTask.title.trim() || !targetMilestoneId) return;
     setSavingTask(true);
-    setActionError(null);
+    setModalError(null);
     try {
       await tasksApi.create({
         userId: user.id,
-        milestoneId: activeMilestone.id,
+        milestoneId: targetMilestoneId,
         title: newTask.title.trim(),
         description: newTask.description.trim() || undefined,
         priority: newTask.priority,
@@ -113,9 +116,11 @@ export default function Roadmap() {
       });
       await loadData(user.id, true);
       setNewTask({ title: '', description: '', priority: 'medium', category: 'learning' });
+      setSelectedMilestoneId(null);
+      setModalError(null);
       setShowAddTask(false);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to add task.');
+      setModalError(err instanceof Error ? err.message : 'Failed to add task.');
     } finally { setSavingTask(false); }
   }
 
@@ -192,8 +197,8 @@ export default function Roadmap() {
               <Link to="/app/onboarding" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: '#8b4f2c', color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>
                 ✏️ Adjust Timeline
               </Link>
-              <button onClick={() => setShowAddTask(true)} disabled={!activeMilestone}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontSize: '0.78rem', fontWeight: 600, border: 'none', cursor: activeMilestone ? 'pointer' : 'default', opacity: activeMilestone ? 1 : 0.5 }}>
+              <button onClick={() => { setSelectedMilestoneId(activeMilestone?.id || null); setModalError(null); setShowAddTask(true); }} disabled={milestones.length === 0}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontSize: '0.78rem', fontWeight: 600, border: 'none', cursor: milestones.length > 0 ? 'pointer' : 'default', opacity: milestones.length > 0 ? 1 : 0.5 }}>
                 <Plus size={14} /> Add Custom Task
               </button>
             </div>
@@ -395,13 +400,27 @@ export default function Roadmap() {
               </button>
             </div>
 
-            {activeMilestone && (
-              <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>
-                Adding to: <strong style={{ color: 'var(--on-surface)' }}>{activeMilestone.title}</strong>
-              </p>
+            {modalError && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 0.9rem', background: 'rgba(239,68,68,0.06)', borderRadius: 'var(--radius-sm)', marginBottom: '0.75rem', color: '#ef4444', fontSize: '0.8rem' }}>
+                <AlertCircle size={14} />{modalError}
+              </div>
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Milestone selector */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-muted)', marginBottom: 4 }}>Milestone</label>
+                <select
+                  value={selectedMilestoneId || milestones.find((m: any) => m.status === 'in_progress')?.id || milestones[0]?.id || ''}
+                  onChange={e => setSelectedMilestoneId(e.target.value)}
+                  style={{ width: '100%', padding: '0.6rem 0.9rem', border: '1.5px solid var(--outline-variant)', borderRadius: 'var(--radius-sm)', background: 'var(--surface-lumina)', color: 'var(--on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
+                >
+                  {milestones.map((m: any) => (
+                    <option key={m.id} value={m.id}>{m.title}{m.status === 'in_progress' ? ' (Active)' : m.status === 'completed' ? ' (Done)' : ''}</option>
+                  ))}
+                </select>
+              </div>
+
               {/* Title */}
               <div>
                 <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--on-surface-muted)', marginBottom: 4 }}>Task Title</label>
@@ -459,7 +478,7 @@ export default function Roadmap() {
               {/* Actions */}
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
                 <button
-                  onClick={handleAddCustomTask}
+                  onClick={() => handleAddCustomTask(milestones)}
                   disabled={savingTask || !newTask.title.trim()}
                   style={{
                     flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)',

@@ -274,6 +274,7 @@ export const analyzeSkillGaps = api(
       currentSkills,
       params.technicalSkills,
       params.softSkills,
+      params.biggestGap,
     );
 
     return { result };
