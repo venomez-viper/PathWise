@@ -8,6 +8,9 @@
 import type { CareerProfile, SkillGapEntry, CertEntry, RecEntry, MilestoneEntry } from "./career-profiles";
 import { CAREER_PROFILES_PART1 } from "./career-profiles";
 import { CAREER_PROFILES_PART2 } from "./career-profiles-2";
+import { getExperienceModifier, routeResourcesByStyle } from "./experience-modifiers";
+import { matchGapPattern, getStageModifier } from "./gap-patterns";
+import { evaluateRules, applyRuleOverlays, type RuleContext } from "./combination-rules";
 
 const ALL_PROFILES: CareerProfile[] = [...CAREER_PROFILES_PART1, ...CAREER_PROFILES_PART2];
 
@@ -224,51 +227,115 @@ export function getCareerRecsForRole(targetRole: string): {
   };
 }
 
-/** Get skill gap analysis for a target role given current skills */
+/** Extended context for the enhanced skill gap analysis */
+export interface SkillGapContext {
+  targetRole: string;
+  currentSkills: string[];
+  technicalSkills: Record<string, string>;
+  softSkills: Record<string, string>;
+  biggestGap?: string;
+  yearsExperience?: string;
+  experienceLevel?: string;
+  learningStyle?: string[];
+  careerStage?: string;
+  riskTolerance?: string;
+  workStyle?: string;
+  trajectory?: string;
+  values?: string[];
+  domains?: string[];
+}
+
+/** Enhanced skill gap result with modifier-driven advice */
+export interface EnhancedSkillGapResult {
+  skillGaps: Array<SkillGap & { currentLevel: string; targetLevel: string; resources?: Array<{ style: string; name: string; url: string; duration: string; cost: string }> }>;
+  summary: string;
+  topPriority: string;
+  gapAdvice?: { category: string; adviceSnippet: string; actionItems: string[] };
+  experienceTier?: string;
+  matchedRules?: string[];
+}
+
+/** Get skill gap analysis for a target role — enhanced with modifier layers */
 export function analyzeSkillGapsForRole(
   targetRole: string,
   currentSkills: string[],
   technicalSkills: Record<string, string>,
   softSkills: Record<string, string>,
   biggestGap?: string,
-): {
-  skillGaps: Array<SkillGap & { currentLevel: string; targetLevel: string }>;
-  summary: string;
-  topPriority: string;
-} {
+  context?: Partial<SkillGapContext>,
+): EnhancedSkillGapResult {
   const profile = findProfileByTitle(targetRole);
   const userSkillsLower = new Set(currentSkills.map(s => s.toLowerCase()));
 
+  // ── Layer 1: Experience modifier ──
+  const expMod = getExperienceModifier(
+    context?.experienceLevel || "junior",
+    context?.yearsExperience,
+  );
+
+  // ── Layer 2: Gap pattern matching ──
+  const gapMatch = biggestGap ? matchGapPattern(biggestGap) : null;
+
+  // ── Layer 3: Career stage modifier ──
+  const stageMod = getStageModifier(
+    context?.careerStage || "building",
+    context?.riskTolerance || "moderate",
+  );
+
   if (!profile) {
+    const fallbackSummary = `${expMod.summaryPrefix} To transition into ${targetRole}, focus on building core competencies through structured learning paths.`;
     return {
       skillGaps: [
         { skill: "Core Technical Skills", importance: "high", learningResource: "Coursera Professional Certificate", currentLevel: "beginner", targetLevel: "intermediate" },
         { skill: "Industry Knowledge", importance: "high", learningResource: "LinkedIn Learning", currentLevel: "beginner", targetLevel: "intermediate" },
       ],
-      summary: `To transition into ${targetRole}, focus on building core competencies through structured learning paths.`,
+      summary: fallbackSummary,
       topPriority: "Core technical skills for your target role",
+      experienceTier: expMod.resourceTier,
     };
   }
 
+  // ── Base skill gaps from profile ──
   const gaps = profile.skillGaps
     .filter(g => !userSkillsLower.has(g.skill.toLowerCase()))
     .map(g => {
       const techLevel = technicalSkills[g.skill] || "none";
       const softLevel = softSkills[g.skill] || "none";
       const currentLevel = techLevel !== "none" ? techLevel : softLevel !== "none" ? softLevel : "beginner";
+      // Adjust target level based on experience tier
+      let targetLevel = g.importance === "high" ? "advanced" : "intermediate";
+      if (expMod.resourceTier === "foundational" && targetLevel === "advanced") {
+        targetLevel = "intermediate"; // Don't overwhelm beginners
+      }
+      // Route learning resources by preferred style
+      const preferredStyles = context?.learningStyle || [];
+      const styledResources = preferredStyles.length > 0
+        ? routeResourcesByStyle(g.skill, preferredStyles)
+        : undefined;
       return {
         ...g,
         currentLevel,
-        targetLevel: g.importance === "high" ? "advanced" : "intermediate",
+        targetLevel,
+        // Override learningResource with best-match styled resource
+        learningResource: styledResources?.[0]?.name || g.learningResource,
+        resources: styledResources,
       };
     });
 
-  const highPriority = gaps.find(g => g.importance === "high");
-
-  // If user described their biggest gap, prioritize it in the analysis
-  if (biggestGap && biggestGap.trim()) {
+  // ── Gap pattern boost: reorder based on user's self-identified gap ──
+  if (gapMatch) {
+    for (const boostSkill of gapMatch.priorityBoost) {
+      const boostLower = boostSkill.toLowerCase();
+      const idx = gaps.findIndex(g => g.skill.toLowerCase().includes(boostLower));
+      if (idx > 0) {
+        const [matched] = gaps.splice(idx, 1);
+        gaps.unshift(matched);
+      }
+    }
+  }
+  // Also do direct text matching on biggestGap
+  if (biggestGap?.trim()) {
     const userGapLower = biggestGap.trim().toLowerCase();
-    // Boost any matching gap to the top
     const matchIdx = gaps.findIndex(g =>
       g.skill.toLowerCase().includes(userGapLower) || userGapLower.includes(g.skill.toLowerCase())
     );
@@ -278,14 +345,78 @@ export function analyzeSkillGapsForRole(
     }
   }
 
-  const selfIdentifiedNote = biggestGap?.trim()
-    ? ` You mentioned "${biggestGap.trim()}" as a key challenge — we've factored that into your priorities.`
-    : "";
+  // ── Stage modifier: boost/suppress skill categories ──
+  for (const boost of stageMod.priorityShift) {
+    const idx = gaps.findIndex(g => g.skill.toLowerCase().includes(boost.toLowerCase()));
+    if (idx > 1) { // Move up but not past position 0 (gap-pattern has priority)
+      const [matched] = gaps.splice(idx, 1);
+      gaps.splice(1, 0, matched);
+    }
+  }
+
+  // ── Layer 4: Combination rules ──
+  const ruleContext: RuleContext = {
+    experienceLevel: context?.experienceLevel || "junior",
+    careerStage: context?.careerStage || "building",
+    workStyle: context?.workStyle || "mixed",
+    riskTolerance: context?.riskTolerance || "moderate",
+    trajectory: context?.trajectory || "generalist",
+    values: context?.values || [],
+    technicalSkills,
+    softSkills,
+    domains: context?.domains || [],
+    learningStyle: context?.learningStyle || [],
+  };
+  const matchedRules = evaluateRules(ruleContext);
+
+  // Apply rule overlays to gaps (boost/suppress importance)
+  const overlayResult = applyRuleOverlays(
+    matchedRules,
+    "", // We'll build summary separately
+    gaps,
+    [], // milestones handled elsewhere
+  );
+
+  // ── Build summary from all layers ──
+  const highPriority = gaps.find(g => g.importance === "high");
+  const gapCount = gaps.length;
+
+  // Start with experience-appropriate prefix
+  let summary = expMod.summaryPrefix + " ";
+
+  // Use stage modifier template if available, else build default
+  if (stageMod.summaryTemplate) {
+    summary += stageMod.summaryTemplate
+      .replace("{role}", profile.title)
+      .replace("{gaps}", String(gapCount))
+      .replace("{topSkill}", highPriority?.skill || "technical depth");
+  } else {
+    summary += `Focus on closing ${gapCount} key skill gaps to become competitive for ${profile.title}.`;
+  }
+
+  // Add gap-specific advice
+  if (gapMatch) {
+    summary += " " + gapMatch.adviceSnippet;
+  }
+
+  // Add combination rule advice (top 2 rules max)
+  for (const rule of matchedRules.slice(0, 2)) {
+    if (rule.additionalAdvice) {
+      summary += " " + rule.additionalAdvice;
+    }
+  }
 
   return {
-    skillGaps: gaps,
-    summary: `Based on your current skills, you have a solid foundation for ${profile.title}. Focus on closing ${gaps.length} key skill gaps to become competitive. Your strongest area is your existing experience, and your biggest growth opportunity is in ${highPriority?.skill || "technical depth"}.${selfIdentifiedNote}`,
+    skillGaps: overlayResult.gaps as any,
+    summary,
     topPriority: highPriority?.skill || gaps[0]?.skill || "Industry-specific knowledge",
+    gapAdvice: gapMatch ? {
+      category: gapMatch.category,
+      adviceSnippet: gapMatch.adviceSnippet,
+      actionItems: gapMatch.actionItems,
+    } : undefined,
+    experienceTier: expMod.resourceTier,
+    matchedRules: matchedRules.slice(0, 5).map(r => r.name),
   };
 }
 

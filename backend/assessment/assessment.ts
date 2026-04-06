@@ -253,11 +253,18 @@ interface SkillGapItem {
   targetLevel: string;
 }
 
-// POST /assessment/skill-gap-analysis — Local skill gap analysis from career brain
+// POST /assessment/skill-gap-analysis — Enhanced skill gap analysis with modifier layers
 export const analyzeSkillGaps = api(
   { expose: true, method: "POST", path: "/assessment/skill-gap-analysis", auth: true },
   async (params: SkillGapAssessmentParams): Promise<{
-    result: { skillGaps: SkillGapItem[]; summary: string; topPriority: string };
+    result: {
+      skillGaps: SkillGapItem[];
+      summary: string;
+      topPriority: string;
+      gapAdvice?: { category: string; adviceSnippet: string; actionItems: string[] };
+      experienceTier?: string;
+      matchedRules?: string[];
+    };
   }> => {
     const currentSkills = [
       ...params.tools,
@@ -275,6 +282,15 @@ export const analyzeSkillGaps = api(
       params.technicalSkills,
       params.softSkills,
       params.biggestGap,
+      {
+        targetRole: params.targetRole,
+        currentSkills,
+        technicalSkills: params.technicalSkills,
+        softSkills: params.softSkills,
+        biggestGap: params.biggestGap,
+        yearsExperience: params.yearsExperience,
+        learningStyle: params.learningStyle,
+      },
     );
 
     return { result };
