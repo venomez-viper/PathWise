@@ -486,6 +486,40 @@
 }
 
 /* ─────────────────────────────────────────────
+   Board + Sidebar Wrapper
+───────────────────────────────────────────── */
+.tasks-board-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.tasks-board-wrapper > .kanban-board {
+  flex: 1;
+  min-width: 0;
+}
+
+.tasks-board-wrapper > .tasks-layout {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Widget sidebar */
+.tasks-widget-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 320px;
+  flex-shrink: 0;
+}
+
+/* Pulsing dot for active milestone */
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(139,79,44,0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(139,79,44,0.08); }
+}
+
+/* ─────────────────────────────────────────────
    RESPONSIVE — Kanban
 ───────────────────────────────────────────── */
 @media (max-width: 900px) {
@@ -502,6 +536,16 @@
 
   .kanban-col__body {
     max-height: calc(100vh - 300px);
+  }
+}
+
+@media (max-width: 768px) {
+  .tasks-board-wrapper {
+    flex-direction: column;
+  }
+
+  .tasks-widget-sidebar {
+    width: 100%;
   }
 }
 
