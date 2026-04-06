@@ -75,15 +75,17 @@ function AppLayout() {
   return (
     <div className="saas-layout">
       <Sidebar user={user} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className="saas-main">
-        <button
-          className="sidebar-hamburger"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu size={22} />
-        </button>
-        <Outlet />
+      <main className="saas-main" style={{ display: 'flex' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <button
+            className="sidebar-hamburger"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+          <Outlet />
+        </div>
         <AppWidgetPanel />
       </main>
     </div>

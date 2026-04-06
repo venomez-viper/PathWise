@@ -81,7 +81,7 @@
 
 .kanban-col {
   flex: 1;
-  min-width: 280px;
+  min-width: 220px;
   display: flex;
   flex-direction: column;
   background: var(--surface-container-low);
