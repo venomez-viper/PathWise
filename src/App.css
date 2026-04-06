@@ -1123,47 +1123,16 @@
    Fixed in the empty space to the right of page content.
 ───────────────────────────────────────────── */
 /* ─────────────────────────────────────────────
-   Ensure page content doesn't overlap widget gutter
+   APP WIDGET PANEL — flex sibling to page content
+   Sits naturally to the right in the flex layout.
 ───────────────────────────────────────────── */
-@media (min-width: 1401px) {
-  .saas-main {
-    padding-right: 310px; /* reserve space for widget panel */
-  }
-}
-
 .app-widget-panel {
-  position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
-  width: 270px;
-  height: calc(100vh - 3rem);
-  z-index: 10;
-  pointer-events: none;
+  width: 280px;
+  flex-shrink: 0;
+  padding: 1.5rem 1.5rem 1.5rem 0;
   box-sizing: border-box;
 }
 
-.app-widget-panel__inner {
-  pointer-events: auto;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.06) transparent;
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.app-widget-panel__inner::-webkit-scrollbar {
-  width: 3px;
-}
-.app-widget-panel__inner::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.05);
-  border-radius: 2px;
-}
-
-/* Hide on screens too narrow for the gutter */
 @media (max-width: 1400px) {
   .app-widget-panel {
     display: none;

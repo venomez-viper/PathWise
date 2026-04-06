@@ -1,7 +1,6 @@
 /**
- * App-level Widget Panel — fixed right gutter sidebar
- * Fetches its own data and renders widgets in the empty space
- * to the right of the main content area.
+ * App-level Widget Panel — sits in the right gutter via flex layout
+ * Fetches its own data and renders widgets.
  *
  * Shown on: Roadmap, Tasks, Progress, Streaks, Achievements, Certificates, Search, Help
  * Hidden on: Dashboard, Assessment, Settings, Onboarding, SkillGapAssessment
@@ -22,11 +21,6 @@ const HIDDEN_ROUTES = new Set([
   '/app/onboarding',
 ]);
 
-/**
- * Layout: left sidebar = 220px, page content max-width = ~900px with padding.
- * The widget panel sits fixed on the right side of the viewport,
- * in the empty gutter space. It only shows when viewport is wide enough (>1400px).
- */
 export default function AppWidgetPanel() {
   const { user } = useAuth();
   const location = useLocation();
@@ -54,7 +48,6 @@ export default function AppWidgetPanel() {
     loadData();
   }, [loadData]);
 
-  // Re-fetch when navigating to a new page
   useEffect(() => {
     if (loaded) loadData();
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -62,8 +55,6 @@ export default function AppWidgetPanel() {
   // Check if we should show the panel on this route
   const currentPath = location.pathname.replace(/\/$/, '') || '/app';
   if (HIDDEN_ROUTES.has(currentPath)) return null;
-
-  // Don't render until we have a user
   if (!user || !loaded) return null;
 
   const handleMoveTask = async (task: Task, newStatus: Task['status']) => {
@@ -77,7 +68,16 @@ export default function AppWidgetPanel() {
 
   return (
     <aside className="app-widget-panel">
-      <div className="app-widget-panel__inner">
+      <div style={{
+        position: 'sticky',
+        top: '1rem',
+        maxHeight: 'calc(100vh - 2rem)',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        padding: '0.5rem',
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(0,0,0,0.06) transparent',
+      }}>
         <WidgetSidebar
           widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
           tasks={tasks}

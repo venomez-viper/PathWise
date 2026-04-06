@@ -94,3 +94,29 @@ To get the project running locally:
 - **Skill Gap Assessment**: New dedicated page with full AI-driven assessment flow.
 - **AI Task Generation**: Custom task creation using free-text prompts on the Tasks page.
 - **Tailwind v4**: Upgraded to the latest Tailwind CSS import syntax for better build performance.
+
+### **v0.6.0** — UI Retheme & Achievements System
+*Date: April 2-5, 2026*
+- **Theme Overhaul**: Rethemed Onboarding, Streaks, Certificates pages from dark purple to the Zen Stone light theme with copper/teal accents.
+- **Achievements Page**: Premium Apple Fitness-inspired badge design with SVG ring progress, earned/locked states, XP system, and season progress.
+- **Auto-Award System**: Backend automatically awards achievements on assessment completion, roadmap generation, and task milestones.
+- **iOS App Spec**: Complete design spec and implementation plan for native Swift/SwiftUI iOS app (22 tasks, 86 files).
+
+### **v0.7.0** — Expert System Career Brain
+*Date: April 6, 2026*
+- **4-Layer Modifier System**: Replaced static one-size-fits-all career profile responses with a pre-computed expert system:
+  1. **Experience Modifiers** — 5 tiers (student→expert) with tier-specific advice, timeline scaling, and focus areas
+  2. **Gap Pattern Database** — 30 keyword-matched patterns detecting common career challenges from free-text `biggestGap` input
+  3. **Career Stage Modifiers** — 12 stage×risk combinations with framing, summary templates, and priority shifts
+  4. **Combination Rules Engine** — 25 persona rules (Career Changer, Ambitious Student, Technical Leader, etc.) detecting high-signal answer combinations
+  5. **Learning Style Router** — 24 skills × 3-5 resources each across video/book/project/bootcamp/mentorship formats
+- **biggestGap Integration**: Assessment free-text field now feeds into the career brain analysis, reordering skill gaps and personalizing summaries.
+- **Custom Task Modal Fix**: Milestone picker dropdown, in-modal error display, works regardless of milestone status.
+
+### **v0.8.0** — Interactive Widget System & Panda Mascots
+*Date: April 6, 2026*
+- **8 Interactive Widgets**: Daily Focus, Quick Start, Skill Progress, Streak, Milestone Mini-Map, Motivational Quotes, Resource of the Day, Weekly Overview bar chart.
+- **Reusable Widget Components**: Extracted into `src/components/widgets/` with configurable `WidgetSidebar` — each page picks which widgets to display.
+- **App-Level Widget Panel**: Fixed-position right gutter sidebar that self-fetches data. Shows on Roadmap, Tasks, Progress, Streaks, Achievements, Certificates, Search, Help. Hidden on Dashboard, Assessment, Settings, Onboarding.
+- **Panda Mascot System**: 12 cute panda characters (Gemini-generated art) placed contextually across the app — empty states, loading screens, success moments, help sections. CSS sprite sheet technique with mood-based selection (happy, thinking, sleepy, curious, celebrating, confused, waving, reading, working).
+- **Zen Stone Colors Restored**: Surface hierarchy matches Stitch desktop mockups (`#eefcfe` teal-tinted background).
