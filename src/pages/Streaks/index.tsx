@@ -51,10 +51,17 @@ export default function Streaks() {
             <p className="streaks__count">{data?.currentStreak ?? 0}-day streak</p>
             <p className="streaks__best">Personal best: {data?.bestStreak ?? 0} days</p>
           </div>
-          {data?.currentStreak > 0
-            ? <Panda mood="celebrating" size={130} animate />
-            : <Panda mood="sleepy" size={130} animate />
-          }
+          <Panda
+            mood={
+              (data?.currentStreak ?? 0) >= 14 ? 'cool' :
+              (data?.currentStreak ?? 0) >= 7 ? 'celebrating' :
+              (data?.currentStreak ?? 0) >= 3 ? 'happy' :
+              (data?.currentStreak ?? 0) >= 1 ? 'loving' :
+              'sleepy'
+            }
+            size={130}
+            animate
+          />
         </div>
 
         {/* Weekly Progress */}

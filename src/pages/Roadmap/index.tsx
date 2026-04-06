@@ -3,7 +3,7 @@ import { Loader2, AlertCircle, Lock, CheckCircle2, Sparkles, ArrowRight, BookOpe
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
-import { PandaSpot } from '../../components/panda';
+import { Panda, PandaSpot } from '../../components/panda';
 
 type Task = { id: string; title: string; status: string; milestoneId?: string; category?: string; priority?: string; description?: string };
 
@@ -149,7 +149,7 @@ export default function Roadmap() {
   const completedCount = milestones.filter((m) => m.status === 'completed').length;
   const totalCount = milestones.length;
   const activeMilestone = milestones.find((m) => m.status === 'in_progress');
-  const isFullyComplete = completionPct === 100;
+
 
   // Collect all tasks across milestones, grouped by category
   const allTasks: Task[] = Object.values(milestoneTaskMap).flat();
@@ -206,19 +206,21 @@ export default function Roadmap() {
               </button>
             </div>
           </div>
-          {/* Progress ring */}
-          <div style={{ position: 'relative', width: RS, height: RS, flexShrink: 0 }}>
-            <svg width={RS} height={RS} viewBox={`0 0 ${RS} ${RS}`}>
-              <circle cx={RS/2} cy={RS/2} r={RR} fill="none" stroke="var(--surface-container)" strokeWidth={5} />
-              <circle cx={RS/2} cy={RS/2} r={RR} fill="none" stroke="#8b4f2c" strokeWidth={5}
-                strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={mounted ? RC*(1-completionPct/100) : RC}
-                style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 1s ease' }} />
-            </svg>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: '0.95rem', fontWeight: 800, color: 'var(--on-surface)' }}>
-              {completionPct}%
+          {/* Progress ring + panda */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{ position: 'relative', width: RS, height: RS }}>
+              <svg width={RS} height={RS} viewBox={`0 0 ${RS} ${RS}`}>
+                <circle cx={RS/2} cy={RS/2} r={RR} fill="none" stroke="var(--surface-container)" strokeWidth={5} />
+                <circle cx={RS/2} cy={RS/2} r={RR} fill="none" stroke="#8b4f2c" strokeWidth={5}
+                  strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={mounted ? RC*(1-completionPct/100) : RC}
+                  style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 1s ease' }} />
+              </svg>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: '0.95rem', fontWeight: 800, color: 'var(--on-surface)' }}>
+                {completionPct}%
+              </div>
             </div>
+            <Panda mood={completionPct >= 100 ? 'celebrating' : completionPct > 50 ? 'happy' : completionPct > 0 ? 'working' : 'thinking'} size={80} />
           </div>
-          {isFullyComplete && <PandaSpot context="success" position="inline" size={80} animate />}
         </div>
       </div>
 
