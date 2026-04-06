@@ -1,6 +1,7 @@
 import { NavLink, Link } from 'react-router-dom';
 import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Flame, Award, FileText, HelpCircle, Search } from 'lucide-react';
 import Logo from './ui/Logo';
+import { Panda } from './panda';
 import { tokenStore } from '../lib/api';
 import './Sidebar.css';
 
@@ -65,6 +66,10 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
           </div>
         </Link>
       )}
+
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '0.5rem 0' }}>
+        <Panda mood="happy" size={60} animate />
+      </div>
 
       <div className="sidebar__footer">
         {user.avatarUrl ? (

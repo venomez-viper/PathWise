@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi, roadmap as roadmapApi, streaks as streaksApi } from '../../lib/api';
 import TaskCelebration from '../../components/TaskCelebration';
-import { PandaSpot } from '../../components/panda';
+import { Panda, PandaSpot } from '../../components/panda';
 import './Tasks.css';
 
 /* ── Types ── */
@@ -267,6 +267,7 @@ export default function Tasks() {
         </div>
         <div className="panel">
           <div className="tasks-empty">
+            <Panda mood="sleepy" size={140} animate />
             <div className="tasks-empty__icon">
               <ClipboardList size={28} />
             </div>

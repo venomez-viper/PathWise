@@ -3,7 +3,7 @@ import { Flame, TrendingUp, Zap, Clock, Loader2, CheckCircle2 } from 'lucide-rea
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { streaks as streaksApi } from '../../lib/api';
-import { PandaSpot } from '../../components/panda';
+import { Panda } from '../../components/panda';
 import './Streaks.css';
 
 export default function Streaks() {
@@ -24,7 +24,7 @@ export default function Streaks() {
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-      <PandaSpot context="loading" position="inline" size={90} animate />
+      <Panda mood="thinking" size={130} animate />
       <Loader2 size={22} color="var(--secondary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
@@ -51,13 +51,10 @@ export default function Streaks() {
             <p className="streaks__count">{data?.currentStreak ?? 0}-day streak</p>
             <p className="streaks__best">Personal best: {data?.bestStreak ?? 0} days</p>
           </div>
-          <PandaSpot
-            context={data?.currentStreak > 0 ? 'achievement' : 'idle'}
-            position="inline"
-            size={70}
-            opacity={0.65}
-            animate
-          />
+          {data?.currentStreak > 0
+            ? <Panda mood="celebrating" size={130} animate />
+            : <Panda mood="sleepy" size={130} animate />
+          }
         </div>
 
         {/* Weekly Progress */}

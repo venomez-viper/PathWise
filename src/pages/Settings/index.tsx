@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell, Check, ChevronRight } from 'lucide-react';
+import { Panda } from '../../components/panda';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { tokenStore, auth as authApi, roadmap as roadmapApi } from '../../lib/api';
@@ -57,7 +58,10 @@ export default function SettingsPage() {
     <div className="page">
       {/* ── Header row with top-bar style ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 className="page-title">Settings</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <h1 className="page-title">Settings</h1>
+          <Panda mood="cool" size={120} animate />
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Bell size={18} color="var(--on-surface-variant)" />
           <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--primary-container))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: '0.7rem' }}>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Award, Plus, ExternalLink, Share2, Loader2 } from 'lucide-react';
+import { Panda } from '../../components/panda';
 import { useAuth } from '../../lib/auth-context';
 import { certificates as certApi } from '../../lib/api';
 import './Certificates.css';
@@ -36,7 +37,8 @@ export default function Certificates() {
   };
 
   if (loading) return (
-    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
+    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 16 }}>
+      <Panda mood="thinking" size={120} animate />
       <Loader2 size={28} color="var(--secondary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
@@ -74,11 +76,15 @@ export default function Certificates() {
       {/* Certificate list */}
       {certs.length === 0 && !adding ? (
         <div className="certs__empty">
+          <Panda mood="curious" size={130} animate />
           <Award size={32} color="var(--on-surface-variant)" className="certs__empty-icon" />
           <p className="certs__empty-text">No certificates yet. Add your first one!</p>
         </div>
       ) : (
         <div className="certs__list">
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <Panda mood="celebrating" size={120} animate />
+          </div>
           {certs.map(c => (
             <div key={c.id} className="certs__card">
               <div className="certs__issuer-badge">

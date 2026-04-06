@@ -3,6 +3,7 @@ import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2 } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
+import { Panda } from '../../components/panda';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -106,6 +107,7 @@ export default function Dashboard() {
             background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 600, fontSize: '0.82rem',
           }}>Update Goals</Link>
         </div>
+        <Panda mood="waving" size={130} style={{ position: 'absolute', bottom: -10, right: 24, opacity: 0.95 }} animate />
       </div>
 
       {/* ── MAIN GRID — Progress + Career Matches ── */}
