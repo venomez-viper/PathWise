@@ -24,7 +24,7 @@ export default function Streaks() {
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-      <PandaSpot context="loading" position="inline" size={44} animate />
+      <PandaSpot context="loading" position="inline" size={90} animate />
       <Loader2 size={22} color="var(--secondary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
@@ -54,7 +54,7 @@ export default function Streaks() {
           <PandaSpot
             context={data?.currentStreak > 0 ? 'achievement' : 'idle'}
             position="inline"
-            size={36}
+            size={70}
             opacity={0.65}
             animate
           />

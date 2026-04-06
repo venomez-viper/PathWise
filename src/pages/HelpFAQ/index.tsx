@@ -50,7 +50,7 @@ export default function HelpFAQ() {
     <div className="page" style={{ maxWidth: 640 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <h1 className="page-title">Help & FAQ</h1>
-        <PandaSpot context="welcome" position="inline" size={36} opacity={0.7} />
+        <PandaSpot context="welcome" position="inline" size={70} opacity={0.7} />
       </div>
       <p className="page-subtitle">Search for articles or browse categories below.</p>
 

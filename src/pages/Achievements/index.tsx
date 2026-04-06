@@ -217,7 +217,7 @@ export default function Achievements() {
   if (loading) {
     return (
       <div className="page achievements__loading" style={{ flexDirection: 'column', gap: 12 }}>
-        <PandaSpot context="loading" position="inline" size={44} animate />
+        <PandaSpot context="loading" position="inline" size={90} animate />
         <Loader2 size={22} color="#006a62" className="achievements__spinner" />
       </div>
     );
@@ -299,7 +299,7 @@ export default function Achievements() {
                   <p className="achievements__badge-date">
                     Earned {formatEarnedDate(a.earnedAt)}
                   </p>
-                  <PandaSpot context="achievement" position="inline" size={20} opacity={0.6} />
+                  <PandaSpot context="achievement" position="inline" size={50} opacity={0.6} />
                 </div>
               ) : (
                 <>

@@ -127,7 +127,7 @@ export default function Roadmap() {
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-      <PandaSpot context="loading" position="inline" size={44} animate />
+      <PandaSpot context="loading" position="inline" size={90} animate />
       <Loader2 size={22} color="#8b4f2c" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
@@ -218,7 +218,7 @@ export default function Roadmap() {
               {completionPct}%
             </div>
           </div>
-          {isFullyComplete && <PandaSpot context="success" position="inline" size={40} animate />}
+          {isFullyComplete && <PandaSpot context="success" position="inline" size={80} animate />}
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import Panda from './Panda';
-import type { PandaProps } from './Panda';
+import type { PandaMood } from './Panda';
 
 interface PandaSpotProps {
   context: 'empty-state' | 'loading' | 'success' | 'error' | 'welcome' | 'tip' | 'achievement' | 'idle' | 'progress';
@@ -10,7 +10,7 @@ interface PandaSpotProps {
   animate?: boolean;
 }
 
-const CONTEXT_MOOD: Record<PandaSpotProps['context'], PandaProps['mood']> = {
+const CONTEXT_MOOD: Record<PandaSpotProps['context'], PandaMood> = {
   'empty-state': 'sleepy',
   loading: 'thinking',
   success: 'celebrating',
@@ -27,11 +27,11 @@ export default function PandaSpot({
   position = 'inline',
   opacity,
   message,
-  size = 48,
+  size = 100,
   animate = false,
 }: PandaSpotProps) {
   const mood = CONTEXT_MOOD[context];
-  const resolvedOpacity = opacity ?? (position === 'inline' ? 1 : 0.8);
+  const resolvedOpacity = opacity ?? (position === 'inline' ? 1 : 0.85);
 
   return (
     <span

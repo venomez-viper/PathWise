@@ -548,7 +548,7 @@ export default function Tasks() {
 
                     {colTasks.length === 0 && !(col.key === 'todo' && addingTask) && (
                       <div className="kanban-col__empty">
-                        <PandaSpot context="idle" position="inline" size={36} opacity={0.5} />
+                        <PandaSpot context="idle" position="inline" size={70} opacity={0.5} />
                         {col.key === 'todo' && 'No pending tasks'}
                         {col.key === 'in_progress' && 'Nothing in progress'}
                         {col.key === 'done' && 'No completed tasks'}
