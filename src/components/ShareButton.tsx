@@ -59,7 +59,7 @@ export default function ShareButton({ url, title, text, variant = 'secondary' }:
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-flex' }}>
       <button
-        onClick={() => (navigator.share ? shareNative() : setOpen(o => !o))}
+        onClick={() => ('share' in navigator ? shareNative() : setOpen(o => !o))}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           padding: isPrimary ? '0.7rem 1.25rem' : '0.5rem 1rem',
