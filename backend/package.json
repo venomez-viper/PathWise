@@ -6,7 +6,8 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "encore.dev": "^1.56.3",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "resend": "^6.10.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
