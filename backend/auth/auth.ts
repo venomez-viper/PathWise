@@ -111,6 +111,13 @@ export const signin = api(
       FROM users WHERE email = ${params.email}
     `;
 
+    // OAuth-only user (no password set) — guide them to use social login
+    if (row && !row.password_hash) {
+      throw APIError.unauthenticated(
+        "This account uses Google or Apple sign-in. Please use that method, or set a password in Settings."
+      );
+    }
+
     // Use constant-time comparison to avoid timing attacks
     const dummyHash = "$2a$12$invalidhashfortimingprotection000000000000000000000000";
     const hashToCheck = row?.password_hash ?? dummyHash;
@@ -213,7 +220,7 @@ export const updateProfile = api(
 // ── Change Password ───────────────────────────────────────────────────────────
 
 export interface ChangePasswordParams {
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
 }
 
@@ -230,6 +237,18 @@ export const changePassword = api(
       SELECT password_hash FROM users WHERE id = ${userID}
     `;
     if (!row) throw APIError.notFound("user not found");
+
+    // OAuth-only user setting their first password
+    if (!row.password_hash) {
+      const newHash = await bcrypt.hash(params.newPassword, 12);
+      await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${userID}`;
+      return { success: true };
+    }
+
+    // Existing password user — verify current password
+    if (!params.currentPassword) {
+      throw APIError.invalidArgument("current password is required");
+    }
 
     const match = await bcrypt.compare(params.currentPassword, row.password_hash);
     if (!match) throw APIError.unauthenticated("current password is incorrect");
