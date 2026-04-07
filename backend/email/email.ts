@@ -65,6 +65,7 @@ function layout(content: string): string {
                   <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #9ca3af; line-height: 1.6;">
                     <p style="margin: 0;">PathWise Career Intelligence</p>
                     <p style="margin: 4px 0 0;"><a href="https://pathwise.fit" style="color: #9ca3af;">pathwise.fit</a> &nbsp;&middot;&nbsp; <a href="https://pathwise.fit/privacy-policy" style="color: #9ca3af;">Privacy</a> &nbsp;&middot;&nbsp; <a href="https://pathwise.fit/terms-of-service" style="color: #9ca3af;">Terms</a></p>
+                    <p style="margin: 12px 0 0;"><a href="mailto:hello@pathwise.fit?subject=Unsubscribe" style="color: #9ca3af; text-decoration: underline;">Unsubscribe</a></p>
                   </td>
                 </tr>
               </table>
