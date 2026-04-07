@@ -44,6 +44,7 @@ function NotifIcon({ type }: { type: string }) {
 export default function NotificationBell() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const disabled = typeof window !== 'undefined' && localStorage.getItem('pathwise_notif_off') === '1';
   const [notifs, setNotifs] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -189,6 +190,8 @@ export default function NotificationBell() {
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
+
+  if (disabled) return null;
 
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'inline-flex' }}>

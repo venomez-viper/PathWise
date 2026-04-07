@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Globe, Copy, ExternalLink } from 'lucide-react';
+import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Copy, ExternalLink, Bell, Navigation } from 'lucide-react';
 import { Panda } from '../../components/panda';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -525,6 +525,42 @@ export default function SettingsPage() {
         )}
       </div>
 
+      </div>
+
+      {/* ── PREFERENCES ── */}
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginTop: '1rem' }}>
+        {sectionLabel('Preferences')}
+
+        {settingRow(
+          <Navigation size={16} color="var(--primary)" />,
+          'Feature Tour',
+          <button
+            onClick={() => {
+              localStorage.removeItem('pathwise_tour_done');
+              alert('Tour will show on your next Dashboard visit.');
+            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+          >
+            Restart <ChevronRight size={14} />
+          </button>,
+          'Show the guided feature walkthrough again',
+        )}
+
+        {settingRow(
+          <Bell size={16} color="var(--primary)" />,
+          'Notifications',
+          <button
+            onClick={() => {
+              const current = localStorage.getItem('pathwise_notif_off') === '1';
+              localStorage.setItem('pathwise_notif_off', current ? '0' : '1');
+              window.location.reload();
+            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+          >
+            {localStorage.getItem('pathwise_notif_off') === '1' ? 'Turn On' : 'Turn Off'} <ChevronRight size={14} />
+          </button>,
+          localStorage.getItem('pathwise_notif_off') === '1' ? 'Notifications are disabled' : 'Notification bell is active',
+        )}
       </div>
     </div>
   );
