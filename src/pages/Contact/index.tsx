@@ -1,18 +1,34 @@
 import { useState } from 'react';
 import { Mail, Globe, Send } from 'lucide-react';
 import Footer from '../../components/Footer';
+import { tickets as ticketsApi } from '../../lib/api';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
   const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.message) return;
-    setSubmitted(true);
+    setSending(true);
+    try {
+      await ticketsApi.submit({
+        name: `${form.firstName} ${form.lastName}`.trim(),
+        email: form.email,
+        subject: form.subject || undefined,
+        message: form.message,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -82,16 +98,23 @@ export default function ContactPage() {
                       }}
                     />
                   </div>
-                  <button type="submit" style={{
+                  {error && (
+                    <div style={{
+                      padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)',
+                      background: '#fee2e2', color: '#dc2626', fontSize: '0.85rem', fontWeight: 600,
+                    }}>
+                      {error}
+                    </div>
+                  )}
+                  <button type="submit" disabled={sending} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     width: '100%', padding: '0.9rem',
                     background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
                     color: '#fff', border: 'none', borderRadius: 'var(--radius-lg)',
-                    fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer',
-                    transition: 'opacity 0.15s',
+                    fontSize: '0.95rem', fontWeight: 700, cursor: sending ? 'not-allowed' : 'pointer',
+                    transition: 'opacity 0.15s', opacity: sending ? 0.7 : 1,
                   }}>
-                    <Send size={16} />
-                    Send Message
+                    {sending ? 'Sending...' : <><Send size={16} /> Send Message</>}
                   </button>
                 </form>
               )}

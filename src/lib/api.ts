@@ -153,6 +153,17 @@ export const admin = {
   impersonate: (userId: string) => request<{ token: string }>(`/admin/impersonate/${userId}`, { method: 'POST', body: JSON.stringify({}) }),
   getAssessment: (userId: string) => request<any>(`/admin/assessment/${userId}`),
   getAnalytics: () => request<{ totalAssessments: number; topCareers: { title: string; count: number }[] }>('/admin/analytics'),
+  getTickets: () => request<{ tickets: any[] }>('/admin/tickets'),
+  updateTicket: (ticketId: string, status: string) =>
+    request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  deleteTicket: (ticketId: string) =>
+    request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'DELETE' }),
+};
+
+// --- Tickets ---
+export const tickets = {
+  submit: (data: { name: string; email: string; subject?: string; message: string }) =>
+    request<{ id: string; success: boolean }>('/tickets', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // --- Certificates ---
