@@ -142,6 +142,14 @@ export const notifications = {
   markRead: (userId: string) => request('/streaks/notifications/read', { method: 'POST', body: JSON.stringify({ userId }) }),
 };
 
+// --- Admin ---
+export const admin = {
+  getUsers: () => request<{ users: any[] }>('/admin/users'),
+  getTaskStats: () => request<{ stats: { userId: string; total: number; completed: number }[] }>('/admin/task-stats'),
+  getAssessmentStats: () => request<{ userIds: string[] }>('/admin/assessment-stats'),
+  deleteUser: (userId: string) => request<{ success: boolean }>(`/admin/users/${userId}`, { method: 'DELETE' }),
+};
+
 // --- Certificates ---
 export const certificates = {
   get: (userId: string) => request(`/streaks/certificates/${userId}`),
