@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
-import { AuthData } from "../auth/auth";
+import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { getAssessment } from "../assessment/assessment";
 import { createTask } from "../tasks/tasks";
@@ -307,5 +307,50 @@ export const generateRoadmap = api(
         milestones,
       },
     };
+  }
+);
+
+// ── Admin Endpoints ──────────────────────────────────────────────────────────
+
+export interface AdminRoadmapStatsResponse {
+  userIdsWithRoadmap: string[];
+  totalRoadmaps: number;
+}
+
+export const adminRoadmapStats = api(
+  { expose: true, method: "GET", path: "/admin/roadmap-stats", auth: true },
+  async (): Promise<AdminRoadmapStatsResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    const userIds: string[] = [];
+    try {
+      const rows = db.query`SELECT user_id FROM roadmaps`;
+      for await (const row of rows) {
+        userIds.push(row.user_id);
+      }
+    } catch {}
+
+    return { userIdsWithRoadmap: userIds, totalRoadmaps: userIds.length };
+  }
+);
+
+export const adminDeleteUserRoadmap = api(
+  { expose: true, method: "DELETE", path: "/admin/user-roadmap/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    // Delete milestones first (FK to roadmaps)
+    try {
+      const roadmapRow = await db.queryRow`SELECT id FROM roadmaps WHERE user_id = ${userId}`;
+      if (roadmapRow) {
+        await db.exec`DELETE FROM milestones WHERE roadmap_id = ${roadmapRow.id}`;
+      }
+    } catch {}
+    await db.exec`DELETE FROM roadmaps WHERE user_id = ${userId}`;
+    return { success: true };
   }
 );

@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Flame, Award, FileText, HelpCircle, Search } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Flame, Award, FileText, HelpCircle, Search, Shield } from 'lucide-react';
 import Logo from './ui/Logo';
 import { Panda } from './panda';
 import { tokenStore } from '../lib/api';
@@ -55,6 +55,16 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
             <span>{label}</span>
           </NavLink>
         ))}
+        {user.email === 'akashagakash@gmail.com' && (
+          <NavLink
+            to="/app/admin"
+            className={({ isActive }) => `sidebar__link${isActive ? ' active' : ''}`}
+            onClick={onClose}
+          >
+            <Shield size={17} />
+            <span>Admin</span>
+          </NavLink>
+        )}
       </nav>
 
       {user.plan === 'free' && (

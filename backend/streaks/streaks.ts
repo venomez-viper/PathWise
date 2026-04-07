@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
-import { AuthData } from "../auth/auth";
+import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 
 const db = new SQLDatabase("streaks", { migrations: "./migrations" });
@@ -276,5 +276,22 @@ export const addCertificate = api(
     return {
       certificate: { id, name, issuer, issuedDate: issuedDate ?? null, verified: false, url: url ?? null, createdAt: new Date().toISOString() },
     };
+  }
+);
+
+// ── Admin Endpoints ──────────────────────────────────────────────────────────
+
+export const adminDeleteUserStreaks = api(
+  { expose: true, method: "DELETE", path: "/admin/user-streaks/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    try { await db.exec`DELETE FROM certificates WHERE user_id = ${userId}`; } catch {}
+    try { await db.exec`DELETE FROM notifications WHERE user_id = ${userId}`; } catch {}
+    try { await db.exec`DELETE FROM achievements WHERE user_id = ${userId}`; } catch {}
+    try { await db.exec`DELETE FROM streaks WHERE user_id = ${userId}`; } catch {}
+    return { success: true };
   }
 );

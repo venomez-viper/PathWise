@@ -241,6 +241,89 @@ export const changePassword = api(
   }
 );
 
+// ── Admin ─────────────────────────────────────────────────────────────────────
+
+const ADMIN_EMAIL = "akashagakash@gmail.com";
+
+async function requireAdmin(userID: string): Promise<void> {
+  const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
+  if (!row || row.email !== ADMIN_EMAIL) {
+    throw APIError.permissionDenied("admin access required");
+  }
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  plan: string;
+  createdAt: string;
+}
+
+export interface AdminUsersResponse {
+  users: AdminUser[];
+}
+
+export const adminListUsers = api(
+  { expose: true, method: "GET", path: "/admin/users", auth: true },
+  async (): Promise<AdminUsersResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    await requireAdmin(userID);
+
+    const users: AdminUser[] = [];
+    const rows = db.query`
+      SELECT id, name, email, plan, created_at
+      FROM users ORDER BY created_at DESC
+    `;
+    for await (const row of rows) {
+      users.push({
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        plan: row.plan,
+        createdAt: row.created_at,
+      });
+    }
+    return { users };
+  }
+);
+
+export interface DeleteUserResponse {
+  success: boolean;
+  deletedUserId: string;
+}
+
+export const adminDeleteUser = api(
+  { expose: true, method: "DELETE", path: "/admin/users/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<DeleteUserResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    await requireAdmin(userID);
+
+    // Don't allow deleting the admin themselves
+    const targetRow = await db.queryRow`SELECT email FROM users WHERE id = ${userId}`;
+    if (!targetRow) throw APIError.notFound("user not found");
+    if (targetRow.email === ADMIN_EMAIL) {
+      throw APIError.invalidArgument("cannot delete the admin user");
+    }
+
+    // Delete from users table (user_oauth_providers will cascade if FK exists)
+    try { await db.exec`DELETE FROM user_oauth_providers WHERE user_id = ${userId}`; } catch {}
+    await db.exec`DELETE FROM users WHERE id = ${userId}`;
+
+    return { success: true, deletedUserId: userId };
+  }
+);
+
+// ── Admin Check (internal, callable from other services) ─────────────────────
+
+export const checkAdmin = api(
+  { expose: false },
+  async ({ userID }: { userID: string }): Promise<{ isAdmin: boolean }> => {
+    const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
+    return { isAdmin: !!row && row.email === ADMIN_EMAIL };
+  }
+);
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 function issueToken(userId: string): string {

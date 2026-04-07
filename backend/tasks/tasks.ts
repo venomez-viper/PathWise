@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
-import { AuthData } from "../auth/auth";
+import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { sanitizeForPrompt } from "../shared/sanitize";
 import { getMilestonesForRole } from "../assessment/career-brain";
@@ -368,5 +368,66 @@ export const customGenerateTasks = api(
     }
 
     return { tasks: createdTasks };
+  }
+);
+
+// ── Admin Endpoints ──────────────────────────────────────────────────────────
+
+export interface AdminTaskStats {
+  userId: string;
+  taskCount: number;
+  completedTaskCount: number;
+}
+
+export interface AdminTaskStatsResponse {
+  stats: AdminTaskStats[];
+  totalTasks: number;
+  completedTasks: number;
+}
+
+export const adminTaskStats = api(
+  { expose: true, method: "GET", path: "/admin/task-stats", auth: true },
+  async (): Promise<AdminTaskStatsResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    const stats: AdminTaskStats[] = [];
+    let totalTasks = 0;
+    let completedTasks = 0;
+
+    try {
+      const rows = db.query`
+        SELECT user_id,
+               COUNT(*) as task_count,
+               COUNT(*) FILTER (WHERE status = 'done') as completed_count
+        FROM tasks GROUP BY user_id
+      `;
+      for await (const row of rows) {
+        const taskCount = Number(row.task_count);
+        const completedTaskCount = Number(row.completed_count);
+        stats.push({
+          userId: row.user_id,
+          taskCount,
+          completedTaskCount,
+        });
+        totalTasks += taskCount;
+        completedTasks += completedTaskCount;
+      }
+    } catch {}
+
+    return { stats, totalTasks, completedTasks };
+  }
+);
+
+export const adminDeleteUserTasks = api(
+  { expose: true, method: "DELETE", path: "/admin/user-tasks/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    await db.exec`DELETE FROM tasks WHERE user_id = ${userId}`;
+    return { success: true };
   }
 );

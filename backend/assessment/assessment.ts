@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
-import { AuthData } from "../auth/auth";
+import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import {
   getTopCareerMatches,
@@ -294,5 +294,43 @@ export const analyzeSkillGaps = api(
     );
 
     return { result };
+  }
+);
+
+// ── Admin Endpoints ──────────────────────────────────────────────────────────
+
+export interface AdminAssessmentStatsResponse {
+  userIdsWithAssessment: string[];
+  totalAssessments: number;
+}
+
+export const adminAssessmentStats = api(
+  { expose: true, method: "GET", path: "/admin/assessment-stats", auth: true },
+  async (): Promise<AdminAssessmentStatsResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    const userIds: string[] = [];
+    try {
+      const rows = db.query`SELECT user_id FROM assessments`;
+      for await (const row of rows) {
+        userIds.push(row.user_id);
+      }
+    } catch {}
+
+    return { userIdsWithAssessment: userIds, totalAssessments: userIds.length };
+  }
+);
+
+export const adminDeleteUserAssessment = api(
+  { expose: true, method: "DELETE", path: "/admin/user-assessment/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    await db.exec`DELETE FROM assessments WHERE user_id = ${userId}`;
+    return { success: true };
   }
 );
