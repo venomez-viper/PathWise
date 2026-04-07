@@ -163,6 +163,14 @@
   padding: 14px 44px 14px 44px;
 }
 
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 40px var(--surface-container-low) inset;
+  -webkit-text-fill-color: var(--on-surface);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .auth-input::placeholder {
   color: var(--on-surface-muted);
   opacity: 0.7;
@@ -206,6 +214,10 @@
 
 .btn-auth-primary {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
   color: #fff;
   border: none;
