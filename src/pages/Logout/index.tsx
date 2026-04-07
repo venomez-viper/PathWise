@@ -69,7 +69,7 @@ export default function LogoutPage() {
                 textDecoration: 'none',
               }}>
                 <LogOut size={14} />
-                Go to Homepage
+                Logout
               </Link>
             </div>
           </div>
