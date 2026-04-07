@@ -1,15 +1,6 @@
-import { ArrowRight, Play, Target, Crown, Ghost, Gem, Hexagon, Triangle, Command, Cpu } from 'lucide-react';
+import { ArrowRight, Play, Target, Crown, Compass, BookOpen, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './Hero.css';
-
-const CLIENTS = [
-  { name: 'Acme Corp', icon: Hexagon },
-  { name: 'Quantum', icon: Triangle },
-  { name: 'Command+Z', icon: Command },
-  { name: 'Phantom', icon: Ghost },
-  { name: 'Ruby', icon: Gem },
-  { name: 'Chipset', icon: Cpu },
-];
 
 function StatItem({ value, label }: { value: string; label: string }) {
   return (
@@ -65,15 +56,15 @@ export default function Hero() {
                 <Target size={22} />
               </div>
               <div>
-                <div className="hero__metric">10,000+</div>
-                <div className="hero__metric-caption">Career Roadmaps Generated</div>
+                <div className="hero__metric">90+</div>
+                <div className="hero__metric-caption">Career Paths Mapped</div>
               </div>
             </div>
 
             <div className="hero__progress">
               <div className="hero__progress-row">
-                <span>User Satisfaction</span>
-                <span>96%</span>
+                <span>Assessment Accuracy</span>
+                <span>Multi-Dimensional</span>
               </div>
               <div className="hero__progress-track">
                 <div className="hero__progress-fill" />
@@ -98,17 +89,19 @@ export default function Hero() {
           </div>
 
           <div className="hero__glass-card hero__glass-card--brands">
-            <h3 className="hero__brands-title">Guiding careers in every industry</h3>
+            <h3 className="hero__brands-title">What you'll get</h3>
             <div className="hero__brands-row">
-              {[...CLIENTS, ...CLIENTS].map((client, index) => {
-                const Icon = client.icon;
-                return (
-                  <div key={`${client.name}-${index}`} className="hero__brand">
-                    <Icon size={18} />
-                    <span>{client.name}</span>
-                  </div>
-                );
-              })}
+              {[
+                { icon: Compass, label: 'Career Matching' },
+                { icon: TrendingUp, label: 'Skill Gap Analysis' },
+                { icon: BookOpen, label: 'Learning Roadmap' },
+                { icon: Target, label: 'Daily Task Planner' },
+              ].map((item, i) => (
+                <div key={i} className="hero__brand">
+                  <item.icon size={18} />
+                  <span>{item.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
