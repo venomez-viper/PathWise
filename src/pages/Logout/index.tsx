@@ -35,7 +35,7 @@ export default function LogoutPage() {
           </div>
         ) : (
           <div style={{ padding: '2rem 1rem' }}>
-            <Panda mood="waving" size={120} animate />
+            <Panda mood="sad" size={120} animate />
 
             <h1 style={{
               fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800,
