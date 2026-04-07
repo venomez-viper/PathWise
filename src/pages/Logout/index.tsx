@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogOut, ArrowRight } from 'lucide-react';
+import posthog from 'posthog-js';
 import { tokenStore } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import Logo from '../../components/ui/Logo';
@@ -10,6 +11,7 @@ export default function LogoutPage() {
 
   useEffect(() => {
     tokenStore.clear();
+    posthog.reset();
     // Brief delay for the animation
     const timer = setTimeout(() => setDone(true), 600);
     return () => clearTimeout(timer);
