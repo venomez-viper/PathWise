@@ -47,8 +47,8 @@ function layout(content: string): string {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
           <!-- Header -->
           <tr>
-            <td style="background: ${BRAND_DARK}; padding: 28px 40px; text-align: center;">
-              <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">pathwise</span>
+            <td style="background: ${BRAND_DARK}; padding: 24px 40px; text-align: center;">
+              <img src="https://pathwise.fit/logo.png" alt="PathWise" width="140" style="display: inline-block; height: auto; max-width: 140px;">
             </td>
           </tr>
           <!-- Body -->
