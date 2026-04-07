@@ -28,7 +28,7 @@ export default function SettingsPage() {
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
 
-  const handleLogout = () => { tokenStore.clear(); window.location.href = '/'; };
+  const handleLogout = () => { tokenStore.clear(); window.location.href = '/logout'; };
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) ?? '?';
 
   const saveProfile = async () => {
