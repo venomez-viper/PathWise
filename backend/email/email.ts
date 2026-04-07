@@ -19,7 +19,16 @@ export const sendEmail = api(
   async ({ to, subject, html }: { to: string; subject: string; html: string }): Promise<{ success: boolean }> => {
     try {
       const resend = getResend();
-      await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+      await resend.emails.send({
+        from: FROM_EMAIL,
+        to,
+        subject,
+        html,
+        headers: {
+          "List-Unsubscribe": "<mailto:hello@pathwise.fit?subject=Unsubscribe>",
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
+      });
       return { success: true };
     } catch (err) {
       console.error("Email send failed:", { to, subject, error: err instanceof Error ? err.message : "unknown" });
@@ -47,21 +56,8 @@ function layout(content: string): string {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
           <!-- Header -->
           <tr>
-            <td style="background: ${BRAND_DARK}; padding: 24px 40px; text-align: center;">
-              <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-                <tr>
-                  <td valign="middle" style="padding-right: 10px;">
-                    <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M10 75L35 45L50 65L75 25" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M35 45L50 65L75 25" stroke="rgba(255,255,255,0.78)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M75 25L90 10M90 10H70M90 10V30" stroke="#ff9f76" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </td>
-                  <td valign="middle">
-                    <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">pathwise</span>
-                  </td>
-                </tr>
-              </table>
+            <td style="background: ${BRAND_DARK}; padding: 20px 40px; text-align: center;">
+              <img src="https://www.pathwise.fit/email-logo.png" alt="PathWise" width="200" height="43" style="display:block;margin:0 auto;max-width:200px;height:auto;">
             </td>
           </tr>
           <!-- Body -->
