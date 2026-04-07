@@ -46,6 +46,17 @@ export const submitTicket = api(
       VALUES (${id}, ${params.name}, ${params.email}, ${subject}, ${params.message}, 'open', ${now})
     `;
 
+    // Send confirmation to user + notification to admin
+    try {
+      const { sendEmail, contactConfirmationEmail, adminTicketNotificationEmail } = await import("../email/email");
+      // Confirm to user
+      const confirm = contactConfirmationEmail(params.name);
+      await sendEmail({ to: params.email, ...confirm });
+      // Notify admin
+      const notify = adminTicketNotificationEmail(params.name, params.email, params.subject || '', params.message);
+      await sendEmail({ to: "akashagakash@gmail.com", ...notify });
+    } catch {}
+
     return { id, success: true };
   }
 );

@@ -90,6 +90,14 @@ export const signup = api(
       VALUES (${id}, ${params.name}, ${params.email}, ${passwordHash}, 'free', ${now})
     `;
 
+    // Send welcome email (fire and forget)
+    try {
+      const { welcomeEmail } = await import("../email/email");
+      const { sendEmail } = await import("../email/email");
+      const template = welcomeEmail(params.name);
+      await sendEmail({ to: params.email, ...template });
+    } catch {}
+
     const token = issueToken(id);
     return {
       token,
