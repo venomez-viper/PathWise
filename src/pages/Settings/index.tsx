@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Globe, Copy, ExternalLink } from 'lucide-react';
+import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Copy, ExternalLink, Bell, Navigation } from 'lucide-react';
 import { Panda } from '../../components/panda';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -300,119 +300,8 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* ── PUBLIC PROFILE ── */}
-      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
-        {sectionLabel('Public Profile')}
-
-        {profileSettingsLoading ? (
-          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>Loading...</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 12, background: 'color-mix(in srgb, var(--primary) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Globe size={16} color="var(--primary)" />
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)' }}>Make profile public</p>
-                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', marginTop: 2 }}>Anyone with your link can see your profile</p>
-              </div>
-              <button
-                onClick={() => setProfileSettings(s => ({ ...s, profilePublic: !s.profilePublic }))}
-                style={{
-                  width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-                  background: profileSettings.profilePublic ? 'var(--primary)' : 'color-mix(in srgb, var(--on-surface) 15%, transparent)',
-                  position: 'relative', transition: 'background 0.2s',
-                }}
-              >
-                <div style={{
-                  width: 18, height: 18, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 3,
-                  left: profileSettings.profilePublic ? 23 : 3,
-                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                }} />
-              </button>
-            </div>
-
-            {/* Profile URL */}
-            <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Profile URL</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', whiteSpace: 'nowrap' }}>{window.location.origin}/u/</span>
-                <input
-                  className="settings-input"
-                  value={profileSettings.profileSlug}
-                  onChange={e => setProfileSettings(s => ({ ...s, profileSlug: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '') }))}
-                  placeholder="your-slug"
-                  style={{ flex: 1 }}
-                />
-                {profileSettings.profilePublic && profileSettings.profileSlug && (
-                  <>
-                    <button
-                      onClick={copyProfileLink}
-                      title="Copy link"
-                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: copiedLink ? 'var(--secondary)' : 'var(--on-surface-variant)' }}
-                    >
-                      <Copy size={14} /> {copiedLink ? 'Copied!' : 'Copy'}
-                    </button>
-                    <a
-                      href={profileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="View profile"
-                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '6px 8px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}
-                    >
-                      <ExternalLink size={14} />
-                    </a>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Headline */}
-            <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Headline</label>
-              <input
-                className="settings-input"
-                value={profileSettings.headline}
-                onChange={e => setProfileSettings(s => ({ ...s, headline: e.target.value }))}
-                placeholder="e.g., Aspiring Full-Stack Developer"
-                maxLength={120}
-              />
-            </div>
-
-            {/* Bio */}
-            <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Bio</label>
-              <textarea
-                className="settings-input"
-                value={profileSettings.bio}
-                onChange={e => setProfileSettings(s => ({ ...s, bio: e.target.value }))}
-                placeholder="A short paragraph about yourself..."
-                maxLength={500}
-                rows={3}
-                style={{ resize: 'vertical', minHeight: 72 }}
-              />
-            </div>
-
-            {/* Save */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button
-                className="btn-page-action"
-                style={{ background: '#8b4f2c' }}
-                disabled={profileSettingsSaving}
-                onClick={saveProfileSettings}
-              >
-                {profileSettingsSaving ? 'Saving...' : <><Check size={14} /> Save Profile Settings</>}
-              </button>
-              {profileSettingsSuccess && <span style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 600 }}>Saved!</span>}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── 2-COLUMN GRID ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+      {/* ── ROW 2: ACCOUNT & SECURITY + CAREER SETTINGS ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
 
       {/* ── ACCOUNT & SECURITY ── */}
       <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem' }}>
@@ -499,8 +388,116 @@ export default function SettingsPage() {
       </div>
 
       </div>
+
+      {/* ── ROW 3: PUBLIC PROFILE + DATA & PRIVACY ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+
+      {/* ── PUBLIC PROFILE (compact) ── */}
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem' }}>
+        {sectionLabel('Public Profile')}
+
+        {profileSettingsLoading ? (
+          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>Loading...</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {/* Profile URL + slug on one line */}
+            <div>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Profile URL</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', whiteSpace: 'nowrap' }}>/u/</span>
+                <input
+                  className="settings-input"
+                  value={profileSettings.profileSlug}
+                  onChange={e => setProfileSettings(s => ({ ...s, profileSlug: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '') }))}
+                  placeholder="your-slug"
+                  style={{ flex: 1 }}
+                />
+                {profileSettings.profilePublic && profileSettings.profileSlug && (
+                  <>
+                    <button
+                      onClick={copyProfileLink}
+                      title="Copy link"
+                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '5px 7px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.72rem', color: copiedLink ? 'var(--secondary)' : 'var(--on-surface-variant)', flexShrink: 0 }}
+                    >
+                      <Copy size={13} /> {copiedLink ? 'Copied!' : 'Copy'}
+                    </button>
+                    <a
+                      href={profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="View profile"
+                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '5px 7px', display: 'flex', alignItems: 'center', color: 'var(--primary)', flexShrink: 0 }}
+                    >
+                      <ExternalLink size={13} />
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Headline on one line */}
+            <div>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Headline</label>
+              <input
+                className="settings-input"
+                value={profileSettings.headline}
+                onChange={e => setProfileSettings(s => ({ ...s, headline: e.target.value }))}
+                placeholder="e.g., Aspiring Full-Stack Developer"
+                maxLength={120}
+              />
+            </div>
+
+            {/* Bio as 2-row textarea */}
+            <div>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Bio</label>
+              <textarea
+                className="settings-input"
+                value={profileSettings.bio}
+                onChange={e => setProfileSettings(s => ({ ...s, bio: e.target.value }))}
+                placeholder="A short paragraph about yourself..."
+                maxLength={500}
+                rows={2}
+                style={{ resize: 'none' }}
+              />
+            </div>
+
+            {/* Toggle + Save on same row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                onClick={() => setProfileSettings(s => ({ ...s, profilePublic: !s.profilePublic }))}
+                title={profileSettings.profilePublic ? 'Profile is public' : 'Profile is private'}
+                style={{
+                  width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
+                  background: profileSettings.profilePublic ? 'var(--primary)' : 'color-mix(in srgb, var(--on-surface) 15%, transparent)',
+                  position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                }}
+              >
+                <div style={{
+                  width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                  position: 'absolute', top: 3,
+                  left: profileSettings.profilePublic ? 21 : 3,
+                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                }} />
+              </button>
+              <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', flex: 1 }}>
+                {profileSettings.profilePublic ? 'Public' : 'Private'}
+              </span>
+              <button
+                className="btn-page-action"
+                style={{ background: '#8b4f2c', padding: '6px 14px', fontSize: '0.78rem' }}
+                disabled={profileSettingsSaving}
+                onClick={saveProfileSettings}
+              >
+                {profileSettingsSaving ? 'Saving...' : <><Check size={13} /> Save</>}
+              </button>
+              {profileSettingsSuccess && <span style={{ fontSize: '0.78rem', color: 'var(--secondary)', fontWeight: 600 }}>Saved!</span>}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ── DATA & PRIVACY ── */}
-      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem' }}>
         {sectionLabel('Data & Privacy')}
 
         {settingRow(
@@ -525,6 +522,44 @@ export default function SettingsPage() {
             Delete <ChevronRight size={14} />
           </button>,
           'Permanently delete your account and all data',
+        )}
+      </div>
+
+      </div>
+
+      {/* ── PREFERENCES ── */}
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginTop: '1rem' }}>
+        {sectionLabel('Preferences')}
+
+        {settingRow(
+          <Navigation size={16} color="var(--primary)" />,
+          'Feature Tour',
+          <button
+            onClick={() => {
+              localStorage.removeItem('pathwise_tour_done');
+              alert('Tour will show on your next Dashboard visit.');
+            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+          >
+            Restart <ChevronRight size={14} />
+          </button>,
+          'Show the guided feature walkthrough again',
+        )}
+
+        {settingRow(
+          <Bell size={16} color="var(--primary)" />,
+          'Notifications',
+          <button
+            onClick={() => {
+              const current = localStorage.getItem('pathwise_notif_off') === '1';
+              localStorage.setItem('pathwise_notif_off', current ? '0' : '1');
+              window.location.reload();
+            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+          >
+            {localStorage.getItem('pathwise_notif_off') === '1' ? 'Turn On' : 'Turn Off'} <ChevronRight size={14} />
+          </button>,
+          localStorage.getItem('pathwise_notif_off') === '1' ? 'Notifications are disabled' : 'Notification bell is active',
         )}
       </div>
     </div>

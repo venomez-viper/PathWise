@@ -1,6 +1,11 @@
-import { useState } from 'react';
-import { Search, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
-import { PandaSpot } from '../../components/panda';
+import { useState, useRef } from 'react';
+import { Search, ChevronDown, Compass, Map, CreditCard, Mail, MessageSquare } from 'lucide-react';
+
+const CATEGORIES = [
+  { icon: Compass, title: 'Getting Started', desc: 'Set up your account and take your first assessment', count: 2 },
+  { icon: Map, title: 'Roadmap & Tasks', desc: 'Manage milestones, tasks, and track progress', count: 3 },
+  { icon: CreditCard, title: 'Billing & Plans', desc: 'Subscription management and refund policy', count: 2 },
+];
 
 const FAQ_SECTIONS = [
   {
@@ -19,7 +24,7 @@ const FAQ_SECTIONS = [
     ],
   },
   {
-    category: 'Billing',
+    category: 'Billing & Plans',
     items: [
       { q: 'Changing your subscription plan', a: 'Go to Settings and click "Upgrade Plan" to view available tiers. You can upgrade to Pro anytime for advanced roadmaps, AI coaching, and priority support.' },
       { q: 'Refund policy for PathWise Premium', a: 'We offer a 14-day money-back guarantee on all premium subscriptions. Contact support within 14 days of purchase for a full refund, no questions asked.' },
@@ -30,6 +35,7 @@ const FAQ_SECTIONS = [
 export default function HelpFAQ() {
   const [search, setSearch] = useState('');
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const toggle = (key: string) => {
     setOpenItems(prev => {
@@ -37,6 +43,11 @@ export default function HelpFAQ() {
       if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
+  };
+
+  const scrollToSection = (category: string) => {
+    const el = sectionRefs.current[category];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const filtered = FAQ_SECTIONS.map(s => ({
@@ -47,53 +58,224 @@ export default function HelpFAQ() {
   })).filter(s => s.items.length > 0);
 
   return (
-    <div className="page" style={{ maxWidth: 640 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <h1 className="page-title">Help & FAQ</h1>
-        <PandaSpot context="welcome" position="inline" size={70} opacity={0.7} />
+    <div className="page" style={{ maxWidth: 960, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', paddingTop: '1rem', paddingBottom: '0.5rem' }}>
+        <h1 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '2rem',
+          fontWeight: 800,
+          color: 'var(--on-surface)',
+          margin: 0,
+        }}>
+          Help Center
+        </h1>
+        <p style={{
+          fontSize: '1.05rem',
+          color: 'var(--on-surface-variant)',
+          marginTop: '0.5rem',
+          lineHeight: 1.5,
+        }}>
+          How can we help you today?
+        </p>
       </div>
-      <p className="page-subtitle">Search for articles or browse categories below.</p>
 
-      {/* Search */}
-      <div style={{ position: 'relative', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-        <Search size={18} color="var(--on-surface-muted)" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} />
+      {/* Search Bar */}
+      <div style={{
+        position: 'relative',
+        marginTop: '1.5rem',
+        marginBottom: '2rem',
+        maxWidth: 640,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      }}>
+        <Search
+          size={20}
+          color="var(--on-surface-muted)"
+          style={{ position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)' }}
+        />
         <input
           className="settings-input"
-          style={{ paddingLeft: 44 }}
-          placeholder="Search for 'Career Roadmaps'..."
+          style={{
+            paddingLeft: 50,
+            paddingRight: 20,
+            height: 52,
+            fontSize: '0.95rem',
+            borderRadius: 'var(--radius-full)',
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+          placeholder="Search for help articles..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
       </div>
 
-      {/* FAQ sections */}
+      {/* Category Cards */}
+      {!search && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '1rem',
+          marginBottom: '2.5rem',
+        }}>
+          {CATEGORIES.map(cat => {
+            const Icon = cat.icon;
+            return (
+              <div
+                key={cat.title}
+                onClick={() => scrollToSection(cat.title === 'Billing & Plans' ? 'Billing & Plans' : cat.title)}
+                className="panel"
+                style={{
+                  borderRadius: '1rem',
+                  padding: '1.5rem',
+                  cursor: 'pointer',
+                  transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = '';
+                }}
+              >
+                <div style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  background: 'var(--primary-container)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <Icon size={22} color="var(--primary)" />
+                </div>
+                <div>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                    color: 'var(--on-surface)',
+                    margin: 0,
+                  }}>
+                    {cat.title}
+                  </p>
+                  <p style={{
+                    fontSize: '0.82rem',
+                    color: 'var(--on-surface-variant)',
+                    margin: '0.25rem 0 0',
+                    lineHeight: 1.45,
+                  }}>
+                    {cat.desc}
+                  </p>
+                </div>
+                <p style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--on-surface-muted)',
+                  margin: 0,
+                  fontWeight: 600,
+                }}>
+                  {cat.count} article{cat.count !== 1 ? 's' : ''}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* FAQ Sections */}
       {filtered.map(section => (
-        <div key={section.category} style={{ marginBottom: '1.5rem' }}>
-          <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--primary)', marginBottom: '0.75rem' }}>
+        <div
+          key={section.category}
+          ref={el => { sectionRefs.current[section.category] = el; }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2 style={{
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'var(--primary)',
+            marginBottom: '0.75rem',
+            paddingLeft: 2,
+          }}>
             {section.category}
-          </p>
+          </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {section.items.map(item => {
               const key = `${section.category}-${item.q}`;
               const isOpen = openItems.has(key);
               return (
-                <div key={key} className="panel" style={{
-                  borderRadius: '2rem', padding: isOpen ? '1.25rem' : '1rem 1.25rem',
-                  cursor: 'pointer',
-                  borderLeft: isOpen ? '4px solid var(--primary)' : '4px solid transparent',
-                }} onClick={() => toggle(key)}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--on-surface)', flex: 1, paddingRight: 8 }}>{item.q}</p>
-                    {isOpen ? <ChevronUp size={18} color="var(--on-surface-variant)" /> : <ChevronDown size={18} color="var(--on-surface-variant)" />}
+                <div
+                  key={key}
+                  className="panel"
+                  style={{
+                    borderRadius: '0.75rem',
+                    border: '1px solid var(--outline-variant)',
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    transition: 'box-shadow 0.15s ease',
+                  }}
+                  onClick={() => toggle(key)}
+                  onMouseEnter={e => {
+                    if (!isOpen) (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLDivElement).style.boxShadow = '';
+                  }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem 1.25rem',
+                  }}>
+                    <p style={{
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      color: 'var(--on-surface)',
+                      flex: 1,
+                      paddingRight: 12,
+                      margin: 0,
+                    }}>
+                      {item.q}
+                    </p>
+                    <ChevronDown
+                      size={18}
+                      color="var(--on-surface-variant)"
+                      style={{
+                        transition: 'transform 0.25s ease',
+                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        flexShrink: 0,
+                      }}
+                    />
                   </div>
-                  {isOpen && (
-                    <div style={{ marginTop: '0.75rem' }}>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', lineHeight: 1.6 }}>{item.a}</p>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: '0.78rem', fontWeight: 600, color: '#8b4f2c' }}>
-                        Read more →
-                      </span>
+                  <div style={{
+                    maxHeight: isOpen ? 300 : 0,
+                    opacity: isOpen ? 1 : 0,
+                    transition: 'max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease',
+                    padding: isOpen ? '0 1.25rem 1.25rem' : '0 1.25rem 0',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      borderTop: '1px solid var(--outline-variant)',
+                      paddingTop: '1rem',
+                    }}>
+                      <p style={{
+                        fontSize: '0.88rem',
+                        color: 'var(--on-surface-variant)',
+                        lineHeight: 1.7,
+                        margin: 0,
+                      }}>
+                        {item.a}
+                      </p>
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })}
@@ -101,22 +283,89 @@ export default function HelpFAQ() {
         </div>
       ))}
 
-      {/* Support CTA */}
-      <div style={{
-        background: 'linear-gradient(135deg, var(--primary), var(--primary-container))',
-        borderRadius: '2rem', padding: '2rem', marginTop: '1rem', color: '#fff', textAlign: 'center',
-      }}>
-        <HelpCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.6 }} />
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 800 }}>Still have questions?</h3>
-        <p style={{ fontSize: '0.85rem', opacity: 0.7, lineHeight: 1.5, marginTop: 4 }}>
-          Our dedicated PathFinder support team is ready to help you navigate your journey.
-        </p>
-        <button style={{
-          marginTop: '1rem', padding: '0.6rem 1.5rem', borderRadius: 'var(--radius-full)',
-          background: '#fff', color: 'var(--primary)', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+      {/* Contact Support Section */}
+      <div
+        className="panel"
+        style={{
+          borderRadius: '1rem',
+          padding: '2rem',
+          marginTop: '1rem',
+          marginBottom: '2rem',
+          textAlign: 'center',
+          border: '1px solid var(--outline-variant)',
+        }}
+      >
+        <h3 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '1.2rem',
+          fontWeight: 800,
+          color: 'var(--on-surface)',
+          margin: 0,
         }}>
-          Contact Support
-        </button>
+          Still need help?
+        </h3>
+        <p style={{
+          fontSize: '0.88rem',
+          color: 'var(--on-surface-variant)',
+          marginTop: '0.5rem',
+          lineHeight: 1.5,
+        }}>
+          Our support team is here to help you with anything you need.
+        </p>
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '1rem',
+          marginTop: '1.25rem',
+          flexWrap: 'wrap',
+        }}>
+          <a
+            href="mailto:support@pathwise.fit"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.65rem 1.5rem',
+              borderRadius: 'var(--radius-full)',
+              background: 'var(--primary)',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              textDecoration: 'none',
+              transition: 'opacity 0.15s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.9'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; }}
+          >
+            <Mail size={16} />
+            Email Support
+          </a>
+          <a
+            href="/contact"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.65rem 1.5rem',
+              borderRadius: 'var(--radius-full)',
+              background: 'var(--surface-container)',
+              color: 'var(--on-surface)',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              textDecoration: 'none',
+              border: '1px solid var(--outline-variant)',
+              transition: 'background 0.15s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface-container-high)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface-container)'; }}
+          >
+            <MessageSquare size={16} />
+            Contact Us
+          </a>
+        </div>
       </div>
     </div>
   );
