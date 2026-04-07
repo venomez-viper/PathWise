@@ -2,6 +2,34 @@
 
 All notable changes to PathWise are documented here.
 
+## [0.10.0] — 2026-04-07
+
+### Added
+- **Admin Dashboard** — User management, analytics, system info, user impersonation, bulk actions, CSV export
+- **Admin Tickets System** — Support desk with status management (open / in_progress / closed)
+- **Contact Us Page** — Form at `/contact`; submissions saved to tickets DB
+- **Logout Page** — Friendly goodbye screen with sad Panda mascot
+- **Microsoft Clarity** — Session recordings and heatmaps integrated (tracker ID `w8529y3h0y`)
+
+### Changed
+- **Hero Section Redesign** — Premium SaaS-style layout with interactive particle canvas background
+- **Problem Section** — Replaced all emojis with `lucide-react` icons
+- **Solution Page** — Replaced emojis with Lucide icons; colored card layout
+- **Navbar** — Added Login and Sign Up buttons (were previously missing)
+- **Footer** — Removed dead social links; added Contact link
+- **SignIn Page** — Fixed label consistency, autofill yellow highlight fix, support mailto link, button alignment
+- **Legal Pages** — Replaced placeholder content with professional GDPR-compliant Privacy Policy, Terms of Service, and Cookie Policy
+- **Blog Newsletter** — Now functional with input validation and success state
+- **Logout Button** — Panda centered on logout screen; button label changed to "Logout"
+
+### Fixed
+- **Em Dashes** — Removed em dashes from all assessment questions and CTA button labels
+
+### Security
+- **Rate Limiting** — Sliding window rate limiting on all backend endpoints, enforced per-user and per-email
+- **IDOR Fix** — `awardAchievement` endpoint now validates user ownership before awarding badges
+- **OAuth Hardening** — Nonce verification enforced; no auto-link to password-only accounts; `ON CONFLICT` race condition handling added
+
 ## [0.9.0] — 2026-04-07
 
 ### Added
