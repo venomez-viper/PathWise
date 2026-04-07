@@ -404,6 +404,66 @@ export const checkAdmin = api(
   }
 );
 
+// ── Delete Account (self-service) ─────────────────────────────────────────────
+
+export const deleteAccount = api(
+  { expose: true, method: "DELETE", path: "/auth/account", auth: true },
+  async (): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+
+    // Don't allow admin to self-delete via this endpoint
+    const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
+    if (!row) throw APIError.notFound("user not found");
+    if (row.email === "akashagakash@gmail.com") {
+      throw APIError.invalidArgument("admin account cannot be deleted from settings");
+    }
+
+    // Delete OAuth providers
+    try { await db.exec`DELETE FROM user_oauth_providers WHERE user_id = ${userID}`; } catch {}
+    // Delete user
+    await db.exec`DELETE FROM users WHERE id = ${userID}`;
+
+    return { success: true };
+  }
+);
+
+// ── Export Data ───────────────────────────────────────────────────────────────
+
+export const exportData = api(
+  { expose: true, method: "GET", path: "/auth/export", auth: true },
+  async (): Promise<{ data: any }> => {
+    const { userID } = getAuthData<AuthData>()!;
+
+    const user = await db.queryRow`
+      SELECT id, name, email, plan, avatar_url, created_at FROM users WHERE id = ${userID}
+    `;
+    if (!user) throw APIError.notFound("user not found");
+
+    // Get OAuth providers
+    const providers: string[] = [];
+    try {
+      const rows = db.query`SELECT provider FROM user_oauth_providers WHERE user_id = ${userID}`;
+      for await (const r of rows) providers.push(r.provider);
+    } catch {}
+
+    return {
+      data: {
+        profile: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          plan: user.plan,
+          avatarUrl: user.avatar_url,
+          createdAt: user.created_at,
+          oauthProviders: providers,
+        },
+        exportedAt: new Date().toISOString(),
+        note: "Assessment, roadmap, tasks, and streaks data can be exported separately from their respective services.",
+      },
+    };
+  }
+);
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 function issueToken(userId: string): string {

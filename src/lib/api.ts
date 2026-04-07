@@ -83,6 +83,8 @@ export const auth = {
     ),
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
     request<{ success: boolean }>('/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
+  deleteAccount: () => request<{ success: boolean }>('/auth/account', { method: 'DELETE' }),
+  exportData: () => request<{ data: any }>('/auth/export'),
 };
 
 // --- Assessment ---
