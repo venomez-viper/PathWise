@@ -300,6 +300,17 @@ export const generateRoadmap = api(
     // Award "Roadmap Starter" achievement for generating a roadmap
     try { await awardAchievement({ userId: params.userId, badgeKey: "roadmap_starter" }); } catch {}
 
+    // Notify user that their roadmap is ready
+    try {
+      const { createNotification } = await import("../streaks/streaks");
+      await createNotification({
+        userId: params.userId,
+        type: "roadmap",
+        title: "Roadmap Generated!",
+        body: "Your personalised career roadmap is ready. Start your first milestone.",
+      });
+    } catch {}
+
     return {
       roadmap: {
         id: finalRoadmapId,
