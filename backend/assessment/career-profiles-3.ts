@@ -1004,7 +1004,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
       { skill: "Aviation Weather & NOTAMs", importance: "medium", learningResource: "Aviation Weather Center (aviationweather.gov); King Schools Aviation Weather" },
     ],
     certifications: [
-      { skill: "ATC", certName: "FAA Air Traffic Control Specialist Certificate", provider: "FAA (via USAJOBS federal hiring)", url: "https://www.usajobs.gov/", why: "Official FAA credential awarded after completing FAA Academy training in Oklahoma City; required for all ATC work", duration: "12–24 months of FAA Academy + field training", level: "Professional Licensure", cost: "Paid training (federal salary)" },
+      { skill: "ATC", certName: "FAA Air Traffic Control Specialist Certificate", provider: "FAA (via USAJOBS federal hiring)", url: "https://www.usajobs.gov/", whyRecommended: "Official FAA credential awarded after completing FAA Academy training in Oklahoma City; required for all ATC work", duration: "12–24 months of FAA Academy + field training", level: "Professional Licensure", cost: "Paid training (federal salary)" },
       { skill: "ATC", certName: "CTI (Collegiate Training Initiative) Program", provider: "FAA-approved CTI colleges", url: "https://www.faa.gov/jobs/job_opportunities/air_traffic_jobs/cti/", duration: "2–4 year associate or bachelor's degree", level: "Entry Pathway", cost: "$10,000–$40,000 tuition", whyRecommended: "FAA CTI graduates have priority hiring at FAA facilities; the most reliable entry path into ATC" },
     ],
     portfolioProjects: [
@@ -1290,7 +1290,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
       { skill: "Trauma-Informed Practice", importance: "medium", learningResource: "SAMHSA Trauma-Informed Approach guide (free PDF); NASW trauma training" },
     ],
     certifications: [
-      { skill: "Social Work", certName: "Licensed Clinical Social Worker (LCSW)", provider: "State Social Work Licensing Board", url: "https://www.aswb.org/", why: "Required to practice clinical social work independently; enables private practice and highest billing rates", duration: "MSW + 2 years supervised experience + exam", level: "Advanced Licensure", cost: "$230 (ASWB exam fee)" },
+      { skill: "Social Work", certName: "Licensed Clinical Social Worker (LCSW)", provider: "State Social Work Licensing Board", url: "https://www.aswb.org/", whyRecommended: "Required to practice clinical social work independently; enables private practice and highest billing rates", duration: "MSW + 2 years supervised experience + exam", level: "Advanced Licensure", cost: "$230 (ASWB exam fee)" },
       { skill: "Social Work", certName: "Licensed Master Social Worker (LMSW)", provider: "State Social Work Licensing Board", url: "https://www.aswb.org/", duration: "MSW + exam", level: "Entry Licensure", cost: "$230 (ASWB exam fee)", whyRecommended: "First license after MSW; enables employment in clinical settings under supervision" },
     ],
     portfolioProjects: [
