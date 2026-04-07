@@ -63,12 +63,13 @@ export default function HelpFAQ() {
     <div className="page" style={{ maxWidth: 960, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', paddingTop: '1rem', paddingBottom: '0.5rem' }}>
+        <Panda mood="curious" size={100} animate />
         <h1 style={{
           fontFamily: 'var(--font-display)',
           fontSize: '2rem',
           fontWeight: 800,
           color: 'var(--on-surface)',
-          margin: 0,
+          margin: '0.75rem 0 0',
         }}>
           Help Center
         </h1>
