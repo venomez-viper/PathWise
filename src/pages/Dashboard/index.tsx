@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
@@ -73,6 +73,46 @@ export default function Dashboard() {
       <Loader2 size={22} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
+
+  if (!loading && !data.hasAssessment) {
+    return (
+      <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', textAlign: 'center', gap: '1.5rem' }}>
+        <div style={{ fontSize: '3rem' }}>
+          <Sparkles size={48} color="var(--primary)" />
+        </div>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.03em' }}>
+          Welcome to PathWise!
+        </h1>
+        <p style={{ fontSize: '1rem', color: 'var(--on-surface-variant)', maxWidth: '480px', lineHeight: 1.6 }}>
+          Take a quick 5-minute career assessment to unlock your personalized roadmap, tasks, and skill insights. This is your first step toward career mastery.
+        </p>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
+          {['Personalized Career Matches', 'Custom Roadmap & Milestones', 'AI-Generated Tasks', 'Skill Gap Analysis'].map(item => (
+            <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>
+              <CheckCircle2 size={16} color="var(--primary)" />
+              {item}
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/app/assessment"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '14px 32px', borderRadius: 'var(--radius-full)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
+            color: '#fff', fontWeight: 700, fontSize: '1rem',
+            textDecoration: 'none', marginTop: '0.5rem',
+            boxShadow: 'var(--shadow-md)', transition: 'transform 0.15s, box-shadow 0.15s',
+          }}
+        >
+          Start Your Assessment <ArrowRight size={18} />
+        </Link>
+        <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-muted)', marginTop: '0.5rem' }}>
+          Takes about 5 minutes. You can retake it anytime.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="page">
