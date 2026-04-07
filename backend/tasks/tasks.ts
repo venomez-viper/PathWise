@@ -3,6 +3,7 @@ import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { sanitizeForPrompt } from "../shared/sanitize";
+import { RateLimits } from "../shared/rate-limiter";
 import { getMilestonesForRole } from "../assessment/career-brain";
 import { awardAchievement } from "../streaks/streaks";
 
@@ -85,6 +86,7 @@ export const createTask = api(
     // Auth check — getAuthData may be null for internal service-to-service calls
     const auth = getAuthData<AuthData>();
     if (auth && auth.userID !== params.userId) throw APIError.permissionDenied("not your data");
+    RateLimits.tasks("tasks:" + params.userId);
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
     const priority = params.priority ?? "medium";
@@ -220,6 +222,7 @@ export const aiGenerateTasks = api(
     const authData = getAuthData<AuthData>();
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
+    RateLimits.aiGenerate("aigen:" + userID);
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
 
     // Find matching milestone from brain and extract its tasks
@@ -312,6 +315,7 @@ export const customGenerateTasks = api(
     const authData = getAuthData<AuthData>();
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
+    RateLimits.aiGenerate("aigen:" + userID);
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const count = params.count ?? 4;
     const safePrompt = sanitizeForPrompt(params.prompt, 500);

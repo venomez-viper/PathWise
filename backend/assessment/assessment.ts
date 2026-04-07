@@ -2,6 +2,7 @@ import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
+import { RateLimits } from "../shared/rate-limiter";
 import {
   getTopCareerMatches,
   getCertificatesForRole,
@@ -95,6 +96,7 @@ export const submitAssessment = api(
     const authData = getAuthData<AuthData>();
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
+    RateLimits.assessment("assess:" + userID);
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const now = new Date().toISOString();
 
