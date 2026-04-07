@@ -123,6 +123,25 @@ To get the project running locally:
 - **Panda Mascot System**: 12 cute panda characters (Gemini-generated art) placed contextually across the app — empty states, loading screens, success moments, help sections. CSS sprite sheet technique with mood-based selection (happy, thinking, sleepy, curious, celebrating, confused, waving, reading, working).
 - **Zen Stone Colors Restored**: Surface hierarchy matches Stitch desktop mockups (`#eefcfe` teal-tinted background).
 
+### **v0.10.0** — Admin Dashboard, Security Hardening & Marketing Polish
+*Date: April 7, 2026*
+- **Admin Dashboard**: Full user management UI with analytics, system info, user impersonation, bulk actions, and CSV export.
+- **Admin Tickets System**: Internal support desk with status management (open / in_progress / closed).
+- **Contact Us Page**: Form at `/contact` that saves submissions directly to the tickets DB.
+- **Logout Page**: Friendly goodbye screen featuring the sad Panda mascot.
+- **Microsoft Clarity**: Session recording and heatmap analytics integrated (ID: `w8529y3h0y`).
+- **Hero Redesign**: Premium SaaS-style hero with interactive particle canvas background.
+- **Marketing Icons**: Replaced all emojis on the Problem and Solution sections with `lucide-react` icons; Solution cards now have a colored card layout.
+- **Navbar**: Login and Sign Up buttons added (were missing from the marketing nav).
+- **Footer**: Removed dead social links; added Contact link.
+- **SignIn Page**: Fixed label consistency, autofill yellow highlight, support mailto, and button alignment.
+- **Legal Pages**: Full GDPR-compliant Privacy Policy, Terms of Service, and Cookie Policy replacing placeholder content.
+- **Blog Newsletter**: Input validation and success state now functional.
+- **Rate Limiting**: Sliding window rate limiting on all backend endpoints (per-user and per-email).
+- **IDOR Fix**: `awardAchievement` validates user ownership before awarding.
+- **OAuth Security**: Nonce verification, no auto-link to password-only accounts, `ON CONFLICT` race condition handling.
+- **Em Dash Cleanup**: Removed em dashes from all assessment questions and CTA labels.
+
 ### **v0.9.0** — OAuth Social Login, Assessment Overhaul & Career Brain v2
 *Date: April 7, 2026*
 - **Google & Apple OAuth**: `POST /auth/oauth` endpoint with web authorization code flow (PKCE, nonce) and iOS direct ID token verification via JWKS. Auto-links OAuth accounts by verified email. Branded social buttons on SignIn/SignUp. "Set Password" for OAuth-only users in Settings. New `user_oauth_providers` DB table.
