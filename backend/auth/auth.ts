@@ -111,19 +111,14 @@ export const signin = api(
       FROM users WHERE email = ${params.email}
     `;
 
-    // OAuth-only user (no password set) — guide them to use social login
-    if (row && !row.password_hash) {
-      throw APIError.unauthenticated(
-        "This account uses Google or Apple sign-in. Please use that method, or set a password in Settings."
-      );
-    }
-
     // Use constant-time comparison to avoid timing attacks
+    // OAuth-only users (no password) also go through bcrypt with dummy hash
+    // to prevent account enumeration (same timing + same error message)
     const dummyHash = "$2a$12$invalidhashfortimingprotection000000000000000000000000";
     const hashToCheck = row?.password_hash ?? dummyHash;
     const match = await bcrypt.compare(params.password, hashToCheck);
 
-    if (!row || !match) {
+    if (!row || !row.password_hash || !match) {
       throw APIError.unauthenticated("invalid email or password");
     }
 
