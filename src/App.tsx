@@ -14,6 +14,7 @@ import BlogPage        from './pages/BlogPage';
 import BlogArticlePage from './pages/BlogArticlePage';
 import LegalPage       from './pages/LegalPage';
 import ContactPage     from './pages/Contact';
+import WhatsNewPage    from './pages/WhatsNew';
 
 // Webapp components
 import Sidebar      from './components/Sidebar';
@@ -131,6 +132,7 @@ export default function App() {
             <Route path="/terms-of-service" element={<LegalPage docKey="terms" />} />
             <Route path="/cookie-policy" element={<LegalPage docKey="cookies" />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/whats-new" element={<WhatsNewPage />} />
           </Route>
 
           {/* ── Public profile (standalone, no layout) ── */}

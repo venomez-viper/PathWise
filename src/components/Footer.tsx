@@ -12,10 +12,11 @@ const ROUTE_MAP: Record<string, string> = {
   'Privacy Policy': '/privacy-policy',
   'Terms of Service': '/terms-of-service',
   'Cookie Policy': '/cookie-policy',
+  "What's New": '/whats-new',
 };
 
 const LINKS = {
-  Product: ['How It Works', 'Solution', 'Pricing', 'Early Access'],
+  Product: ['How It Works', 'Solution', 'Pricing', 'Early Access', "What's New"],
   Company: ['Blog', 'Contact'],
   Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
 };

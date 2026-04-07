@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/app/search',      icon: Search,          label: 'Search'               },
   { to: '/app/settings',    icon: Settings,        label: 'Settings'             },
   { to: '/app/help',        icon: HelpCircle,      label: 'Help & FAQ'           },
+  { to: '/whats-new',       icon: Sparkles,        label: "What's New",  badge: 'NEW' },
 ];
 
 interface SidebarProps {
@@ -43,7 +44,7 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
       </div>
 
       <nav className="sidebar__nav">
-        {NAV_ITEMS.map(({ to, icon: Icon, label, end }) => (
+        {NAV_ITEMS.map(({ to, icon: Icon, label, end, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -53,6 +54,19 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
           >
             <Icon size={17} />
             <span>{label}</span>
+            {badge && (
+              <span style={{
+                fontSize: '0.55rem',
+                fontWeight: 700,
+                background: '#6245a4',
+                color: '#fff',
+                padding: '1px 6px',
+                borderRadius: 999,
+                marginLeft: 'auto',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}>{badge}</span>
+            )}
           </NavLink>
         ))}
         {user.email === 'akashagakash@gmail.com' && (
