@@ -2,6 +2,7 @@ import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { AuthData, checkAdmin } from "../auth/auth";
+import { RateLimits } from "../shared/rate-limiter";
 
 const db = new SQLDatabase("tickets", { migrations: "./migrations" });
 
@@ -22,6 +23,7 @@ interface TicketResponse {
 export const submitTicket = api(
   { expose: true, method: "POST", path: "/tickets", auth: false },
   async (params: SubmitTicketParams): Promise<TicketResponse> => {
+    RateLimits.contact("ticket:" + params.email);
     if (!params.name || !params.name.trim()) {
       throw APIError.invalidArgument("name is required");
     }

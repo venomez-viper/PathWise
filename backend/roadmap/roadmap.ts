@@ -2,6 +2,7 @@ import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
+import { RateLimits } from "../shared/rate-limiter";
 import { getAssessment } from "../assessment/assessment";
 import { createTask } from "../tasks/tasks";
 import { getMilestonesForRole } from "../assessment/career-brain";
@@ -183,6 +184,7 @@ export const generateRoadmap = api(
     const authData = getAuthData<AuthData>();
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
+    RateLimits.roadmap("roadmap:" + userID);
     if (userID !== params.userId) throw APIError.permissionDenied("you can only generate your own roadmap");
     const timelineRaw = params.timeline ?? "6mo";
     // Parse timeline to total weeks

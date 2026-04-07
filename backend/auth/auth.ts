@@ -5,6 +5,7 @@ import { secret } from "encore.dev/config";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { RateLimits } from "../shared/rate-limiter";
 
 const db = new SQLDatabase("users", { migrations: "./migrations" });
 
@@ -67,6 +68,7 @@ export interface SignUpParams {
 export const signup = api(
   { expose: true, method: "POST", path: "/auth/signup", auth: false },
   async (params: SignUpParams): Promise<TokenResponse> => {
+    RateLimits.auth("signup:" + params.email);
     if (params.password.length < 8) {
       throw APIError.invalidArgument("password must be at least 8 characters");
     }
@@ -106,6 +108,7 @@ export interface SignInParams {
 export const signin = api(
   { expose: true, method: "POST", path: "/auth/signin", auth: false },
   async (params: SignInParams): Promise<TokenResponse> => {
+    RateLimits.auth("signin:" + params.email);
     const row = await db.queryRow`
       SELECT id, name, email, avatar_url, plan, password_hash
       FROM users WHERE email = ${params.email}
@@ -221,6 +224,7 @@ export const changePassword = api(
   { expose: true, method: "POST", path: "/auth/change-password", auth: true },
   async (params: ChangePasswordParams): Promise<{ success: boolean }> => {
     const { userID } = getAuthData<AuthData>()!;
+    RateLimits.profile("chpw:" + userID);
 
     if (params.newPassword.length < 8) {
       throw APIError.invalidArgument("new password must be at least 8 characters");
@@ -268,6 +272,7 @@ export const adminListUsers = api(
   { expose: true, method: "GET", path: "/admin/users", auth: true },
   async (): Promise<AdminUsersResponse> => {
     const { userID } = getAuthData<AuthData>()!;
+    RateLimits.admin("admin:" + userID);
     await requireAdmin(userID);
 
     const users: AdminUser[] = [];
@@ -297,6 +302,7 @@ export const adminDeleteUser = api(
   { expose: true, method: "DELETE", path: "/admin/users/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<DeleteUserResponse> => {
     const { userID } = getAuthData<AuthData>()!;
+    RateLimits.admin("admin:" + userID);
     await requireAdmin(userID);
 
     // Don't allow deleting the admin themselves
