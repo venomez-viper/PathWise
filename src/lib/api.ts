@@ -85,6 +85,10 @@ export const auth = {
     request<{ success: boolean }>('/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
   deleteAccount: () => request<{ success: boolean }>('/auth/account', { method: 'DELETE' }),
   exportData: () => request<{ data: any }>('/auth/export'),
+  getProfileSettings: () =>
+    request<{ profilePublic: boolean; profileSlug: string | null; headline: string | null; bio: string | null }>('/auth/profile-settings'),
+  updateProfileSettings: (data: { profilePublic?: boolean; profileSlug?: string; headline?: string; bio?: string }) =>
+    request<{ success: boolean }>('/auth/profile-settings', { method: 'PATCH', body: JSON.stringify(data) }),
 };
 
 // --- Assessment ---
@@ -166,6 +170,12 @@ export const admin = {
 export const tickets = {
   submit: (data: { name: string; email: string; subject?: string; message: string }) =>
     request<{ id: string; success: boolean }>('/tickets', { method: 'POST', body: JSON.stringify(data) }),
+};
+
+// --- Public ---
+export const publicApi = {
+  getProfile: (slug: string) =>
+    request<{ profile: any }>(`/profile/${slug}`),
 };
 
 // --- Certificates ---
