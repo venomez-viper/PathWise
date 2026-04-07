@@ -33,8 +33,12 @@ export default function LegalPage({ docKey }: { docKey: LegalDocKey }) {
 
             <div className="legal-note">
               <p>
-                This page is provided for general information about how PathWise operates today. It
-                is not legal advice.
+                This document is provided for informational purposes and does not constitute legal
+                advice.
+              </p>
+              <p>
+                Questions? Contact us at{' '}
+                <a href="mailto:support@pathwise.fit">support@pathwise.fit</a>
               </p>
             </div>
           </article>
