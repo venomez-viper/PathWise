@@ -136,48 +136,442 @@ function extractAnswers(input: AssessmentInput): Record<string, string[]> {
   return extracted;
 }
 
+// ── Synergy Patterns ──────────────────────────────────────────────────
+// Cross-dimensional answer combos that are stronger signals than individual answers.
+// Each pattern specifies required answer values across multiple dimensions, the
+// profile domains/traits it boosts, and the max bonus points it contributes.
+
+interface SynergyPattern {
+  name: string;
+  /** Required answers: key = answer dimension, value = any of these must be present */
+  requires: Record<string, string[]>;
+  /** Profile fields that must contain at least one of these values for the bonus to apply */
+  boostWhen: { field: keyof CareerProfile; values: string[] }[];
+  /** Max bonus points when all conditions are met */
+  bonus: number;
+}
+
+const SYNERGY_PATTERNS: SynergyPattern[] = [
+  // 1. Engineering signal: builder + technical + solo
+  {
+    name: "engineering-core",
+    requires: { int3: ["builder"], int2: ["technical"], ws3: ["solo", "mixed"] },
+    boostWhen: [
+      { field: "domains", values: ["Technology"] },
+      { field: "archetypes", values: ["builder", "optimizer"] },
+    ],
+    bonus: 3,
+  },
+  // 2. Social/education signal: helper + social interest + purpose value
+  {
+    name: "social-educator",
+    requires: { int3: ["helper", "mentor"], int1: ["social"], val1: ["purpose", "impact"] },
+    boostWhen: [
+      { field: "domains", values: ["Education & Training", "Social Impact", "Healthcare"] },
+      { field: "archetypes", values: ["helper", "mentor"] },
+    ],
+    bonus: 3,
+  },
+  // 3. Management signal: strategic + leader + manager trajectory
+  {
+    name: "management-track",
+    requires: { int2: ["strategic"], car4: ["leader"], car3: ["manager", "executive"] },
+    boostWhen: [
+      { field: "trajectories", values: ["manager", "executive"] },
+      { field: "groupRoles", values: ["leader"] },
+    ],
+    bonus: 3,
+  },
+  // 4. Creative/design signal: creative + artistic + autonomy
+  {
+    name: "creative-designer",
+    requires: { int2: ["creative"], int1: ["artistic"], val1: ["autonomy"] },
+    boostWhen: [
+      { field: "domains", values: ["Design & UX", "Media & Entertainment", "Marketing"] },
+      { field: "archetypes", values: ["creator", "visionary"] },
+    ],
+    bonus: 3,
+  },
+  // 5. Analyst signal: investigative + analytical + organized
+  {
+    name: "analyst-core",
+    requires: { int1: ["investigative"], int2: ["analytical"], ws1: ["organized", "methodical"] },
+    boostWhen: [
+      { field: "domains", values: ["Data & Analytics", "Finance", "Research"] },
+      { field: "problemTypes", values: ["analytical", "technical"] },
+    ],
+    bonus: 2.5,
+  },
+  // 6. Entrepreneur signal: high risk + autonomy + ideator
+  {
+    name: "entrepreneur-signal",
+    requires: { car2: ["high"], val1: ["autonomy"], car4: ["ideator"] },
+    boostWhen: [
+      { field: "trajectories", values: ["entrepreneur", "founder"] },
+      { field: "riskLevels", values: ["high"] },
+    ],
+    bonus: 2.5,
+  },
+  // 7. Research/science signal: investigative + scientific + mastery
+  {
+    name: "research-scientist",
+    requires: { int1: ["investigative"], int2: ["scientific"], val1: ["mastery"] },
+    boostWhen: [
+      { field: "domains", values: ["Research", "Science", "Healthcare", "Data & Analytics"] },
+      { field: "problemTypes", values: ["scientific", "analytical"] },
+    ],
+    bonus: 2.5,
+  },
+  // 8. DevOps/infra signal: builder + organized + structure + steady pace
+  {
+    name: "infra-ops",
+    requires: { int3: ["builder", "optimizer"], ws1: ["organized"], ws4: ["structure"] },
+    boostWhen: [
+      { field: "domains", values: ["Technology", "Cybersecurity"] },
+      { field: "paces", values: ["steady"] },
+    ],
+    bonus: 2,
+  },
+  // 9. Communicator signal: social + helper + team collab
+  {
+    name: "communicator-collab",
+    requires: { int1: ["social"], int3: ["helper", "connector"], ws3: ["team"] },
+    boostWhen: [
+      { field: "collaboration", values: ["team"] },
+      { field: "teamSizes", values: ["large", "medium"] },
+    ],
+    bonus: 2,
+  },
+  // 10. Specialist depth signal: mastery + specialist trajectory + thinking decision
+  {
+    name: "deep-specialist",
+    requires: { val1: ["mastery"], car3: ["specialist"], ws2: ["thinking", "analytical"] },
+    boostWhen: [
+      { field: "trajectories", values: ["specialist"] },
+      { field: "coreValues", values: ["mastery"] },
+    ],
+    bonus: 2,
+  },
+];
+
+// ── Anti-Patterns ─────────────────────────────────────────────────────
+// Answer-profile combos that actively conflict. Penalty is subtracted.
+
+interface AntiPattern {
+  name: string;
+  /** User answers that trigger this anti-pattern */
+  userCondition: Record<string, string[]>;
+  /** Profile fields that must contain one of these values for the penalty to apply */
+  profileCondition: { field: keyof CareerProfile; values: string[] }[];
+  /** Penalty points (positive number, will be subtracted) */
+  penalty: number;
+}
+
+const ANTI_PATTERNS: AntiPattern[] = [
+  // 1. Low risk + entrepreneur trajectory
+  {
+    name: "risk-averse-entrepreneur",
+    userCondition: { car2: ["low"] },
+    profileCondition: [{ field: "trajectories", values: ["entrepreneur", "founder"] }],
+    penalty: 2.5,
+  },
+  // 2. Isolation frustration + solo team size
+  {
+    name: "isolation-hates-solo",
+    userCondition: { val3: ["isolation"] },
+    profileCondition: [{ field: "teamSizes", values: ["solo"] }, { field: "collaboration", values: ["solo"] }],
+    penalty: 2,
+  },
+  // 3. Micromanaged frustration + targets management style
+  {
+    name: "micromanaged-hates-targets",
+    userCondition: { val3: ["micromanaged"] },
+    profileCondition: [{ field: "managementStyles", values: ["targets", "directive", "structured"] }],
+    penalty: 2,
+  },
+  // 4. Steady pace preference + fast-only profiles
+  {
+    name: "steady-hates-fast",
+    userCondition: { env3: ["steady"] },
+    profileCondition: [{ field: "paces", values: ["fast", "burst"] }],
+    penalty: 1.5,
+  },
+  // 5. Solo preference + large team profiles
+  {
+    name: "solo-hates-large-team",
+    userCondition: { ws3: ["solo"] },
+    profileCondition: [{ field: "teamSizes", values: ["large"] }],
+    penalty: 1.5,
+  },
+  // 6. Monotony frustration + profiles with routine/repetitive traits
+  {
+    name: "monotony-hates-routine",
+    userCondition: { val3: ["monotony"] },
+    profileCondition: [{ field: "paces", values: ["steady"] }, { field: "ambiguityStyle", values: ["structure"] }],
+    penalty: 1,
+  },
+  // 7. Autonomy value + directive management
+  {
+    name: "autonomy-hates-directive",
+    userCondition: { val1: ["autonomy"] },
+    profileCondition: [{ field: "managementStyles", values: ["directive", "targets", "structured"] }],
+    penalty: 1.5,
+  },
+  // 8. Team preference + solo-heavy profiles
+  {
+    name: "team-player-hates-isolation",
+    userCondition: { ws3: ["team"] },
+    profileCondition: [{ field: "collaboration", values: ["solo"] }],
+    penalty: 1.5,
+  },
+];
+
+// ── Cross-Dimensional Synergy Scoring (max 10 points) ─────────────────
+
+function scoreSynergies(a: Record<string, string[]>, profile: CareerProfile): number {
+  let total = 0;
+  for (const pattern of SYNERGY_PATTERNS) {
+    // Check if user answers satisfy all required dimensions
+    let allRequirementsMet = true;
+    let requirementCount = 0;
+    let metCount = 0;
+
+    for (const [dim, requiredValues] of Object.entries(pattern.requires)) {
+      requirementCount++;
+      const userValues = (a[dim] ?? []).map(v => v.toLowerCase());
+      const hasMatch = requiredValues.some(rv => userValues.includes(rv.toLowerCase()));
+      if (hasMatch) {
+        metCount++;
+      } else {
+        allRequirementsMet = false;
+      }
+    }
+
+    if (metCount === 0) continue;
+
+    // Check if profile matches the boost conditions
+    let profileMatchCount = 0;
+    for (const bc of pattern.boostWhen) {
+      const profileValues = (profile[bc.field] as string[]) ?? [];
+      const profileLower = profileValues.map(v => v.toLowerCase());
+      if (bc.values.some(bv => profileLower.includes(bv.toLowerCase()))) {
+        profileMatchCount++;
+      }
+    }
+
+    if (profileMatchCount === 0) continue;
+
+    // Scale bonus: full bonus if all requirements met, partial if most met
+    const requirementRatio = metCount / requirementCount;
+    const profileRatio = profileMatchCount / pattern.boostWhen.length;
+
+    if (allRequirementsMet) {
+      // Full synergy: all user answers match + profile matches
+      total += pattern.bonus * profileRatio;
+    } else if (requirementRatio >= 0.66) {
+      // Partial synergy: 2 out of 3 requirements met — give half bonus
+      total += pattern.bonus * 0.5 * profileRatio;
+    }
+    // Less than 66% match: no synergy bonus
+  }
+
+  return Math.min(10, total);
+}
+
+// ── Anti-Pattern Penalty (max -8 points) ──────────────────────────────
+
+function scoreAntiPatterns(a: Record<string, string[]>, profile: CareerProfile): number {
+  let totalPenalty = 0;
+
+  for (const ap of ANTI_PATTERNS) {
+    // Check if user answers trigger this anti-pattern
+    let userTrigger = true;
+    for (const [dim, triggerValues] of Object.entries(ap.userCondition)) {
+      const userValues = (a[dim] ?? []).map(v => v.toLowerCase());
+      if (!triggerValues.some(tv => userValues.includes(tv.toLowerCase()))) {
+        userTrigger = false;
+        break;
+      }
+    }
+
+    if (!userTrigger) continue;
+
+    // Check if profile has the conflicting traits
+    let profileConflict = false;
+    for (const pc of ap.profileCondition) {
+      const profileValues = (profile[pc.field] as string[]) ?? [];
+      const profileLower = profileValues.map(v => v.toLowerCase());
+      if (pc.values.some(pv => profileLower.includes(pv.toLowerCase()))) {
+        profileConflict = true;
+        break;
+      }
+    }
+
+    if (profileConflict) {
+      totalPenalty += ap.penalty;
+    }
+  }
+
+  return Math.min(8, totalPenalty);
+}
+
+// ── Domain Affinity Boost (max 5 points) ──────────────────────────────
+// Tiered: top 1-2 interest selections = primary (big boost), 3-6 = secondary (moderate).
+
+function scoreDomainAffinity(interests: string[], profileDomains: string[]): number {
+  if (interests.length === 0 || profileDomains.length === 0) return 0;
+
+  const profileDomainsLower = new Set(profileDomains.map(d => d.toLowerCase()));
+  let boost = 0;
+
+  for (let i = 0; i < interests.length; i++) {
+    if (profileDomainsLower.has(interests[i].toLowerCase())) {
+      if (i < 2) {
+        // Primary domain (first 2 picks): 2 points each, max 4
+        boost += 2;
+      } else {
+        // Secondary domain (picks 3-6): 0.5 points each, max ~2
+        boost += 0.5;
+      }
+    }
+  }
+
+  return Math.min(5, boost);
+}
+
+// ── Experience-Career Fit (max 5 points) ──────────────────────────────
+// Boost when experience level matches profile requirements, penalise mismatches.
+
+const EXPERIENCE_RANKS: Record<string, number> = {
+  student: 0,
+  junior: 1,
+  mid: 2,
+  senior: 3,
+  expert: 4,
+  executive: 5,
+};
+
+function scoreExperienceFit(experienceLevel: string, profileLevels: string[]): number {
+  if (!experienceLevel || profileLevels.length === 0) return 0;
+
+  const userRank = EXPERIENCE_RANKS[experienceLevel.toLowerCase()] ?? 1;
+
+  // Find the closest profile level
+  const profileRanks = profileLevels
+    .map(l => EXPERIENCE_RANKS[l.toLowerCase()] ?? -1)
+    .filter(r => r >= 0);
+
+  if (profileRanks.length === 0) return 0;
+
+  // Direct match: full boost
+  if (profileRanks.includes(userRank)) return 5;
+
+  // Check distance to nearest matching level
+  const minDistance = Math.min(...profileRanks.map(pr => Math.abs(pr - userRank)));
+
+  if (minDistance === 1) return 2.5;  // Adjacent level: partial boost
+  if (minDistance === 2) return 0;    // Two levels away: neutral
+  return -2;                           // Very mismatched: mild penalty (student→expert, expert→student)
+}
+
+// ── Personality Coherence (contributes to spread, not separate points) ─
+// Cosine-similarity-like alignment between user trait vector and profile trait vector.
+// Used as a multiplier on the base score to reward/penalise coherent vs scattered profiles.
+
+function personalityCoherence(a: Record<string, string[]>, profile: CareerProfile): number {
+  // Build simple "trait presence" vectors for user and profile, then measure alignment.
+  // We map each answer dimension to the profile's corresponding trait array and
+  // count how many of the user's total answers align vs total possible.
+
+  const dimensionMap: [string, keyof CareerProfile][] = [
+    ["int1", "interests"], ["int2", "problemTypes"], ["int3", "archetypes"],
+    ["ws1", "workStyles"], ["ws2", "decisionStyle"], ["ws3", "collaboration"], ["ws4", "ambiguityStyle"],
+    ["val1", "coreValues"], ["val2", "tradeoffs"], ["val3", "frustrations"], ["val4", "rewards"],
+    ["env1", "environments"], ["env2", "teamSizes"], ["env3", "paces"], ["env4", "managementStyles"],
+    ["car1", "careerStages"], ["car2", "riskLevels"], ["car3", "trajectories"], ["car4", "groupRoles"],
+  ];
+
+  let matches = 0;
+  let total = 0;
+
+  for (const [answerKey, profileKey] of dimensionMap) {
+    const userValues = a[answerKey] ?? [];
+    if (userValues.length === 0) continue;
+
+    total++;
+    const profileValues = new Set(((profile[profileKey] as string[]) ?? []).map(v => v.toLowerCase()));
+    const hasMatch = userValues.some(uv => profileValues.has(uv.toLowerCase()));
+    if (hasMatch) matches++;
+  }
+
+  if (total === 0) return 1.0; // No data, neutral multiplier
+
+  // Return a coherence ratio from 0 to 1
+  return matches / total;
+}
+
 /** Score a single career profile against user input */
 function scoreProfile(profile: CareerProfile, input: AssessmentInput): number {
   const a = extractAnswers(input);
   let score = 0;
 
-  // ── Interest dimension (25 points max) ──
-  score += multiTraitMatch(a.int1 ?? [], profile.interests, 8);
-  score += multiTraitMatch(a.int2 ?? [], profile.problemTypes, 8);
-  score += multiTraitMatch(a.int3 ?? [], profile.archetypes, 9);
+  // ── Interest dimension (20 points max, was 25) ──
+  score += multiTraitMatch(a.int1 ?? [], profile.interests, 6.5);
+  score += multiTraitMatch(a.int2 ?? [], profile.problemTypes, 6.5);
+  score += multiTraitMatch(a.int3 ?? [], profile.archetypes, 7);
 
-  // ── Work style dimension (15 points max) ──
-  score += multiTraitMatch(a.ws1 ?? [], profile.workStyles, 4);
-  score += multiTraitMatch(a.ws2 ?? [], profile.decisionStyle, 4);
-  score += multiTraitMatch(a.ws3 ?? [], profile.collaboration, 4);
-  score += multiTraitMatch(a.ws4 ?? [], profile.ambiguityStyle, 3);
+  // ── Work style dimension (12 points max, was 15) ──
+  score += multiTraitMatch(a.ws1 ?? [], profile.workStyles, 3);
+  score += multiTraitMatch(a.ws2 ?? [], profile.decisionStyle, 3);
+  score += multiTraitMatch(a.ws3 ?? [], profile.collaboration, 3.5);
+  score += multiTraitMatch(a.ws4 ?? [], profile.ambiguityStyle, 2.5);
 
-  // ── Values dimension (20 points max) ──
-  score += multiTraitMatch(a.val1 ?? [], profile.coreValues, 6);
-  score += multiTraitMatch(a.val2 ?? [], profile.tradeoffs, 5);
-  score += multiTraitMatch(a.val3 ?? [], profile.frustrations, 4);
-  score += multiTraitMatch(a.val4 ?? [], profile.rewards, 5);
+  // ── Values dimension (18 points max, was 20) ──
+  score += multiTraitMatch(a.val1 ?? [], profile.coreValues, 5.5);
+  score += multiTraitMatch(a.val2 ?? [], profile.tradeoffs, 4.5);
+  score += multiTraitMatch(a.val3 ?? [], profile.frustrations, 3.5);
+  score += multiTraitMatch(a.val4 ?? [], profile.rewards, 4.5);
 
-  // ── Environment dimension (10 points max) ──
-  score += multiTraitMatch(a.env1 ?? [], profile.environments, 3);
-  score += multiTraitMatch(a.env2 ?? [], profile.teamSizes, 3);
-  score += multiTraitMatch(a.env3 ?? [], profile.paces, 2);
+  // ── Environment dimension (8 points max, was 10) ──
+  score += multiTraitMatch(a.env1 ?? [], profile.environments, 2);
+  score += multiTraitMatch(a.env2 ?? [], profile.teamSizes, 2.5);
+  score += multiTraitMatch(a.env3 ?? [], profile.paces, 1.5);
   score += multiTraitMatch(a.env4 ?? [], profile.managementStyles, 2);
 
-  // ── Career stage dimension (15 points max) ──
-  score += multiTraitMatch(a.car1 ?? [], profile.careerStages, 5);
-  score += multiTraitMatch(a.car2 ?? [], profile.riskLevels, 3);
-  score += multiTraitMatch(a.car3 ?? [], profile.trajectories, 4);
-  score += multiTraitMatch(a.car4 ?? [], profile.groupRoles, 3);
+  // ── Career stage dimension (12 points max, was 15) ──
+  score += multiTraitMatch(a.car1 ?? [], profile.careerStages, 4);
+  score += multiTraitMatch(a.car2 ?? [], profile.riskLevels, 2.5);
+  score += multiTraitMatch(a.car3 ?? [], profile.trajectories, 3);
+  score += multiTraitMatch(a.car4 ?? [], profile.groupRoles, 2.5);
 
-  // ── Skills/domain overlap (15 points max) ──
-  score += overlapScore(input.currentSkills, profile.requiredSkills) * 8;
-  score += overlapScore(input.interests, profile.domains) * 4;
-  score += (profile.experienceLevels.includes(input.experienceLevel) ? 1 : 0) * 3;
+  // ── Skills/domain overlap (10 points max, was 15) ──
+  score += overlapScore(input.currentSkills, profile.requiredSkills) * 6;
+  score += overlapScore(input.interests, profile.domains) * 2;
+  score += (profile.experienceLevels.includes(input.experienceLevel) ? 1 : 0) * 2;
 
-  // Normalize to 0-100 range
-  // Max theoretical raw score is ~100 (all dimensions match perfectly)
-  // Use a more honest scale: floor of 20 so bad matches look bad,
+  // ── Cross-dimensional synergy (10 points max, NEW) ──
+  score += scoreSynergies(a, profile);
+
+  // ── Anti-pattern penalty (-8 points max, NEW) ──
+  score -= scoreAntiPatterns(a, profile);
+
+  // ── Domain affinity boost (5 points max, NEW) ──
+  score += scoreDomainAffinity(input.interests, profile.domains);
+
+  // ── Experience-career fit (5 points max, NEW) ──
+  score += scoreExperienceFit(input.experienceLevel, profile.experienceLevels);
+
+  // ── Personality coherence multiplier ──
+  // Coherence adjusts the final score: highly coherent profiles get a small boost,
+  // scattered/inconsistent matches get pulled down slightly.
+  // Range: 0.92 (very incoherent) to 1.06 (very coherent)
+  const coherence = personalityCoherence(a, profile);
+  const coherenceMultiplier = 0.92 + (coherence * 0.14);
+  score *= coherenceMultiplier;
+
+  // ── Normalize to 0-100 ──
+  // Max theoretical raw score is ~100 (all dimensions + synergies match perfectly)
+  // Use a more honest scale: floor of 15 so bad matches look bad,
   // ceiling of 98 so perfect matches feel earned
   // Apply a curve: boost mid-range scores slightly for better spread
   const rawPct = Math.min(100, Math.max(0, score));
