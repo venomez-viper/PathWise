@@ -127,7 +127,7 @@ export default function Hero() {
 
         <div className="hero__cta-row">
           <Link to="/signup" className="hero__cta-primary">
-            Get Started — It's Free
+            Get Started, It's Free
             <ArrowRight size={18} />
           </Link>
           <Link to="/how-it-works" className="hero__cta-secondary">
