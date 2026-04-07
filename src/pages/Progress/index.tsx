@@ -114,7 +114,7 @@ export default function Progress() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [taskList, setTaskList] = useState<any[]>([]);
-  const [roadmapData, setRoadmapData] = useState<any>(null);
+  const [, setRoadmapData] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
