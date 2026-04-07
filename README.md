@@ -123,6 +123,15 @@ To get the project running locally:
 - **Panda Mascot System**: 12 cute panda characters (Gemini-generated art) placed contextually across the app — empty states, loading screens, success moments, help sections. CSS sprite sheet technique with mood-based selection (happy, thinking, sleepy, curious, celebrating, confused, waving, reading, working).
 - **Zen Stone Colors Restored**: Surface hierarchy matches Stitch desktop mockups (`#eefcfe` teal-tinted background).
 
+### **v0.10.1** — Settings Page Revamp
+*Date: April 7, 2026*
+- **Avatar Picker**: 12 DiceBear preset avatars (4 styles), click to select, saves instantly.
+- **Career Controls**: Retake Assessment, Change Target Role, Reset Roadmap with confirmation.
+- **Data & Privacy**: Export My Data (JSON download), Delete Account (double confirmation, cascade delete across all services).
+- **Self-Delete Endpoint**: `DELETE /auth/account` with admin protection.
+- **Data Export Endpoint**: `GET /auth/export` for GDPR-compliant data portability.
+- **Removed Fake Toggles**: Haptic Feedback, Zen Mode, Blue Light Reduction, Notification toggles that did nothing.
+
 ### **v0.10.0** — Admin Dashboard, Security Hardening & Marketing Polish
 *Date: April 7, 2026*
 - **Admin Dashboard**: Full user management UI with analytics, system info, user impersonation, bulk actions, and CSV export.

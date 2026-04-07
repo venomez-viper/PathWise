@@ -2,6 +2,20 @@
 
 All notable changes to PathWise are documented here.
 
+## [0.10.1] — 2026-04-07
+
+### Changed
+- **Settings page revamp** — complete rewrite with real, functional controls:
+  - Avatar picker: 12 DiceBear preset avatars (adventurer, avataaars, bottts, lorelei), click to select, saves instantly
+  - Career settings: Retake Assessment, Change Target Role, Reset Roadmap (with confirmation)
+  - Data & Privacy: Export My Data (JSON download), Delete Account (double confirmation, cascade delete)
+  - Clean password change form in Account & Security section
+- Removed all fake toggles (Haptic Feedback, Zen Mode, Blue Light Reduction, Notifications) that did nothing
+
+### Added
+- `DELETE /auth/account` endpoint for user self-deletion (with admin protection)
+- `GET /auth/export` endpoint for GDPR-compliant data export
+
 ## [0.10.0] — 2026-04-07
 
 ### Added
