@@ -111,6 +111,8 @@ export const tasks = {
   create: (data: unknown)               => request('/tasks', { method: 'POST', body: JSON.stringify(data) }),
   update: (taskId: string, data: unknown) =>
     request(`/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  delete: (taskId: string) =>
+    request<{ success: boolean }>(`/tasks/${taskId}`, { method: 'DELETE' }),
   aiGenerate: (data: unknown) =>
     request('/tasks/generate/milestone', { method: 'POST', body: JSON.stringify(data) }),
   customGenerate: (data: unknown) =>
