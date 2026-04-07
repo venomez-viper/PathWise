@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const res = await auth.me();
-      setUser({ ...(res.user as User), hasPassword: (res as any).hasPassword });
+      setUser({ ...(res.user as User), hasPassword: res.hasPassword });
     } catch (err) {
       // Only clear token on auth errors, NOT on network failures (cold starts)
       if (!(err instanceof TypeError)) {

@@ -55,6 +55,7 @@ interface ProviderProfile {
   email: string;
   emailVerified: boolean;
   name: string;
+  nonce?: string;
 }
 
 // ── Main endpoint ────────────────────────────────────────────────────────────
@@ -81,6 +82,15 @@ export const oauth = api(
     } catch (err) {
       if (err instanceof APIError) throw err;
       console.error("OAuth verification failed:", err);
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("fetch") || msg.includes("network") || msg.includes("ECONNREFUSED")) {
+        throw APIError.unavailable("Sign-in temporarily unavailable. Please try again shortly.");
+      }
+      throw APIError.unauthenticated("Authentication failed. Please try again.");
+    }
+
+    // Verify nonce if provided (replay attack protection)
+    if (params.nonce && profile.nonce && profile.nonce !== params.nonce) {
       throw APIError.unauthenticated("Authentication failed. Please try again.");
     }
 
@@ -214,6 +224,7 @@ async function verifyGoogle(params: OAuthParams): Promise<ProviderProfile> {
     email: payload.email as string,
     emailVerified: payload.email_verified as boolean ?? false,
     name: (payload.name as string) ?? "",
+    nonce: (payload.nonce as string) ?? undefined,
   };
 }
 
@@ -266,6 +277,7 @@ async function verifyApple(params: OAuthParams): Promise<ProviderProfile> {
     email: (payload.email as string) ?? "",
     emailVerified: payload.email_verified as boolean ?? false,
     name: (params.name as string) ?? "",
+    nonce: (payload.nonce as string) ?? undefined,
   };
 }
 

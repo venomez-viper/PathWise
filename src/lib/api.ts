@@ -90,7 +90,7 @@ export const auth = {
   me: () =>
     request<{ user: { id: string; name: string; email: string; avatarUrl?: string; plan: string }; hasPassword: boolean }>('/auth/me'),
   updateProfile: (data: { name?: string; avatarUrl?: string }) =>
-    request<{ user: { id: string; name: string; email: string; avatarUrl?: string; plan: string } }>(
+    request<{ user: { id: string; name: string; email: string; avatarUrl?: string; plan: string }; hasPassword: boolean }>(
       '/auth/me', { method: 'PATCH', body: JSON.stringify(data) }
     ),
   changePassword: (data: { currentPassword?: string; newPassword: string }) =>

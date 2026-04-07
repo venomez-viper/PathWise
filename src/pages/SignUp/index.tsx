@@ -42,7 +42,6 @@ export default function SignUp() {
   const googleLogin = useGoogleLogin({
     flow: 'auth-code',
     onSuccess: async (codeResponse) => {
-      setOauthLoading('google');
       setError('');
       try {
         const res = await auth.oauth({
@@ -58,6 +57,7 @@ export default function SignUp() {
       }
     },
     onError: () => {
+      setOauthLoading(null);
       setError('Google sign-in was cancelled.');
     },
   });
@@ -139,11 +139,11 @@ export default function SignUp() {
           <button
             type="button"
             className="btn-auth-social"
-            onClick={() => googleLogin()}
+            onClick={() => { setOauthLoading('google'); googleLogin(); }}
             disabled={isLoading}
           >
             <GoogleIcon size={18} />
-            {oauthLoading === 'google' ? 'Signing up…' : 'Google'}
+            {oauthLoading === 'google' ? 'Signing up…' : 'Continue with Google'}
           </button>
           <button
             type="button"
@@ -152,7 +152,7 @@ export default function SignUp() {
             disabled={isLoading}
           >
             <AppleIcon size={18} color="#fff" />
-            {oauthLoading === 'apple' ? 'Signing up…' : 'Apple'}
+            {oauthLoading === 'apple' ? 'Signing up…' : 'Continue with Apple'}
           </button>
         </div>
 
