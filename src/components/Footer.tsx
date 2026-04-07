@@ -15,14 +15,12 @@ const ROUTE_MAP: Record<string, string> = {
 
 const LINKS = {
   Product: ['How It Works', 'Solution', 'Pricing', 'Early Access'],
-  Company: ['About', 'Careers', 'Blog', 'Press'],
+  Company: ['Blog'],
   Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
 };
 
 const SOCIAL_LINKS = [
-  { label: 'Instagram', href: '#', shortLabel: 'IG' },
-  { label: 'LinkedIn', href: '#', shortLabel: 'IN' },
-  { label: 'YouTube', href: '#', shortLabel: 'YT' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/pathwise-fit', shortLabel: 'IN' },
 ];
 
 export default function Footer() {

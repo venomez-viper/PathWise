@@ -51,8 +51,11 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="navbar__actions">
-          <Link to="/pricing" className="btn btn-primary navbar__cta">
-            Get Started Free
+          <Link to="/signin" className="navbar__link" style={{ fontWeight: 600 }}>
+            Log In
+          </Link>
+          <Link to="/signup" className="btn btn-primary navbar__cta">
+            Sign Up Free
           </Link>
         </div>
 
@@ -79,8 +82,11 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link to="/pricing" className="btn btn-primary" onClick={closeMenu}>
-            Get Started Free
+          <Link to="/signin" className="navbar__mobile-link" onClick={closeMenu} style={{ fontWeight: 600 }}>
+            Log In
+          </Link>
+          <Link to="/signup" className="btn btn-primary" onClick={closeMenu}>
+            Sign Up Free
           </Link>
         </div>
       )}

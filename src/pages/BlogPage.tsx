@@ -6,6 +6,8 @@ import './Blog.css';
 
 export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
 
   const filteredArticles =
     activeCategory === 'All'
@@ -115,16 +117,30 @@ export default function BlogPage() {
             <p>
               Thoughtful reads on career planning, AI tools, and how to move with more confidence.
             </p>
-            <form className="blog-newsletter__form" onSubmit={(event) => event.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="blog-newsletter__input"
-              />
-              <button type="submit" className="btn btn-primary">
-                Subscribe
-              </button>
-            </form>
+            {newsletterSubmitted ? (
+              <p style={{ color: 'var(--secondary)', fontWeight: 600, marginTop: '1rem' }}>
+                Thanks for subscribing! We'll be in touch.
+              </p>
+            ) : (
+              <form className="blog-newsletter__form" onSubmit={(e) => {
+                e.preventDefault();
+                if (newsletterEmail.trim() && newsletterEmail.includes('@')) {
+                  setNewsletterSubmitted(true);
+                }
+              }}>
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  className="blog-newsletter__input"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  required
+                />
+                <button type="submit" className="btn btn-primary">
+                  Subscribe
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </section>
