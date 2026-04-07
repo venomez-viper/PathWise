@@ -113,7 +113,7 @@
 }
 
 .input-label {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--on-surface-variant);
   letter-spacing: 0.05em;
@@ -247,7 +247,7 @@
 }
 
 .auth-divider span {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--on-surface-muted);
   text-transform: uppercase;
@@ -261,23 +261,48 @@
   gap: 10px;
 }
 
+.auth-social-row--spaced {
+  margin-bottom: 0;
+}
+
 .btn-auth-social {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  border-radius: var(--radius-full);
-  background: var(--surface-container-low);
-  border: none;
+  gap: 10px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--surface-container-high);
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--on-surface);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, box-shadow 0.15s;
 }
-.btn-auth-social:hover { background: var(--surface-container); }
+.btn-auth-social:hover {
+  background: var(--surface-container);
+  box-shadow: var(--shadow-sm);
+}
+.btn-auth-social:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-auth-social--apple {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+.btn-auth-social--apple:hover {
+  background: #1a1a1a;
+}
+
+.auth-switch--spaced {
+  margin-top: 1.5rem;
+}
 
 .auth-terms {
   font-size: 0.75rem;

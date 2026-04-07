@@ -7,6 +7,7 @@ interface User {
   email: string;
   avatarUrl?: string;
   plan: 'free' | 'premium';
+  hasPassword?: boolean;
 }
 
 interface AuthContextValue {
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const res = await auth.me();
-      setUser(res.user as User);
+      setUser({ ...(res.user as User), hasPassword: res.hasPassword });
     } catch (err) {
       // Only clear token on auth errors, NOT on network failures (cold starts)
       if (!(err instanceof TypeError)) {

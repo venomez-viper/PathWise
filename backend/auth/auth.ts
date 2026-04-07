@@ -112,11 +112,13 @@ export const signin = api(
     `;
 
     // Use constant-time comparison to avoid timing attacks
+    // OAuth-only users (no password) also go through bcrypt with dummy hash
+    // to prevent account enumeration (same timing + same error message)
     const dummyHash = "$2a$12$invalidhashfortimingprotection000000000000000000000000";
     const hashToCheck = row?.password_hash ?? dummyHash;
     const match = await bcrypt.compare(params.password, hashToCheck);
 
-    if (!row || !match) {
+    if (!row || !row.password_hash || !match) {
       throw APIError.unauthenticated("invalid email or password");
     }
 
@@ -138,6 +140,7 @@ export const signin = api(
 
 export interface MeResponse {
   user: AuthUser;
+  hasPassword: boolean;
 }
 
 export const me = api(
@@ -145,7 +148,7 @@ export const me = api(
   async (): Promise<MeResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     const row = await db.queryRow`
-      SELECT id, name, email, avatar_url, plan
+      SELECT id, name, email, avatar_url, plan, password_hash
       FROM users WHERE id = ${userID}
     `;
     if (!row) throw APIError.notFound("user not found");
@@ -157,6 +160,7 @@ export const me = api(
         avatarUrl: row.avatar_url ?? undefined,
         plan:      row.plan,
       },
+      hasPassword: !!row.password_hash,
     };
   }
 );
@@ -173,7 +177,7 @@ export const updateProfile = api(
   async (params: UpdateProfileParams): Promise<MeResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     const row = await db.queryRow`
-      SELECT id, name, email, avatar_url, plan FROM users WHERE id = ${userID}
+      SELECT id, name, email, avatar_url, plan, password_hash FROM users WHERE id = ${userID}
     `;
     if (!row) throw APIError.notFound("user not found");
 
@@ -206,6 +210,7 @@ export const updateProfile = api(
         avatarUrl: newAvatarUrl ?? undefined,
         plan:      row.plan,
       },
+      hasPassword: !!row.password_hash,
     };
   }
 );
@@ -213,7 +218,7 @@ export const updateProfile = api(
 // ── Change Password ───────────────────────────────────────────────────────────
 
 export interface ChangePasswordParams {
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
 }
 
@@ -230,6 +235,18 @@ export const changePassword = api(
       SELECT password_hash FROM users WHERE id = ${userID}
     `;
     if (!row) throw APIError.notFound("user not found");
+
+    // OAuth-only user setting their first password
+    if (!row.password_hash) {
+      const newHash = await bcrypt.hash(params.newPassword, 12);
+      await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${userID}`;
+      return { success: true };
+    }
+
+    // Existing password user — verify current password
+    if (!params.currentPassword) {
+      throw APIError.invalidArgument("current password is required");
+    }
 
     const match = await bcrypt.compare(params.currentPassword, row.password_hash);
     if (!match) throw APIError.unauthenticated("current password is incorrect");

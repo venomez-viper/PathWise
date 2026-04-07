@@ -47,8 +47,12 @@ export default function SettingsPage() {
     if (pwForm.newPw.length < 8) { setPwError('Min 8 characters.'); return; }
     setPwSaving(true); setPwError('');
     try {
-      await authApi.changePassword({ currentPassword: pwForm.current, newPassword: pwForm.newPw });
+      const data = user?.hasPassword === false
+        ? { newPassword: pwForm.newPw }
+        : { currentPassword: pwForm.current, newPassword: pwForm.newPw };
+      await authApi.changePassword(data);
       setPwSuccess(true); setPwForm({ current: '', newPw: '', confirm: '' });
+      await refresh();
       setTimeout(() => { setPwSuccess(false); setShowPasswordForm(false); }, 2500);
     } catch (err: unknown) { setPwError(err instanceof Error ? err.message : 'Failed to change password.'); }
     finally { setPwSaving(false); }
@@ -155,23 +159,31 @@ export default function SettingsPage() {
               style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', textAlign: 'left' }}
               onClick={() => { setShowPasswordForm(v => !v); setPwError(''); setPwSuccess(false); }}
             >
-              <span>Update Password</span>
+              <span>{user?.hasPassword === false ? 'Set Password' : 'Update Password'}</span>
               <ChevronRight size={15} color="var(--on-surface-variant)" />
             </button>
           </div>
           {showPasswordForm && (
             <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
               {pwSuccess ? (
-                <p style={{ fontSize: '0.82rem', color: 'var(--secondary)', fontWeight: 600 }}>Password updated.</p>
+                <p style={{ fontSize: '0.82rem', color: 'var(--secondary)', fontWeight: 600 }}>
+                  {user?.hasPassword === false ? 'Password set.' : 'Password updated.'}
+                </p>
               ) : (
                 <>
-                  {['current', 'newPw', 'confirm'].map(f => (
-                    <input key={f} type="password" className="settings-input" placeholder={f === 'current' ? 'Current password' : f === 'newPw' ? 'New password' : 'Confirm new password'}
-                      value={pwForm[f as keyof typeof pwForm]} onChange={e => setPwForm(p => ({ ...p, [f]: e.target.value }))} />
+                  {user?.hasPassword !== false && (
+                    <input type="password" className="settings-input" placeholder="Current password"
+                      value={pwForm.current} onChange={e => setPwForm(p => ({ ...p, current: e.target.value }))} />
+                  )}
+                  {['newPw', 'confirm'].map(f => (
+                    <input key={f} type="password" className="settings-input"
+                      placeholder={f === 'newPw' ? 'New password' : 'Confirm new password'}
+                      value={pwForm[f as keyof typeof pwForm]}
+                      onChange={e => setPwForm(p => ({ ...p, [f]: e.target.value }))} />
                   ))}
                   {pwError && <p style={{ fontSize: '0.78rem', color: '#ef4444' }}>{pwError}</p>}
                   <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: '#8b4f2c' }} disabled={pwSaving} onClick={savePassword}>
-                    {pwSaving ? 'Saving…' : 'Update Password'}
+                    {pwSaving ? 'Saving…' : (user?.hasPassword === false ? 'Set Password' : 'Update Password')}
                   </button>
                 </>
               )}
