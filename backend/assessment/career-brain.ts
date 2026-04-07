@@ -58,12 +58,18 @@ function overlapScore(userItems: string[], profileItems: string[]): number {
  * Score a multi-select answer against a profile's trait array.
  * Each selected value contributes weight/N points (N = number of selections),
  * so picking 2 matches out of 3 selections scores 2/3 of the full weight.
+ * Bonus: if ALL selections match, add 15% bonus (strong alignment signal).
+ * Penalty: if NO selections match, return 0 (clear mismatch signal).
  */
 function multiTraitMatch(userValues: string[], profileTraits: string[], weight: number): number {
   if (userValues.length === 0) return 0;
-  const perValue = weight / userValues.length;
-  const matches = userValues.filter(v => profileTraits.includes(v)).length;
-  return matches * perValue;
+  const profileSet = new Set(profileTraits.map(t => t.toLowerCase()));
+  const matches = userValues.filter(v => profileSet.has(v.toLowerCase())).length;
+  if (matches === 0) return 0;
+  const baseScore = (matches / userValues.length) * weight;
+  // Bonus for perfect alignment (all user selections match)
+  const bonus = matches === userValues.length ? weight * 0.15 : 0;
+  return Math.min(weight * 1.1, baseScore + bonus); // Cap at 110% of weight
 }
 
 /** Normalise a raw answer entry (string or string[]) to a string array */
@@ -169,9 +175,16 @@ function scoreProfile(profile: CareerProfile, input: AssessmentInput): number {
   score += overlapScore(input.interests, profile.domains) * 4;
   score += (profile.experienceLevels.includes(input.experienceLevel) ? 1 : 0) * 3;
 
-  // Normalize to 0-100 range, with floor of 45 and ceiling of 97
+  // Normalize to 0-100 range
   // Max theoretical raw score is ~100 (all dimensions match perfectly)
-  const normalized = Math.round(Math.min(97, Math.max(45, score)));
+  // Use a more honest scale: floor of 20 so bad matches look bad,
+  // ceiling of 98 so perfect matches feel earned
+  // Apply a curve: boost mid-range scores slightly for better spread
+  const rawPct = Math.min(100, Math.max(0, score));
+  const curved = rawPct < 30
+    ? rawPct * 0.8                     // Compress low scores
+    : 20 + (rawPct - 30) * (78 / 70);  // Spread 30-100 across 20-98
+  const normalized = Math.round(Math.min(98, Math.max(15, curved)));
 
   return normalized;
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   CheckCircle2, Plus, Sparkles, Loader2, X,
   LayoutGrid, List, ArrowRight, ArrowLeft,
-  Calendar, ClipboardList, Target,
+  Calendar, ClipboardList, Target, ArrowUpDown,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -23,6 +23,7 @@ type Task = {
   dueDate?: string;
   milestoneId?: string;
   completedAt?: string;
+  createdAt?: string;
 };
 
 type ViewMode = 'board' | 'list';
@@ -73,6 +74,7 @@ export default function Tasks() {
 
   // List view filter (preserved from original)
   const [filter, setFilter] = useState<'all' | 'todo' | 'done'>('all');
+  const [sortBy, setSortBy] = useState<'priority' | 'dueDate' | 'newest' | 'title'>('priority');
 
   // Add task form
   const [addingTask, setAddingTask] = useState(false);
@@ -204,14 +206,32 @@ export default function Tasks() {
   );
 
   const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  const sortByPriority = (a: Task, b: Task) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
+
+  const sortTasks = (a: Task, b: Task): number => {
+    switch (sortBy) {
+      case 'priority':
+        return (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
+      case 'dueDate': {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      }
+      case 'newest':
+        return (b.createdAt ?? '').localeCompare(a.createdAt ?? '');
+      case 'title':
+        return a.title.localeCompare(b.title);
+      default:
+        return 0;
+    }
+  };
 
   const tasksByStatus = (status: Task['status']) => {
     let filtered = taskList.filter(t => t.status === status);
     if (filterMilestoneId) {
       filtered = filtered.filter(t => t.milestoneId === filterMilestoneId);
     }
-    return filtered.sort(sortByPriority);
+    return filtered.sort(sortTasks);
   };
 
   // Filtered visible list for list view
@@ -220,8 +240,8 @@ export default function Tasks() {
     if (filterMilestoneId) {
       list = list.filter(t => t.milestoneId === filterMilestoneId);
     }
-    return list.sort(sortByPriority);
-  }, [visible, filterMilestoneId]);
+    return list.sort(sortTasks);
+  }, [visible, filterMilestoneId, sortBy]);
 
   /* ── Reset add form ── */
   const cancelAdd = () => {
@@ -343,6 +363,31 @@ export default function Tasks() {
               <List size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
               List
             </button>
+          </div>
+          <div style={{ position: 'relative' }}>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              style={{
+                appearance: 'none', WebkitAppearance: 'none',
+                background: 'var(--surface-container-low)',
+                border: '1px solid var(--surface-container-high)',
+                borderRadius: 'var(--radius-md)',
+                padding: '6px 32px 6px 12px',
+                fontSize: '0.8rem', fontWeight: 600,
+                color: 'var(--on-surface)',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="priority">Priority</option>
+              <option value="dueDate">Due Date</option>
+              <option value="newest">Newest</option>
+              <option value="title">Title A-Z</option>
+            </select>
+            <ArrowUpDown size={12} style={{
+              position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+              pointerEvents: 'none', color: 'var(--on-surface-variant)',
+            }} />
           </div>
           <button
             className="btn-page-secondary"

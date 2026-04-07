@@ -19,11 +19,11 @@ const INTEREST_QUESTIONS = [
     { value: 'social', label: 'Coaching someone through a challenge' },
   ]},
   { id: 'int2', q: 'Which type of problem excites you most?', options: [
-    { value: 'technical', label: 'Technical — how do we build this?' },
-    { value: 'human', label: 'Human — how do we help this person?' },
-    { value: 'creative', label: 'Creative — how do we make this compelling?' },
-    { value: 'strategic', label: 'Strategic — how do we grow this business?' },
-    { value: 'scientific', label: 'Scientific — how does this actually work?' },
+    { value: 'technical', label: 'Technical: how do we build this?' },
+    { value: 'human', label: 'Human: how do we help this person?' },
+    { value: 'creative', label: 'Creative: how do we make this compelling?' },
+    { value: 'strategic', label: 'Strategic: how do we grow this business?' },
+    { value: 'scientific', label: 'Scientific: how does this actually work?' },
   ]},
   { id: 'int3', q: "You'd rather be known for:", options: [
     { value: 'builder', label: 'Building things millions of people use' },
@@ -36,24 +36,28 @@ const INTEREST_QUESTIONS = [
 // Step 1: Work Style (OCEAN + Cognitive)
 const WORKSTYLE_QUESTIONS = [
   { id: 'ws1', q: "Your team's project plan is suddenly scrapped. You:", options: [
-    { value: 'open', label: 'Get excited — blank slate means new possibilities' },
-    { value: 'cautious', label: 'Feel uneasy — want to understand why first' },
+    { value: 'open', label: 'Get excited, blank slate means new possibilities' },
+    { value: 'cautious', label: 'Feel uneasy, want to understand why first' },
     { value: 'organized', label: 'Immediately start organizing a new plan' },
     { value: 'empathetic', label: 'Check in with teammates to see how they feel' },
   ]},
   { id: 'ws2', q: 'When making a big decision, you rely more on:', options: [
     { value: 'thinking', label: 'Logic, data, and pros/cons lists' },
     { value: 'feeling', label: 'Gut feeling and how it aligns with your values' },
+    { value: 'intuition', label: 'Pattern recognition from past experience' },
+    { value: 'consensus', label: 'Consulting trusted people before deciding' },
   ]},
   { id: 'ws3', q: 'When working on something complex, you prefer to:', options: [
     { value: 'solo', label: 'Dive deep for hours without interruption' },
     { value: 'collaborative', label: 'Talk it through with others as you go' },
     { value: 'mixed', label: 'Alternate between solo thinking and group discussion' },
+    { value: 'pair', label: 'Work side by side with one trusted partner' },
   ]},
   { id: 'ws4', q: 'You handle ambiguity by:', options: [
-    { value: 'structure', label: 'Creating structure — lists, plans, frameworks' },
-    { value: 'experiment', label: 'Experimenting — try things and see what works' },
-    { value: 'consult', label: 'Asking others — gather perspectives first' },
+    { value: 'structure', label: 'Creating structure: lists, plans, frameworks' },
+    { value: 'experiment', label: 'Experimenting and seeing what works' },
+    { value: 'consult', label: 'Asking others, gathering perspectives first' },
+    { value: 'research', label: 'Researching deeply before taking any action' },
   ]},
 ];
 
@@ -69,6 +73,7 @@ const VALUES_QUESTIONS = [
     { value: 'purpose_over_wealth', label: 'Lower pay for deeply meaningful work' },
     { value: 'wealth_over_stability', label: 'Less stability for much higher earning potential' },
     { value: 'balance_over_creativity', label: 'Less creativity for strong work-life balance' },
+    { value: 'growth_over_comfort', label: 'Harder role for faster career growth' },
   ]},
   { id: 'val3', q: 'What frustrates you most in a job?', options: [
     { value: 'monotony', label: 'Doing the same thing every day' },
@@ -87,45 +92,49 @@ const VALUES_QUESTIONS = [
 // Step 3: Work Environment
 const ENVIRONMENT_QUESTIONS = [
   { id: 'env1', q: 'Your ideal work setting:', options: [
-    { value: 'remote', label: 'Fully remote — work from anywhere' },
-    { value: 'hybrid', label: 'Hybrid — mix of office and remote' },
-    { value: 'onsite', label: 'In-person — I want to be around people daily' },
+    { value: 'remote', label: 'Fully remote, work from anywhere' },
+    { value: 'hybrid', label: 'Hybrid, mix of office and remote' },
+    { value: 'onsite', label: 'In-person, I want to be around people daily' },
+    { value: 'flexible', label: 'Flexible, depends on the task and week' },
   ]},
   { id: 'env2', q: 'You do your best work in a team that is:', options: [
     { value: 'small', label: 'Small (2-5), tight-knit, everyone wears many hats' },
     { value: 'medium', label: 'Medium (6-20), specialized but collaborative' },
     { value: 'large', label: 'Large (20+), clear hierarchy and processes' },
-    { value: 'solo', label: 'Solo — I prefer working independently' },
+    { value: 'solo', label: 'Solo, I prefer working independently' },
   ]},
   { id: 'env3', q: 'Which pace feels right?', options: [
-    { value: 'fast', label: 'Fast and intense — ship fast, iterate' },
-    { value: 'steady', label: 'Steady and sustainable — no burnout' },
+    { value: 'fast', label: 'Fast and intense, ship fast, iterate' },
+    { value: 'steady', label: 'Steady and sustainable, no burnout' },
     { value: 'burst', label: 'Bursts of intensity then downtime' },
+    { value: 'varied', label: 'Varies by season, busy periods and quiet ones' },
   ]},
   { id: 'env4', q: 'Which management style brings out your best?', options: [
-    { value: 'handsoff', label: 'Hands-off — check in weekly, trust me' },
+    { value: 'handsoff', label: 'Hands-off, check in weekly, trust me' },
     { value: 'mentorship', label: 'Regular feedback and mentorship' },
     { value: 'targets', label: 'Clear daily/weekly targets and accountability' },
+    { value: 'coaching', label: 'Coaching with guiding questions, not directives' },
   ]},
 ];
 
 // Step 4: Career Stage & Goals
 const CAREER_QUESTIONS = [
   { id: 'car1', q: 'Where are you in your career?', options: [
-    { value: 'exploring', label: "Exploring — I'm not sure what I want yet" },
-    { value: 'building', label: 'Building — I know my field, growing skills' },
-    { value: 'advancing', label: 'Advancing — aiming for senior/leadership' },
-    { value: 'pivoting', label: 'Pivoting — changing fields entirely' },
+    { value: 'exploring', label: "Exploring, I'm not sure what I want yet" },
+    { value: 'building', label: 'Building, I know my field, growing skills' },
+    { value: 'advancing', label: 'Advancing, aiming for senior/leadership' },
+    { value: 'pivoting', label: 'Pivoting, changing fields entirely' },
   ]},
   { id: 'car2', q: 'Your comfort with risk:', options: [
     { value: 'high', label: "I'd take a pay cut for a startup I believe in" },
     { value: 'moderate', label: "I'd consider a startup if it had solid funding" },
     { value: 'low', label: 'I prefer established companies with stability' },
+    { value: 'calculated', label: "I take risks only with a solid fallback plan" },
   ]},
   { id: 'car3', q: 'In five years, you\'d rather have:', options: [
-    { value: 'specialist', label: 'Deep expertise — be the go-to person' },
-    { value: 'generalist', label: 'Broad skills — do many things well' },
-    { value: 'manager', label: 'Leadership — manage people and strategy' },
+    { value: 'specialist', label: 'Deep expertise, be the go-to person' },
+    { value: 'generalist', label: 'Broad skills, do many things well' },
+    { value: 'manager', label: 'Leadership, manage people and strategy' },
     { value: 'entrepreneur', label: 'Your own business or freelance practice' },
   ]},
   { id: 'car4', q: 'In group work, you naturally:', options: [
@@ -139,10 +148,10 @@ const CAREER_QUESTIONS = [
 // Step 5: Skills & Experience
 const EXPERIENCE_LEVELS = [
   { value: 'student', label: 'Student or self-taught beginner' },
-  { value: 'junior', label: 'Junior — 0-2 years professional experience' },
-  { value: 'mid', label: 'Mid-level — 2-6 years' },
-  { value: 'senior', label: 'Senior — 6+ years' },
-  { value: 'expert', label: 'Expert/leadership — 10+ years' },
+  { value: 'junior', label: 'Junior (0-2 years professional experience)' },
+  { value: 'mid', label: 'Mid-level (2-6 years)' },
+  { value: 'senior', label: 'Senior (6+ years)' },
+  { value: 'expert', label: 'Expert/leadership (10+ years)' },
 ];
 
 const SKILL_OPTIONS = [
