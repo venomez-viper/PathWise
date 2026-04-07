@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Shield, Users, Trash2, Search, BarChart3, CheckCircle2, AlertTriangle,
-  X, Download, UserCog, ExternalLink, Copy, Monitor, ChevronDown,
+  X, Download, ExternalLink, Copy, Monitor, ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { admin as adminApi } from '../../lib/api';
