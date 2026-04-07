@@ -145,6 +145,7 @@ export const signin = api(
 
 export interface MeResponse {
   user: AuthUser;
+  hasPassword: boolean;
 }
 
 export const me = api(
@@ -152,7 +153,7 @@ export const me = api(
   async (): Promise<MeResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     const row = await db.queryRow`
-      SELECT id, name, email, avatar_url, plan
+      SELECT id, name, email, avatar_url, plan, password_hash
       FROM users WHERE id = ${userID}
     `;
     if (!row) throw APIError.notFound("user not found");
@@ -164,6 +165,7 @@ export const me = api(
         avatarUrl: row.avatar_url ?? undefined,
         plan:      row.plan,
       },
+      hasPassword: !!row.password_hash,
     };
   }
 );
