@@ -47,9 +47,9 @@ export const LEGAL_DOCUMENTS: Record<'privacy' | 'terms' | 'cookies', LegalDocum
         title: '4. Legal Basis for Processing',
         paragraphs: [
           'Under the GDPR, we process your personal data on the following legal bases:',
-          'Contractual Necessity. Processing that is necessary to perform our contract with you — for example, creating your account, providing career assessments, and delivering roadmap features you have requested.',
-          'Legitimate Interest. Processing that serves our legitimate business interests, such as improving the Service, ensuring security, and conducting analytics — provided these interests do not override your fundamental rights and freedoms.',
-          'Consent. Where required by law, we obtain your explicit consent before processing your data — for example, before placing non-essential cookies or sending marketing communications. You may withdraw consent at any time without affecting the lawfulness of processing carried out prior to withdrawal.',
+          'Contractual Necessity. Processing that is necessary to perform our contract with you, for example, creating your account, providing career assessments, and delivering roadmap features you have requested.',
+          'Legitimate Interest. Processing that serves our legitimate business interests, such as improving the Service, ensuring security, and conducting analytics, provided these interests do not override your fundamental rights and freedoms.',
+          'Consent. Where required by law, we obtain your explicit consent before processing your data, for example, before placing non-essential cookies or sending marketing communications. You may withdraw consent at any time without affecting the lawfulness of processing carried out prior to withdrawal.',
           'Legal Obligation. We may process your data where necessary to comply with applicable legal requirements, such as tax obligations, regulatory requests, or court orders.',
         ],
       },
@@ -191,7 +191,7 @@ export const LEGAL_DOCUMENTS: Record<'privacy' | 'terms' | 'cookies', LegalDocum
         paragraphs: [
           'Termination by You. You may stop using the Service and delete your account at any time through your account settings. Upon account deletion, your personal data will be removed in accordance with our Privacy Policy.',
           'Termination by PathWise. We may suspend or terminate your access to the Service, without prior notice or liability, if you breach these Terms, engage in conduct that we determine is harmful to other users or the Service, or if we are required to do so by law. We may also terminate accounts that remain inactive for an extended period.',
-          'Effect of Termination. Upon termination, your right to use the Service ceases immediately. Sections of these Terms that by their nature should survive termination — including intellectual property, limitation of liability, disclaimer of warranties, indemnification, and governing law — shall continue in full force and effect.',
+          'Effect of Termination. Upon termination, your right to use the Service ceases immediately. Sections of these Terms that by their nature should survive termination, including intellectual property, limitation of liability, disclaimer of warranties, indemnification, and governing law, shall continue in full force and effect.',
         ],
       },
       {
