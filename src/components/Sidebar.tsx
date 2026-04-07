@@ -28,7 +28,7 @@ interface SidebarProps {
 export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
   const handleLogout = () => {
     tokenStore.clear();
-    window.location.href = '/';
+    window.location.href = '/logout';
   };
 
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
