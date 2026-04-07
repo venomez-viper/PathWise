@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import posthog from 'posthog-js';
 import { auth, tokenStore } from './api';
 
 interface User {
@@ -34,7 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const res = await auth.me();
-      setUser(res.user as User);
+      const u = res.user as User;
+      setUser(u);
+      posthog.identify(u.id, { email: u.email, name: u.name, plan: u.plan });
     } catch (err) {
       // Only clear token on auth errors, NOT on network failures (cold starts)
       if (!(err instanceof TypeError)) {
@@ -50,6 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (userData: User) => {
     setUser(userData);
     setReady(true);
+    // Identify user in PostHog
+    posthog.identify(userData.id, {
+      email: userData.email,
+      name: userData.name,
+      plan: userData.plan,
+    });
   };
 
   return (
