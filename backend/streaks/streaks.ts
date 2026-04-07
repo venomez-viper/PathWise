@@ -163,6 +163,9 @@ export const getAchievements = api(
 export const awardAchievement = api(
   { expose: true, method: "POST", path: "/streaks/achievements/award", auth: true },
   async ({ userId, badgeKey }: { userId: string; badgeKey: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== userId) throw APIError.permissionDenied("not your data");
+
     const badge = BADGES.find(b => b.key === badgeKey);
     if (!badge) throw APIError.notFound("badge not found");
 
