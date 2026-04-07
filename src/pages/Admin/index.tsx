@@ -43,14 +43,15 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     try {
-      const [usersRes, tasksRes, assessRes] = await Promise.all([
+      const [usersRes, tasksRes, assessRes] = await Promise.allSettled([
         adminApi.getUsers(),
         adminApi.getTaskStats(),
         adminApi.getAssessmentStats(),
       ]);
-      setUsers(usersRes.users);
-      setTaskStats(tasksRes.stats);
-      setAssessmentUserIds(assessRes.userIds);
+      if (usersRes.status === 'fulfilled') setUsers(usersRes.value?.users ?? []);
+      else throw new Error(usersRes.reason?.message || 'Failed to load users');
+      if (tasksRes.status === 'fulfilled') setTaskStats(tasksRes.value?.stats ?? []);
+      if (assessRes.status === 'fulfilled') setAssessmentUserIds(assessRes.value?.userIds ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin data.');
     } finally {
@@ -60,11 +61,11 @@ export default function AdminPage() {
 
   const taskStatsMap = useMemo(() => {
     const map: Record<string, TaskStat> = {};
-    taskStats.forEach(s => { map[s.userId] = s; });
+    (taskStats ?? []).forEach(s => { if (s?.userId) map[s.userId] = s; });
     return map;
   }, [taskStats]);
 
-  const assessmentSet = useMemo(() => new Set(assessmentUserIds), [assessmentUserIds]);
+  const assessmentSet = useMemo(() => new Set(assessmentUserIds ?? []), [assessmentUserIds]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -76,7 +77,7 @@ export default function AdminPage() {
   };
 
   const filteredUsers = useMemo(() => {
-    let list = users;
+    let list = users ?? [];
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
@@ -113,10 +114,10 @@ export default function AdminPage() {
   };
 
   // Stats
-  const totalUsers = users.length;
-  const withAssessment = assessmentUserIds.length;
-  const totalTasks = taskStats.reduce((s, t) => s + t.total, 0);
-  const completedTasks = taskStats.reduce((s, t) => s + t.completed, 0);
+  const totalUsers = users?.length ?? 0;
+  const withAssessment = assessmentUserIds?.length ?? 0;
+  const totalTasks = (taskStats ?? []).reduce((s, t) => s + (t?.total ?? 0), 0);
+  const completedTasks = (taskStats ?? []).reduce((s, t) => s + (t?.completed ?? 0), 0);
 
   const formatDate = (d: string) => {
     try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
