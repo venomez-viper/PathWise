@@ -8,6 +8,7 @@ const ROUTE_MAP: Record<string, string> = {
   'Pricing': '/pricing',
   'Early Access': '/signup',
   Blog: '/blog',
+  Contact: '/contact',
   'Privacy Policy': '/privacy-policy',
   'Terms of Service': '/terms-of-service',
   'Cookie Policy': '/cookie-policy',
@@ -15,7 +16,7 @@ const ROUTE_MAP: Record<string, string> = {
 
 const LINKS = {
   Product: ['How It Works', 'Solution', 'Pricing', 'Early Access'],
-  Company: ['Blog'],
+  Company: ['Blog', 'Contact'],
   Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
 };
 
