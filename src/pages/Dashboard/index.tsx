@@ -6,6 +6,7 @@ import { assessment, roadmap, tasks, progress } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import OnboardingTour from '../../components/OnboardingTour';
 import ShareButton from '../../components/ShareButton';
+import CompletionCertificate from '../../components/CompletionCertificate';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -67,6 +68,11 @@ export default function Dashboard() {
   }, [user]);
 
   const [showTour, setShowTour] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
+
+  const allMilestonesComplete =
+    data.milestones.length > 0 &&
+    data.milestones.every((m: any) => m.status === 'completed');
 
   useEffect(() => {
     if (data.hasAssessment && !localStorage.getItem('pathwise_tour_done')) {
@@ -150,6 +156,34 @@ export default function Dashboard() {
 
   return (
     <div className="page">
+      {/* ── COMPLETION BANNER — shown when all milestones are done ── */}
+      {allMilestonesComplete && (
+        <div className="panel" style={{
+          borderRadius: '2rem', padding: '2rem', marginBottom: '1.5rem',
+          background: 'linear-gradient(135deg, rgba(98,69,164,0.06), rgba(94,246,230,0.06))',
+          border: '2px solid rgba(98,69,164,0.15)',
+          textAlign: 'center',
+        }}>
+          <Panda mood="celebrating" size={100} animate />
+          <h2 style={{
+            fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800,
+            color: 'var(--on-surface)', marginTop: '1rem',
+          }}>
+            Roadmap Complete!
+          </h2>
+          <p style={{ color: 'var(--on-surface-variant)', marginTop: '0.5rem' }}>
+            Congratulations! You've completed all milestones for {data.targetRole}.
+          </p>
+          <button
+            onClick={() => setShowCertificate(true)}
+            className="btn-page-action"
+            style={{ marginTop: '1rem', background: '#8b4f2c' }}
+          >
+            View Certificate
+          </button>
+        </div>
+      )}
+
       {/* ── HERO BANNER — Zen Stone gradient ── */}
       <div style={{
         background: 'linear-gradient(135deg, #334042 0%, #4a5759 60%, #5a6b6e 100%)',
@@ -352,6 +386,15 @@ export default function Dashboard() {
       )}
 
       {showTour && <OnboardingTour onComplete={() => setShowTour(false)} />}
+
+      {showCertificate && (
+        <CompletionCertificate
+          userName={user?.name ?? 'User'}
+          targetRole={data.targetRole}
+          completedDate={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          onClose={() => setShowCertificate(false)}
+        />
+      )}
     </div>
   );
 }
