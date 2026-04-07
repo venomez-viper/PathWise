@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
-import { Search, ChevronDown, Compass, Map, CreditCard, Mail, MessageSquare } from 'lucide-react';
+import { Search, ChevronDown, Compass, Map, CreditCard, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Panda } from '../../components/panda';
 
 const CATEGORIES = [
   { icon: Compass, title: 'Getting Started', desc: 'Set up your account and take your first assessment', count: 2 },
@@ -313,6 +315,8 @@ export default function HelpFAQ() {
           Our support team is here to help you with anything you need.
         </p>
 
+        <Panda mood="waving" size={80} animate style={{ margin: '0.5rem auto' }} />
+
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -320,8 +324,8 @@ export default function HelpFAQ() {
           marginTop: '1.25rem',
           flexWrap: 'wrap',
         }}>
-          <a
-            href="mailto:support@pathwise.fit"
+          <Link
+            to="/app/support"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -333,38 +337,11 @@ export default function HelpFAQ() {
               fontWeight: 700,
               fontSize: '0.85rem',
               textDecoration: 'none',
-              transition: 'opacity 0.15s ease',
-              cursor: 'pointer',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.9'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; }}
-          >
-            <Mail size={16} />
-            Email Support
-          </a>
-          <a
-            href="/contact"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '0.65rem 1.5rem',
-              borderRadius: 'var(--radius-full)',
-              background: 'var(--surface-container)',
-              color: 'var(--on-surface)',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              textDecoration: 'none',
-              border: '1px solid var(--outline-variant)',
-              transition: 'background 0.15s ease',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface-container-high)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface-container)'; }}
           >
             <MessageSquare size={16} />
-            Contact Us
-          </a>
+            Contact Support
+          </Link>
         </div>
       </div>
     </div>
