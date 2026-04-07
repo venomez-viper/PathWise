@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield } from 'lucide-react';
+import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Globe, Copy, ExternalLink } from 'lucide-react';
 import { Panda } from '../../components/panda';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -47,6 +47,51 @@ export default function SettingsPage() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
+
+  // Public profile settings
+  const [profileSettings, setProfileSettings] = useState({ profilePublic: false, profileSlug: '', headline: '', bio: '' });
+  const [profileSettingsLoading, setProfileSettingsLoading] = useState(true);
+  const [profileSettingsSaving, setProfileSettingsSaving] = useState(false);
+  const [profileSettingsSuccess, setProfileSettingsSuccess] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  useEffect(() => {
+    authApi.getProfileSettings().then((res: any) => {
+      setProfileSettings({
+        profilePublic: res.profilePublic ?? false,
+        profileSlug: res.profileSlug ?? '',
+        headline: res.headline ?? '',
+        bio: res.bio ?? '',
+      });
+      setProfileSettingsLoading(false);
+    }).catch(() => setProfileSettingsLoading(false));
+  }, []);
+
+  const saveProfileSettings = async () => {
+    setProfileSettingsSaving(true);
+    try {
+      await authApi.updateProfileSettings({
+        profilePublic: profileSettings.profilePublic,
+        profileSlug: profileSettings.profileSlug || undefined,
+        headline: profileSettings.headline || undefined,
+        bio: profileSettings.bio || undefined,
+      });
+      setProfileSettingsSuccess(true);
+      setTimeout(() => setProfileSettingsSuccess(false), 3000);
+    } catch (err) { alert(err instanceof Error ? err.message : 'Failed to save'); }
+    finally { setProfileSettingsSaving(false); }
+  };
+
+  const profileUrl = profileSettings.profileSlug
+    ? `${window.location.origin}/u/${profileSettings.profileSlug}`
+    : '';
+
+  const copyProfileLink = () => {
+    if (!profileUrl) return;
+    navigator.clipboard.writeText(profileUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   const handleLogout = () => { tokenStore.clear(); window.location.href = '/logout'; };
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) ?? '?';
@@ -250,6 +295,117 @@ export default function SettingsPage() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── PUBLIC PROFILE ── */}
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
+        {sectionLabel('Public Profile')}
+
+        {profileSettingsLoading ? (
+          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>Loading...</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 12, background: 'color-mix(in srgb, var(--primary) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Globe size={16} color="var(--primary)" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)' }}>Make profile public</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', marginTop: 2 }}>Anyone with your link can see your profile</p>
+              </div>
+              <button
+                onClick={() => setProfileSettings(s => ({ ...s, profilePublic: !s.profilePublic }))}
+                style={{
+                  width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+                  background: profileSettings.profilePublic ? 'var(--primary)' : 'color-mix(in srgb, var(--on-surface) 15%, transparent)',
+                  position: 'relative', transition: 'background 0.2s',
+                }}
+              >
+                <div style={{
+                  width: 18, height: 18, borderRadius: '50%', background: '#fff',
+                  position: 'absolute', top: 3,
+                  left: profileSettings.profilePublic ? 23 : 3,
+                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                }} />
+              </button>
+            </div>
+
+            {/* Profile URL */}
+            <div>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Profile URL</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', whiteSpace: 'nowrap' }}>{window.location.origin}/u/</span>
+                <input
+                  className="settings-input"
+                  value={profileSettings.profileSlug}
+                  onChange={e => setProfileSettings(s => ({ ...s, profileSlug: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '') }))}
+                  placeholder="your-slug"
+                  style={{ flex: 1 }}
+                />
+                {profileSettings.profilePublic && profileSettings.profileSlug && (
+                  <>
+                    <button
+                      onClick={copyProfileLink}
+                      title="Copy link"
+                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: copiedLink ? 'var(--secondary)' : 'var(--on-surface-variant)' }}
+                    >
+                      <Copy size={14} /> {copiedLink ? 'Copied!' : 'Copy'}
+                    </button>
+                    <a
+                      href={profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="View profile"
+                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '6px 8px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}
+                    >
+                      <ExternalLink size={14} />
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Headline */}
+            <div>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Headline</label>
+              <input
+                className="settings-input"
+                value={profileSettings.headline}
+                onChange={e => setProfileSettings(s => ({ ...s, headline: e.target.value }))}
+                placeholder="e.g., Aspiring Full-Stack Developer"
+                maxLength={120}
+              />
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Bio</label>
+              <textarea
+                className="settings-input"
+                value={profileSettings.bio}
+                onChange={e => setProfileSettings(s => ({ ...s, bio: e.target.value }))}
+                placeholder="A short paragraph about yourself..."
+                maxLength={500}
+                rows={3}
+                style={{ resize: 'vertical', minHeight: 72 }}
+              />
+            </div>
+
+            {/* Save */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button
+                className="btn-page-action"
+                style={{ background: '#8b4f2c' }}
+                disabled={profileSettingsSaving}
+                onClick={saveProfileSettings}
+              >
+                {profileSettingsSaving ? 'Saving...' : <><Check size={14} /> Save Profile Settings</>}
+              </button>
+              {profileSettingsSuccess && <span style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 600 }}>Saved!</span>}
             </div>
           </div>
         )}

@@ -38,6 +38,7 @@ import HelpFAQ      from './pages/HelpFAQ';
 import CareerMatchDetail from './pages/CareerMatchDetail';
 import SearchPage   from './pages/Search';
 import AdminPage    from './pages/Admin';
+import PublicProfile from './pages/PublicProfile';
 import './App.css';
 
 function NotFound() {
@@ -126,6 +127,9 @@ export default function App() {
             <Route path="/cookie-policy" element={<LegalPage docKey="cookies" />} />
             <Route path="/contact" element={<ContactPage />} />
           </Route>
+
+          {/* ── Public profile (standalone, no layout) ── */}
+          <Route path="/u/:slug" element={<PublicProfile />} />
 
           {/* ── Auth screens ── */}
           <Route element={<AuthLayout />}>
