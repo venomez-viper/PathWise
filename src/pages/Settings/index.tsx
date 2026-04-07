@@ -132,7 +132,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="page" style={{ maxWidth: 640, margin: '0 auto' }}>
+    <div className="page">
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -255,8 +255,11 @@ export default function SettingsPage() {
         )}
       </div>
 
+      {/* ── 2-COLUMN GRID ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+
       {/* ── ACCOUNT & SECURITY ── */}
-      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem' }}>
         {sectionLabel('Account & Security')}
 
         {settingRow(
@@ -305,7 +308,7 @@ export default function SettingsPage() {
       </div>
 
       {/* ── CAREER SETTINGS ── */}
-      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem' }}>
         {sectionLabel('Career Settings')}
 
         {settingRow(
@@ -339,6 +342,7 @@ export default function SettingsPage() {
         )}
       </div>
 
+      </div>
       {/* ── DATA & PRIVACY ── */}
       <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginBottom: '1.5rem' }}>
         {sectionLabel('Data & Privacy')}
