@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Outlet, useNavigate, Link } from 'react-r
 import * as Sentry from '@sentry/react';
 import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './lib/auth-context';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Marketing site components
 import Navbar          from './components/Navbar';
@@ -107,6 +108,7 @@ export default function App() {
       <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>The error has been reported. Please refresh the page.</p>
       <button onClick={() => window.location.reload()} style={{ padding: '0.6rem 1.5rem', borderRadius: '999px', background: '#334042', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Refresh Page</button>
     </div>}>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''}>
     <BrowserRouter>
       <AuthProvider>
         <Routes>
@@ -154,6 +156,7 @@ export default function App() {
         </Routes>
       </AuthProvider>
     </BrowserRouter>
+    </GoogleOAuthProvider>
     </Sentry.ErrorBoundary>
   );
 }
