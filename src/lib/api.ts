@@ -75,13 +75,25 @@ export const auth = {
     request<{ token: string; user: { id: string; name: string; email: string; plan: string } }>(
       '/auth/signin', { method: 'POST', body: JSON.stringify(data) }
     ),
+  oauth: (data: {
+    provider: 'google' | 'apple';
+    code?: string;
+    id_token?: string;
+    code_verifier?: string;
+    name?: string;
+    nonce?: string;
+    platform: 'web' | 'ios';
+  }) =>
+    request<{ token: string; user: { id: string; name: string; email: string; avatarUrl?: string; plan: string }; isNewUser: boolean }>(
+      '/auth/oauth', { method: 'POST', body: JSON.stringify(data) }
+    ),
   me: () =>
-    request<{ user: { id: string; name: string; email: string; avatarUrl?: string; plan: string } }>('/auth/me'),
+    request<{ user: { id: string; name: string; email: string; avatarUrl?: string; plan: string }; hasPassword: boolean }>('/auth/me'),
   updateProfile: (data: { name?: string; avatarUrl?: string }) =>
     request<{ user: { id: string; name: string; email: string; avatarUrl?: string; plan: string } }>(
       '/auth/me', { method: 'PATCH', body: JSON.stringify(data) }
     ),
-  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+  changePassword: (data: { currentPassword?: string; newPassword: string }) =>
     request<{ success: boolean }>('/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
 };
 
