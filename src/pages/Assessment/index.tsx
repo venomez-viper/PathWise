@@ -169,7 +169,7 @@ export default function Assessment() {
   useEffect(() => { warmup(); }, []);
 
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [currentSkillsText, setCurrentSkillsText] = useState('');
   const [currentRole, setCurrentRole] = useState('');
   const [experienceLevel, setExperienceLevel] = useState('');
@@ -180,7 +180,14 @@ export default function Assessment() {
   const [isPartial, setIsPartial] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(0);
 
-  const setAnswer = (id: string, value: string) => setAnswers(prev => ({ ...prev, [id]: value }));
+  const toggleAnswer = (id: string, value: string, max = 3) => {
+    setAnswers(prev => {
+      const current = prev[id] ?? [];
+      if (current.includes(value)) return { ...prev, [id]: current.filter(v => v !== value) };
+      if (current.length >= max) return prev;
+      return { ...prev, [id]: [...current, value] };
+    });
+  };
   const toggleMulti = (val: string, list: string[], setList: (v: string[]) => void, max = 8) => {
     if (list.includes(val)) setList(list.filter(v => v !== val));
     else if (list.length < max) setList([...list, val]);
@@ -196,7 +203,7 @@ export default function Assessment() {
   const canNext = () => {
     if (step < 5) {
       const qs = stepQuestions[step];
-      return qs.every(q => !!answers[q.id]);
+      return qs.every(q => (answers[q.id] ?? []).length > 0);
     }
     if (step === 5) return !!experienceLevel && selectedSkills.length >= 2 && selectedDomains.length >= 1;
     return true;
@@ -208,14 +215,25 @@ export default function Assessment() {
     if (!user) { setError('You must be signed in.'); return; }
     setStep(6); setError(''); setIsPartial(false);
 
-    const workStyle = answers.ws3 || 'mixed';
+    const workStyle = (answers.ws3 ?? [])[0] || 'mixed';
     const strengths = [
-      answers.int2 && `${answers.int2} problem-solving`,
-      answers.ws1 && `${answers.ws1} mindset`,
-      answers.car4 && `natural ${answers.car4}`,
-      answers.ws4 && `handles ambiguity via ${answers.ws4}`,
+      ...(answers.int2 ?? []).map(v => `${v} problem-solving`),
+      ...(answers.ws1 ?? []).map(v => `${v} mindset`),
+      ...(answers.car4 ?? []).map(v => `natural ${v}`),
+      ...(answers.ws4 ?? []).map(v => `handles ambiguity via ${v}`),
     ].filter(Boolean) as string[];
-    const values = [answers.val1, answers.val2, answers.val3, answers.val4].filter(Boolean) as string[];
+    const values = [
+      ...(answers.val1 ?? []),
+      ...(answers.val2 ?? []),
+      ...(answers.val3 ?? []),
+      ...(answers.val4 ?? []),
+    ];
+    const interests = [
+      ...(answers.int1 ?? []),
+      ...(answers.int2 ?? []),
+      ...(answers.int3 ?? []),
+      ...selectedDomains,
+    ];
 
     const payload = {
       userId: user.id,
@@ -224,10 +242,10 @@ export default function Assessment() {
       values,
       currentSkills: [...selectedSkills, ...currentSkills],
       experienceLevel,
-      interests: selectedDomains,
+      interests,
       currentRole: currentRole.trim() || '',
-      personalityType: `${answers.int1 || 'mixed'}-${answers.ws2 || 'balanced'}-${answers.car1 || 'building'}`,
-      rawAnswers: { ...answers },
+      personalityType: `${(answers.int1 ?? [])[0] || 'mixed'}-${(answers.ws2 ?? [])[0] || 'balanced'}-${(answers.car1 ?? [])[0] || 'building'}`,
+      rawAnswers: answers,
     };
 
     try {
@@ -280,14 +298,15 @@ export default function Assessment() {
                   {q.options.map(opt => (
                     <button
                       key={opt.value}
-                      className={`assessment__option${answers[q.id] === opt.value ? ' selected' : ''}`}
-                      onClick={() => setAnswer(q.id, opt.value)}
+                      className={`assessment__option${(answers[q.id] ?? []).includes(opt.value) ? ' selected' : ''}`}
+                      onClick={() => toggleAnswer(q.id, opt.value)}
                     >
                       {opt.label}
-                      {answers[q.id] === opt.value && <CheckCircle2 size={16} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
+                      {(answers[q.id] ?? []).includes(opt.value) && <CheckCircle2 size={16} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
                     </button>
                   ))}
                 </div>
+                <p className="assessment__hint">Pick up to 3</p>
               </div>
             ))}
             <div className="assessment__nav" style={{ marginTop: '1.5rem' }}>

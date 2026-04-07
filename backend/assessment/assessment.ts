@@ -85,7 +85,7 @@ export interface SubmitAssessmentParams {
   interests: string[];
   currentRole?: string;
   personalityType?: string;
-  rawAnswers?: Record<string, string>;
+  rawAnswers?: Record<string, string | string[]>;
 }
 
 // POST /assessment — Submit questionnaire answers, get career matches via local brain
