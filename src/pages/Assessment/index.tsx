@@ -157,6 +157,9 @@ const INTEREST_DOMAINS = [
   'Technology', 'Data & Analytics', 'Marketing', 'Finance',
   'Design & UX', 'Product Management', 'Healthcare', 'Education',
   'E-commerce', 'Sustainability', 'Media & Entertainment', 'Consulting',
+  'Law & Policy', 'Architecture & Construction', 'Arts & Entertainment',
+  'Science & Research', 'Hospitality & Tourism', 'Trades & Skilled Labor',
+  'Logistics & Operations', 'Social Services', 'Agriculture & Environment',
 ];
 
 const TOTAL_STEPS = 8; // 0-5 questions + 6 analyzing + 7 results

@@ -8,11 +8,12 @@
 import type { CareerProfile, SkillGapEntry, CertEntry, RecEntry, MilestoneEntry } from "./career-profiles";
 import { CAREER_PROFILES_PART1 } from "./career-profiles";
 import { CAREER_PROFILES_PART2 } from "./career-profiles-2";
+import { CAREER_PROFILES_3 } from "./career-profiles-3";
 import { getExperienceModifier, routeResourcesByStyle } from "./experience-modifiers";
 import { matchGapPattern, getStageModifier } from "./gap-patterns";
 import { evaluateRules, applyRuleOverlays, type RuleContext } from "./combination-rules";
 
-const ALL_PROFILES: CareerProfile[] = [...CAREER_PROFILES_PART1, ...CAREER_PROFILES_PART2];
+const ALL_PROFILES: CareerProfile[] = [...CAREER_PROFILES_PART1, ...CAREER_PROFILES_PART2, ...CAREER_PROFILES_3];
 
 // ── Types matching existing backend interfaces ──────────────────────────
 
