@@ -203,12 +203,15 @@ export default function Tasks() {
     filter === 'all' ? true : filter === 'done' ? t.status === 'done' : t.status !== 'done'
   );
 
+  const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const sortByPriority = (a: Task, b: Task) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
+
   const tasksByStatus = (status: Task['status']) => {
     let filtered = taskList.filter(t => t.status === status);
     if (filterMilestoneId) {
       filtered = filtered.filter(t => t.milestoneId === filterMilestoneId);
     }
-    return filtered;
+    return filtered.sort(sortByPriority);
   };
 
   // Filtered visible list for list view
@@ -217,7 +220,7 @@ export default function Tasks() {
     if (filterMilestoneId) {
       list = list.filter(t => t.milestoneId === filterMilestoneId);
     }
-    return list;
+    return list.sort(sortByPriority);
   }, [visible, filterMilestoneId]);
 
   /* ── Reset add form ── */

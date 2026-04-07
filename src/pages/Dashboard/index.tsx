@@ -85,7 +85,7 @@ export default function Dashboard() {
           borderRadius: '2rem', padding: '3rem 2.5rem', maxWidth: 520,
           boxShadow: 'var(--shadow-md)',
         }}>
-          <Panda mood="excited" size={140} animate />
+          <Panda mood="celebrating" size={140} animate />
 
           <h1 style={{
             fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800,
