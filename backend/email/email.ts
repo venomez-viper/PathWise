@@ -8,7 +8,7 @@ function getResend() {
   return new Resend(resendKey());
 }
 
-const FROM_EMAIL = "PathWise <onboarding@resend.dev>"; // Use resend.dev until custom domain verified
+const FROM_EMAIL = "PathWise <hello@pathwise.fit>";
 
 // ── Internal email sending function (not exposed) ──
 
