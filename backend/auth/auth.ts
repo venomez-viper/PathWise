@@ -314,6 +314,80 @@ export const adminDeleteUser = api(
   }
 );
 
+// ── Admin Update Plan ─────────────────────────────────────────────────────────
+
+export const adminUpdatePlan = api(
+  { expose: true, method: "PATCH", path: "/admin/users/:userId/plan", auth: true },
+  async ({ userId, plan }: { userId: string; plan: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    await requireAdmin(userID);
+    if (plan !== 'free' && plan !== 'premium') {
+      throw APIError.invalidArgument("plan must be 'free' or 'premium'");
+    }
+    await db.exec`UPDATE users SET plan = ${plan} WHERE id = ${userId}`;
+    return { success: true };
+  }
+);
+
+// ── Admin Impersonate ─────────────────────────────────────────────────────────
+
+export const adminImpersonate = api(
+  { expose: true, method: "POST", path: "/admin/impersonate/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<{ token: string }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    await requireAdmin(userID);
+    const row = await db.queryRow`SELECT id FROM users WHERE id = ${userId}`;
+    if (!row) throw APIError.notFound("user not found");
+    return { token: issueToken(userId) };
+  }
+);
+
+// ── Admin User Detail ─────────────────────────────────────────────────────────
+
+interface AdminUserDetailResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    plan: string;
+    avatarUrl?: string;
+    createdAt: string;
+    hasPassword: boolean;
+    oauthProviders: string[];
+  };
+}
+
+export const adminUserDetail = api(
+  { expose: true, method: "GET", path: "/admin/user/:userId/detail", auth: true },
+  async ({ userId }: { userId: string }): Promise<AdminUserDetailResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    await requireAdmin(userID);
+    const row = await db.queryRow`
+      SELECT id, name, email, plan, avatar_url, created_at, password_hash
+      FROM users WHERE id = ${userId}
+    `;
+    if (!row) throw APIError.notFound("user not found");
+    // Check OAuth providers
+    const providers: string[] = [];
+    try {
+      const oauthRows = db.query`SELECT provider FROM user_oauth_providers WHERE user_id = ${userId}`;
+      for await (const r of oauthRows) providers.push(r.provider);
+    } catch {}
+    return {
+      user: {
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        plan: row.plan,
+        avatarUrl: row.avatar_url ?? undefined,
+        createdAt: row.created_at,
+        hasPassword: !!row.password_hash,
+        oauthProviders: providers,
+      },
+    };
+  }
+);
+
 // ── Admin Check (internal, callable from other services) ─────────────────────
 
 export const checkAdmin = api(

@@ -334,3 +334,66 @@ export const adminDeleteUserAssessment = api(
     return { success: true };
   }
 );
+
+// GET /admin/assessment/:userId — Get a specific user's assessment results
+export const adminGetAssessment = api(
+  { expose: true, method: "GET", path: "/admin/assessment/:userId", auth: true },
+  async ({ userId }: { userId: string }): Promise<any> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+    // Same logic as getAssessment but for any user
+    const row = await db.queryRow`SELECT * FROM assessments WHERE user_id = ${userId}`;
+    if (!row) return { result: null };
+    return {
+      result: {
+        completedAt: row.completed_at,
+        careerMatches: JSON.parse(row.career_matches || '[]'),
+        skillGaps: JSON.parse(row.skill_gaps || '[]'),
+        currentSkills: JSON.parse(row.current_skills || '[]'),
+        personalityType: row.personality_type,
+      },
+    };
+  }
+);
+
+// ── Admin Analytics ───────────────────────────────────────────────────────────
+
+interface AdminAnalyticsResponse {
+  totalAssessments: number;
+  topCareers: { title: string; count: number }[];
+}
+
+// GET /admin/analytics — Assessment analytics (most common career matches, domain distribution)
+export const adminAnalytics = api(
+  { expose: true, method: "GET", path: "/admin/analytics", auth: true },
+  async (): Promise<AdminAnalyticsResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    const totalAssessments = await db.queryRow`SELECT COUNT(*) as count FROM assessments`;
+
+    // Get all career matches to compute popularity
+    const careerCounts: Record<string, number> = {};
+    const rows = db.query`SELECT career_matches FROM assessments WHERE career_matches IS NOT NULL`;
+    for await (const row of rows) {
+      try {
+        const matches = JSON.parse(row.career_matches || '[]');
+        for (const m of matches) {
+          if (m.title) careerCounts[m.title] = (careerCounts[m.title] || 0) + 1;
+        }
+      } catch {}
+    }
+
+    const topCareers = Object.entries(careerCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([title, count]) => ({ title, count }));
+
+    return {
+      totalAssessments: Number(totalAssessments?.count ?? 0),
+      topCareers,
+    };
+  }
+);

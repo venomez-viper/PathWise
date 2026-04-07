@@ -148,6 +148,11 @@ export const admin = {
   getTaskStats: () => request<{ stats: { userId: string; total: number; completed: number }[] }>('/admin/task-stats'),
   getAssessmentStats: () => request<{ userIds: string[] }>('/admin/assessment-stats'),
   deleteUser: (userId: string) => request<{ success: boolean }>(`/admin/users/${userId}`, { method: 'DELETE' }),
+  getUserDetail: (userId: string) => request<any>(`/admin/user/${userId}/detail`),
+  updatePlan: (userId: string, plan: string) => request<{ success: boolean }>(`/admin/users/${userId}/plan`, { method: 'PATCH', body: JSON.stringify({ plan }) }),
+  impersonate: (userId: string) => request<{ token: string }>(`/admin/impersonate/${userId}`, { method: 'POST', body: JSON.stringify({}) }),
+  getAssessment: (userId: string) => request<any>(`/admin/assessment/${userId}`),
+  getAnalytics: () => request<{ totalAssessments: number; topCareers: { title: string; count: number }[] }>('/admin/analytics'),
 };
 
 // --- Certificates ---
