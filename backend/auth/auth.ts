@@ -182,7 +182,7 @@ export const updateProfile = api(
   async (params: UpdateProfileParams): Promise<MeResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     const row = await db.queryRow`
-      SELECT id, name, email, avatar_url, plan FROM users WHERE id = ${userID}
+      SELECT id, name, email, avatar_url, plan, password_hash FROM users WHERE id = ${userID}
     `;
     if (!row) throw APIError.notFound("user not found");
 
@@ -215,6 +215,7 @@ export const updateProfile = api(
         avatarUrl: newAvatarUrl ?? undefined,
         plan:      row.plan,
       },
+      hasPassword: !!row.password_hash,
     };
   }
 );
