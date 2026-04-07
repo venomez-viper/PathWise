@@ -17,7 +17,7 @@ const NAV_ITEMS = [
   { to: '/app/search',      icon: Search,          label: 'Search'               },
   { to: '/app/settings',    icon: Settings,        label: 'Settings'             },
   { to: '/app/help',        icon: HelpCircle,      label: 'Help & FAQ'           },
-  { to: '/whats-new',       icon: Sparkles,        label: "What's New",  badge: 'NEW' },
+  { to: '/app/whats-new',   icon: Sparkles,        label: "What's New",  badge: 'NEW' },
 ];
 
 interface SidebarProps {

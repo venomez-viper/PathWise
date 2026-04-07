@@ -166,6 +166,7 @@ export default function App() {
             <Route path="career-match"  element={<CareerMatchDetail />} />
             <Route path="search"        element={<SearchPage />} />
             <Route path="admin"         element={<AdminPage />} />
+            <Route path="whats-new"     element={<WhatsNewPage />} />
           </Route>
 
           {/* ── 404 catch-all ── */}
