@@ -21,6 +21,8 @@ PathWise is built on a validated business concept from our founding pitch deck. 
 - **Build Tool**: Vite
 - **Styling**: Vanilla CSS (CSS Variables based on a custom Design System)
 - **Icons**: `lucide-react`
+- **Backend**: Encore.dev (TypeScript), PostgreSQL (one DB per microservice)
+- **Auth**: JWT + Google/Apple OAuth social login (`jose` library for JWKS verification)
 
 ## 🎨 Design System: "The Ethereal Mentor"
 
@@ -120,3 +122,15 @@ To get the project running locally:
 - **App-Level Widget Panel**: Fixed-position right gutter sidebar that self-fetches data. Shows on Roadmap, Tasks, Progress, Streaks, Achievements, Certificates, Search, Help. Hidden on Dashboard, Assessment, Settings, Onboarding.
 - **Panda Mascot System**: 12 cute panda characters (Gemini-generated art) placed contextually across the app — empty states, loading screens, success moments, help sections. CSS sprite sheet technique with mood-based selection (happy, thinking, sleepy, curious, celebrating, confused, waving, reading, working).
 - **Zen Stone Colors Restored**: Surface hierarchy matches Stitch desktop mockups (`#eefcfe` teal-tinted background).
+
+### **v0.9.0** — OAuth Social Login, Assessment Overhaul & Career Brain v2
+*Date: April 7, 2026*
+- **Google & Apple OAuth**: `POST /auth/oauth` endpoint with web authorization code flow (PKCE, nonce) and iOS direct ID token verification via JWKS. Auto-links OAuth accounts by verified email. Branded social buttons on SignIn/SignUp. "Set Password" for OAuth-only users in Settings. New `user_oauth_providers` DB table.
+- **Assessment Multi-Select**: Steps 0-4 allow up to 3 options per question (was single-select). All questions now have 4 choices. Removed em dashes from labels.
+- **Mandatory Assessment Onboarding**: New users see welcome hero card with Panda mascot on Dashboard before assessment.
+- **Task Detail Panel**: Slide-over panel to view/edit all task fields; delete with confirmation. Sort dropdown (Priority / Due Date / Newest / Title A-Z).
+- **90 Career Profiles**: 40 new profiles across law, trades, architecture, arts, science, hospitality, aviation, social services, government.
+- **Career Brain v2**: Cross-dimensional synergy scoring (10 patterns), anti-pattern penalties (8 conflict detectors), domain affinity boost, experience-career fit scoring, personality coherence multiplier (cosine-similarity, 18 trait dimensions). Rebalanced weights and honest normalization (floor 15).
+- **Due Date Fix**: Milestone durations scale to user's chosen timeline (3mo/6mo/12mo).
+- **Avatar Fix**: Replaced external `pravatar.cc` fallback with initials-based avatar.
+- **Branch Protection**: Enabled on `main` (no force push, PR reviews required).
