@@ -27,6 +27,18 @@ export interface TokenResponse {
   user: AuthUser;
 }
 
+interface PublicProfileResponse {
+  profile: {
+    name: string;
+    avatarUrl?: string;
+    plan: string;
+    headline?: string;
+    bio?: string;
+    memberSince: string;
+    slug: string;
+  };
+}
+
 // ── Auth Handler (validates Bearer tokens on every protected request) ─────────
 
 interface AuthParams {
@@ -468,6 +480,80 @@ export const exportData = api(
         exportedAt: new Date().toISOString(),
         note: "Assessment, roadmap, tasks, and streaks data can be exported separately from their respective services.",
       },
+    };
+  }
+);
+
+// ── Public Profile ────────────────────────────────────────────────────────────
+
+export const getPublicProfile = api(
+  { expose: true, method: "GET", path: "/profile/:slug", auth: false },
+  async ({ slug }: { slug: string }): Promise<PublicProfileResponse> => {
+    const row = await db.queryRow`
+      SELECT id, name, email, avatar_url, plan, headline, bio, created_at
+      FROM users WHERE profile_slug = ${slug} AND profile_public = true
+    `;
+    if (!row) throw APIError.notFound("profile not found");
+
+    return {
+      profile: {
+        name: row.name,
+        avatarUrl: row.avatar_url ?? undefined,
+        plan: row.plan,
+        headline: row.headline ?? undefined,
+        bio: row.bio ?? undefined,
+        memberSince: row.created_at,
+        slug,
+      },
+    };
+  }
+);
+
+// ── Profile Settings ──────────────────────────────────────────────────────────
+
+export const updateProfileSettings = api(
+  { expose: true, method: "PATCH", path: "/auth/profile-settings", auth: true },
+  async (params: { profilePublic?: boolean; profileSlug?: string; headline?: string; bio?: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+
+    // Validate slug if provided
+    if (params.profileSlug !== undefined) {
+      const slug = params.profileSlug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+      if (slug.length < 3) throw APIError.invalidArgument("slug must be at least 3 characters");
+      if (slug.length > 30) throw APIError.invalidArgument("slug must be under 30 characters");
+      // Check uniqueness
+      const existing = await db.queryRow`SELECT id FROM users WHERE profile_slug = ${slug} AND id != ${userID}`;
+      if (existing) throw APIError.alreadyExists("this profile URL is already taken");
+      await db.exec`UPDATE users SET profile_slug = ${slug} WHERE id = ${userID}`;
+    }
+
+    if (params.profilePublic !== undefined) {
+      await db.exec`UPDATE users SET profile_public = ${params.profilePublic} WHERE id = ${userID}`;
+    }
+    if (params.headline !== undefined) {
+      await db.exec`UPDATE users SET headline = ${params.headline} WHERE id = ${userID}`;
+    }
+    if (params.bio !== undefined) {
+      await db.exec`UPDATE users SET bio = ${params.bio} WHERE id = ${userID}`;
+    }
+
+    return { success: true };
+  }
+);
+
+export const getProfileSettings = api(
+  { expose: true, method: "GET", path: "/auth/profile-settings", auth: true },
+  async (): Promise<{ profilePublic: boolean; profileSlug: string | null; headline: string | null; bio: string | null }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const row = await db.queryRow`
+      SELECT profile_public, profile_slug, headline, bio FROM users WHERE id = ${userID}
+    `;
+    if (!row) throw APIError.notFound("user not found");
+    return {
+      profilePublic: row.profile_public ?? false,
+      profileSlug: row.profile_slug ?? null,
+      headline: row.headline ?? null,
+      bio: row.bio ?? null,
     };
   }
 );
