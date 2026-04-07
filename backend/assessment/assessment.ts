@@ -141,6 +141,17 @@ export const submitAssessment = api(
     // Award "First Steps" achievement for completing the assessment
     try { await awardAchievement({ userId: params.userId, badgeKey: "first_steps" }); } catch {}
 
+    // Notify user that their assessment is complete
+    try {
+      const { createNotification } = await import("../streaks/streaks");
+      await createNotification({
+        userId: params.userId,
+        type: "info",
+        title: "Assessment Complete",
+        body: "Check your career matches and start your roadmap.",
+      });
+    } catch {}
+
     return {
       result: {
         userId: params.userId,

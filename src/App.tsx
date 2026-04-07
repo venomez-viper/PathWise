@@ -17,6 +17,7 @@ import ContactPage     from './pages/Contact';
 
 // Webapp components
 import Sidebar      from './components/Sidebar';
+import NotificationBell from './components/NotificationBell';
 import { AppWidgetPanel } from './components/widgets';
 import Dashboard    from './pages/Dashboard';
 import Roadmap      from './pages/Roadmap';
@@ -92,6 +93,10 @@ function AppLayout() {
         </div>
         <AppWidgetPanel />
       </main>
+      {/* Notification bell — fixed top-right, above all content */}
+      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 100 }}>
+        <NotificationBell />
+      </div>
     </div>
   );
 }
