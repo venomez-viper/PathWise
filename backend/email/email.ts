@@ -9,6 +9,8 @@ function getResend() {
 }
 
 const FROM_EMAIL = "PathWise <hello@pathwise.fit>";
+const BRAND_COLOR = "#6245a4";
+const BRAND_DARK = "#1a1a2e";
 
 // ── Internal email sending function (not exposed) ──
 
@@ -17,12 +19,7 @@ export const sendEmail = api(
   async ({ to, subject, html }: { to: string; subject: string; html: string }): Promise<{ success: boolean }> => {
     try {
       const resend = getResend();
-      await resend.emails.send({
-        from: FROM_EMAIL,
-        to,
-        subject,
-        html,
-      });
+      await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
       return { success: true };
     } catch (err) {
       console.error("Email send failed:", { to, subject, error: err instanceof Error ? err.message : "unknown" });
@@ -31,79 +28,166 @@ export const sendEmail = api(
   }
 );
 
-// ── Email templates ──
+// ── Shared layout wrapper (Gmail-optimized, table-based) ──
+
+function layout(content: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>PathWise</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f7; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f7;">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+          <!-- Header -->
+          <tr>
+            <td style="background: ${BRAND_DARK}; padding: 28px 40px; text-align: center;">
+              <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">pathwise</span>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 40px 40px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+              ${content}
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 40px 32px; border-top: 1px solid #eaeaef;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #9ca3af; line-height: 1.6;">
+                    <p style="margin: 0;">PathWise Career Intelligence</p>
+                    <p style="margin: 4px 0 0;"><a href="https://pathwise.fit" style="color: #9ca3af;">pathwise.fit</a> &nbsp;&middot;&nbsp; <a href="https://pathwise.fit/privacy-policy" style="color: #9ca3af;">Privacy</a> &nbsp;&middot;&nbsp; <a href="https://pathwise.fit/terms-of-service" style="color: #9ca3af;">Terms</a></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function button(text: string, href: string): string {
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
+  <tr>
+    <td style="background: ${BRAND_COLOR}; border-radius: 8px;">
+      <a href="${href}" style="display: inline-block; padding: 14px 36px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none;">
+        ${text}
+      </a>
+    </td>
+  </tr>
+</table>`;
+}
+
+function p(content: string): string {
+  return `<p style="margin: 0 0 16px; font-size: 15px; color: #374151; line-height: 1.65;">${content}</p>`;
+}
+
+function h1(content: string): string {
+  return `<h1 style="margin: 0 0 20px; font-size: 24px; font-weight: 800; color: ${BRAND_DARK}; line-height: 1.3;">${content}</h1>`;
+}
+
+function step(num: number, title: string, desc: string): string {
+  return `
+<tr>
+  <td style="padding: 14px 16px; background: #f9fafb; border-radius: 8px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td width="36" valign="top" style="padding-right: 12px;">
+          <div style="width: 28px; height: 28px; border-radius: 50%; background: ${BRAND_COLOR}; color: #fff; text-align: center; line-height: 28px; font-size: 13px; font-weight: 700;">${num}</div>
+        </td>
+        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #374151; line-height: 1.5;">
+          <strong style="color: ${BRAND_DARK};">${title}</strong><br>
+          <span style="color: #6b7280;">${desc}</span>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr><td style="height: 8px;"></td></tr>`;
+}
+
+// ── Email Templates ──
 
 export function welcomeEmail(name: string): { subject: string; html: string } {
+  const firstName = name.split(" ")[0];
   return {
-    subject: "Welcome to PathWise!",
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
-        <div style="text-align: center; margin-bottom: 32px;">
-          <h1 style="font-size: 28px; font-weight: 800; color: #1a1a2e; margin: 0;">Welcome to PathWise</h1>
-        </div>
-        <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi ${name},</p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6;">
-          Thanks for joining PathWise. You're one step closer to mapping your career and building a roadmap to get there.
-        </p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6;">Here's what to do next:</p>
-        <ol style="font-size: 16px; color: #333; line-height: 1.8; padding-left: 20px;">
-          <li><strong>Take the Career Assessment</strong> (5 minutes)</li>
-          <li><strong>Get your career matches</strong> based on your personality</li>
-          <li><strong>Follow your personalized roadmap</strong> with daily tasks</li>
-        </ol>
-        <div style="text-align: center; margin: 32px 0;">
-          <a href="https://pathwise.fit/app" style="display: inline-block; background: #6245a4; color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px;">
-            Get Started
-          </a>
-        </div>
-        <p style="font-size: 14px; color: #888; line-height: 1.5; border-top: 1px solid #eee; padding-top: 20px; margin-top: 32px;">
-          You're receiving this because you signed up for PathWise. If this wasn't you, please ignore this email.
-        </p>
-      </div>
-    `,
+    subject: `${firstName}, welcome to PathWise`,
+    html: layout(`
+      ${h1(`Welcome, ${firstName}.`)}
+      ${p("Your PathWise account is ready. You now have access to career matching, skill gap analysis, and a personalized roadmap built around your goals.")}
+      ${p("Here is how to get the most out of PathWise:")}
+
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 8px;">
+        ${step(1, "Take the Career Assessment", "5 minutes. Multi-dimensional analysis of your interests, values, and work style.")}
+        ${step(2, "Review Your Career Matches", "90+ career profiles scored against your personality. See where you fit best.")}
+        ${step(3, "Follow Your Roadmap", "Step-by-step milestones and daily tasks tailored to your timeline.")}
+      </table>
+
+      ${button("Open PathWise", "https://pathwise.fit/app")}
+      ${p('Questions? Reply to this email or reach us at <a href="mailto:support@pathwise.fit" style="color: ' + BRAND_COLOR + ';">support@pathwise.fit</a>.')}
+    `),
   };
 }
 
 export function contactConfirmationEmail(name: string): { subject: string; html: string } {
+  const firstName = name.split(" ")[0];
   return {
     subject: "We received your message",
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
-        <h1 style="font-size: 24px; font-weight: 800; color: #1a1a2e; margin: 0 0 16px;">Message Received</h1>
-        <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi ${name},</p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6;">
-          Thanks for reaching out to PathWise. We've received your message and will get back to you within 24-48 hours.
-        </p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6;">
-          In the meantime, feel free to explore your career roadmap at <a href="https://pathwise.fit/app" style="color: #6245a4;">pathwise.fit</a>.
-        </p>
-        <p style="font-size: 14px; color: #888; line-height: 1.5; border-top: 1px solid #eee; padding-top: 20px; margin-top: 32px;">
-          PathWise Career Intelligence
-        </p>
-      </div>
-    `,
+    html: layout(`
+      ${h1("Message received.")}
+      ${p(`Hi ${firstName}, thanks for reaching out. We have received your message and our team will get back to you within 24 hours.`)}
+      <hr style="border: none; border-top: 1px solid #eaeaef; margin: 24px 0;">
+      ${p("While you wait, you can continue working on your career roadmap:")}
+      ${button("Go to Dashboard", "https://pathwise.fit/app")}
+      ${p('Need urgent help? Email us directly at <a href="mailto:support@pathwise.fit" style="color: ' + BRAND_COLOR + ';">support@pathwise.fit</a>.')}
+    `),
   };
 }
 
-export function adminTicketNotificationEmail(ticketName: string, ticketEmail: string, ticketSubject: string, ticketMessage: string): { subject: string; html: string } {
+export function adminTicketNotificationEmail(
+  ticketName: string,
+  ticketEmail: string,
+  ticketSubject: string,
+  ticketMessage: string
+): { subject: string; html: string } {
   return {
-    subject: `New support ticket from ${ticketName}`,
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
-        <h1 style="font-size: 24px; font-weight: 800; color: #1a1a2e; margin: 0 0 16px;">New Support Ticket</h1>
-        <table style="width: 100%; font-size: 15px; color: #333; border-collapse: collapse;">
-          <tr><td style="padding: 8px 0; font-weight: 600; width: 80px;">From:</td><td>${ticketName} (${ticketEmail})</td></tr>
-          <tr><td style="padding: 8px 0; font-weight: 600;">Subject:</td><td>${ticketSubject || 'No subject'}</td></tr>
-        </table>
-        <div style="margin-top: 16px; padding: 16px; background: #f8f9fa; border-radius: 8px; font-size: 15px; color: #333; line-height: 1.6;">
-          ${ticketMessage.replace(/\n/g, '<br/>')}
-        </div>
-        <div style="margin-top: 24px;">
-          <a href="https://pathwise.fit/app/admin" style="display: inline-block; background: #6245a4; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px;">
-            View in Admin
-          </a>
-        </div>
+    subject: `Support ticket: ${ticketSubject || ticketName}`,
+    html: layout(`
+      ${h1("New Support Ticket")}
+
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #6b7280; border-bottom: 1px solid #f3f4f6; width: 80px; font-weight: 600;">From</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #111827; border-bottom: 1px solid #f3f4f6;">${ticketName}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #6b7280; border-bottom: 1px solid #f3f4f6; font-weight: 600;">Email</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #111827; border-bottom: 1px solid #f3f4f6;"><a href="mailto:${ticketEmail}" style="color: ${BRAND_COLOR};">${ticketEmail}</a></td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-size: 14px; color: #6b7280; font-weight: 600;">Subject</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #111827;">${ticketSubject || "No subject"}</td>
+        </tr>
+      </table>
+
+      <div style="padding: 20px; background: #f9fafb; border-radius: 8px; border-left: 3px solid ${BRAND_COLOR}; font-size: 14px; color: #374151; line-height: 1.65; margin: 0 0 24px;">
+        ${ticketMessage.replace(/\n/g, "<br>")}
       </div>
-    `,
+
+      ${button("View in Admin Panel", "https://pathwise.fit/app/admin")}
+    `),
   };
 }
