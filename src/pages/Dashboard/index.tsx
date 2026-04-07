@@ -5,6 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import OnboardingTour from '../../components/OnboardingTour';
+import ShareButton from '../../components/ShareButton';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -170,7 +171,7 @@ export default function Dashboard() {
             ? `Your strategic roadmap is evolving. You've completed ${roadmapPct}% of your path to ${targetRole}.`
             : `Your career journey is about to begin. Start building your path to ${targetRole}.`}
         </p>
-        <div style={{ display: 'flex', gap: 10, marginTop: '1.25rem' }}>
+        <div style={{ display: 'flex', gap: 10, marginTop: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <Link to="/app/roadmap" style={{
             padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
             background: '#8b4f2c', color: '#fff', fontWeight: 700, fontSize: '0.82rem',
@@ -179,6 +180,11 @@ export default function Dashboard() {
             padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
             background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 600, fontSize: '0.82rem',
           }}>Update Goals</Link>
+          <ShareButton
+            url="https://pathwise.fit"
+            title="PathWise - AI Career Guidance"
+            text="I'm using PathWise to map my career path and build a personalized roadmap. Try it free!"
+          />
         </div>
         <Panda mood="waving" size={130} style={{ position: 'absolute', bottom: -10, right: 24, opacity: 0.95 }} animate />
       </div>

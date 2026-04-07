@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Calendar, Loader2 } from 'lucide-react';
 import Logo from '../../components/ui/Logo';
 import { publicApi } from '../../lib/api';
+import ShareButton from '../../components/ShareButton';
 
 export default function PublicProfile() {
   const { slug } = useParams<{ slug: string }>();
@@ -171,6 +172,16 @@ export default function PublicProfile() {
                 <span>Member since {memberSince}</span>
               </div>
             )}
+
+            {/* Share */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.25rem' }}>
+              <ShareButton
+                url={`https://pathwise.fit/u/${slug}`}
+                title={`${profile.name} on PathWise`}
+                text={`Check out ${profile.name}'s career profile on PathWise!`}
+                variant="primary"
+              />
+            </div>
 
             {/* Divider */}
             <div style={{
