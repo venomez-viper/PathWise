@@ -184,7 +184,9 @@ export const generateRoadmap = api(
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
     if (userID !== params.userId) throw APIError.permissionDenied("you can only generate your own roadmap");
-    const timeline = params.timeline ?? "6 months";
+    const timelineRaw = params.timeline ?? "6mo";
+    // Parse timeline to total weeks
+    const timelineWeeks = timelineRaw === "3mo" ? 13 : timelineRaw === "12mo" ? 52 : 26;
 
     // Pull assessment data if available for personalization
     let currentSkills: string[] = [];
@@ -202,10 +204,17 @@ export const generateRoadmap = api(
     // Generate roadmap from career brain (local, no API)
     const aiResult = generateFromBrain({
       targetRole: params.targetRole,
-      timeline,
+      timeline: timelineRaw,
       currentSkills,
       skillGaps,
     });
+
+    // Scale milestone durations to fit the user's chosen timeline
+    const totalRawWeeks = aiResult.milestones.reduce((s, m) => s + (m.durationWeeks ?? 4), 0);
+    const scaleFactor = totalRawWeeks > 0 ? timelineWeeks / totalRawWeeks : 1;
+    for (const m of aiResult.milestones) {
+      m.durationWeeks = Math.max(1, Math.round((m.durationWeeks ?? 4) * scaleFactor));
+    }
 
     const roadmapId = crypto.randomUUID();
     const now = new Date();

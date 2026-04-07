@@ -124,6 +124,7 @@ export interface UpdateTaskParams {
   priority?: "low" | "medium" | "high";
   title?: string;
   description?: string;
+  category?: string;
   dueDate?: string;
 }
 
@@ -150,6 +151,7 @@ export const updateTask = api(
     const newPriority = updates.priority    ?? row.priority;
     const newTitle    = updates.title       ?? row.title;
     const newDesc     = updates.description ?? row.description;
+    const newCategory = updates.category    ?? row.category;
     const newDueDate  = updates.dueDate     ?? row.due_date;
 
     // Set completed_at when transitioning to done; clear it when un-done
@@ -164,7 +166,8 @@ export const updateTask = api(
       UPDATE tasks
       SET status = ${newStatus}, priority = ${newPriority},
           title = ${newTitle}, description = ${newDesc},
-          due_date = ${newDueDate}, completed_at = ${newCompletedAt}
+          category = ${newCategory}, due_date = ${newDueDate},
+          completed_at = ${newCompletedAt}
       WHERE id = ${taskId}
     `;
 
@@ -193,7 +196,7 @@ export const updateTask = api(
         description: newDesc ?? undefined,
         status: newStatus,
         priority: newPriority,
-        category: row.category ?? "learning",
+        category: newCategory ?? "learning",
         dueDate: newDueDate ?? undefined,
         completedAt: newCompletedAt ?? undefined,
         createdAt: row.created_at,
@@ -274,6 +277,23 @@ export const aiGenerateTasks = api(
     }
 
     return { tasks: createdTasks };
+  }
+);
+
+// DELETE /tasks/:taskId
+export const deleteTask = api(
+  { expose: true, method: "DELETE", path: "/tasks/:taskId", auth: true },
+  async (params: { taskId: string }): Promise<{ success: boolean }> => {
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
+    // Verify the task belongs to this user
+    const task = await db.queryRow`
+      SELECT id FROM tasks WHERE id = ${params.taskId} AND user_id = ${userID}
+    `;
+    if (!task) throw APIError.notFound("task not found");
+    await db.exec`DELETE FROM tasks WHERE id = ${params.taskId}`;
+    return { success: true };
   }
 );
 

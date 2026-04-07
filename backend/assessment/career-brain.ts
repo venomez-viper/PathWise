@@ -8,11 +8,12 @@
 import type { CareerProfile, SkillGapEntry, CertEntry, RecEntry, MilestoneEntry } from "./career-profiles";
 import { CAREER_PROFILES_PART1 } from "./career-profiles";
 import { CAREER_PROFILES_PART2 } from "./career-profiles-2";
+import { CAREER_PROFILES_3 } from "./career-profiles-3";
 import { getExperienceModifier, routeResourcesByStyle } from "./experience-modifiers";
 import { matchGapPattern, getStageModifier } from "./gap-patterns";
 import { evaluateRules, applyRuleOverlays, type RuleContext } from "./combination-rules";
 
-const ALL_PROFILES: CareerProfile[] = [...CAREER_PROFILES_PART1, ...CAREER_PROFILES_PART2];
+const ALL_PROFILES: CareerProfile[] = [...CAREER_PROFILES_PART1, ...CAREER_PROFILES_PART2, ...CAREER_PROFILES_3];
 
 // ── Types matching existing backend interfaces ──────────────────────────
 
@@ -39,17 +40,11 @@ export interface AssessmentInput {
   interests: string[];       // selected domains
   currentRole?: string;
   personalityType?: string;
-  // Raw answer IDs from the questionnaire
-  answers?: Record<string, string>;
+  // Raw answer IDs from the questionnaire (each key maps to selected values array)
+  answers?: Record<string, string | string[]>;
 }
 
 // ── Scoring Engine ──────────────────────────────────────────────────────
-
-/** Check if a user answer value exists in a profile's trait array */
-function traitMatch(userValue: string | undefined, profileTraits: string[]): number {
-  if (!userValue) return 0;
-  return profileTraits.includes(userValue) ? 1 : 0;
-}
 
 /** Calculate overlap percentage between two string arrays */
 function overlapScore(userItems: string[], profileItems: string[]): number {
@@ -59,53 +54,78 @@ function overlapScore(userItems: string[], profileItems: string[]): number {
   return matches / profileItems.length;
 }
 
+/**
+ * Score a multi-select answer against a profile's trait array.
+ * Each selected value contributes weight/N points (N = number of selections),
+ * so picking 2 matches out of 3 selections scores 2/3 of the full weight.
+ */
+function multiTraitMatch(userValues: string[], profileTraits: string[], weight: number): number {
+  if (userValues.length === 0) return 0;
+  const perValue = weight / userValues.length;
+  const matches = userValues.filter(v => profileTraits.includes(v)).length;
+  return matches * perValue;
+}
+
+/** Normalise a raw answer entry (string or string[]) to a string array */
+function toArray(value: string | string[] | undefined): string[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
 /** Extract raw answer values from personalityType and strengths */
-function extractAnswers(input: AssessmentInput): Record<string, string> {
-  if (input.answers && Object.keys(input.answers).length > 0) return input.answers;
+function extractAnswers(input: AssessmentInput): Record<string, string[]> {
+  if (input.answers && Object.keys(input.answers).length > 0) {
+    // Normalise every value to string[]
+    const normalised: Record<string, string[]> = {};
+    for (const [k, v] of Object.entries(input.answers)) {
+      normalised[k] = toArray(v);
+    }
+    return normalised;
+  }
 
   // Reconstruct from personalityType format: "int1-ws2-car1"
   const parts = (input.personalityType || "").split("-");
-  const extracted: Record<string, string> = {};
+  const extracted: Record<string, string[]> = {};
 
-  if (parts[0] && parts[0] !== "mixed") extracted.int1 = parts[0];
-  if (parts[1] && parts[1] !== "balanced") extracted.ws2 = parts[1];
-  if (parts[2]) extracted.car1 = parts[2];
+  if (parts[0] && parts[0] !== "mixed") extracted.int1 = [parts[0]];
+  if (parts[1] && parts[1] !== "balanced") extracted.ws2 = [parts[1]];
+  if (parts[2]) extracted.car1 = [parts[2]];
 
   // Extract from strengths array (format: "technical problem-solving", "open mindset", etc.)
   for (const s of input.strengths) {
     const lower = s.toLowerCase();
     // int2 extraction
-    if (lower.includes("technical")) extracted.int2 = "technical";
-    else if (lower.includes("human")) extracted.int2 = "human";
-    else if (lower.includes("creative")) extracted.int2 = "creative";
-    else if (lower.includes("strategic")) extracted.int2 = "strategic";
-    else if (lower.includes("scientific")) extracted.int2 = "scientific";
+    if (lower.includes("technical")) extracted.int2 = ["technical"];
+    else if (lower.includes("human")) extracted.int2 = ["human"];
+    else if (lower.includes("creative")) extracted.int2 = ["creative"];
+    else if (lower.includes("strategic")) extracted.int2 = ["strategic"];
+    else if (lower.includes("scientific")) extracted.int2 = ["scientific"];
     // ws1 extraction
-    if (lower.includes("open")) extracted.ws1 = "open";
-    else if (lower.includes("cautious")) extracted.ws1 = "cautious";
-    else if (lower.includes("organized")) extracted.ws1 = "organized";
-    else if (lower.includes("empathetic")) extracted.ws1 = "empathetic";
+    if (lower.includes("open")) extracted.ws1 = ["open"];
+    else if (lower.includes("cautious")) extracted.ws1 = ["cautious"];
+    else if (lower.includes("organized")) extracted.ws1 = ["organized"];
+    else if (lower.includes("empathetic")) extracted.ws1 = ["empathetic"];
     // car4 extraction
-    if (lower.includes("leader")) extracted.car4 = "leader";
-    else if (lower.includes("ideator")) extracted.car4 = "ideator";
-    else if (lower.includes("doer")) extracted.car4 = "doer";
-    else if (lower.includes("harmonizer")) extracted.car4 = "harmonizer";
+    if (lower.includes("leader")) extracted.car4 = ["leader"];
+    else if (lower.includes("ideator")) extracted.car4 = ["ideator"];
+    else if (lower.includes("doer")) extracted.car4 = ["doer"];
+    else if (lower.includes("harmonizer")) extracted.car4 = ["harmonizer"];
     // ws4 extraction
-    if (lower.includes("structure")) extracted.ws4 = "structure";
-    else if (lower.includes("experiment")) extracted.ws4 = "experiment";
-    else if (lower.includes("consult")) extracted.ws4 = "consult";
+    if (lower.includes("structure")) extracted.ws4 = ["structure"];
+    else if (lower.includes("experiment")) extracted.ws4 = ["experiment"];
+    else if (lower.includes("consult")) extracted.ws4 = ["consult"];
   }
 
   // Extract from values array
   for (const v of input.values) {
-    if (["autonomy", "prestige", "purpose", "mastery"].includes(v)) extracted.val1 = v;
-    if (["purpose_over_wealth", "wealth_over_stability", "balance_over_creativity"].includes(v)) extracted.val2 = v;
-    if (["monotony", "no_impact", "micromanaged", "isolation"].includes(v)) extracted.val3 = v;
-    if (["wealth", "recognition", "learning", "impact"].includes(v)) extracted.val4 = v;
+    if (["autonomy", "prestige", "purpose", "mastery"].includes(v)) extracted.val1 = [v];
+    if (["purpose_over_wealth", "wealth_over_stability", "balance_over_creativity"].includes(v)) extracted.val2 = [v];
+    if (["monotony", "no_impact", "micromanaged", "isolation"].includes(v)) extracted.val3 = [v];
+    if (["wealth", "recognition", "learning", "impact"].includes(v)) extracted.val4 = [v];
   }
 
   // workStyle maps to ws3
-  extracted.ws3 = input.workStyle || "mixed";
+  extracted.ws3 = [input.workStyle || "mixed"];
 
   return extracted;
 }
@@ -116,33 +136,33 @@ function scoreProfile(profile: CareerProfile, input: AssessmentInput): number {
   let score = 0;
 
   // ── Interest dimension (25 points max) ──
-  score += traitMatch(a.int1, profile.interests) * 8;
-  score += traitMatch(a.int2, profile.problemTypes) * 8;
-  score += traitMatch(a.int3, profile.archetypes) * 9;
+  score += multiTraitMatch(a.int1 ?? [], profile.interests, 8);
+  score += multiTraitMatch(a.int2 ?? [], profile.problemTypes, 8);
+  score += multiTraitMatch(a.int3 ?? [], profile.archetypes, 9);
 
   // ── Work style dimension (15 points max) ──
-  score += traitMatch(a.ws1, profile.workStyles) * 4;
-  score += traitMatch(a.ws2, profile.decisionStyle) * 4;
-  score += traitMatch(a.ws3, profile.collaboration) * 4;
-  score += traitMatch(a.ws4, profile.ambiguityStyle) * 3;
+  score += multiTraitMatch(a.ws1 ?? [], profile.workStyles, 4);
+  score += multiTraitMatch(a.ws2 ?? [], profile.decisionStyle, 4);
+  score += multiTraitMatch(a.ws3 ?? [], profile.collaboration, 4);
+  score += multiTraitMatch(a.ws4 ?? [], profile.ambiguityStyle, 3);
 
   // ── Values dimension (20 points max) ──
-  score += traitMatch(a.val1, profile.coreValues) * 6;
-  score += traitMatch(a.val2, profile.tradeoffs) * 5;
-  score += traitMatch(a.val3, profile.frustrations) * 4;
-  score += traitMatch(a.val4, profile.rewards) * 5;
+  score += multiTraitMatch(a.val1 ?? [], profile.coreValues, 6);
+  score += multiTraitMatch(a.val2 ?? [], profile.tradeoffs, 5);
+  score += multiTraitMatch(a.val3 ?? [], profile.frustrations, 4);
+  score += multiTraitMatch(a.val4 ?? [], profile.rewards, 5);
 
   // ── Environment dimension (10 points max) ──
-  score += traitMatch(a.env1, profile.environments) * 3;
-  score += traitMatch(a.env2, profile.teamSizes) * 3;
-  score += traitMatch(a.env3, profile.paces) * 2;
-  score += traitMatch(a.env4, profile.managementStyles) * 2;
+  score += multiTraitMatch(a.env1 ?? [], profile.environments, 3);
+  score += multiTraitMatch(a.env2 ?? [], profile.teamSizes, 3);
+  score += multiTraitMatch(a.env3 ?? [], profile.paces, 2);
+  score += multiTraitMatch(a.env4 ?? [], profile.managementStyles, 2);
 
   // ── Career stage dimension (15 points max) ──
-  score += traitMatch(a.car1, profile.careerStages) * 5;
-  score += traitMatch(a.car2, profile.riskLevels) * 3;
-  score += traitMatch(a.car3, profile.trajectories) * 4;
-  score += traitMatch(a.car4, profile.groupRoles) * 3;
+  score += multiTraitMatch(a.car1 ?? [], profile.careerStages, 5);
+  score += multiTraitMatch(a.car2 ?? [], profile.riskLevels, 3);
+  score += multiTraitMatch(a.car3 ?? [], profile.trajectories, 4);
+  score += multiTraitMatch(a.car4 ?? [], profile.groupRoles, 3);
 
   // ── Skills/domain overlap (15 points max) ──
   score += overlapScore(input.currentSkills, profile.requiredSkills) * 8;

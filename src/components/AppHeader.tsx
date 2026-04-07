@@ -3,7 +3,9 @@ interface AppHeaderProps {
   avatarUrl?: string;
 }
 
-export default function AppHeader({ avatarUrl }: AppHeaderProps) {
+export default function AppHeader({ userName, avatarUrl }: AppHeaderProps) {
+  const initials = userName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) ?? '?';
+
   return (
     <header className="app-header">
       <div className="brand">
@@ -11,10 +13,18 @@ export default function AppHeader({ avatarUrl }: AppHeaderProps) {
         <span>PathWise</span>
       </div>
       <div className="avatar">
-        <img
-          src={avatarUrl ?? 'https://i.pravatar.cc/150?u=pathwise'}
-          alt="User Avatar"
-        />
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="User Avatar" />
+        ) : (
+          <div style={{
+            width: '100%', height: '100%', borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--primary), var(--primary-container))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontWeight: 700, fontSize: '0.75rem',
+          }}>
+            {initials}
+          </div>
+        )}
       </div>
     </header>
   );

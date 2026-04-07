@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi, roadmap as roadmapApi, streaks as streaksApi } from '../../lib/api';
 import TaskCelebration from '../../components/TaskCelebration';
+import TaskDetailPanel from '../../components/TaskDetailPanel';
 import { Panda, PandaSpot } from '../../components/panda';
 import './Tasks.css';
 
@@ -95,6 +96,9 @@ export default function Tasks() {
   // Mark all + celebration
   const [markingAll, setMarkingAll] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+
+  // ── Task detail panel ──
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // ── Sidebar widget state ──
   const [filterMilestoneId, setFilterMilestoneId] = useState<string | null>(null);
@@ -199,12 +203,15 @@ export default function Tasks() {
     filter === 'all' ? true : filter === 'done' ? t.status === 'done' : t.status !== 'done'
   );
 
+  const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const sortByPriority = (a: Task, b: Task) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
+
   const tasksByStatus = (status: Task['status']) => {
     let filtered = taskList.filter(t => t.status === status);
     if (filterMilestoneId) {
       filtered = filtered.filter(t => t.milestoneId === filterMilestoneId);
     }
-    return filtered;
+    return filtered.sort(sortByPriority);
   };
 
   // Filtered visible list for list view
@@ -213,7 +220,7 @@ export default function Tasks() {
     if (filterMilestoneId) {
       list = list.filter(t => t.milestoneId === filterMilestoneId);
     }
-    return list;
+    return list.sort(sortByPriority);
   }, [visible, filterMilestoneId]);
 
   /* ── Reset add form ── */
@@ -250,6 +257,28 @@ export default function Tasks() {
     }
   };
 
+
+  /* ── Task detail panel handlers ── */
+  const handleSaveTask = async (taskId: string, updates: Partial<Task>) => {
+    await tasksApi.update(taskId, updates);
+    await load();
+    setSelectedTask(null);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    await tasksApi.delete(taskId);
+    await load();
+    setSelectedTask(null);
+  };
+
+  // Escape key to close detail panel
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedTask) setSelectedTask(null);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [selectedTask]);
 
   /* ================================================================
      RENDER
@@ -557,7 +586,7 @@ export default function Tasks() {
                     )}
 
                     {colTasks.map(task => (
-                      <TaskCard key={task.id} task={task} onMove={moveTask} />
+                      <TaskCard key={task.id} task={task} onMove={moveTask} onSelect={setSelectedTask} />
                     ))}
                   </div>
                 </div>
@@ -633,18 +662,21 @@ export default function Tasks() {
                     <div
                       key={task.id}
                       className={`task-row${task.status === 'done' ? ' task-row--done' : ''}`}
-                      style={{ borderTop: i > 0 ? '1px solid var(--outline-variant)' : 'none' }}
-                      onClick={() => toggle(task)}
+                      style={{ borderTop: i > 0 ? '1px solid var(--outline-variant)' : 'none', cursor: 'pointer' }}
+                      onClick={() => setSelectedTask(task)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          toggle(task);
+                          setSelectedTask(task);
                         }
                       }}
                     >
-                      <div className={`task-row__check${task.status === 'done' ? ' checked' : ''}`}>
+                      <div
+                        className={`task-row__check${task.status === 'done' ? ' checked' : ''}`}
+                        onClick={e => { e.stopPropagation(); toggle(task); }}
+                      >
                         {task.status === 'done' && <CheckCircle2 size={16} />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -705,6 +737,14 @@ export default function Tasks() {
           onDismiss={() => setShowCelebration(false)}
         />
       )}
+
+      {/* Task detail/edit panel */}
+      <TaskDetailPanel
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onSave={handleSaveTask}
+        onDelete={handleDeleteTask}
+      />
     </div>
   );
 }
@@ -715,13 +755,14 @@ export default function Tasks() {
 interface TaskCardProps {
   task: Task;
   onMove: (task: Task, status: Task['status']) => void;
+  onSelect: (task: Task) => void;
 }
 
-function TaskCard({ task, onMove }: TaskCardProps) {
+function TaskCard({ task, onMove, onSelect }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate);
 
   return (
-    <article className="kanban-card" aria-label={`Task: ${task.title}`}>
+    <article className="kanban-card" aria-label={`Task: ${task.title}`} onClick={() => onSelect(task)} style={{ cursor: 'pointer' }}>
       <p className="kanban-card__title">{task.title}</p>
 
       <div className="kanban-card__badges">
@@ -746,7 +787,7 @@ function TaskCard({ task, onMove }: TaskCardProps) {
         {task.status === 'todo' && (
           <button
             className="kanban-action-btn kanban-action-btn--forward"
-            onClick={() => onMove(task, 'in_progress')}
+            onClick={e => { e.stopPropagation(); onMove(task, 'in_progress'); }}
             aria-label={`Start task: ${task.title}`}
           >
             Start <ArrowRight size={12} />
@@ -756,14 +797,14 @@ function TaskCard({ task, onMove }: TaskCardProps) {
           <>
             <button
               className="kanban-action-btn"
-              onClick={() => onMove(task, 'todo')}
+              onClick={e => { e.stopPropagation(); onMove(task, 'todo'); }}
               aria-label={`Move task back to To Do: ${task.title}`}
             >
               <ArrowLeft size={12} /> Back
             </button>
             <button
               className="kanban-action-btn kanban-action-btn--complete"
-              onClick={() => onMove(task, 'done')}
+              onClick={e => { e.stopPropagation(); onMove(task, 'done'); }}
               aria-label={`Complete task: ${task.title}`}
             >
               Complete <CheckCircle2 size={12} />
@@ -773,7 +814,7 @@ function TaskCard({ task, onMove }: TaskCardProps) {
         {task.status === 'done' && (
           <button
             className="kanban-action-btn"
-            onClick={() => onMove(task, 'in_progress')}
+            onClick={e => { e.stopPropagation(); onMove(task, 'in_progress'); }}
             aria-label={`Reopen task: ${task.title}`}
           >
             <ArrowLeft size={12} /> Reopen
