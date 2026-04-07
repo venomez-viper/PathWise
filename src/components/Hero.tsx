@@ -1,15 +1,19 @@
-import { ArrowRight, Play, Target, Crown, Compass, BookOpen, TrendingUp } from 'lucide-react';
+import { ArrowRight, Play, Target, Compass, BookOpen, TrendingUp, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './Hero.css';
 
-function StatItem({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="hero__stat">
-      <div className="hero__stat-value">{value}</div>
-      <div className="hero__stat-label">{label}</div>
-    </div>
-  );
-}
+const FEATURES = [
+  { icon: Compass, label: 'AI Career Matching', desc: '90+ career paths analyzed against your personality' },
+  { icon: TrendingUp, label: 'Skill Gap Analysis', desc: 'Know exactly what to learn and in what order' },
+  { icon: BookOpen, label: 'Personal Roadmap', desc: 'Step-by-step milestones tailored to your timeline' },
+  { icon: Target, label: 'Daily Task Planner', desc: 'Stay accountable with prioritized action items' },
+];
+
+const TRUST_POINTS = [
+  'No credit card required',
+  '5-minute assessment',
+  'Instant career matches',
+];
 
 export default function Hero() {
   return (
@@ -19,7 +23,10 @@ export default function Hero() {
 
       <div className="container hero__inner hero__inner--purple">
         <div className="hero__copy">
-          <div className="hero__badge">AI-Powered Career Guidance</div>
+          <div className="hero__badge">
+            <Sparkles size={14} style={{ marginRight: 6 }} />
+            AI-Powered Career Guidance
+          </div>
 
           <h1 className="hero__title">
             Your career is
@@ -46,62 +53,69 @@ export default function Hero() {
               See How It Works
             </Link>
           </div>
+
+          <div className="hero__trust">
+            {TRUST_POINTS.map(point => (
+              <div key={point} className="hero__trust-item">
+                <CheckCircle2 size={14} />
+                <span>{point}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="hero__panel-stack">
           <div className="hero__glass-card hero__glass-card--main">
             <div className="hero__card-glow" />
-            <div className="hero__card-head">
-              <div className="hero__card-icon">
-                <Target size={22} />
-              </div>
-              <div>
-                <div className="hero__metric">90+</div>
-                <div className="hero__metric-caption">Career Paths Mapped</div>
-              </div>
-            </div>
 
-            <div className="hero__progress">
-              <div className="hero__progress-row">
-                <span>Assessment Accuracy</span>
-                <span>Multi-Dimensional</span>
-              </div>
-              <div className="hero__progress-track">
-                <div className="hero__progress-fill" />
-              </div>
+            <div className="hero__features-list">
+              {FEATURES.map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="hero__feature-item">
+                  <div className="hero__feature-icon">
+                    <Icon size={20} />
+                  </div>
+                  <div>
+                    <div className="hero__feature-label">{label}</div>
+                    <div className="hero__feature-desc">{desc}</div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="hero__stats-grid">
-              <StatItem value="Free" label="To Start" />
+              <div className="hero__stat">
+                <div className="hero__stat-value">90+</div>
+                <div className="hero__stat-label">Careers</div>
+              </div>
               <div className="hero__stats-divider" />
-              <StatItem value="AI" label="Powered" />
+              <div className="hero__stat">
+                <div className="hero__stat-value">5 min</div>
+                <div className="hero__stat-label">Assessment</div>
+              </div>
               <div className="hero__stats-divider" />
-              <StatItem value="24/7" label="Guidance" />
-            </div>
-
-            <div className="hero__chips">
-              <div className="hero__chip hero__chip--live">Live Beta</div>
-              <div className="hero__chip hero__chip--access">
-                <Crown size={12} />
-                Early Access
+              <div className="hero__stat">
+                <div className="hero__stat-value">Free</div>
+                <div className="hero__stat-label">To Start</div>
               </div>
             </div>
           </div>
 
           <div className="hero__glass-card hero__glass-card--brands">
-            <h3 className="hero__brands-title">What you'll get</h3>
-            <div className="hero__brands-row">
-              {[
-                { icon: Compass, label: 'Career Matching' },
-                { icon: TrendingUp, label: 'Skill Gap Analysis' },
-                { icon: BookOpen, label: 'Learning Roadmap' },
-                { icon: Target, label: 'Daily Task Planner' },
-              ].map((item, i) => (
-                <div key={i} className="hero__brand">
-                  <item.icon size={18} />
-                  <span>{item.label}</span>
-                </div>
-              ))}
+            <div className="hero__how-it-works">
+              <div className="hero__step">
+                <div className="hero__step-num">1</div>
+                <span>Take Assessment</span>
+              </div>
+              <ArrowRight size={14} className="hero__step-arrow" />
+              <div className="hero__step">
+                <div className="hero__step-num">2</div>
+                <span>Get Matched</span>
+              </div>
+              <ArrowRight size={14} className="hero__step-arrow" />
+              <div className="hero__step">
+                <div className="hero__step-num">3</div>
+                <span>Follow Roadmap</span>
+              </div>
             </div>
           </div>
         </div>
