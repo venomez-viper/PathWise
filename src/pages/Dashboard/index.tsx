@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
 import { Panda } from '../../components/panda';
+import OnboardingTour from '../../components/OnboardingTour';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -63,6 +64,16 @@ export default function Dashboard() {
     load();
     return () => { cancelled = true; };
   }, [user]);
+
+  const [showTour, setShowTour] = useState(false);
+
+  useEffect(() => {
+    if (data.hasAssessment && !localStorage.getItem('pathwise_tour_done')) {
+      // Small delay to let the page render first
+      const timer = setTimeout(() => setShowTour(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [data.hasAssessment]);
 
   const { roadmapPct, targetRole, hasAssessment, careerMatches, recentTasks, activeMilestone, activeMilestoneTasks, activeDone } = data;
   const ringSize = 90; const ringR = 38; const circ = 2 * Math.PI * ringR;
@@ -333,6 +344,8 @@ export default function Dashboard() {
           <Link to="/app/assessment" className="btn-page-action">Start <ArrowRight size={14} /></Link>
         </div>
       )}
+
+      {showTour && <OnboardingTour onComplete={() => setShowTour(false)} />}
     </div>
   );
 }
