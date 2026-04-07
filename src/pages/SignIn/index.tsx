@@ -58,7 +58,7 @@ export default function SignIn() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="input-group">
             <div className="input-label-row">
-              <label className="input-label">Email Address</label>
+              <label className="input-label">Email</label>
             </div>
             <div className="input-wrap">
               <Mail size={16} className="input-icon" />
@@ -77,7 +77,7 @@ export default function SignIn() {
           <div className="input-group">
             <div className="input-label-row">
               <label className="input-label">Password</label>
-              <span className="auth-link-sm" style={{ cursor: 'default' }}>Forgot password?</span>
+              <span className="auth-link-sm" style={{ opacity: 0.4, cursor: 'not-allowed', fontSize: '0.72rem' }}>Forgot password?</span>
             </div>
             <div className="input-wrap">
               <Lock size={16} className="input-icon" />
@@ -124,7 +124,7 @@ export default function SignIn() {
       <div className="auth-footer">
         <Link to="/privacy-policy">Privacy Policy</Link>
         <Link to="/terms-of-service">Terms of Service</Link>
-        <span style={{ cursor: 'default' }}>Support</span>
+        <a href="mailto:support@pathwise.fit">Support</a>
       </div>
 
       <div className="auth-glow" />

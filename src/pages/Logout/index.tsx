@@ -34,7 +34,7 @@ export default function LogoutPage() {
             </p>
           </div>
         ) : (
-          <div style={{ padding: '2rem 1rem' }}>
+          <div style={{ padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Panda mood="sad" size={120} animate />
 
             <h1 style={{
