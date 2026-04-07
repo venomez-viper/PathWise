@@ -42,7 +42,14 @@
 }
 
 .problem__tool-icon {
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
 }
 
 .problem__tool-name {
@@ -53,6 +60,9 @@
 }
 
 .problem__tool-does {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.9rem;
   color: var(--on-surface-variant);
   padding: var(--spacing-3);
@@ -105,8 +115,7 @@
   text-align: center;
 }
 
-.problem__need-emoji {
-  font-size: 2rem;
+.problem__need-icon {
   margin-bottom: var(--spacing-3);
 }
 

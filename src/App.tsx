@@ -13,6 +13,7 @@ import PricingPage     from './pages/PricingPage';
 import BlogPage        from './pages/BlogPage';
 import BlogArticlePage from './pages/BlogArticlePage';
 import LegalPage       from './pages/LegalPage';
+import ContactPage     from './pages/Contact';
 
 // Webapp components
 import Sidebar      from './components/Sidebar';
@@ -123,6 +124,7 @@ export default function App() {
             <Route path="/privacy-policy" element={<LegalPage docKey="privacy" />} />
             <Route path="/terms-of-service" element={<LegalPage docKey="terms" />} />
             <Route path="/cookie-policy" element={<LegalPage docKey="cookies" />} />
+            <Route path="/contact" element={<ContactPage />} />
           </Route>
 
           {/* ── Auth screens ── */}
