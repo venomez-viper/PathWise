@@ -21,7 +21,13 @@
 }
 
 .solution__layer-icon {
-  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.85rem;
+  flex-shrink: 0;
 }
 
 .solution__layer-name {
@@ -44,7 +50,9 @@
 }
 
 .solution__feature-icon {
-  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
 }
