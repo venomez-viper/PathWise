@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Shield, Users, Trash2, Search, BarChart3, CheckCircle2, AlertTriangle,
-  X, Download, ExternalLink, Copy, Monitor, ChevronDown,
+  X, Download, ExternalLink, Copy, Monitor, ChevronDown, MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { admin as adminApi } from '../../lib/api';
@@ -38,7 +38,7 @@ interface UserDetail {
 
 type SortKey = 'name' | 'email' | 'plan' | 'createdAt' | 'assessment' | 'tasks';
 type SortDir = 'asc' | 'desc';
-type TabKey = 'users' | 'analytics' | 'system';
+type TabKey = 'users' | 'analytics' | 'system' | 'tickets';
 
 /* ─────────── User Detail Panel ─────────── */
 
@@ -341,6 +341,11 @@ export default function AdminPage() {
   const [analytics, setAnalytics] = useState<{ totalAssessments: number; topCareers: { title: string; count: number }[] } | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
+  // Tickets
+  const [ticketsList, setTicketsList] = useState<any[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+
   useEffect(() => {
     if (user?.email !== ADMIN_EMAIL) return;
     loadData();
@@ -349,6 +354,9 @@ export default function AdminPage() {
   useEffect(() => {
     if (activeTab === 'analytics' && !analytics) {
       loadAnalytics();
+    }
+    if (activeTab === 'tickets') {
+      loadTickets();
     }
   }, [activeTab]);
 
@@ -382,6 +390,41 @@ export default function AdminPage() {
     } finally {
       setAnalyticsLoading(false);
     }
+  };
+
+  const loadTickets = async () => {
+    setTicketsLoading(true);
+    try {
+      const res = await adminApi.getTickets();
+      setTicketsList(res?.tickets ?? []);
+    } catch {}
+    finally { setTicketsLoading(false); }
+  };
+
+  const handleTicketStatusChange = async (ticketId: string, status: string) => {
+    try {
+      await adminApi.updateTicket(ticketId, status);
+      setTicketsList(prev => prev.map(t => t.id === ticketId ? { ...t, status } : t));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update ticket status.');
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId: string) => {
+    if (!window.confirm('Delete this ticket permanently?')) return;
+    try {
+      await adminApi.deleteTicket(ticketId);
+      setTicketsList(prev => prev.filter(t => t.id !== ticketId));
+      if (expandedTicket === ticketId) setExpandedTicket(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete ticket.');
+    }
+  };
+
+  const statusColors: Record<string, { bg: string; color: string }> = {
+    open: { bg: '#fee2e2', color: '#dc2626' },
+    in_progress: { bg: '#fef3c7', color: '#d97706' },
+    closed: { bg: '#dcfce7', color: '#16a34a' },
   };
 
   const taskStatsMap = useMemo(() => {
@@ -629,6 +672,9 @@ export default function AdminPage() {
         </button>
         <button style={tabStyle(activeTab === 'system')} onClick={() => setActiveTab('system')}>
           <Monitor size={14} style={{ verticalAlign: '-2px', marginRight: 6 }} />System
+        </button>
+        <button style={tabStyle(activeTab === 'tickets')} onClick={() => setActiveTab('tickets')}>
+          <MessageSquare size={14} style={{ verticalAlign: '-2px', marginRight: 6 }} />Tickets{ticketsList.length > 0 ? ` (${ticketsList.length})` : ''}
         </button>
       </div>
 
@@ -956,6 +1002,123 @@ export default function AdminPage() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ─── Tickets Tab ─── */}
+      {activeTab === 'tickets' && (
+        <div>
+          {ticketsLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+              <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            </div>
+          ) : ticketsList.length === 0 ? (
+            <div className="panel" style={{ borderRadius: '2rem', padding: '3rem', textAlign: 'center' }}>
+              <MessageSquare size={40} color="var(--on-surface-variant)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+              <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>No tickets yet.</p>
+            </div>
+          ) : (
+            <div className="panel" style={{ borderRadius: '2rem', padding: 0, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Name</th>
+                    <th style={thStyle}>Email</th>
+                    <th style={thStyle}>Subject</th>
+                    <th style={thStyle}>Date</th>
+                    <th style={{ ...thStyle, cursor: 'default' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ticketsList.map((ticket: any, idx: number) => {
+                    const sc = statusColors[ticket.status] ?? statusColors.open;
+                    const isExpanded = expandedTicket === ticket.id;
+                    return (
+                      <>
+                        <tr
+                          key={ticket.id}
+                          onClick={() => setExpandedTicket(isExpanded ? null : ticket.id)}
+                          style={{
+                            background: idx % 2 === 0 ? 'transparent' : 'var(--surface-container)',
+                            cursor: 'pointer',
+                            transition: 'background 0.15s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container-high)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? 'transparent' : 'var(--surface-container)'; }}
+                        >
+                          <td style={tdStyle}>
+                            <span style={{
+                              display: 'inline-block', padding: '2px 10px', borderRadius: '999px',
+                              fontSize: '0.72rem', fontWeight: 700,
+                              background: sc.bg, color: sc.color,
+                            }}>
+                              {(ticket.status ?? 'open').replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td style={{ ...tdStyle, fontWeight: 600 }}>{ticket.name || '--'}</td>
+                          <td style={{ ...tdStyle, color: 'var(--on-surface-variant)' }}>{ticket.email}</td>
+                          <td style={{ ...tdStyle, color: 'var(--on-surface-variant)' }}>{ticket.subject || '--'}</td>
+                          <td style={{ ...tdStyle, color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
+                            {ticket.createdAt ? formatDate(ticket.createdAt) : '--'}
+                          </td>
+                          <td style={tdStyle} onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <select
+                                value={ticket.status ?? 'open'}
+                                onChange={e => handleTicketStatusChange(ticket.id, e.target.value)}
+                                style={{
+                                  padding: '4px 8px', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 600,
+                                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+                                  color: 'var(--on-surface)', cursor: 'pointer', outline: 'none',
+                                }}
+                              >
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="closed">Closed</option>
+                              </select>
+                              <button
+                                onClick={() => handleDeleteTicket(ticket.id)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  width: 28, height: 28, borderRadius: '50%',
+                                  background: 'none', border: '1px solid #ef444444', color: '#ef4444',
+                                  cursor: 'pointer', padding: 0,
+                                }}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr key={`${ticket.id}-msg`}>
+                            <td colSpan={6} style={{
+                              padding: '1rem 1.5rem', background: 'var(--surface-container-low)',
+                              borderBottom: '1px solid var(--outline-variant)',
+                            }}>
+                              <p style={{
+                                fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
+                                letterSpacing: '0.08em', color: 'var(--on-surface-variant)', marginBottom: '0.5rem',
+                              }}>
+                                Message
+                              </p>
+                              <p style={{
+                                fontSize: '0.85rem', color: 'var(--on-surface)', lineHeight: 1.6,
+                                whiteSpace: 'pre-wrap', margin: 0,
+                              }}>
+                                {ticket.message}
+                              </p>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
