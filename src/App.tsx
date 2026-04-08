@@ -39,6 +39,7 @@ import AchievementsPage from './pages/Achievements';
 import NotificationsPage from './pages/Notifications';
 import CertificatesPage from './pages/Certificates';
 import HelpFAQ      from './pages/HelpFAQ';
+import WhatsNewAppPage from './pages/WhatsNewApp';
 import CareerMatchDetail from './pages/CareerMatchDetail';
 import SearchPage   from './pages/Search';
 import AdminPage    from './pages/Admin';
@@ -168,7 +169,7 @@ export default function App() {
             <Route path="career-match"  element={<CareerMatchDetail />} />
             <Route path="search"        element={<SearchPage />} />
             <Route path="admin"         element={<AdminPage />} />
-            <Route path="whats-new"     element={<WhatsNewPage />} />
+            <Route path="whats-new"     element={<WhatsNewAppPage />} />
           </Route>
 
           {/* ── 404 catch-all ── */}
