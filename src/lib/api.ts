@@ -109,6 +109,7 @@ export const roadmap = {
   generate: (data: unknown)  => request('/roadmap', { method: 'POST', body: JSON.stringify(data) }),
   completeMilestone: (milestoneId: string) =>
     request(`/roadmap/milestones/${milestoneId}/complete`, { method: 'POST', body: JSON.stringify({}) }),
+  getCertificate: () => request<{ certificate: { id: string; targetRole: string; issuedAt: string } | null }>('/roadmap/certificate'),
 };
 
 // --- Tasks ---

@@ -181,6 +181,15 @@ export const completeMilestone = api(
       }
     } catch {}
 
+    // Generate unique certificate ID on 100% completion
+    if (pct >= 100) {
+      const existingCert = await db.queryRow`SELECT certificate_id FROM roadmaps WHERE id = ${ms.roadmap_id}`;
+      if (!existingCert?.certificate_id) {
+        const certId = `PW-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().substring(0, 4).toUpperCase()}`;
+        await db.exec`UPDATE roadmaps SET certificate_id = ${certId}, certificate_issued_at = ${new Date().toISOString()} WHERE id = ${ms.roadmap_id}`;
+      }
+    }
+
     return { success: true, nextMilestoneId };
   }
 );
@@ -332,6 +341,32 @@ export const generateRoadmap = api(
         targetRole: params.targetRole,
         completionPercent: 0,
         milestones,
+      },
+    };
+  }
+);
+
+// GET /roadmap/certificate — retrieve the stored certificate for the authenticated user
+export const getCertificate = api(
+  { expose: true, method: "GET", path: "/roadmap/certificate", auth: true },
+  async (): Promise<{ certificate: { id: string; targetRole: string; issuedAt: string; userName: string } | null }> => {
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
+
+    const row = await db.queryRow`
+      SELECT r.certificate_id, r.certificate_issued_at, r.target_role
+      FROM roadmaps r WHERE r.user_id = ${userID} AND r.certificate_id IS NOT NULL
+    `;
+
+    if (!row) return { certificate: null };
+
+    return {
+      certificate: {
+        id: row.certificate_id,
+        targetRole: row.target_role,
+        issuedAt: row.certificate_issued_at,
+        userName: '', // Will be filled by frontend from auth context
       },
     };
   }
