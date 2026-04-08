@@ -7,7 +7,49 @@ export interface ChangelogEntry {
   highlights: string[];
 }
 
+/*
+ * ═══════════════════════════════════════════════════════════════
+ * HOW TO ADD A NEW ENTRY:
+ *
+ * 1. Copy the template below
+ * 2. Paste it at the TOP of the CHANGELOG array (newest first)
+ * 3. Fill in: version, date, title, tag, description, highlights
+ * 4. Commit and push — it shows up on /whats-new and /app/whats-new
+ *
+ * TEMPLATE:
+ * {
+ *   version: 'X.Y.Z',
+ *   date: 'Month Day, Year',
+ *   title: 'Short Title',
+ *   tag: 'feature',  // 'feature' | 'improvement' | 'fix' | 'security'
+ *   description: 'One sentence summary.',
+ *   highlights: [
+ *     'Bullet point 1',
+ *     'Bullet point 2',
+ *   ],
+ * },
+ * ═══════════════════════════════════════════════════════════════
+ */
+
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.11.0',
+    date: 'April 7, 2026',
+    title: 'Notifications, Onboarding Tour & Certificates',
+    tag: 'feature',
+    description: 'In-app notification system, guided feature tour for new users, completion certificates with fireworks, and shareable profile cards.',
+    highlights: [
+      'Notification bell with real-time dropdown and 60-second polling',
+      'Guided 5-step onboarding tour after first assessment',
+      'Completion certificate with fireworks when all milestones are done',
+      'Share Journey button (Twitter, LinkedIn, copy link)',
+      'In-app support page with ticket submission',
+      'In-app What\'s New changelog with filter pills',
+      'Contact Us page saves to support ticket system',
+      'Resend email integration (welcome, contact confirmation, admin alerts)',
+      'PostHog and Microsoft Clarity analytics',
+    ],
+  },
   {
     version: '0.10.1',
     date: 'April 7, 2026',
