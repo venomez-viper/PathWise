@@ -134,7 +134,7 @@ export default function SkillGaps() {
           <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', marginBottom: 20, maxWidth: 380, margin: '0 auto 20px' }}>
             Take the assessment to discover your current skills, identify gaps, and get personalised learning recommendations.
           </p>
-          <Link to="/app/assessment" className="btn-page-action" style={{ display: 'inline-flex' }}>
+          <Link to="/app/assessment-v2" className="btn-page-action" style={{ display: 'inline-flex' }}>
             <Sparkles size={14} /> Take Assessment
           </Link>
         </div>

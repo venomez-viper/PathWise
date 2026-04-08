@@ -38,7 +38,7 @@ export default function CareerMatchDetail() {
       <h1 className="page-title">Career Match</h1>
       <div className="panel" style={{ borderRadius: '2rem', textAlign: 'center', padding: '3rem' }}>
         <p style={{ color: 'var(--on-surface-variant)' }}>No assessment results yet.</p>
-        <Link to="/app/assessment" className="panel-link">Take Assessment →</Link>
+        <Link to="/app/assessment-v2" className="panel-link">Take Assessment →</Link>
       </div>
     </div>
   );

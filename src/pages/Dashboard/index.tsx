@@ -272,7 +272,7 @@ export default function Dashboard() {
             <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)' }}>
               Aligned New Jobs
             </p>
-            <Link to="/app/assessment" style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8b4f2c' }}>
+            <Link to="/app/assessment-v2" style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8b4f2c' }}>
               Explore All Matches &rarr;
             </Link>
           </div>
@@ -280,12 +280,12 @@ export default function Dashboard() {
           {careerMatches.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
               <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>Take the assessment to see matches.</p>
-              <Link to="/app/assessment" className="panel-link">Start Assessment <ArrowRight size={13} /></Link>
+              <Link to="/app/assessment-v2" className="panel-link">Start Assessment <ArrowRight size={13} /></Link>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
               {careerMatches.map((m, i) => (
-                <Link to="/app/assessment" key={m.title} style={{
+                <Link to="/app/assessment-v2" key={m.title} style={{
                   background: 'var(--surface-container-low)',
                   borderRadius: 'var(--radius-xl)',
                   padding: '1.25rem 1rem',
@@ -380,7 +380,7 @@ export default function Dashboard() {
             <p style={{ fontWeight: 700, color: 'var(--on-surface)', marginBottom: 4 }}>Take the Career Assessment</p>
             <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>AI-analyse your strengths and get career matches.</p>
           </div>
-          <Link to="/app/assessment" className="btn-page-action">Start <ArrowRight size={14} /></Link>
+          <Link to="/app/assessment-v2" className="btn-page-action">Start <ArrowRight size={14} /></Link>
         </div>
       )}
 

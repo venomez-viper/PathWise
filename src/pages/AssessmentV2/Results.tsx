@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface RIASECScores {
@@ -350,16 +351,17 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
           )}
           {match.growthOutlook && <span>Growth: {match.growthOutlook}</span>}
         </div>
-        <button style={{
-          marginTop: '1rem', padding: '0.6rem 1.5rem', border: 'none', borderRadius: '2rem',
-          background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14, cursor: 'pointer',
-          transition: 'background 0.2s',
+        <Link to="/app/onboarding" style={{
+          display: 'inline-block',
+          marginTop: '1rem', padding: '0.6rem 1.5rem', borderRadius: '2rem',
+          background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
+          textDecoration: 'none', transition: 'background 0.2s',
         }}
-          onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
-          onMouseLeave={e => (e.currentTarget.style.background = TEAL)}
+          onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
+          onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
         >
           Build Roadmap
-        </button>
+        </Link>
       </div>
     </div>
   );
@@ -400,6 +402,15 @@ function ShareCard({ archetype, riasec, matches }: {
 /* ─── Results Page ──────────────────────────────────────────────── */
 
 export default function AssessmentResults() {
+  const location = useLocation();
+  const result = (location.state as any)?.result;
+
+  const archetype = result?.archetype ?? MOCK_ARCHETYPE;
+  const riasec = result?.riasec ?? MOCK_RIASEC;
+  const bigFive = result?.bigFive ?? MOCK_BIGFIVE;
+  const matches = result?.careerMatches ?? MOCK_MATCHES;
+  const narrative = result?.narrative ?? null;
+
   const [phase, setPhase] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -425,11 +436,21 @@ export default function AssessmentResults() {
       {/* Section: Archetype */}
       <section style={{ marginBottom: '2.5rem' }}>
         <ArchetypeCard
-          archetype={MOCK_ARCHETYPE}
-          riasec={MOCK_RIASEC}
-          bigFive={MOCK_BIGFIVE}
+          archetype={archetype}
+          riasec={riasec}
+          bigFive={bigFive}
           visible={showArchetype}
         />
+        {narrative && (
+          <div className="panel" style={{ borderRadius: '1.5rem', padding: '2rem', marginTop: '1.5rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--on-surface)', marginBottom: '1rem' }}>
+              Your Career Profile
+            </h2>
+            <div style={{ fontSize: '0.92rem', color: 'var(--on-surface-variant)', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
+              {narrative.fullNarrative}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Section: Charts side-by-side */}
@@ -441,13 +462,13 @@ export default function AssessmentResults() {
           <h2 style={{ fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.1rem', color: TEAL, margin: '0 0 1rem', textAlign: 'center' }}>
             Interest Profile
           </h2>
-          <RIASECHexagon scores={MOCK_RIASEC} animate={showCharts} />
+          <RIASECHexagon scores={riasec} animate={showCharts} />
         </div>
         <div style={card}>
           <h2 style={{ fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.1rem', color: TEAL, margin: '0 0 1rem', textAlign: 'center' }}>
             Personality Traits
           </h2>
-          <BigFiveBars scores={MOCK_BIGFIVE} animate={showCharts} />
+          <BigFiveBars scores={bigFive} animate={showCharts} />
         </div>
       </section>
 
@@ -460,7 +481,7 @@ export default function AssessmentResults() {
           Your Top Career Matches
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {MOCK_MATCHES.map((m, i) => (
+          {matches.map((m: any, i: number) => (
             <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} />
           ))}
         </div>
@@ -472,16 +493,17 @@ export default function AssessmentResults() {
         opacity: phase >= 5 ? 1 : 0,
         transition: 'opacity 0.5s ease',
       }}>
-        <button style={{
-          padding: '0.85rem 2.5rem', border: 'none', borderRadius: '2rem',
-          background: TEAL, color: '#fff', fontWeight: 700, fontSize: 16, cursor: 'pointer',
-          transition: 'background 0.2s', marginBottom: '2rem',
+        <Link to="/app/onboarding" style={{
+          display: 'inline-block',
+          padding: '0.85rem 2.5rem', borderRadius: '2rem',
+          background: TEAL, color: '#fff', fontWeight: 700, fontSize: 16,
+          textDecoration: 'none', transition: 'background 0.2s', marginBottom: '2rem',
         }}
-          onMouseEnter={e => (e.currentTarget.style.background = TEAL_LIGHT)}
-          onMouseLeave={e => (e.currentTarget.style.background = TEAL)}
+          onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
+          onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
         >
           Build Your Roadmap
-        </button>
+        </Link>
 
         <details style={{ marginTop: '1rem' }}>
           <summary style={{
@@ -491,9 +513,15 @@ export default function AssessmentResults() {
             Share Your Results
           </summary>
           <div style={{ marginTop: '1rem' }}>
-            <ShareCard archetype={MOCK_ARCHETYPE} riasec={MOCK_RIASEC} matches={MOCK_MATCHES} />
+            <ShareCard archetype={archetype} riasec={riasec} matches={matches} />
           </div>
         </details>
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <Link to="/app/assessment-v2" style={{ color: 'var(--on-surface-variant)', fontSize: '0.82rem' }}>
+            Retake Assessment
+          </Link>
+        </div>
       </section>
     </div>
   );

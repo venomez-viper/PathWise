@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, warmup } from '../../lib/api';
 import { Panda } from '../../components/panda';
+import { getArchetypePreview } from './archetypePreview';
 
 /* ══════════════════════════════════════════════════════════════════
    PLACEHOLDER QUESTION DATA
@@ -474,13 +475,15 @@ export default function AssessmentV2() {
     });
   }, [phases, saveState]);
 
-  // Auto-advance transition screen
+  // Auto-advance transition screen.
+  // Phase 4 (index 3) is the archetype preview — it MUST be manually dismissed
+  // (the forced pause is what drives the 2.7x completion boost).
   useEffect(() => {
-    if (showTransition) {
+    if (showTransition && currentPhase !== 3) {
       transitionTimer.current = setTimeout(advancePhase, TRANSITION_AUTO_MS);
       return () => { if (transitionTimer.current) clearTimeout(transitionTimer.current); };
     }
-  }, [showTransition, advancePhase]);
+  }, [showTransition, currentPhase, advancePhase]);
 
   /* ── Analyzing sequence ── */
   useEffect(() => {
@@ -628,6 +631,73 @@ export default function AssessmentV2() {
 
   /* ── Phase Transition Screen ── */
   if (showTransition && phase) {
+    // Phase 4 (index 3) — archetype preview: manual-only, no auto-advance.
+    // This forced pause is the key retention moment (2.7x completion boost).
+    if (currentPhase === 3) {
+      const preview = getArchetypePreview(answers);
+      return (
+        <div style={s.page}>
+          <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out' }}>
+            <div style={s.center}>
+              <Panda mood="celebrating" size={100} animate />
+              <p style={{
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: 'var(--on-surface-variant, #49454f)',
+                marginTop: '1rem',
+              }}>
+                Early Insight
+              </p>
+              <h2 style={{
+                fontFamily: 'var(--font-display, Manrope, sans-serif)',
+                fontSize: '1.75rem',
+                fontWeight: 800,
+                color: '#006a62',
+                marginTop: '0.5rem',
+                marginBottom: 0,
+              }}>
+                You are {preview.name}
+              </h2>
+              <p style={{
+                color: 'var(--on-surface-variant, #49454f)',
+                fontSize: '0.95rem',
+                marginTop: '0.5rem',
+              }}>
+                {preview.tagline}
+              </p>
+              <p style={{
+                color: 'var(--on-surface-variant, #49454f)',
+                fontSize: '0.85rem',
+                marginTop: '1.5rem',
+                fontStyle: 'italic',
+              }}>
+                Two more sections to unlock your full career matches...
+              </p>
+              <button
+                onClick={advancePhase}
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '0.75rem 2rem',
+                  background: '#006a62',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 'var(--radius-full, 9999px)',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // All other phases — generic transition with auto-advance.
     return (
       <div style={s.page}>
         <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out', cursor: 'pointer' }} onClick={advancePhase}>
