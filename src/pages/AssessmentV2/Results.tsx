@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ArchetypeShareCard from '../../components/ArchetypeShareCard';
+import CareerExplorer from './CareerExplorer';
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface RIASECScores {
@@ -454,6 +455,26 @@ export default function AssessmentResults() {
             <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} />
           ))}
         </div>
+      </section>
+
+      {/* Section: Explore All Career Paths */}
+      <section style={{
+        marginBottom: '2.5rem',
+        opacity: phase >= 5 ? 1 : 0,
+        transition: 'opacity 0.6s ease 0.2s',
+      }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.4rem',
+            color: 'var(--on-surface, #222)', margin: '0 0 0.4rem',
+          }}>
+            Explore All Career Paths
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--on-surface-variant, #49454f)', margin: 0 }}>
+            Browse all careers and filter by domain, match score, or pathway time.
+          </p>
+        </div>
+        <CareerExplorer allMatches={matches} userRiasec={riasec} />
       </section>
 
       {/* CTA + Share */}
