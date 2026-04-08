@@ -316,7 +316,7 @@ export default function CertificatePage() {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-full)',
-              background: 'var(--primary)', color: '#fff', border: 'none',
+              background: '#c9a96e', color: '#fff', border: 'none',
               fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
             }}
           >

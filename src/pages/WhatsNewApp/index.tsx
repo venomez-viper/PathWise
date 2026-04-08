@@ -32,7 +32,7 @@ export default function WhatsNewAppPage() {
   });
 
   return (
-    <div className="page-container">
+    <div className="page">
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '0.5rem' }}>
         <h1 className="page-title">What's New</h1>
