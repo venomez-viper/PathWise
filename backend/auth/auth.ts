@@ -81,6 +81,13 @@ export const signup = api(
   { expose: true, method: "POST", path: "/auth/signup", auth: false },
   async (params: SignUpParams): Promise<TokenResponse> => {
     RateLimits.auth("signup:" + params.email);
+    if (params.name.length > 100) throw APIError.invalidArgument("name too long");
+    if (params.email.length > 255) throw APIError.invalidArgument("email too long");
+    if (params.password.length > 128) throw APIError.invalidArgument("password too long");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(params.email)) {
+      throw APIError.invalidArgument("invalid email address");
+    }
     if (params.password.length < 8) {
       throw APIError.invalidArgument("password must be at least 8 characters");
     }
@@ -267,7 +274,8 @@ export const changePassword = api(
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
-const ADMIN_EMAIL = "akashagakash@gmail.com";
+// Centralized admin config — change in ONE place
+export const ADMIN_EMAIL = "akashagakash@gmail.com";
 
 async function requireAdmin(userID: string): Promise<void> {
   const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
@@ -442,7 +450,7 @@ export const deleteAccount = api(
     // Don't allow admin to self-delete via this endpoint
     const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
     if (!row) throw APIError.notFound("user not found");
-    if (row.email === "akashagakash@gmail.com") {
+    if (row.email === ADMIN_EMAIL) {
       throw APIError.invalidArgument("admin account cannot be deleted from settings");
     }
 
