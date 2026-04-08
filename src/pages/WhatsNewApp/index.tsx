@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CHANGELOG, type ChangelogEntry } from '../WhatsNew/changelogData';
-import { Sparkles, Zap, Wrench, Shield, Check, ChevronDown, Rocket } from 'lucide-react';
+import { Sparkles, Zap, Wrench, Shield, Check, ChevronDown } from 'lucide-react';
 import { Panda } from '../../components/panda';
 
 /* ── Tag display helpers ── */
