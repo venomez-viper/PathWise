@@ -481,7 +481,7 @@ export default function AssessmentResults() {
           Your Top Career Matches
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {matches.map((m, i) => (
+          {matches.map((m: any, i: number) => (
             <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} />
           ))}
         </div>
