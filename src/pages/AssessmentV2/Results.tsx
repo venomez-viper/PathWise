@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import ArchetypeShareCard from '../../components/ArchetypeShareCard';
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface RIASECScores {
@@ -367,38 +368,6 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
   );
 }
 
-/* ─── Share Card (screenshot-friendly) ──────────────────────────── */
-
-function ShareCard({ archetype, riasec, matches }: {
-  archetype: Archetype; riasec: RIASECScores; matches: CareerMatch[];
-}) {
-  return (
-    <div style={{
-      ...card, maxWidth: 400, margin: '0 auto', textAlign: 'center',
-      background: 'linear-gradient(145deg, #f7fafa, #eefcfe)',
-    }}>
-      <h2 style={{ fontFamily: 'var(--font-display, Georgia, serif)', color: TEAL, margin: '0 0 0.25rem', fontSize: '1.4rem' }}>
-        {archetype.name}
-      </h2>
-      <p style={{ fontSize: 13, color: COPPER, fontStyle: 'italic', margin: '0 0 1rem' }}>{archetype.tagline}</p>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-        <RIASECHexagon scores={riasec} size={140} animate={false} />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        {matches.slice(0, 3).map((m, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', fontSize: 14 }}>
-            <span style={{ color: 'var(--on-surface, #333)' }}>{m.title}</span>
-            <span style={{ fontWeight: 700, color: TIER_CONFIG[getMatchTier(m.matchScore)].color }}>{m.matchScore}%</span>
-          </div>
-        ))}
-      </div>
-      <p style={{ fontSize: 11, color: 'var(--on-surface, #999)', margin: 0 }}>
-        Discover yours at <strong>pathwise.fit</strong>
-      </p>
-    </div>
-  );
-}
-
 /* ─── Results Page ──────────────────────────────────────────────── */
 
 export default function AssessmentResults() {
@@ -505,23 +474,38 @@ export default function AssessmentResults() {
           Build Your Roadmap
         </Link>
 
-        <details style={{ marginTop: '1rem' }}>
-          <summary style={{
-            cursor: 'pointer', fontSize: 14, color: TEAL, fontWeight: 600,
-            listStyle: 'none', display: 'inline-block',
-          }}>
-            Share Your Results
-          </summary>
-          <div style={{ marginTop: '1rem' }}>
-            <ShareCard archetype={archetype} riasec={riasec} matches={matches} />
-          </div>
-        </details>
-
         <div style={{ marginTop: '1.5rem' }}>
           <Link to="/app/assessment-v2" style={{ color: 'var(--on-surface-variant)', fontSize: '0.82rem' }}>
             Retake Assessment
           </Link>
         </div>
+      </section>
+
+      {/* Section: Share Your Career DNA */}
+      <section style={{
+        marginTop: '2.5rem',
+        opacity: phase >= 5 ? 1 : 0,
+        transition: 'opacity 0.6s ease 0.3s',
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display, Georgia, serif)',
+            fontSize: '1.4rem',
+            color: 'var(--on-surface, #222)',
+            margin: '0 0 0.5rem',
+          }}>
+            Share Your Career DNA
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--on-surface-variant, #666)', margin: 0 }}>
+            Show the world what makes you unique — download or share your archetype card.
+          </p>
+        </div>
+        <ArchetypeShareCard
+          archetypeName={archetype.name}
+          archetypeTagline={archetype.tagline}
+          riasec={riasec}
+          topMatches={matches.slice(0, 3).map((m: CareerMatch) => ({ title: m.title, score: m.matchScore }))}
+        />
       </section>
     </div>
   );
