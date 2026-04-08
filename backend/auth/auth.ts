@@ -359,12 +359,20 @@ export const adminUpdatePlan = api(
 
 export const adminImpersonate = api(
   { expose: true, method: "POST", path: "/admin/impersonate/:userId", auth: true },
-  async ({ userId }: { userId: string }): Promise<{ token: string }> => {
+  async ({ userId }: { userId: string }): Promise<{ token: string; expiresIn: string }> => {
     const { userID } = getAuthData<AuthData>()!;
     await requireAdmin(userID);
     const row = await db.queryRow`SELECT id FROM users WHERE id = ${userId}`;
     if (!row) throw APIError.notFound("user not found");
-    return { token: issueToken(userId) };
+
+    // Short-lived impersonation token (1 hour, not 30 days)
+    const token = jwt.sign(
+      { sub: userId, impersonatedBy: userID, isImpersonation: true },
+      jwtSecret(),
+      { expiresIn: "1h" }
+    );
+
+    return { token, expiresIn: "1 hour" };
   }
 );
 
