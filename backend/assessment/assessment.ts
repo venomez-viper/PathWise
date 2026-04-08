@@ -9,6 +9,9 @@ import {
   getCareerRecsForRole,
   analyzeSkillGapsForRole,
 } from "./career-brain";
+import { getTopCareerMatchesV2, computeRIASEC, computeBigFive } from "./career-brain-v2";
+import { determineArchetype } from "./archetypes";
+import { generateNarrative } from "./narrative-generator";
 import { awardAchievement } from "../streaks/streaks";
 
 const db = new SQLDatabase("assessment", { migrations: "./migrations" });
@@ -307,6 +310,105 @@ export const analyzeSkillGaps = api(
     );
 
     return { result };
+  }
+);
+
+// ── Assessment V2 ────────────────────────────────────────────────────────────
+
+interface SubmitAssessmentV2Params {
+  userId: string;
+  rawAnswers: Record<string, string | string[]>;
+  workStyle?: string;
+  strengths?: string[];
+  values?: string[];
+  currentSkills?: string[];
+  experienceLevel?: string;
+  interests?: string[];
+  trajectory?: string;
+}
+
+interface AssessmentV2Response {
+  result: {
+    careerMatches: any[];
+    skillGaps: any[];
+    archetype: { id: string; name: string; tagline: string; description: string };
+    riasec: any;
+    bigFive: any;
+    narrative: any;
+    categorizedMatches?: any[];
+  };
+}
+
+export const submitAssessmentV2 = api(
+  { expose: true, method: "POST", path: "/assessment-v2", auth: true },
+  async (params: SubmitAssessmentV2Params): Promise<AssessmentV2Response> => {
+    const { userID } = getAuthData<AuthData>()!;
+    if (userID !== params.userId) throw APIError.permissionDenied("not your data");
+    RateLimits.assessment("assess:" + userID);
+
+    const rawAnswers = params.rawAnswers ?? {};
+
+    // Compute scores
+    const riasec = computeRIASEC(rawAnswers as Record<string, string[]>);
+    const bigFive = computeBigFive(rawAnswers as Record<string, string[]>);
+    const archetype = determineArchetype(riasec, bigFive);
+
+    // Get career matches using v2 engine
+    const { careerMatches, skillGaps, categorizedMatches } = getTopCareerMatchesV2({
+      workStyle: params.workStyle ?? '',
+      strengths: params.strengths ?? [],
+      values: params.values ?? [],
+      currentSkills: params.currentSkills ?? [],
+      experienceLevel: params.experienceLevel ?? 'junior',
+      interests: params.interests ?? [],
+      answers: rawAnswers,
+    }, 5);
+
+    // Generate narrative
+    const narrative = generateNarrative(
+      archetype.name,
+      archetype.tagline,
+      riasec,
+      bigFive,
+      params.trajectory ?? 'explorer',
+      { remote: true, teamSize: 'small', pace: 'steady' },
+      userID,
+    );
+
+    // Store results (same table, upsert)
+    const now = new Date().toISOString();
+    await db.exec`
+      INSERT INTO assessments (user_id, completed_at, strengths, values, personality_type, career_matches, raw_answers, skill_gaps, current_skills)
+      VALUES (${params.userId}, ${now}, ${JSON.stringify(params.strengths ?? [])}, ${JSON.stringify(params.values ?? [])}, ${archetype.id}, ${JSON.stringify(careerMatches)}, ${JSON.stringify(rawAnswers)}, ${JSON.stringify(skillGaps)}, ${JSON.stringify(params.currentSkills ?? [])})
+      ON CONFLICT (user_id) DO UPDATE SET
+        completed_at = excluded.completed_at,
+        strengths = excluded.strengths,
+        values = excluded.values,
+        personality_type = excluded.personality_type,
+        career_matches = excluded.career_matches,
+        raw_answers = excluded.raw_answers,
+        skill_gaps = excluded.skill_gaps,
+        current_skills = excluded.current_skills
+    `;
+
+    // Award achievement
+    try { await awardAchievement({ userId: params.userId, badgeKey: "first_steps" }); } catch {}
+    try {
+      const { createNotification } = await import("../streaks/streaks");
+      await createNotification({ userId: params.userId, type: "info", title: "Assessment Complete", body: "Check your career matches and start your roadmap." });
+    } catch {}
+
+    return {
+      result: {
+        careerMatches,
+        skillGaps,
+        archetype: { id: archetype.id, name: archetype.name, tagline: archetype.tagline, description: archetype.description },
+        riasec,
+        bigFive,
+        narrative,
+        categorizedMatches,
+      },
+    };
   }
 );
 
