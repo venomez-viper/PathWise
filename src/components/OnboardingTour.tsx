@@ -3,32 +3,38 @@ import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const TOUR_STEPS = [
   {
-    title: 'Welcome to Your Dashboard',
-    body: 'This is your home base. See your career matches, progress, and upcoming tasks at a glance.',
+    title: 'Welcome to PathWise',
+    body: 'This is your career command center. Everything starts from your Dashboard: career matches, active milestones, and your readiness score.',
     target: '.page-title',
     position: 'bottom' as const,
   },
   {
     title: 'Your Career Roadmap',
-    body: 'Follow your personalized milestones to reach your target role. Each milestone has tasks to complete.',
+    body: 'Your roadmap is built from milestones. Each milestone represents a key phase of your career journey. Milestones unlock sequentially: you must complete one before the next opens.',
     target: '[href="/app/roadmap"]',
     position: 'right' as const,
   },
   {
-    title: 'Task Management',
-    body: 'Your daily actions live here. Complete tasks to build momentum and track your progress.',
+    title: 'Tasks Power Your Milestones',
+    body: 'Every milestone contains tasks. Complete ALL tasks in a milestone to unlock the next one. Tasks are your daily actions: learning, portfolio work, networking, and interview prep.',
     target: '[href="/app/tasks"]',
     position: 'right' as const,
   },
   {
-    title: 'Track Your Progress',
-    body: 'See your career readiness score, skill breakdown, and weekly activity in the analytics dashboard.',
+    title: 'Track Your Growth',
+    body: 'Your Progress dashboard shows your career readiness score, task completion rate, skill breakdown, and weekly activity. Watch your score climb as you complete tasks.',
     target: '[href="/app/progress"]',
     position: 'right' as const,
   },
   {
-    title: 'Settings & Profile',
-    body: 'Customize your avatar, manage your account, retake assessments, and create your public profile.',
+    title: 'Earn Your Certificate',
+    body: 'Complete every task in every milestone and you will earn a Certificate of Appreciation from PathWise. You can download it, share it on LinkedIn, and add it to your portfolio.',
+    target: '[href="/app/streaks"]',
+    position: 'right' as const,
+  },
+  {
+    title: 'Customize Your Experience',
+    body: 'Set your avatar, manage your account, retake assessments, change your target role, or create a public profile to share your career journey.',
     target: '[href="/app/settings"]',
     position: 'right' as const,
   },
