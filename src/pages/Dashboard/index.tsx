@@ -68,6 +68,10 @@ export default function Dashboard() {
 
   const [showTour, setShowTour] = useState(false);
 
+  const allMilestonesComplete =
+    data.milestones.length > 0 &&
+    data.milestones.every((m: any) => m.status === 'completed');
+
   useEffect(() => {
     if (data.hasAssessment && !localStorage.getItem('pathwise_tour_done')) {
       // Small delay to let the page render first
@@ -150,6 +154,34 @@ export default function Dashboard() {
 
   return (
     <div className="page">
+      {/* ── COMPLETION BANNER — shown when all milestones are done ── */}
+      {allMilestonesComplete && (
+        <div className="panel" style={{
+          borderRadius: '2rem', padding: '2rem', marginBottom: '1.5rem',
+          background: 'linear-gradient(135deg, rgba(98,69,164,0.06), rgba(94,246,230,0.06))',
+          border: '2px solid rgba(98,69,164,0.15)',
+          textAlign: 'center',
+        }}>
+          <Panda mood="celebrating" size={100} animate />
+          <h2 style={{
+            fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800,
+            color: 'var(--on-surface)', marginTop: '1rem',
+          }}>
+            Roadmap Complete!
+          </h2>
+          <p style={{ color: 'var(--on-surface-variant)', marginTop: '0.5rem' }}>
+            Congratulations! You've completed all milestones for {data.targetRole}.
+          </p>
+          <Link
+            to="/app/certificate"
+            className="btn-page-action"
+            style={{ marginTop: '1rem', background: '#8b4f2c', textDecoration: 'none' }}
+          >
+            View Certificate
+          </Link>
+        </div>
+      )}
+
       {/* ── HERO BANNER — Zen Stone gradient ── */}
       <div style={{
         background: 'linear-gradient(135deg, #334042 0%, #4a5759 60%, #5a6b6e 100%)',
@@ -352,6 +384,7 @@ export default function Dashboard() {
       )}
 
       {showTour && <OnboardingTour onComplete={() => setShowTour(false)} />}
+
     </div>
   );
 }
