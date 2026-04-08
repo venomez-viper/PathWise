@@ -29,6 +29,8 @@ import Onboarding   from './pages/Onboarding';
 import SupportPage  from './pages/Support';
 import CertificatePage from './pages/Certificate';
 import Assessment   from './pages/Assessment';
+import AssessmentV2 from './pages/AssessmentV2';
+import AssessmentV2Results from './pages/AssessmentV2/Results';
 import SkillGaps    from './pages/SkillGaps';
 import SkillGapAssessment from './pages/SkillGapAssessment';
 import SignIn       from './pages/SignIn';
@@ -157,6 +159,8 @@ export default function App() {
             <Route path="settings"   element={<SettingsPage />} />
             <Route path="onboarding"  element={<Onboarding />} />
             <Route path="assessment"  element={<Assessment />} />
+            <Route path="assessment-v2" element={<AssessmentV2 />} />
+            <Route path="assessment-v2/results" element={<AssessmentV2Results />} />
             <Route path="skill-gaps" element={<SkillGaps />} />
             <Route path="skill-gap-assessment" element={<SkillGapAssessment />} />
             <Route path="streaks"       element={<Streaks />} />
