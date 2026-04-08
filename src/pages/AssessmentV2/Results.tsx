@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, CSSProperties } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface RIASECScores {
@@ -133,7 +133,7 @@ function RIASECHexagon({ scores, size = 280, animate }: {
     const r = (scores[item.key] / 100) * maxR;
     return polarToXY(i * step, r, cx, cy);
   });
-  const profilePath = profilePoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z';
+  // profilePoints used directly in polygon rendering below
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="RIASEC profile hexagon">

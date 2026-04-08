@@ -637,7 +637,7 @@ export default function AssessmentV2() {
               Phase {currentPhase + 1} of {phases.length} complete
             </p>
             <h2 style={{ ...s.questionText, fontSize: '1.35rem', marginBottom: '0.25rem' }}>
-              {phase.title} — done!
+              {phase.title}, done!
             </h2>
             <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '0.95rem' }}>
               {phase.transitionMessage}
