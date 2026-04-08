@@ -136,7 +136,21 @@ export const completeMilestone = api(
       throw APIError.permissionDenied("you can only complete your own milestones");
     }
 
-    // 2. Mark this milestone as completed
+    // 2. Check all tasks for this milestone are complete
+    try {
+      const { checkMilestoneTasks } = await import("../tasks/tasks");
+      const taskStatus = await checkMilestoneTasks({ milestoneId });
+      if (taskStatus.total > 0 && !taskStatus.allComplete) {
+        throw APIError.invalidArgument(
+          `Complete all tasks first. ${taskStatus.done}/${taskStatus.total} tasks done.`
+        );
+      }
+    } catch (err) {
+      if (err instanceof APIError) throw err;
+      // If tasks service is unavailable, allow completion
+    }
+
+    // 3. Mark this milestone as completed
     await db.exec`UPDATE milestones SET status = 'completed' WHERE id = ${milestoneId}`;
 
     // 3. Unlock the next milestone (position + 1)
