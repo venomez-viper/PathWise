@@ -424,6 +424,18 @@ export const adminTaskStats = api(
   }
 );
 
+// ── Internal: check if all tasks for a milestone are complete ──
+export const checkMilestoneTasks = api(
+  { expose: false },
+  async ({ milestoneId }: { milestoneId: string }): Promise<{ allComplete: boolean; total: number; done: number }> => {
+    const totalRow = await db.queryRow`SELECT COUNT(*) as cnt FROM tasks WHERE milestone_id = ${milestoneId}`;
+    const doneRow = await db.queryRow`SELECT COUNT(*) as cnt FROM tasks WHERE milestone_id = ${milestoneId} AND status = 'done'`;
+    const total = Number(totalRow?.cnt ?? 0);
+    const done = Number(doneRow?.cnt ?? 0);
+    return { allComplete: total > 0 && done >= total, total, done };
+  }
+);
+
 export const adminDeleteUserTasks = api(
   { expose: true, method: "DELETE", path: "/admin/user-tasks/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
