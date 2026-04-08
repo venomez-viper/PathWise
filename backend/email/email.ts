@@ -12,6 +12,17 @@ const FROM_EMAIL = "PathWise <hello@pathwise.fit>";
 const BRAND_COLOR = "#6245a4";
 const BRAND_DARK = "#1a1a2e";
 
+// ── HTML Escape Function ──
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ── Internal email sending function (not exposed) ──
 
 export const sendEmail = api(
@@ -132,7 +143,7 @@ function step(num: number, title: string, desc: string): string {
 // ── Email Templates ──
 
 export function welcomeEmail(name: string): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return {
     subject: `${firstName}, welcome to PathWise`,
     html: layout(`
@@ -153,7 +164,7 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
 }
 
 export function contactConfirmationEmail(name: string): { subject: string; html: string } {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return {
     subject: "We received your message",
     html: layout(`
@@ -173,28 +184,33 @@ export function adminTicketNotificationEmail(
   ticketSubject: string,
   ticketMessage: string
 ): { subject: string; html: string } {
+  const escapedName = escapeHtml(ticketName);
+  const escapedEmail = escapeHtml(ticketEmail);
+  const escapedSubject = escapeHtml(ticketSubject);
+  const escapedMessage = escapeHtml(ticketMessage);
+
   return {
-    subject: `Support ticket: ${ticketSubject || ticketName}`,
+    subject: `Support ticket: ${escapedSubject || escapedName}`,
     html: layout(`
       ${h1("New Support Ticket")}
 
       <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
         <tr>
           <td style="padding: 10px 0; font-size: 14px; color: #6b7280; border-bottom: 1px solid #f3f4f6; width: 80px; font-weight: 600;">From</td>
-          <td style="padding: 10px 0; font-size: 14px; color: #111827; border-bottom: 1px solid #f3f4f6;">${ticketName}</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #111827; border-bottom: 1px solid #f3f4f6;">${escapedName}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; font-size: 14px; color: #6b7280; border-bottom: 1px solid #f3f4f6; font-weight: 600;">Email</td>
-          <td style="padding: 10px 0; font-size: 14px; color: #111827; border-bottom: 1px solid #f3f4f6;"><a href="mailto:${ticketEmail}" style="color: ${BRAND_COLOR};">${ticketEmail}</a></td>
+          <td style="padding: 10px 0; font-size: 14px; color: #111827; border-bottom: 1px solid #f3f4f6;"><a href="mailto:${escapedEmail}" style="color: ${BRAND_COLOR};">${escapedEmail}</a></td>
         </tr>
         <tr>
           <td style="padding: 10px 0; font-size: 14px; color: #6b7280; font-weight: 600;">Subject</td>
-          <td style="padding: 10px 0; font-size: 14px; color: #111827;">${ticketSubject || "No subject"}</td>
+          <td style="padding: 10px 0; font-size: 14px; color: #111827;">${escapedSubject || "No subject"}</td>
         </tr>
       </table>
 
       <div style="padding: 20px; background: #f9fafb; border-radius: 8px; border-left: 3px solid ${BRAND_COLOR}; font-size: 14px; color: #374151; line-height: 1.65; margin: 0 0 24px;">
-        ${ticketMessage.replace(/\n/g, "<br>")}
+        ${escapedMessage.replace(/\n/g, "<br>")}
       </div>
 
       ${button("View in Admin Panel", "https://pathwise.fit/app/admin")}
