@@ -158,9 +158,10 @@ export default function Dashboard() {
       {allMilestonesComplete && (
         <div className="panel" style={{
           borderRadius: '2rem', padding: '2rem', marginBottom: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(98,69,164,0.06), rgba(94,246,230,0.06))',
-          border: '2px solid rgba(98,69,164,0.15)',
+          background: 'linear-gradient(135deg, rgba(139,79,44,0.06), rgba(0,106,98,0.06))',
+          border: '2px solid rgba(139,79,44,0.15)',
           textAlign: 'center',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
           <Panda mood="celebrating" size={100} animate />
           <h2 style={{

@@ -55,7 +55,7 @@ export default function CertificatePage() {
     }
 
     const particles: Particle[] = [];
-    const colors = ['#6245a4', '#5ef6e6', '#fbbf24', '#f87171', '#34d399', '#a78bfa', '#ff7f50', '#60a5fa'];
+    const colors = ['#8b4f2c', '#5ef6e6', '#fbbf24', '#f87171', '#34d399', '#c9a96e', '#ff7f50', '#60a5fa'];
 
     function createBurst(x: number, y: number) {
       for (let i = 0; i < 40; i++) {
@@ -136,7 +136,7 @@ export default function CertificatePage() {
   if (loading) {
     return (
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 32, height: 32, border: '3px solid rgba(139,79,44,0.2)', borderTopColor: '#8b4f2c', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     );
   }
@@ -169,7 +169,7 @@ export default function CertificatePage() {
         </Link>
 
         {/* Congrats banner */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Panda mood="celebrating" size={120} animate />
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, color: 'var(--on-surface)', marginTop: '1rem', letterSpacing: '-0.03em' }}>
             Congratulations, {user?.name?.split(' ')[0]}!
@@ -215,18 +215,18 @@ export default function CertificatePage() {
           ))}
 
           <div style={{ padding: '3.5rem 4rem', textAlign: 'center', position: 'relative', zIndex: 3 }}>
-            {/* Gold seal */}
+            {/* PathWise logo seal */}
             <div style={{
-              width: 72, height: 72, margin: '0 auto 1.5rem',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #c9a96e 0%, #f0d78c 50%, #c9a96e 100%)',
+              width: 80, height: 80, margin: '0 auto 1.5rem',
+              borderRadius: '50%', background: '#fff',
+              border: '2px solid #c9a96e',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(201,169,110,0.4)',
+              boxShadow: '0 2px 12px rgba(201,169,110,0.3)',
             }}>
-              <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
-                <path d="M10 75L35 45L50 65L75 25" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M35 45L50 65L75 25" stroke="rgba(255,255,255,0.7)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M75 25L90 10M90 10H70M90 10V30" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
+                <path d="M10 75L35 45L50 65L75 25" stroke="#1A2B5F" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M35 45L50 65L75 25" stroke="#5D2A80" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M75 25L90 10M90 10H70M90 10V30" stroke="#FF7F50" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
 
@@ -269,7 +269,7 @@ export default function CertificatePage() {
 
             <h3 style={{
               fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: '1.6rem', fontWeight: 700, color: '#6245a4',
+              fontSize: '1.6rem', fontWeight: 700, color: '#8b4f2c',
               margin: '0.25rem 0 1.5rem',
               letterSpacing: '0.02em',
             }}>
