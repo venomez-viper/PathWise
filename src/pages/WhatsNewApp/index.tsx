@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { CHANGELOG, type ChangelogEntry } from '../WhatsNew/changelogData';
-import { Sparkles, Zap, Wrench, Shield, Check, ChevronDown } from 'lucide-react';
+import { Rocket, TrendingUp, Wrench, ShieldCheck, CircleCheck, ChevronDown } from 'lucide-react';
 import { Panda } from '../../components/panda';
 
 /* ── Tag display helpers ── */
-const TAG_META: Record<ChangelogEntry['tag'], { label: string; color: string; bg: string; Icon: typeof Sparkles }> = {
-  feature:     { label: 'Feature',     color: '#6245a4', bg: 'rgba(98,69,164,0.10)',  Icon: Sparkles },
-  improvement: { label: 'Improvement', color: '#0e7490', bg: 'rgba(14,116,144,0.10)', Icon: Zap },
+const TAG_META: Record<ChangelogEntry['tag'], { label: string; color: string; bg: string; Icon: typeof Rocket }> = {
+  feature:     { label: 'Feature',     color: '#8b4f2c', bg: 'rgba(139,79,44,0.10)',  Icon: Rocket },
+  improvement: { label: 'Improvement', color: '#0e7490', bg: 'rgba(14,116,144,0.10)', Icon: TrendingUp },
   fix:         { label: 'Fix',         color: '#d97706', bg: 'rgba(217,119,6,0.10)',   Icon: Wrench },
-  security:    { label: 'Security',    color: '#dc2626', bg: 'rgba(220,38,38,0.10)',   Icon: Shield },
+  security:    { label: 'Security',    color: '#dc2626', bg: 'rgba(220,38,38,0.10)',   Icon: ShieldCheck },
 };
 
 const FILTERS = [
   { key: 'all',         label: 'All Updates',  color: 'var(--on-surface)' },
-  { key: 'feature',     label: 'Features',     color: '#6245a4' },
+  { key: 'feature',     label: 'Features',     color: '#8b4f2c' },
   { key: 'improvement', label: 'Improvements', color: '#0e7490' },
   { key: 'fix',         label: 'Fixes',        color: '#d97706' },
   { key: 'security',    label: 'Security',     color: '#dc2626' },
@@ -34,11 +34,13 @@ export default function WhatsNewAppPage() {
   return (
     <div className="page">
       {/* ── Header ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '0.5rem' }}>
-        <h1 className="page-title">What's New</h1>
-        <Panda mood="celebrating" size={80} animate />
+      <div className="page-header" style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <h1 className="page-title">What's New</h1>
+          <Panda mood="celebrating" size={90} animate />
+        </div>
+        <p className="page-subtitle">Stay up to date with the latest PathWise features and improvements.</p>
       </div>
-      <p className="page-subtitle">Every feature, improvement, and fix shipped to PathWise.</p>
 
       {/* ── Filter pills ── */}
       <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem', flexWrap: 'wrap' }}>
@@ -72,7 +74,21 @@ export default function WhatsNewAppPage() {
           <div
             key={entry.version}
             className="panel"
-            style={{ borderRadius: '1.25rem', padding: 0, overflow: 'hidden', marginBottom: '0.75rem' }}
+            style={{
+              borderRadius: '1.25rem',
+              padding: 0,
+              overflow: 'hidden',
+              marginBottom: '0.75rem',
+              transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+              (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 20px rgba(0,0,0,0.10)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+              (e.currentTarget as HTMLDivElement).style.boxShadow = '';
+            }}
           >
             {/* Color accent top bar */}
             <div style={{ height: 3, background: meta.color }} />
@@ -88,7 +104,7 @@ export default function WhatsNewAppPage() {
                 cursor: 'pointer',
               }}
             >
-              {/* Tag icon in colored circle */}
+              {/* Tag icon in colored rounded square */}
               <div style={{
                 width: 36,
                 height: 36,
@@ -105,6 +121,15 @@ export default function WhatsNewAppPage() {
               {/* Title + meta */}
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                  {/* Colored dot before version */}
+                  <span style={{
+                    display: 'inline-block',
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: meta.color,
+                    flexShrink: 0,
+                  }} />
                   <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', fontWeight: 700, color: meta.color }}>
                     v{entry.version}
                   </span>
@@ -123,16 +148,18 @@ export default function WhatsNewAppPage() {
                 </h3>
               </div>
 
-              {/* Tag pill */}
+              {/* Tag pill — refined */}
               <span style={{
                 fontSize: '0.65rem',
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                letterSpacing: '0.06em',
+                letterSpacing: '0.07em',
                 color: meta.color,
                 background: meta.bg,
-                padding: '3px 10px',
+                padding: '4px 10px',
                 borderRadius: 999,
+                border: `1px solid ${meta.color}33`,
+                whiteSpace: 'nowrap',
               }}>
                 {meta.label}
               </span>
@@ -144,21 +171,23 @@ export default function WhatsNewAppPage() {
                 style={{
                   transition: 'transform 0.2s',
                   transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)',
+                  flexShrink: 0,
                 }}
               />
             </div>
 
-            {/* Expandable content */}
+            {/* Expandable content — slightly different background */}
             {isExpanded && (
               <div style={{
-                padding: '0 1.5rem 1.5rem',
+                padding: '1rem 1.5rem 1.5rem',
                 borderTop: '1px solid color-mix(in srgb, var(--on-surface) 6%, transparent)',
+                background: 'color-mix(in srgb, var(--surface-container) 60%, transparent)',
               }}>
                 <p style={{
                   color: 'var(--on-surface-variant)',
                   fontSize: '0.88rem',
                   lineHeight: 1.6,
-                  margin: '1rem 0',
+                  margin: '0 0 1rem',
                 }}>
                   {entry.description}
                 </p>
@@ -172,7 +201,7 @@ export default function WhatsNewAppPage() {
                       color: 'var(--on-surface)',
                       lineHeight: 1.5,
                     }}>
-                      <Check size={14} color={meta.color} style={{ flexShrink: 0, marginTop: 3 }} />
+                      <CircleCheck size={15} color={meta.color} style={{ flexShrink: 0, marginTop: 2 }} />
                       <span>{h}</span>
                     </li>
                   ))}
@@ -183,13 +212,11 @@ export default function WhatsNewAppPage() {
         );
       })}
 
-      {/* Empty state */}
+      {/* ── Empty state ── */}
       {filtered.length === 0 && (
-        <div className="panel" style={{ textAlign: 'center', padding: '3rem 1.5rem', borderRadius: '1.25rem' }}>
-          <Panda mood="thinking" size={64} />
-          <p style={{ color: 'var(--on-surface-variant)', marginTop: '1rem', fontSize: '0.9rem' }}>
-            No updates matching this filter yet.
-          </p>
+        <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+          <Panda mood="thinking" size={100} animate />
+          <p style={{ color: 'var(--on-surface-variant)', marginTop: '1rem' }}>No updates in this category yet.</p>
         </div>
       )}
     </div>
