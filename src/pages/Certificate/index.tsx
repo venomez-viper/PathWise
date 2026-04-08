@@ -181,66 +181,132 @@ export default function CertificatePage() {
 
         {/* Certificate */}
         <div ref={certRef} style={{
-          maxWidth: 720, margin: '0 auto',
-          background: '#fff', borderRadius: '1rem', overflow: 'hidden',
-          boxShadow: '0 4px 30px rgba(0,0,0,0.1)',
-          border: '1px solid #e5e7eb',
+          maxWidth: 780, margin: '0 auto',
+          background: '#fffdf7',
+          borderRadius: 0,
+          overflow: 'hidden',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
+          border: '3px solid #c9a96e',
+          position: 'relative',
         }}>
-          {/* Top gradient border */}
-          <div style={{ height: 6, background: 'linear-gradient(90deg, #6245a4, #5ef6e6)' }} />
+          {/* Ornate double border */}
+          <div style={{
+            position: 'absolute', inset: 8,
+            border: '1px solid #c9a96e',
+            pointerEvents: 'none', zIndex: 1,
+          }} />
+          <div style={{
+            position: 'absolute', inset: 12,
+            border: '1px solid rgba(201,169,110,0.3)',
+            pointerEvents: 'none', zIndex: 1,
+          }} />
 
-          <div style={{ padding: '3rem 3rem 2.5rem', textAlign: 'center' }}>
-            {/* Logo */}
-            <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ margin: '0 auto 1.5rem' }}>
-              <path d="M10 75L35 45L50 65L75 25" stroke="#1A2B5F" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M35 45L50 65L75 25" stroke="#5D2A80" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M75 25L90 10M90 10H70M90 10V30" stroke="#FF7F50" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+          {/* Corner accents */}
+          {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(corner => (
+            <svg key={corner} width="60" height="60" viewBox="0 0 60 60" style={{
+              position: 'absolute', zIndex: 2,
+              ...(corner.includes('top') ? { top: 4 } : { bottom: 4 }),
+              ...(corner.includes('left') ? { left: 4 } : { right: 4 }),
+              transform: `${corner.includes('right') ? 'scaleX(-1)' : ''} ${corner.includes('bottom') ? 'scaleY(-1)' : ''}`,
+            }}>
+              <path d="M5 5L5 25C5 15 15 5 25 5L5 5Z" fill="none" stroke="#c9a96e" strokeWidth="1.5"/>
+              <circle cx="8" cy="8" r="2" fill="#c9a96e"/>
             </svg>
+          ))}
 
-            <p style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#9ca3af', marginBottom: '0.5rem' }}>
+          <div style={{ padding: '3.5rem 4rem', textAlign: 'center', position: 'relative', zIndex: 3 }}>
+            {/* Gold seal */}
+            <div style={{
+              width: 72, height: 72, margin: '0 auto 1.5rem',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #c9a96e 0%, #f0d78c 50%, #c9a96e 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(201,169,110,0.4)',
+            }}>
+              <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+                <path d="M10 75L35 45L50 65L75 25" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M35 45L50 65L75 25" stroke="rgba(255,255,255,0.7)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M75 25L90 10M90 10H70M90 10V30" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            <p style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#c9a96e', marginBottom: '0.75rem' }}>
               PathWise Career Intelligence
             </p>
 
-            <h2 style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: '2rem', fontWeight: 400, color: '#1a1a2e', marginBottom: '2rem', letterSpacing: '0.05em' }}>
-              Certificate of Completion
+            <h2 style={{
+              fontFamily: 'Georgia, "Times New Roman", "Palatino Linotype", serif',
+              fontSize: '2.2rem', fontWeight: 400, color: '#1a1a2e',
+              marginBottom: '0.5rem', letterSpacing: '0.08em',
+              lineHeight: 1.2,
+            }}>
+              Certificate of Appreciation
             </h2>
 
-            <p style={{ fontSize: '0.88rem', color: '#6b7280', marginBottom: '0.75rem' }}>This certifies that</p>
+            {/* Gold divider */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '1.5rem auto', maxWidth: 300 }}>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, #c9a96e)' }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#c9a96e' }} />
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, #c9a96e, transparent)' }} />
+            </div>
 
-            <h3 style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: '1.75rem', fontWeight: 700, color: '#6245a4', marginBottom: '0.75rem', borderBottom: '2px solid #6245a4', display: 'inline-block', paddingBottom: '0.25rem' }}>
+            <p style={{ fontSize: '0.95rem', color: '#6b7280', marginBottom: '0.5rem', fontStyle: 'italic' }}>This is to certify that</p>
+
+            <h3 style={{
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: '2rem', fontWeight: 700, color: '#1a1a2e',
+              marginBottom: '0.5rem',
+              borderBottom: '2px solid #c9a96e',
+              display: 'inline-block', paddingBottom: '0.3rem',
+              letterSpacing: '0.02em',
+            }}>
               {user?.name}
             </h3>
 
-            <p style={{ fontSize: '0.88rem', color: '#6b7280', marginBottom: '0.75rem' }}>has successfully completed the career roadmap for</p>
+            <p style={{ fontSize: '0.95rem', color: '#6b7280', margin: '0.75rem 0 0.5rem', lineHeight: 1.6 }}>
+              has successfully completed the career development roadmap for
+            </p>
 
-            <h3 style={{ fontFamily: 'var(--font-display, Georgia)', fontSize: '1.4rem', fontWeight: 800, color: '#1a1a2e', marginBottom: '2rem' }}>
+            <h3 style={{
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: '1.6rem', fontWeight: 700, color: '#6245a4',
+              margin: '0.25rem 0 1.5rem',
+              letterSpacing: '0.02em',
+            }}>
               {targetRole}
             </h3>
 
-            {/* Divider */}
-            <div style={{ width: 80, height: 1, background: '#e5e7eb', margin: '0 auto 1.5rem' }} />
+            <p style={{ fontSize: '0.82rem', color: '#9ca3af', lineHeight: 1.6, maxWidth: 420, margin: '0 auto 2rem' }}>
+              demonstrating commitment to professional growth, skill development, and career advancement through the PathWise platform.
+            </p>
+
+            {/* Gold divider */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '0 auto 2rem', maxWidth: 200 }}>
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, #c9a96e)' }} />
+              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#c9a96e' }} />
+              <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, #c9a96e, transparent)' }} />
+            </div>
 
             {/* Footer row */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 500, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 540, margin: '0 auto' }}>
               <div style={{ textAlign: 'left' }}>
-                <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#9ca3af', marginBottom: 4 }}>Date</p>
-                <p style={{ fontSize: '0.85rem', color: '#374151', fontWeight: 600 }}>{completedDate}</p>
+                <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#c9a96e', marginBottom: 4, fontWeight: 700 }}>Date Issued</p>
+                <p style={{ fontSize: '0.88rem', color: '#374151', fontWeight: 600 }}>{completedDate}</p>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <svg width="60" height="20" viewBox="0 0 60 20" fill="none" style={{ marginBottom: 4 }}>
-                  <path d="M5 15C15 5 25 15 30 10C35 5 45 15 55 5" stroke="#6245a4" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                {/* Signature */}
+                <svg width="80" height="24" viewBox="0 0 80 24" fill="none" style={{ marginBottom: 6 }}>
+                  <path d="M5 18C12 6 22 18 30 12C38 6 48 18 55 8C62 18 70 6 75 12" stroke="#c9a96e" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
                 </svg>
-                <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#9ca3af' }}>PathWise</p>
+                <div style={{ width: 80, height: 1, background: '#c9a96e', margin: '0 auto 4px' }} />
+                <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#c9a96e', fontWeight: 700 }}>PathWise</p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#9ca3af', marginBottom: 4 }}>Certificate ID</p>
-                <p style={{ fontSize: '0.85rem', color: '#374151', fontWeight: 600, fontFamily: 'monospace' }}>{certId.current}</p>
+                <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#c9a96e', marginBottom: 4, fontWeight: 700 }}>Certificate ID</p>
+                <p style={{ fontSize: '0.88rem', color: '#374151', fontWeight: 600, fontFamily: 'monospace' }}>{certId.current}</p>
               </div>
             </div>
           </div>
-
-          {/* Bottom gradient border */}
-          <div style={{ height: 6, background: 'linear-gradient(90deg, #5ef6e6, #6245a4)' }} />
         </div>
 
         {/* Action buttons */}
