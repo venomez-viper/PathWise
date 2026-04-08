@@ -6,7 +6,6 @@ import { assessment, roadmap, tasks, progress } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import OnboardingTour from '../../components/OnboardingTour';
 import ShareButton from '../../components/ShareButton';
-import CompletionCertificate from '../../components/CompletionCertificate';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -68,7 +67,6 @@ export default function Dashboard() {
   }, [user]);
 
   const [showTour, setShowTour] = useState(false);
-  const [showCertificate, setShowCertificate] = useState(false);
 
   const allMilestonesComplete =
     data.milestones.length > 0 &&
@@ -174,13 +172,13 @@ export default function Dashboard() {
           <p style={{ color: 'var(--on-surface-variant)', marginTop: '0.5rem' }}>
             Congratulations! You've completed all milestones for {data.targetRole}.
           </p>
-          <button
-            onClick={() => setShowCertificate(true)}
+          <Link
+            to="/app/certificate"
             className="btn-page-action"
-            style={{ marginTop: '1rem', background: '#8b4f2c' }}
+            style={{ marginTop: '1rem', background: '#8b4f2c', textDecoration: 'none' }}
           >
             View Certificate
-          </button>
+          </Link>
         </div>
       )}
 
@@ -387,14 +385,6 @@ export default function Dashboard() {
 
       {showTour && <OnboardingTour onComplete={() => setShowTour(false)} />}
 
-      {showCertificate && (
-        <CompletionCertificate
-          userName={user?.name ?? 'User'}
-          targetRole={data.targetRole}
-          completedDate={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-          onClose={() => setShowCertificate(false)}
-        />
-      )}
     </div>
   );
 }

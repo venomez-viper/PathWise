@@ -27,6 +27,7 @@ import Progress     from './pages/Progress';
 import SettingsPage from './pages/Settings';
 import Onboarding   from './pages/Onboarding';
 import SupportPage  from './pages/Support';
+import CertificatePage from './pages/Certificate';
 import Assessment   from './pages/Assessment';
 import SkillGaps    from './pages/SkillGaps';
 import SkillGapAssessment from './pages/SkillGapAssessment';
@@ -163,6 +164,7 @@ export default function App() {
             <Route path="certificates"  element={<CertificatesPage />} />
             <Route path="help"          element={<HelpFAQ />} />
             <Route path="support"       element={<SupportPage />} />
+            <Route path="certificate"   element={<CertificatePage />} />
             <Route path="career-match"  element={<CareerMatchDetail />} />
             <Route path="search"        element={<SearchPage />} />
             <Route path="admin"         element={<AdminPage />} />
