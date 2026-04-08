@@ -138,7 +138,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <Link to="/app/assessment" style={{
+          <Link to="/app/assessment-v2" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
             color: '#fff', padding: '1rem 2.5rem', borderRadius: 'var(--radius-full)',

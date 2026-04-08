@@ -33,6 +33,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.12.0',
+    date: 'April 8, 2026',
+    title: 'Assessment v2: Career DNA',
+    tag: 'feature',
+    description: 'Complete assessment overhaul with 82 questions across 6 scientific dimensions, one-question-per-screen flow, and career archetype matching.',
+    highlights: [
+      '82 questions across RIASEC interests, Big Five personality, Schwartz values, work style, aptitudes, and life context',
+      'One-question-per-screen design with smooth transitions',
+      '30 career archetypes with memorable names',
+      'RIASEC hexagonal radar chart and Big Five bar chart',
+      'Partial results at Phase 4 for 2.7x completion boost',
+      'Save and resume capability',
+    ],
+  },
+  {
     version: '0.11.0',
     date: 'April 7, 2026',
     title: 'Notifications, Onboarding Tour & Certificates',

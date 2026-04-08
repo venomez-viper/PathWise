@@ -7,7 +7,7 @@ import './Sidebar.css';
 
 const NAV_ITEMS = [
   { to: '/app',             icon: LayoutDashboard, label: 'Dashboard',  end: true },
-  { to: '/app/assessment',  icon: ClipboardList,   label: 'Assessment'           },
+  { to: '/app/assessment-v2', icon: ClipboardList,  label: 'Assessment'           },
   { to: '/app/roadmap',     icon: Compass,         label: 'Roadmap'              },
   { to: '/app/tasks',       icon: CheckSquare,     label: 'Tasks'                },
   { to: '/app/progress',    icon: BarChart2,       label: 'Progress'             },

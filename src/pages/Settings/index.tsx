@@ -368,7 +368,7 @@ export default function SettingsPage() {
         {settingRow(
           <RotateCcw size={16} color="var(--primary)" />,
           'Retake Assessment',
-          <Link to="/app/assessment" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/app/assessment-v2" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
             Start <ChevronRight size={14} />
           </Link>,
           'Retake your career assessment to update your matches',
