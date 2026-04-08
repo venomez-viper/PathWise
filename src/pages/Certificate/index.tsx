@@ -14,29 +14,41 @@ export default function CertificatePage() {
   const [eligible, setEligible] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const certId = useRef(`PW-${Math.random().toString(36).substring(2, 10).toUpperCase()}`);
+  const [certId, setCertId] = useState('PW-PENDING');
 
   useEffect(() => {
     if (!user) return;
-    roadmapApi.get(user.id).then((res: any) => {
-      const r = res?.roadmap;
-      if (!r) { setLoading(false); return; }
-      setTargetRole(r.targetRole ?? '');
-      const milestones = r.milestones ?? [];
-      const allDone = milestones.length > 0 && milestones.every((m: any) => m.status === 'completed');
-      setEligible(allDone);
-      if (allDone) {
-        const lastCompleted = milestones.reduce((latest: string, m: any) => {
-          if (m.completedAt && m.completedAt > latest) return m.completedAt;
-          return latest;
-        }, '');
-        setCompletedDate(lastCompleted
-          ? new Date(lastCompleted).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-          : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-        );
-      }
+    const load = async () => {
+      try {
+        const res: any = await roadmapApi.get(user.id);
+        const r = res?.roadmap;
+        if (!r) { setLoading(false); return; }
+        setTargetRole(r.targetRole ?? '');
+        const milestones = r.milestones ?? [];
+        const allDone = milestones.length > 0 && milestones.every((m: any) => m.status === 'completed');
+        setEligible(allDone);
+        if (allDone) {
+          const lastCompleted = milestones.reduce((latest: string, m: any) => {
+            if (m.completedAt && m.completedAt > latest) return m.completedAt;
+            return latest;
+          }, '');
+          setCompletedDate(lastCompleted
+            ? new Date(lastCompleted).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+            : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+          );
+
+          // Fetch server-side certificate ID
+          try {
+            const certRes = await roadmapApi.getCertificate();
+            if (certRes?.certificate?.id) {
+              setCertId(certRes.certificate.id);
+            }
+          } catch {}
+        }
+      } catch {}
       setLoading(false);
-    }).catch(() => setLoading(false));
+    };
+    load();
   }, [user]);
 
   // Fireworks animation
@@ -303,7 +315,7 @@ export default function CertificatePage() {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#c9a96e', marginBottom: 4, fontWeight: 700 }}>Certificate ID</p>
-                <p style={{ fontSize: '0.88rem', color: '#374151', fontWeight: 600, fontFamily: 'monospace' }}>{certId.current}</p>
+                <p style={{ fontSize: '0.88rem', color: '#374151', fontWeight: 600, fontFamily: 'monospace' }}>{certId}</p>
               </div>
             </div>
           </div>
