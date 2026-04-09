@@ -327,15 +327,39 @@ interface SubmitAssessmentV2Params {
   trajectory?: string;
 }
 
+interface RIASECResult {
+  realistic: number;
+  investigative: number;
+  artistic: number;
+  social: number;
+  enterprising: number;
+  conventional: number;
+}
+
+interface BigFiveResult {
+  openness: number;
+  conscientiousness: number;
+  extraversion: number;
+  agreeableness: number;
+  emotionalStability: number;
+}
+
+interface NarrativeResult {
+  headline: string;
+  tagline: string;
+  fullNarrative: string;
+  shareQuote: string;
+}
+
 interface AssessmentV2Response {
   result: {
-    careerMatches: any[];
-    skillGaps: any[];
+    careerMatches: { title: string; matchScore: number; description: string; requiredSkills: string[]; pathwayTime: string }[];
+    skillGaps: { skill: string; importance: string; learningResource: string }[];
     archetype: { id: string; name: string; tagline: string; description: string };
-    riasec: any;
-    bigFive: any;
-    narrative: any;
-    categorizedMatches?: any[];
+    riasec: RIASECResult;
+    bigFive: BigFiveResult;
+    narrative: NarrativeResult;
+    categorizedMatches: { category: string; title: string; score: number }[];
   };
 }
 
@@ -450,10 +474,22 @@ export const adminDeleteUserAssessment = api(
   }
 );
 
+interface AdminAssessmentResult {
+  completedAt: string;
+  careerMatches: { title: string; matchScore: number; description: string }[];
+  skillGaps: { skill: string; importance: string; learningResource: string }[];
+  currentSkills: string[];
+  personalityType: string;
+}
+
+interface AdminGetAssessmentResponse {
+  result: AdminAssessmentResult | null;
+}
+
 // GET /admin/assessment/:userId — Get a specific user's assessment results
 export const adminGetAssessment = api(
   { expose: true, method: "GET", path: "/admin/assessment/:userId", auth: true },
-  async ({ userId }: { userId: string }): Promise<any> => {
+  async ({ userId }: { userId: string }): Promise<AdminGetAssessmentResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     const { isAdmin } = await checkAdmin({ userID });
     if (!isAdmin) throw APIError.permissionDenied("admin access required");
