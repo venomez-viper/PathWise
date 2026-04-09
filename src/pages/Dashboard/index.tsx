@@ -91,62 +91,78 @@ export default function Dashboard() {
   );
 
   if (!loading && !data.hasAssessment) {
+    const firstName = user?.name?.split(' ')[0] ?? '';
     return (
       <div className="page" style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        minHeight: '70vh', textAlign: 'center', padding: '2rem',
+        minHeight: '70vh', padding: '2rem',
       }}>
         <div style={{
           background: 'var(--surface-container-lowest)',
-          borderRadius: '2rem', padding: '3rem 2.5rem', maxWidth: 520,
-          boxShadow: 'var(--shadow-md)',
+          borderRadius: '2.5rem', padding: '3rem 2.5rem', maxWidth: 480,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+          textAlign: 'center',
         }}>
-          <Panda mood="celebrating" size={140} animate />
+          <Panda mood="waving" size={120} animate />
 
           <h1 style={{
-            fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800,
-            color: 'var(--on-surface)', letterSpacing: '-0.03em', marginTop: '1.5rem',
+            fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800,
+            color: 'var(--on-surface)', letterSpacing: '-0.03em', marginTop: '1.25rem',
+            lineHeight: 1.2,
           }}>
-            Welcome to PathWise!
+            {firstName ? `Hey ${firstName}, welcome!` : 'Welcome to PathWise!'}
           </h1>
 
           <p style={{
-            fontSize: '1rem', color: 'var(--on-surface-variant)', lineHeight: 1.6,
-            marginTop: '0.75rem', marginBottom: '2rem',
+            fontSize: '0.95rem', color: 'var(--on-surface-variant)', lineHeight: 1.65,
+            marginTop: '0.75rem', marginBottom: '1.75rem', maxWidth: 360, marginLeft: 'auto', marginRight: 'auto',
           }}>
-            Take a quick 5-minute career assessment to unlock your personalized roadmap,
-            tasks, and skill insights. This is your first step!
+            Take a quick 5-minute career assessment and we'll build you a personalised roadmap with career matches, milestones, and daily tasks.
           </p>
 
           <div style={{
-            display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem',
-            flexWrap: 'wrap',
+            display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem',
+            maxWidth: 320, marginLeft: 'auto', marginRight: 'auto',
           }}>
             {[
-              { icon: '🎯', label: 'Career Matches' },
-              { icon: '🗺️', label: 'Roadmap' },
-              { icon: '📋', label: 'Tasks' },
-              { icon: '📊', label: 'Progress Tracking' },
-            ].map(item => (
-              <div key={item.label} style={{
-                background: 'var(--surface-container-low)', borderRadius: 'var(--radius-lg)',
-                padding: '0.75rem 1rem', fontSize: '0.85rem', fontWeight: 600,
-                color: 'var(--on-surface-variant)',
+              { icon: <Target size={16} color="var(--primary)" />, text: 'Discover your top career matches' },
+              { icon: <TrendingUp size={16} color="var(--primary)" />, text: 'Get a step-by-step roadmap' },
+              { icon: <CheckCircle2 size={16} color="var(--primary)" />, text: 'Track progress with daily tasks' },
+            ].map((item, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                background: 'var(--surface-container-low)', borderRadius: 'var(--radius-xl)',
+                padding: '0.7rem 1rem', textAlign: 'left',
               }}>
-                {item.icon} {item.label}
+                <div style={{
+                  width: 32, height: 32, borderRadius: 'var(--radius-full)',
+                  background: 'rgba(98,69,164,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  {item.icon}
+                </div>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--on-surface)' }}>
+                  {item.text}
+                </span>
               </div>
             ))}
           </div>
 
           <Link to="/app/assessment-v2" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
-            color: '#fff', padding: '1rem 2.5rem', borderRadius: 'var(--radius-full)',
-            fontWeight: 700, fontSize: '1.05rem', textDecoration: 'none',
-            boxShadow: 'var(--shadow-md)', transition: 'transform 0.15s, box-shadow 0.15s',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            background: 'var(--primary)', width: '100%', maxWidth: 320,
+            color: '#fff', padding: '0.9rem 2rem', borderRadius: 'var(--radius-full)',
+            fontWeight: 700, fontSize: '1rem', textDecoration: 'none',
+            boxShadow: '0 4px 16px rgba(98,69,164,0.25)', transition: 'transform 0.15s, box-shadow 0.15s',
           }}>
-            Start Your Assessment <ArrowRight size={20} />
+            Start Your Assessment <ArrowRight size={18} />
           </Link>
+
+          <p style={{
+            fontSize: '0.75rem', color: 'var(--on-surface-muted, #999)', marginTop: '1rem',
+          }}>
+            Takes about 5 minutes
+          </p>
         </div>
       </div>
     );
