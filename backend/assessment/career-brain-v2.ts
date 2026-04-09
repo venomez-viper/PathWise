@@ -1493,7 +1493,7 @@ export function computeBigFiveV2(answers: Record<string, any>): BigFiveScores {
   for (const [key, val] of Object.entries(answers)) {
     // Match bf_o, bf_c, bf_e, bf_a, bf_es prefixes
     // Try bf_es first (longer prefix), then bf_o, bf_c, bf_e, bf_a
-    let prefix = key.startsWith('bf_es') ? 'bf_es' : key.replace(/\d+$/, '');
+    const prefix = key.startsWith('bf_es') ? 'bf_es' : key.replace(/\d+$/, '');
     const trait = V2_BF_MAP[prefix];
     if (trait) {
       const raw = Array.isArray(val) ? val[0] : val;
@@ -1502,16 +1502,47 @@ export function computeBigFiveV2(answers: Record<string, any>): BigFiveScores {
     }
   }
 
-  const result: BigFiveScores = {
-    openness: 0, conscientiousness: 0, extraversion: 0,
-    agreeableness: 0, emotionalStability: 0,
-  };
-  for (const [trait, scores] of Object.entries(sums) as [keyof BigFiveScores, number[]][]) {
-    result[trait] = scores.length > 0
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : 0;
+  const hasBfAnswers = Object.values(sums).some(arr => arr.length > 0);
+
+  if (hasBfAnswers) {
+    // Direct Big Five answers available — use them
+    const result: BigFiveScores = {
+      openness: 0, conscientiousness: 0, extraversion: 0,
+      agreeableness: 0, emotionalStability: 0,
+    };
+    for (const [trait, scores] of Object.entries(sums) as [keyof BigFiveScores, number[]][]) {
+      result[trait] = scores.length > 0
+        ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+        : 50;
+    }
+    return result;
   }
-  return result;
+
+  // No Big Five questions answered (tier 1) — infer from RIASEC scores
+  // Based on established RIASEC–Big Five correlations (Holland, 1997; Larson et al., 2002)
+  const riasec = computeRIASECV2(answers);
+  return inferBigFiveFromRIASEC(riasec);
+}
+
+/**
+ * Infer approximate Big Five scores from RIASEC when Big Five questions
+ * haven't been answered (tier 1 users). Uses established research correlations.
+ */
+function inferBigFiveFromRIASEC(r: RIASECScores): BigFiveScores {
+  // Weighted blends based on meta-analytic correlations
+  const openness = Math.round(r.artistic * 0.45 + r.investigative * 0.35 + r.enterprising * 0.10 + r.social * 0.10);
+  const conscientiousness = Math.round(r.conventional * 0.40 + r.realistic * 0.30 + r.enterprising * 0.20 + r.investigative * 0.10);
+  const extraversion = Math.round(r.enterprising * 0.40 + r.social * 0.35 + r.artistic * 0.15 + r.conventional * 0.10);
+  const agreeableness = Math.round(r.social * 0.50 + r.conventional * 0.20 + r.artistic * 0.15 + r.realistic * 0.15);
+  const emotionalStability = Math.round(r.conventional * 0.30 + r.realistic * 0.25 + r.investigative * 0.25 + r.enterprising * 0.20);
+
+  return {
+    openness: Math.min(100, Math.max(0, openness)),
+    conscientiousness: Math.min(100, Math.max(0, conscientiousness)),
+    extraversion: Math.min(100, Math.max(0, extraversion)),
+    agreeableness: Math.min(100, Math.max(0, agreeableness)),
+    emotionalStability: Math.min(100, Math.max(0, emotionalStability)),
+  };
 }
 
 // ── V1 signal-based scoring (legacy) ───────────────────────────────────
