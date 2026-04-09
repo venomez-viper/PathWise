@@ -18,6 +18,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["Legal Research", "Contract Drafting", "Negotiation", "Oral Advocacy", "Client Counseling"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Law & Policy", "Consulting"],
     pathwayTime: "3-7 years (JD required)",
+    scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Legal Research", importance: "high", learningResource: "Westlaw and LexisNexis tutorials via law school access" },
       { skill: "Contract Drafting", importance: "high", learningResource: "American Bar Association Contract Drafting courses" },
@@ -59,6 +60,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Legal Research", "Document Management", "Case Management Software", "Legal Writing", "Client Communication"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Law & Policy"],
     pathwayTime: "1-2 years",
+    scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Legal Research", importance: "high", learningResource: "Paralegal Studies textbooks; free LexisNexis academic access" },
       { skill: "Case Management Software", importance: "high", learningResource: "Clio Academy (free training for Clio practice management)" },
@@ -99,6 +101,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "leader"], requiredSkills: ["Regulatory Knowledge", "Risk Assessment", "Policy Writing", "Audit Management", "Data Privacy (GDPR/CCPA)"],
     experienceLevels: ["mid", "senior"], domains: ["Law & Policy", "Finance", "Healthcare"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Regulatory Frameworks (GDPR, SOX, HIPAA)", importance: "high", learningResource: "IAPP Privacy Law training; COSO framework guides" },
       { skill: "Risk Assessment", importance: "high", learningResource: "RIMS Risk Management fundamentals course" },
@@ -141,6 +144,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "leader"], requiredSkills: ["AutoCAD", "Revit (BIM)", "Building Codes", "Structural Systems", "Sustainable Design"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction", "Design & UX"],
     pathwayTime: "5-8 years (licensure required)",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "Revit / BIM Modeling", importance: "high", learningResource: "Autodesk Revit official tutorials on Autodesk Learning" },
       { skill: "Building Codes (IBC)", importance: "high", learningResource: "International Building Code study guides via ICC" },
@@ -182,6 +186,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "leader"], requiredSkills: ["AutoCAD Civil 3D", "Structural Analysis", "Hydrology", "Geotechnical Engineering", "Project Management"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction"],
     pathwayTime: "4-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "AutoCAD Civil 3D", importance: "high", learningResource: "Autodesk Civil 3D official learning path on Autodesk University" },
       { skill: "Structural Analysis (STAAD/SAP2000)", importance: "high", learningResource: "Bentley STAAD.Pro tutorials and ASCE training resources" },
@@ -222,6 +227,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Scheduling (Primavera/MS Project)", "Cost Estimating", "Contract Administration", "Safety (OSHA 30)", "Subcontractor Management"],
     experienceLevels: ["mid", "senior"], domains: ["Architecture & Construction"],
     pathwayTime: "4-8 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.15, stage: 0.05 },
     skillGaps: [
       { skill: "Primavera P6 Scheduling", importance: "high", learningResource: "Oracle Primavera P6 free tutorials on Oracle University" },
       { skill: "Cost Estimating (Procore/Bluebeam)", importance: "high", learningResource: "Procore Certification free online training" },
@@ -264,6 +270,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["News Writing", "Investigative Research", "Source Development", "Multimedia Production", "AP Style"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Media & Journalism"],
     pathwayTime: "1-3 years",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Investigative Research & FOIA", importance: "high", learningResource: "IRE (Investigative Reporters and Editors) tipsheets and training" },
       { skill: "Data Journalism", importance: "high", learningResource: "Knight Center for Journalism MOOC: Introduction to Data Journalism" },
@@ -304,6 +311,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["communicator", "ideator"], requiredSkills: ["Press Release Writing", "Media Relations", "Crisis Communications", "Cision/Meltwater", "Social Media Strategy"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Media & Journalism", "Marketing"],
     pathwayTime: "1-2 years",
+    scoringWeights: { interest: 0.30, personality: 0.25, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Press Release Writing & AP Style", importance: "high", learningResource: "Associated Press Stylebook; PR Daily writing workshops" },
       { skill: "Media Database Tools (Cision)", importance: "high", learningResource: "Cision free demo and training videos on Cision.com" },
@@ -346,6 +354,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["communicator", "doer"], requiredSkills: ["Client Relationships", "Contract Negotiation", "Market Analysis (CMAs)", "MLS Platforms", "Lead Generation"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Real Estate"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.30, values: 0.15, aptitude: 0.05, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Real Estate Law & Contracts", importance: "high", learningResource: "State real estate pre-license course (Kaplan or Champions School)" },
       { skill: "Comparative Market Analysis (CMA)", importance: "high", learningResource: "NAR Center for REALTOR Development courses" },
@@ -386,6 +395,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Lease Administration", "Tenant Relations", "Maintenance Coordination", "Budgeting", "Fair Housing Laws"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Real Estate"],
     pathwayTime: "1-3 years",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Property Management Software (AppFolio/Yardi)", importance: "high", learningResource: "AppFolio free training videos; Yardi Voyager training on Yardi Client Central" },
       { skill: "Lease Administration & Fair Housing Law", importance: "high", learningResource: "IREM courses; NAA Lease Addendum training" },
@@ -428,6 +438,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["NEC Code Knowledge", "Blueprint Reading", "Conduit Bending", "Panel Installation", "Troubleshooting"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Trades & Skilled Labor"],
     pathwayTime: "4-5 years (apprenticeship)",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.20, aptitude: 0.15, environment: 0.20, stage: 0.00 },
     skillGaps: [
       { skill: "National Electrical Code (NEC)", importance: "high", learningResource: "Mike Holt NEC Illustrated Guide and free YouTube lectures" },
       { skill: "Blueprint & Schematic Reading", importance: "high", learningResource: "IBEW/NECA apprenticeship training materials" },
@@ -468,6 +479,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer"], requiredSkills: ["Pipe Fitting & Soldering", "Plumbing Codes (UPC/IPC)", "Drain-Waste-Vent Systems", "Gas Piping", "Fixture Installation"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Trades & Skilled Labor"],
     pathwayTime: "4-5 years (apprenticeship)",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.25, aptitude: 0.10, environment: 0.20, stage: 0.00 },
     skillGaps: [
       { skill: "Uniform Plumbing Code (UPC) / IPC", importance: "high", learningResource: "IAPMO UPC study guide; ICC IPC exam prep books" },
       { skill: "Pipe Fitting & Soldering", importance: "high", learningResource: "UA (United Association) apprenticeship program training materials" },
@@ -508,6 +520,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Refrigeration Fundamentals", "Electrical Diagnostics", "EPA 608 Certification", "Ductwork Fabrication", "BAS/Controls"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Trades & Skilled Labor"],
     pathwayTime: "2-5 years",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.20, aptitude: 0.15, environment: 0.20, stage: 0.00 },
     skillGaps: [
       { skill: "EPA 608 Refrigerant Handling", importance: "high", learningResource: "HVAC Excellence EPA 608 study guide; Esco Group certification prep" },
       { skill: "Electrical Diagnostics & Controls", importance: "high", learningResource: "NATE HVAC technician study guides" },
@@ -550,6 +563,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "advocate"], requiredSkills: ["Quantitative Research", "Policy Writing", "Cost-Benefit Analysis", "Statistical Analysis (R/Stata)", "Legislative Process Knowledge"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Law & Policy"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.30, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Quantitative Policy Research", importance: "high", learningResource: "Urban Institute free policy research methods course" },
       { skill: "Statistical Analysis (R or Stata)", importance: "high", learningResource: "DataCamp Statistical Inference with R course" },
@@ -590,6 +604,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "leader"], requiredSkills: ["GIS (ArcGIS/QGIS)", "Zoning Law", "Community Engagement", "Transportation Planning", "Environmental Review (NEPA/CEQA)"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction", "Law & Policy"],
     pathwayTime: "3-5 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.30, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "GIS (ArcGIS or QGIS)", importance: "high", learningResource: "Esri ArcGIS training (esri.com/training); QGIS free tutorials on QGIS.org" },
       { skill: "Zoning Law & Entitlements", importance: "high", learningResource: "APA Zoning Practice publication; state planning association training" },
@@ -632,6 +647,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["Game Design Documentation (GDD)", "Unity or Unreal Engine", "Prototyping", "Player Psychology", "Systems Design"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Arts & Entertainment", "Technology"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Unity Game Development", importance: "high", learningResource: "Unity Learn free tutorials (learn.unity.com)" },
       { skill: "Game Design Documentation (GDD)", importance: "high", learningResource: "The Art of Game Design by Jesse Schell; GDC Vault free lectures" },
@@ -672,6 +688,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "ideator"], requiredSkills: ["Maya or Blender", "12 Principles of Animation", "Character Rigging", "Motion Capture", "Compositing (After Effects/Nuke)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Arts & Entertainment", "Design & UX"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Maya or Blender 3D Animation", importance: "high", learningResource: "AnimSchool free lectures; Blender Guru YouTube channel" },
       { skill: "12 Principles of Animation", importance: "high", learningResource: "The Animator's Survival Kit by Richard Williams" },
