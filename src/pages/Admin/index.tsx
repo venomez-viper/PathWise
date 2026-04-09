@@ -14,6 +14,7 @@ interface AdminUser {
   email: string;
   plan: string;
   createdAt: string;
+  lastLoginAt?: string | null;
   avatarUrl?: string;
   oauthProviders?: string[];
 }
@@ -329,7 +330,6 @@ export default function AdminPage() {
   const [assessmentUserIds, setAssessmentUserIds] = useState<string[]>([]);
   const [roadmapStatuses, setRoadmapStatuses] = useState<{ userId: string; hasRoadmap: boolean; milestonesTotal: number; milestonesCompleted: number }[]>([]);
   const [certificateUserIds, setCertificateUserIds] = useState<string[]>([]);
-  const [lastActiveData, setLastActiveData] = useState<{ userId: string; lastActiveDate: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -367,13 +367,12 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     try {
-      const [usersRes, tasksRes, assessRes, roadmapRes, certRes, activeRes] = await Promise.allSettled([
+      const [usersRes, tasksRes, assessRes, roadmapRes, certRes] = await Promise.allSettled([
         adminApi.getUsers(),
         adminApi.getTaskStats(),
         adminApi.getAssessmentStats(),
         adminApi.getRoadmapUserStatus(),
         adminApi.getCertificateStatus(),
-        adminApi.getLastActive(),
       ]);
       if (usersRes.status === 'fulfilled') setUsers(usersRes.value?.users ?? []);
       else throw new Error(usersRes.reason?.message || 'Failed to load users');
@@ -381,7 +380,6 @@ export default function AdminPage() {
       if (assessRes.status === 'fulfilled') setAssessmentUserIds(assessRes.value?.userIdsWithAssessment ?? []);
       if (roadmapRes.status === 'fulfilled') setRoadmapStatuses(roadmapRes.value?.statuses ?? []);
       if (certRes.status === 'fulfilled') setCertificateUserIds(certRes.value?.userIds ?? []);
-      if (activeRes.status === 'fulfilled') setLastActiveData(activeRes.value?.users ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin data.');
     } finally {
@@ -451,12 +449,6 @@ export default function AdminPage() {
   }, [roadmapStatuses]);
 
   const certificateSet = useMemo(() => new Set(certificateUserIds ?? []), [certificateUserIds]);
-
-  const lastActiveMap = useMemo(() => {
-    const map: Record<string, string | null> = {};
-    (lastActiveData ?? []).forEach(u => { if (u?.userId) map[u.userId] = u.lastActiveDate; });
-    return map;
-  }, [lastActiveData]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -578,7 +570,7 @@ export default function AdminPage() {
         rs?.milestonesCompleted ?? 0,
         rs?.milestonesTotal ?? 0,
         certificateSet.has(u.id) ? 'Yes' : 'No',
-        lastActiveMap[u.id] ?? 'Never',
+        u.lastLoginAt ?? 'Never',
       ];
     });
     const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -924,13 +916,17 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td style={{ ...tdStyle, fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>
-                        {lastActiveMap[u.id]
+                        {u.lastLoginAt
                           ? (() => {
-                              const d = new Date(lastActiveMap[u.id]!);
+                              const d = new Date(u.lastLoginAt);
                               const now = new Date();
                               const diffMs = now.getTime() - d.getTime();
                               const diffDays = Math.floor(diffMs / 86400000);
-                              if (diffDays === 0) return 'Today';
+                              const diffHours = Math.floor(diffMs / 3600000);
+                              const diffMins = Math.floor(diffMs / 60000);
+                              if (diffMins < 5) return 'Just now';
+                              if (diffHours < 1) return `${diffMins}m ago`;
+                              if (diffHours < 24) return `${diffHours}h ago`;
                               if (diffDays === 1) return 'Yesterday';
                               if (diffDays < 7) return `${diffDays}d ago`;
                               return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

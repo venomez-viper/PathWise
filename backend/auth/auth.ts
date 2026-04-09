@@ -152,6 +152,9 @@ export const signin = api(
     }
 
     const token = issueToken(row.id);
+    // Update last login timestamp
+    try { await db.exec`UPDATE users SET last_login_at = ${new Date().toISOString()} WHERE id = ${row.id}`; } catch {}
+
     return {
       token,
       user: {
@@ -180,6 +183,8 @@ export const me = api(
       FROM users WHERE id = ${userID}
     `;
     if (!row) throw APIError.notFound("user not found");
+    // Update last seen on every auth check (page load)
+    try { await db.exec`UPDATE users SET last_login_at = ${new Date().toISOString()} WHERE id = ${userID}`; } catch {}
     return {
       user: {
         id:        row.id,
@@ -380,6 +385,7 @@ export interface AdminUser {
   email: string;
   plan: string;
   createdAt: string;
+  lastLoginAt: string | null;
 }
 
 export interface AdminUsersResponse {
@@ -395,7 +401,7 @@ export const adminListUsers = api(
 
     const users: AdminUser[] = [];
     const rows = db.query`
-      SELECT id, name, email, plan, created_at
+      SELECT id, name, email, plan, created_at, last_login_at
       FROM users ORDER BY created_at DESC
     `;
     for await (const row of rows) {
@@ -405,6 +411,7 @@ export const adminListUsers = api(
         email: row.email,
         plan: row.plan,
         createdAt: row.created_at,
+        lastLoginAt: row.last_login_at ?? null,
       });
     }
     return { users };
