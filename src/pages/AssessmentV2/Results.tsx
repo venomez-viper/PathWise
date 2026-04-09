@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../lib/auth-context';
+import { assessment as assessmentApi } from '../../lib/api';
 import ArchetypeShareCard from '../../components/ArchetypeShareCard';
 import CareerExplorer from './CareerExplorer';
 import WhatIfPanel, { generateWhatIfSkills } from './WhatIfPanel';
@@ -112,13 +114,13 @@ const card: CSSProperties = {
 
 /* ─── RIASEC Hexagon ────────────────────────────────────────────── */
 
-const RIASEC_LABELS: { key: keyof RIASECScores; label: string }[] = [
-  { key: 'realistic', label: 'R' },
-  { key: 'investigative', label: 'I' },
-  { key: 'artistic', label: 'A' },
-  { key: 'social', label: 'S' },
-  { key: 'enterprising', label: 'E' },
-  { key: 'conventional', label: 'C' },
+const RIASEC_LABELS: { key: keyof RIASECScores; label: string; full: string }[] = [
+  { key: 'realistic', label: 'R', full: 'Realistic' },
+  { key: 'investigative', label: 'I', full: 'Investigative' },
+  { key: 'artistic', label: 'A', full: 'Artistic' },
+  { key: 'social', label: 'S', full: 'Social' },
+  { key: 'enterprising', label: 'E', full: 'Enterprising' },
+  { key: 'conventional', label: 'C', full: 'Conventional' },
 ];
 
 function polarToXY(angleDeg: number, r: number, cx: number, cy: number) {
@@ -126,10 +128,10 @@ function polarToXY(angleDeg: number, r: number, cx: number, cy: number) {
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-function RIASECHexagon({ scores, size = 280, animate }: {
+function RIASECHexagon({ scores, size = 340, animate }: {
   scores: RIASECScores; size?: number; animate: boolean;
 }) {
-  const cx = size / 2, cy = size / 2, maxR = size * 0.38;
+  const cx = size / 2, cy = size / 2, maxR = size * 0.32;
   const step = 360 / 6;
 
   const gridLevels = [0.25, 0.5, 0.75, 1];
@@ -137,17 +139,26 @@ function RIASECHexagon({ scores, size = 280, animate }: {
     const r = (scores[item.key] / 100) * maxR;
     return polarToXY(i * step, r, cx, cy);
   });
-  // profilePoints used directly in polygon rendering below
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="RIASEC profile hexagon">
-      {/* Grid */}
+      {/* Grid rings */}
       {gridLevels.map((lv) => {
         const pts = Array.from({ length: 6 }, (_, i) => {
           const p = polarToXY(i * step, maxR * lv, cx, cy);
           return `${p.x},${p.y}`;
         });
         return <polygon key={lv} points={pts.join(' ')} fill="none" stroke="var(--on-surface, #333)" strokeOpacity={0.08} />;
+      })}
+      {/* Scale labels on first axis */}
+      {gridLevels.map((lv) => {
+        const p = polarToXY(0, maxR * lv + 2, cx, cy);
+        return (
+          <text key={`s${lv}`} x={p.x + 8} y={p.y} textAnchor="start" dominantBaseline="central"
+            style={{ fontSize: 9, fill: 'var(--on-surface, #999)', fontWeight: 500 }}>
+            {Math.round(lv * 100)}
+          </text>
+        );
       })}
       {/* Axes */}
       {RIASEC_LABELS.map((_, i) => {
@@ -164,14 +175,26 @@ function RIASECHexagon({ scores, size = 280, animate }: {
           transformOrigin: `${cx}px ${cy}px`,
         }}
       />
-      {/* Labels */}
+      {/* Score dots */}
+      {animate && profilePoints.map((p, i) => (
+        <circle key={`dot${i}`} cx={p.x} cy={p.y} r={3.5} fill={TEAL}
+          style={{ transition: 'opacity 0.6s ease', opacity: animate ? 1 : 0 }} />
+      ))}
+      {/* Labels — full name + score */}
       {RIASEC_LABELS.map((item, i) => {
-        const p = polarToXY(i * step, maxR + 18, cx, cy);
+        const p = polarToXY(i * step, maxR + 30, cx, cy);
+        const score = scores[item.key];
         return (
-          <text key={item.key} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central"
-            style={{ fontSize: 13, fontWeight: 600, fill: 'var(--on-surface, #333)' }}>
-            {item.label}
-          </text>
+          <g key={item.key}>
+            <text x={p.x} y={p.y - 7} textAnchor="middle" dominantBaseline="central"
+              style={{ fontSize: 12, fontWeight: 700, fill: 'var(--on-surface, #333)' }}>
+              {item.full}
+            </text>
+            <text x={p.x} y={p.y + 8} textAnchor="middle" dominantBaseline="central"
+              style={{ fontSize: 11, fontWeight: 600, fill: TEAL }}>
+              {score}
+            </text>
+          </g>
         );
       })}
     </svg>
@@ -406,7 +429,20 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
 
 export default function AssessmentResults() {
   const location = useLocation();
-  const result = (location.state as any)?.result;
+  const { user } = useAuth();
+  const stateResult = (location.state as any)?.result;
+  const [apiResult, setApiResult] = useState<any>(null);
+  const [loading, setLoading] = useState(!stateResult);
+
+  // Fetch from API if no router state (page refresh, direct navigation)
+  useEffect(() => {
+    if (stateResult || !user) return;
+    assessmentApi.getResult(user.id).then((res: any) => {
+      if (res?.result) setApiResult(res.result);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, [user]);
+
+  const result = stateResult ?? apiResult;
 
   const completedTier: number = (location.state as any)?.completedTier ?? 3;
   const archetype = result?.archetype ?? MOCK_ARCHETYPE;
@@ -427,6 +463,12 @@ export default function AssessmentResults() {
     });
     return () => timerRef.current.forEach(clearTimeout);
   }, []);
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+      <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Loading your results...</p>
+    </div>
+  );
 
   const showArchetype = phase >= 1;
   const showCharts = phase >= 2;

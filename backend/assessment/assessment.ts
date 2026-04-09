@@ -59,7 +59,8 @@ export const getAssessment = api(
 
     const row = await db.queryRow`
       SELECT user_id, completed_at, strengths, values, personality_type,
-             career_matches, skill_gaps, current_skills
+             career_matches, skill_gaps, current_skills,
+             riasec_scores, bigfive_scores, archetype_data, narrative_data
       FROM assessments WHERE user_id = ${userId}
     `;
     if (!row) return { result: null };
@@ -73,6 +74,10 @@ export const getAssessment = api(
         personalityType: row.personality_type,
         careerMatches: JSON.parse(row.career_matches),
         skillGaps: row.skill_gaps ? JSON.parse(row.skill_gaps) : [],
+        riasec: row.riasec_scores ? JSON.parse(row.riasec_scores) : null,
+        bigFive: row.bigfive_scores ? JSON.parse(row.bigfive_scores) : null,
+        archetype: row.archetype_data ? JSON.parse(row.archetype_data) : null,
+        narrative: row.narrative_data ? JSON.parse(row.narrative_data) : null,
       },
     };
   }
@@ -374,9 +379,13 @@ export const submitAssessmentV2 = api(
 
     // Compute scores — detect v2 answer format (ri_/bf_ prefixed keys) vs v1 (int1/ws1)
     const hasV2Keys = Object.keys(rawAnswers).some(k => k.startsWith('ri_') || k.startsWith('bf_'));
+    console.log("[assessment-v2] hasV2Keys:", hasV2Keys, "sample keys:", Object.keys(rawAnswers).slice(0, 10));
     const riasec = hasV2Keys ? computeRIASECV2(rawAnswers) : computeRIASEC(rawAnswers as Record<string, string[]>);
     const bigFive = hasV2Keys ? computeBigFiveV2(rawAnswers) : computeBigFive(rawAnswers as Record<string, string[]>);
+    console.log("[assessment-v2] RIASEC:", JSON.stringify(riasec));
+    console.log("[assessment-v2] BigFive:", JSON.stringify(bigFive));
     const archetype = determineArchetype(riasec, bigFive);
+    console.log("[assessment-v2] Archetype:", archetype.name);
 
     // Get career matches using v2 engine
     const { careerMatches, skillGaps, categorizedMatches } = getTopCareerMatchesV2({
@@ -402,9 +411,10 @@ export const submitAssessmentV2 = api(
 
     // Store results (same table, upsert)
     const now = new Date().toISOString();
+    const archetypeJson = JSON.stringify({ id: archetype.id, name: archetype.name, tagline: archetype.tagline, description: archetype.description, superpower: archetype.superpower, growthEdge: archetype.growthEdge });
     await db.exec`
-      INSERT INTO assessments (user_id, completed_at, strengths, values, personality_type, career_matches, raw_answers, skill_gaps, current_skills)
-      VALUES (${params.userId}, ${now}, ${JSON.stringify(params.strengths ?? [])}, ${JSON.stringify(params.values ?? [])}, ${archetype.id}, ${JSON.stringify(careerMatches)}, ${JSON.stringify(rawAnswers)}, ${JSON.stringify(skillGaps)}, ${JSON.stringify(params.currentSkills ?? [])})
+      INSERT INTO assessments (user_id, completed_at, strengths, values, personality_type, career_matches, raw_answers, skill_gaps, current_skills, riasec_scores, bigfive_scores, archetype_data, narrative_data)
+      VALUES (${params.userId}, ${now}, ${JSON.stringify(params.strengths ?? [])}, ${JSON.stringify(params.values ?? [])}, ${archetype.id}, ${JSON.stringify(careerMatches)}, ${JSON.stringify(rawAnswers)}, ${JSON.stringify(skillGaps)}, ${JSON.stringify(params.currentSkills ?? [])}, ${JSON.stringify(riasec)}, ${JSON.stringify(bigFive)}, ${archetypeJson}, ${JSON.stringify(narrative)})
       ON CONFLICT (user_id) DO UPDATE SET
         completed_at = excluded.completed_at,
         strengths = excluded.strengths,
@@ -413,7 +423,11 @@ export const submitAssessmentV2 = api(
         career_matches = excluded.career_matches,
         raw_answers = excluded.raw_answers,
         skill_gaps = excluded.skill_gaps,
-        current_skills = excluded.current_skills
+        current_skills = excluded.current_skills,
+        riasec_scores = excluded.riasec_scores,
+        bigfive_scores = excluded.bigfive_scores,
+        archetype_data = excluded.archetype_data,
+        narrative_data = excluded.narrative_data
     `;
 
     // Award achievement
