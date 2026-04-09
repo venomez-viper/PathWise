@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, warmup } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import { getArchetypePreview } from './archetypePreview';
-import { ASSESSMENT_PHASES, getLastPhaseIndexForTier, type Phase, type Question } from '../Assessment/questionData';
+import { ASSESSMENT_PHASES, getLastPhaseIndexForTier } from '../Assessment/questionData';
 
 /* ══════════════════════════════════════════════════════════════════
    CONSTANTS & TYPES
@@ -33,14 +33,19 @@ const ANALYZING_MESSAGES = [
   'Building your career fingerprint...',
 ];
 
-const PHASE_PANDA_MOODS = ['curious', 'thinking', 'happy', 'cool', 'working', 'celebrating'] as const;
+const PHASE_PANDA_MOODS = ['curious', 'happy', 'thinking', 'cool', 'thinking', 'cool', 'working', 'celebrating'] as const;
 
 const PHASE_TRANSITION_MESSAGES = [
+  // Tier 1 phases (0-2)
   'Great start! Your interest profile is taking shape...',
-  "Your personality profile is forming. Onto values next.",
-  "Values locked in. Now let's see how you work in practice.",
-  'Excellent! Your work DNA is mapped. Almost there...',
-  'Strengths noted. Just a few context questions left.',
+  'Values locked in. Just a few context questions to personalize your results.',
+  'Core profile complete! Your career matches are ready.',
+  // Tier 2 phases (3-4)
+  'Your personality profile is forming. Almost done with this tier...',
+  'Deeper insights unlocked! Your matches are getting more precise.',
+  // Tier 3 phases (5-7)
+  "Excellent! Your work DNA is mapped. Aptitudes next...",
+  'Strengths noted. Just a couple more context questions.',
   'All done! Building your career fingerprint...',
 ];
 
@@ -377,7 +382,7 @@ export default function AssessmentV2() {
 
     localStorage.removeItem(STORAGE_KEY);
     setHasSavedState(false);
-    setState(prev => ({ ...prev, currentPhase: 0, currentQuestion: 0, answers: {}, showTierCheckpoint: false, completedTier: 0, startedAt: new Date().toISOString() }));
+    setState(prev => ({ ...prev, currentPhase: 0, currentQuestion: 0, answers: {}, showTierCheckpoint: false, startedAt: new Date().toISOString() }));
     setSlideKey(k => k + 1);
   }, [searchParams, tier1LastIdx, tier2LastIdx]);
 

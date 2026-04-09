@@ -338,12 +338,60 @@ export function cosineSimilarity(a: number[], b: number[]): number {
  * Compute per-dimension cosine similarities between user answers and a career profile,
  * then combine using the provided (or default) weights.
  */
+/**
+ * Check whether the user answered any personality-dimension questions.
+ * Personality answers use keys like ws1, ws2, ws3, ws4.
+ */
+function hasPersonalityAnswers(answers: Record<string, string[]>): boolean {
+  return PERSONALITY_DIMS.some(([key]) => (answers[key] ?? []).length > 0);
+}
+
+/**
+ * Check whether the user answered any environment-dimension questions.
+ */
+function hasEnvironmentAnswers(answers: Record<string, string[]>): boolean {
+  return ENVIRONMENT_DIMS.some(([key]) => (answers[key] ?? []).length > 0);
+}
+
+/**
+ * Check whether the user answered any stage-dimension questions.
+ */
+function hasStageAnswers(answers: Record<string, string[]>): boolean {
+  return STAGE_DIMS.some(([key]) => (answers[key] ?? []).length > 0);
+}
+
 export function scoreDimensional(
   userAnswers: Record<string, string[]>,
   profile: CareerProfile,
   weights?: CareerWeights,
 ): DimensionalScore {
-  const w = weights ?? DEFAULT_WEIGHTS;
+  const w = { ...(weights ?? DEFAULT_WEIGHTS) };
+
+  // ── Progressive profiling: redistribute weights for unanswered dimensions ──
+  // When users complete only Tier 1 (interests + values + context), personality/
+  // environment/stage dimensions may be empty. Zero those weights and redistribute
+  // proportionally to answered dimensions so the total still sums to ~1.
+  const missingWeight: number[] = [];
+  if (!hasPersonalityAnswers(userAnswers)) {
+    missingWeight.push(w.personality);
+    w.personality = 0;
+  }
+  if (!hasEnvironmentAnswers(userAnswers)) {
+    missingWeight.push(w.environment);
+    w.environment = 0;
+  }
+  if (!hasStageAnswers(userAnswers)) {
+    missingWeight.push(w.stage);
+    w.stage = 0;
+  }
+
+  if (missingWeight.length > 0) {
+    const totalMissing = missingWeight.reduce((a, b) => a + b, 0);
+    // Redistribute proportionally to interest and values (the core Tier 1 dims)
+    const interestShare = w.interest / (w.interest + w.values || 1);
+    w.interest += totalMissing * interestShare;
+    w.values += totalMissing * (1 - interestShare);
+  }
 
   const [ui, pi] = encodeDimensionVectors(userAnswers, profile, INTEREST_DIMS);
   const [up, pp] = encodeDimensionVectors(userAnswers, profile, PERSONALITY_DIMS);
@@ -1139,7 +1187,7 @@ function scoreProfileV2(
   input: AssessmentInput,
 ): { rawScore: number; dimensions: DimensionalScore } {
   const a = extractAnswers(input);
-  const dims = scoreDimensional(a, profile);
+  const dims = scoreDimensional(a, profile, profile.scoringWeights ?? undefined);
 
   // Base score from cosine similarity: scale to 0-70 point range
   let score = dims.total * 70;

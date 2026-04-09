@@ -408,6 +408,7 @@ export default function AssessmentResults() {
   const location = useLocation();
   const result = (location.state as any)?.result;
 
+  const completedTier: number = (location.state as any)?.completedTier ?? 3;
   const archetype = result?.archetype ?? MOCK_ARCHETYPE;
   const riasec = result?.riasec ?? MOCK_RIASEC;
   const bigFive = result?.bigFive ?? MOCK_BIGFIVE;
@@ -489,6 +490,48 @@ export default function AssessmentResults() {
           ))}
         </div>
       </section>
+
+      {/* Tier upsell: encourage deeper profiling */}
+      {completedTier === 1 && (
+        <div style={{
+          background: 'rgba(0,106,98,0.06)', textAlign: 'center', padding: '1.5rem',
+          marginBottom: '2rem', borderRadius: '1.25rem',
+        }}>
+          <p style={{ fontWeight: 600, color: 'var(--on-surface, #222)', margin: '0 0 0.5rem' }}>
+            Want more accurate matches?
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #666)', margin: '0 0 0.75rem' }}>
+            Answer 22 more personality questions to unlock deeper insights.
+          </p>
+          <Link to="/app/assessment-v2?tier=2" style={{
+            display: 'inline-block', padding: '0.7rem 1.5rem', borderRadius: '2rem',
+            background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
+            textDecoration: 'none', transition: 'background 0.2s',
+          }}>
+            Unlock Deeper Insights
+          </Link>
+        </div>
+      )}
+      {completedTier === 2 && (
+        <div style={{
+          background: 'rgba(0,106,98,0.06)', textAlign: 'center', padding: '1.5rem',
+          marginBottom: '2rem', borderRadius: '1.25rem',
+        }}>
+          <p style={{ fontWeight: 600, color: 'var(--on-surface, #222)', margin: '0 0 0.5rem' }}>
+            Unlock maximum precision
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #666)', margin: '0 0 0.75rem' }}>
+            Answer 20 more work-style and aptitude questions for the most accurate results possible.
+          </p>
+          <Link to="/app/assessment-v2?tier=3" style={{
+            display: 'inline-block', padding: '0.7rem 1.5rem', borderRadius: '2rem',
+            background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
+            textDecoration: 'none', transition: 'background 0.2s',
+          }}>
+            Maximum Precision
+          </Link>
+        </div>
+      )}
 
       {/* Section: Explore All Career Paths */}
       <section style={{
