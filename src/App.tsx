@@ -38,6 +38,7 @@ import SignUp       from './pages/SignUp';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import LogoutPage   from './pages/Logout';
+import ProPage      from './pages/Pro';
 import Streaks      from './pages/Streaks';
 import AchievementsPage from './pages/Achievements';
 import NotificationsPage from './pages/Notifications';
@@ -178,6 +179,7 @@ export default function App() {
             <Route path="search"        element={<SearchPage />} />
             <Route path="admin"         element={<AdminPage />} />
             <Route path="whats-new"     element={<WhatsNewAppPage />} />
+            <Route path="pro"          element={<ProPage />} />
           </Route>
 
           {/* ── 404 catch-all ── */}

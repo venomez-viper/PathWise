@@ -82,7 +82,7 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
       </nav>
 
       {user.plan === 'free' && (
-        <Link to="/pricing" className="sidebar__upgrade" onClick={onClose}>
+        <Link to="/app/pro" className="sidebar__upgrade" onClick={onClose}>
           <Sparkles size={14} />
           <div>
             <p className="sidebar__upgrade-title">Upgrade to Pro</p>
