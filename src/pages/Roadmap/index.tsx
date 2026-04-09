@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Lock, CheckCircle2, Sparkles, ArrowRight, BookOpen, Briefcase, Users, Plus, MoreHorizontal, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Loader2, AlertCircle, Lock, CheckCircle2, Sparkles, ArrowRight, BookOpen, Briefcase, Users, Plus, MoreHorizontal, X, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
@@ -56,6 +56,10 @@ export default function Roadmap() {
   const [savingTask, setSavingTask] = useState(false);
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [selectedTimeline, setSelectedTimeline] = useState<string>('6mo');
+  const [savingTimeline, setSavingTimeline] = useState(false);
+  const timelineRef = useRef<HTMLDivElement>(null);
 
   async function loadData(userId: string, silent = false) {
     if (!silent) setLoading(true);
@@ -124,6 +128,62 @@ export default function Roadmap() {
       setModalError(err instanceof Error ? err.message : 'Failed to add task.');
     } finally { setSavingTask(false); }
   }
+
+  // Derive current timeline from estimatedWeeks or milestone due dates
+  function getCurrentTimeline(roadmapData: any): string {
+    // Try estimatedWeeks first (requires backend to return it)
+    const weeks = roadmapData?.estimatedWeeks;
+    if (weeks) {
+      if (weeks <= 15) return '3mo';
+      if (weeks <= 35) return '6mo';
+      return '12mo';
+    }
+    // Fallback: estimate from last milestone dueDate
+    const ms = roadmapData?.milestones ?? [];
+    if (ms.length > 0) {
+      const lastDue = ms[ms.length - 1]?.dueDate;
+      if (lastDue) {
+        const diffWeeks = Math.round((new Date(lastDue).getTime() - Date.now()) / (7 * 24 * 60 * 60 * 1000));
+        if (diffWeeks <= 15) return '3mo';
+        if (diffWeeks <= 35) return '6mo';
+        return '12mo';
+      }
+    }
+    return '6mo';
+  }
+
+  async function handleTimelineChange() {
+    if (!user || !data || savingTimeline) return;
+    setSavingTimeline(true);
+    setActionError(null);
+    try {
+      await roadmapApi.generate({ userId: user.id, targetRole: data.targetRole, timeline: selectedTimeline });
+      await loadData(user.id);
+      setShowTimeline(false);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to update timeline.');
+    } finally {
+      setSavingTimeline(false);
+    }
+  }
+
+  // Open timeline picker with current value pre-selected
+  function openTimelinePicker() {
+    if (data) setSelectedTimeline(getCurrentTimeline(data));
+    setShowTimeline(true);
+  }
+
+  // Close on click outside
+  useEffect(() => {
+    if (!showTimeline) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (timelineRef.current && !timelineRef.current.contains(e.target as Node)) {
+        setShowTimeline(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showTimeline]);
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
@@ -196,10 +256,71 @@ export default function Roadmap() {
                 🎯 {totalCount >= 8 ? 'Advanced' : totalCount >= 5 ? 'Standard' : 'Starter'} Track
               </span>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: '0.75rem' }}>
-              <Link to="/app/onboarding" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: '#8b4f2c', color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>
-                ✏️ Adjust Timeline
-              </Link>
+            <div style={{ display: 'flex', gap: 8, marginTop: '0.75rem', position: 'relative' }}>
+              <button onClick={openTimelinePicker} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: '#8b4f2c', color: '#fff', fontSize: '0.78rem', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
+                <Clock size={13} /> Adjust Timeline
+              </button>
+              {/* Timeline Picker Popover */}
+              {showTimeline && (
+                <div ref={timelineRef} style={{
+                  position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 50,
+                  background: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)',
+                  border: '1px solid var(--outline-variant)', padding: '1.25rem',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.12)', minWidth: 280,
+                }}>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)', marginBottom: '0.75rem' }}>
+                    Choose Timeline
+                  </p>
+                  <div style={{ display: 'flex', gap: 6, marginBottom: '1rem' }}>
+                    {([
+                      { value: '3mo', label: '3 Months', sub: 'Fast track' },
+                      { value: '6mo', label: '6 Months', sub: 'Recommended' },
+                      { value: '12mo', label: '12 Months', sub: 'Steady pace' },
+                    ] as const).map((opt) => {
+                      const isSelected = selectedTimeline === opt.value;
+                      return (
+                        <button key={opt.value} onClick={() => setSelectedTimeline(opt.value)}
+                          style={{
+                            flex: 1, padding: '0.6rem 0.5rem', borderRadius: 'var(--radius-full)',
+                            background: isSelected ? '#8b4f2c' : 'var(--surface-container-low)',
+                            color: isSelected ? '#fff' : 'var(--on-surface)',
+                            border: isSelected ? '2px solid #8b4f2c' : '2px solid transparent',
+                            cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s ease',
+                          }}>
+                          <p style={{ fontSize: '0.82rem', fontWeight: 700, lineHeight: 1.2 }}>{opt.label}</p>
+                          <p style={{ fontSize: '0.62rem', fontWeight: 500, opacity: 0.7, marginTop: 2 }}>{opt.sub}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button onClick={handleTimelineChange} disabled={savingTimeline || selectedTimeline === getCurrentTimeline(data)}
+                      style={{
+                        flex: 1, padding: '0.55rem', borderRadius: 'var(--radius-full)',
+                        background: '#8b4f2c', color: '#fff', border: 'none',
+                        fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+                        opacity: savingTimeline || selectedTimeline === getCurrentTimeline(data) ? 0.5 : 1,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}>
+                      {savingTimeline ? <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> : null}
+                      {savingTimeline ? 'Regenerating...' : 'Save'}
+                    </button>
+                    <button onClick={() => setShowTimeline(false)}
+                      style={{
+                        padding: '0.55rem 1rem', borderRadius: 'var(--radius-full)',
+                        background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
+                        border: 'none', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                      }}>
+                      Cancel
+                    </button>
+                  </div>
+                  {savingTimeline && (
+                    <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', marginTop: '0.5rem', textAlign: 'center' }}>
+                      This will regenerate your roadmap with the new timeline.
+                    </p>
+                  )}
+                </div>
+              )}
               <button onClick={() => { setSelectedMilestoneId(activeMilestone?.id || null); setModalError(null); setShowAddTask(true); }} disabled={milestones.length === 0}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontSize: '0.78rem', fontWeight: 600, border: 'none', cursor: milestones.length > 0 ? 'pointer' : 'default', opacity: milestones.length > 0 ? 1 : 0.5 }}>
                 <Plus size={14} /> Add Custom Task

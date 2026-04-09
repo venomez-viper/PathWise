@@ -42,7 +42,7 @@ export const getRoadmap = api(
     }
 
     const roadmapRow = await db.queryRow`
-      SELECT id, user_id, target_role, completion_percent
+      SELECT id, user_id, target_role, completion_percent, estimated_weeks
       FROM roadmaps WHERE user_id = ${userId}
     `;
     if (!roadmapRow) return { roadmap: null };
@@ -69,6 +69,7 @@ export const getRoadmap = api(
         userId: roadmapRow.user_id,
         targetRole: roadmapRow.target_role,
         completionPercent: roadmapRow.completion_percent,
+        estimatedWeeks: roadmapRow.estimated_weeks ?? undefined,
         milestones,
       },
     };
