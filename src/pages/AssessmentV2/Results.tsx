@@ -479,6 +479,45 @@ export default function AssessmentResults() {
       maxWidth: 1280, margin: '0 auto', padding: '2rem 2rem 4rem',
       fontFamily: 'var(--font-body, system-ui, sans-serif)',
     }}>
+      {/* Continue Assessment banner for tier 1/2 users */}
+      {completedTier < 3 && (
+        <section style={{
+          background: 'linear-gradient(135deg, rgba(139,79,44,0.08) 0%, rgba(0,106,98,0.06) 100%)',
+          borderRadius: '1.25rem',
+          padding: '1.5rem 2rem',
+          marginBottom: '2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1.5rem',
+          flexWrap: 'wrap',
+          border: '1px solid rgba(139,79,44,0.12)',
+        }}>
+          <div>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: '1rem', color: 'var(--on-surface, #222)' }}>
+              {completedTier === 1
+                ? 'Your results are based on interests only'
+                : 'You can unlock maximum precision'}
+            </p>
+            <p style={{ margin: '0.3rem 0 0', fontSize: '0.85rem', color: 'var(--on-surface-variant, #666)' }}>
+              {completedTier === 1
+                ? 'Continue the assessment to add personality traits and get much more accurate career matches and a detailed profile.'
+                : 'Answer 20 more questions about work style and aptitudes for the most precise results possible.'}
+            </p>
+          </div>
+          <Link to={`/app/assessment-v2?tier=${completedTier + 1}`} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '0.75rem 1.75rem', borderRadius: '2rem',
+            background: COPPER, color: '#fff', fontWeight: 700, fontSize: '0.9rem',
+            textDecoration: 'none', whiteSpace: 'nowrap',
+            boxShadow: '0 2px 8px rgba(139,79,44,0.2)',
+            transition: 'transform 0.15s, opacity 0.15s',
+          }}>
+            Continue Assessment →
+          </Link>
+        </section>
+      )}
+
       {/* Section: Archetype */}
       <section style={{ marginBottom: '2.5rem' }}>
         <ArchetypeCard
@@ -551,54 +590,19 @@ export default function AssessmentResults() {
           <RIASECHexagon scores={riasec} animate={showCharts} />
         </div>
         <div style={card}>
-          <h2 style={{ fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.1rem', color: TEAL, margin: '0 0 1rem', textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.1rem', color: TEAL, margin: '0 0 0.5rem', textAlign: 'center' }}>
             Personality Traits
           </h2>
+          {completedTier < 2 && (
+            <p style={{ fontSize: 11, color: 'var(--on-surface-variant, #888)', textAlign: 'center', margin: '0 0 0.75rem', fontStyle: 'italic' }}>
+              Estimated from your interests — continue assessment for precise scores
+            </p>
+          )}
           <BigFiveBars scores={bigFive} animate={showCharts} />
         </div>
       </section>
 
-      {/* Tier upsell: encourage deeper profiling */}
-      {completedTier === 1 && (
-        <div style={{
-          background: 'rgba(0,106,98,0.06)', textAlign: 'center', padding: '1.5rem',
-          marginBottom: '2rem', borderRadius: '1.25rem',
-        }}>
-          <p style={{ fontWeight: 600, color: 'var(--on-surface, #222)', margin: '0 0 0.5rem' }}>
-            Want more accurate matches?
-          </p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #666)', margin: '0 0 0.75rem' }}>
-            Answer 22 more personality questions to unlock deeper insights.
-          </p>
-          <Link to="/app/assessment-v2?tier=2" style={{
-            display: 'inline-block', padding: '0.7rem 1.5rem', borderRadius: '2rem',
-            background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
-            textDecoration: 'none', transition: 'background 0.2s',
-          }}>
-            Unlock Deeper Insights
-          </Link>
-        </div>
-      )}
-      {completedTier === 2 && (
-        <div style={{
-          background: 'rgba(0,106,98,0.06)', textAlign: 'center', padding: '1.5rem',
-          marginBottom: '2rem', borderRadius: '1.25rem',
-        }}>
-          <p style={{ fontWeight: 600, color: 'var(--on-surface, #222)', margin: '0 0 0.5rem' }}>
-            Unlock maximum precision
-          </p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #666)', margin: '0 0 0.75rem' }}>
-            Answer 20 more work-style and aptitude questions for the most accurate results possible.
-          </p>
-          <Link to="/app/assessment-v2?tier=3" style={{
-            display: 'inline-block', padding: '0.7rem 1.5rem', borderRadius: '2rem',
-            background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
-            textDecoration: 'none', transition: 'background 0.2s',
-          }}>
-            Maximum Precision
-          </Link>
-        </div>
-      )}
+      {/* Tier upsell removed — replaced by top banner */}
 
       {/* Section: Explore All Career Paths */}
       <section style={{
