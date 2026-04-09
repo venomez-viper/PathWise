@@ -386,22 +386,39 @@ export default function Dashboard() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {recentTasks.map((t: any) => (
-                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{
-                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                    border: `2px solid ${t.status === 'done' ? '#8b4f2c' : 'var(--surface-container-high)'}`,
-                    background: t.status === 'done' ? 'rgba(139,79,44,0.15)' : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {t.status === 'done' && <CheckCircle2 size={10} color="#8b4f2c" />}
+              {recentTasks.map((t: any) => {
+                const dueDate = t.dueDate ? new Date(t.dueDate) : null;
+                const now = new Date();
+                const isOverdue = dueDate && dueDate < now && t.status !== 'done';
+                const isDueSoon = dueDate && !isOverdue && t.status !== 'done' && (dueDate.getTime() - now.getTime()) < 3 * 86400000;
+                return (
+                  <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                      border: `2px solid ${t.status === 'done' ? '#8b4f2c' : isOverdue ? '#ef4444' : 'var(--surface-container-high)'}`,
+                      background: t.status === 'done' ? 'rgba(139,79,44,0.15)' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {t.status === 'done' && <CheckCircle2 size={10} color="#8b4f2c" />}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{
+                        fontSize: '0.82rem', fontWeight: 500, color: t.status === 'done' ? 'var(--on-surface-variant)' : 'var(--on-surface)',
+                        textDecoration: t.status === 'done' ? 'line-through' : 'none',
+                        display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>{t.title}</span>
+                      {dueDate && t.status !== 'done' && (
+                        <span style={{
+                          fontSize: '0.68rem', fontWeight: 600,
+                          color: isOverdue ? '#ef4444' : isDueSoon ? '#f59e0b' : 'var(--on-surface-muted)',
+                        }}>
+                          {isOverdue ? 'Overdue' : isDueSoon ? 'Due soon' : `Due ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span style={{
-                    fontSize: '0.82rem', fontWeight: 500, color: t.status === 'done' ? 'var(--on-surface-variant)' : 'var(--on-surface)',
-                    textDecoration: t.status === 'done' ? 'line-through' : 'none',
-                  }}>{t.title}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           <Link to="/app/tasks" className="panel-link" style={{ marginTop: '0.75rem' }}>
