@@ -181,6 +181,18 @@ export const completeMilestone = api(
       }
     } catch {}
 
+    // ── Notification: Milestone Complete ──
+    try {
+      const { createNotification } = await import("../streaks/streaks");
+      const msTitle = await db.queryRow`SELECT title FROM milestones WHERE id = ${milestoneId}`;
+      await createNotification({
+        userId: userID,
+        type: "progress",
+        title: "Milestone Complete!",
+        body: `You finished "${msTitle?.title ?? 'a milestone'}". On to the next one.`,
+      });
+    } catch {}
+
     // Generate unique certificate ID on 100% completion
     if (pct >= 100) {
       const existingCert = await db.queryRow`SELECT certificate_id FROM roadmaps WHERE id = ${ms.roadmap_id}`;
@@ -369,6 +381,15 @@ export const getCertificate = api(
         userName: '', // Will be filled by frontend from auth context
       },
     };
+  }
+);
+
+// ── Internal: get milestone title by ID ──
+export const getMilestoneTitle = api(
+  { expose: false },
+  async ({ milestoneId }: { milestoneId: string }): Promise<{ title: string | null }> => {
+    const row = await db.queryRow`SELECT title FROM milestones WHERE id = ${milestoneId}`;
+    return { title: row?.title ?? null };
   }
 );
 

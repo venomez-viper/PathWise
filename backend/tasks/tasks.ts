@@ -187,6 +187,55 @@ export const updateTask = api(
         const hour = new Date().getHours();
         if (hour < 9) await awardAchievement({ userId: row.user_id, badgeKey: "early_bird" });
       } catch {}
+
+      // ── Notification: Task Complete ──
+      try {
+        const { createNotification } = await import("../streaks/streaks");
+        await createNotification({
+          userId: row.user_id,
+          type: "task",
+          title: "Task Complete!",
+          body: `You completed "${newTitle}". Keep the momentum going.`,
+        });
+      } catch {}
+
+      // ── Notification: First Task Ever ──
+      try {
+        const firstCheckRow = await db.queryRow`SELECT COUNT(*) as cnt FROM tasks WHERE user_id = ${row.user_id} AND status = 'done'`;
+        const firstCount = Number(firstCheckRow?.cnt ?? 0);
+        if (firstCount === 1) {
+          const { createNotification } = await import("../streaks/streaks");
+          await createNotification({
+            userId: row.user_id,
+            type: "achievement",
+            title: "First Task Done!",
+            body: "You've taken your first step. The journey begins!",
+          });
+        }
+      } catch {}
+
+      // ── Notification: Milestone Complete (all tasks in milestone done) ──
+      if (row.milestone_id) {
+        try {
+          const { checkMilestoneTasks } = await import("../tasks/tasks");
+          const taskStatus = await checkMilestoneTasks({ milestoneId: row.milestone_id });
+          if (taskStatus.allComplete) {
+            const { createNotification } = await import("../streaks/streaks");
+            let milestoneTitle = "your milestone";
+            try {
+              const { getMilestoneTitle } = await import("../roadmap/roadmap");
+              const result = await getMilestoneTitle({ milestoneId: row.milestone_id });
+              if (result.title) milestoneTitle = result.title;
+            } catch {}
+            await createNotification({
+              userId: row.user_id,
+              type: "progress",
+              title: "Milestone Complete!",
+              body: `You finished "${milestoneTitle}". On to the next one.`,
+            });
+          }
+        } catch {}
+      }
     }
 
     return {

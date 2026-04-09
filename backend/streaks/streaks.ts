@@ -101,6 +101,24 @@ export const recordActivity = api(
       try { await awardAchievement({ userId, badgeKey: "streak_7" }); } catch {}
     }
 
+    // ── Notification: Streak Milestones ──
+    const streakMilestones: Record<number, string> = {
+      3: "Three days strong! A habit is forming.",
+      7: "One full week! Consistency is your superpower.",
+      14: "Two weeks locked in. You're building something real.",
+      30: "30-day streak! You're unstoppable.",
+    };
+    if (streakMilestones[newStreak]) {
+      try {
+        await createNotification({
+          userId,
+          type: "streak",
+          title: `${newStreak}-Day Streak!`,
+          body: streakMilestones[newStreak],
+        });
+      } catch {}
+    }
+
     return getStreak({ userId });
   }
 );
