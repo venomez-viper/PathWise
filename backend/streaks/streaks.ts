@@ -316,6 +316,25 @@ export const addCertificate = api(
 
 // ── Admin Endpoints ──────────────────────────────────────────────────────────
 
+export const adminCertificateStatus = api(
+  { expose: true, method: "GET", path: "/admin/certificate-status", auth: true },
+  async (): Promise<{ userIds: string[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    const userIds: string[] = [];
+    try {
+      const rows = db.query`SELECT DISTINCT user_id FROM certificates`;
+      for await (const row of rows) {
+        userIds.push((row as any).user_id);
+      }
+    } catch {}
+
+    return { userIds };
+  }
+);
+
 export const adminDeleteUserStreaks = api(
   { expose: true, method: "DELETE", path: "/admin/user-streaks/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {

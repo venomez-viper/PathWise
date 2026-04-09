@@ -327,6 +327,8 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [taskStats, setTaskStats] = useState<TaskStat[]>([]);
   const [assessmentUserIds, setAssessmentUserIds] = useState<string[]>([]);
+  const [roadmapStatuses, setRoadmapStatuses] = useState<{ userId: string; hasRoadmap: boolean; milestonesTotal: number; milestonesCompleted: number }[]>([]);
+  const [certificateUserIds, setCertificateUserIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -364,15 +366,19 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     try {
-      const [usersRes, tasksRes, assessRes] = await Promise.allSettled([
+      const [usersRes, tasksRes, assessRes, roadmapRes, certRes] = await Promise.allSettled([
         adminApi.getUsers(),
         adminApi.getTaskStats(),
         adminApi.getAssessmentStats(),
+        adminApi.getRoadmapUserStatus(),
+        adminApi.getCertificateStatus(),
       ]);
       if (usersRes.status === 'fulfilled') setUsers(usersRes.value?.users ?? []);
       else throw new Error(usersRes.reason?.message || 'Failed to load users');
       if (tasksRes.status === 'fulfilled') setTaskStats(tasksRes.value?.stats ?? []);
       if (assessRes.status === 'fulfilled') setAssessmentUserIds(assessRes.value?.userIds ?? []);
+      if (roadmapRes.status === 'fulfilled') setRoadmapStatuses(roadmapRes.value?.statuses ?? []);
+      if (certRes.status === 'fulfilled') setCertificateUserIds(certRes.value?.userIds ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin data.');
     } finally {
@@ -434,6 +440,14 @@ export default function AdminPage() {
   }, [taskStats]);
 
   const assessmentSet = useMemo(() => new Set(assessmentUserIds ?? []), [assessmentUserIds]);
+
+  const roadmapStatusMap = useMemo(() => {
+    const map: Record<string, { hasRoadmap: boolean; milestonesTotal: number; milestonesCompleted: number }> = {};
+    (roadmapStatuses ?? []).forEach(s => { if (s?.userId) map[s.userId] = s; });
+    return map;
+  }, [roadmapStatuses]);
+
+  const certificateSet = useMemo(() => new Set(certificateUserIds ?? []), [certificateUserIds]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -543,13 +557,20 @@ export default function AdminPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Name', 'Email', 'Plan', 'Joined', 'Has Assessment', 'Tasks Done', 'Tasks Total'];
-    const rows = filteredUsers.map(u => [
-      u.name, u.email, u.plan, u.createdAt,
-      assessmentSet.has(u.id) ? 'Yes' : 'No',
-      taskStatsMap[u.id]?.completed ?? 0,
-      taskStatsMap[u.id]?.total ?? 0,
-    ]);
+    const headers = ['Name', 'Email', 'Plan', 'Joined', 'Has Assessment', 'Tasks Done', 'Tasks Total', 'Roadmap', 'Milestones Completed', 'Milestones Total', 'Certificate'];
+    const rows = filteredUsers.map(u => {
+      const rs = roadmapStatusMap[u.id];
+      return [
+        u.name, u.email, u.plan, u.createdAt,
+        assessmentSet.has(u.id) ? 'Yes' : 'No',
+        taskStatsMap[u.id]?.completed ?? 0,
+        taskStatsMap[u.id]?.total ?? 0,
+        rs ? 'Active' : 'None',
+        rs?.milestonesCompleted ?? 0,
+        rs?.milestonesTotal ?? 0,
+        certificateSet.has(u.id) ? 'Yes' : 'No',
+      ];
+    });
     const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -790,6 +811,9 @@ export default function AdminPage() {
                   <th style={thStyle} onClick={() => handleSort('createdAt')}>Joined{sortArrow('createdAt')}</th>
                   <th style={thStyle} onClick={() => handleSort('assessment')}>Assessment{sortArrow('assessment')}</th>
                   <th style={thStyle} onClick={() => handleSort('tasks')}>Tasks{sortArrow('tasks')}</th>
+                  <th style={{ ...thStyle, cursor: 'default' }}>Roadmap</th>
+                  <th style={{ ...thStyle, cursor: 'default' }}>Milestones</th>
+                  <th style={{ ...thStyle, cursor: 'default' }}>Certificate</th>
                 </tr>
               </thead>
               <tbody>
@@ -797,6 +821,8 @@ export default function AdminPage() {
                   const isAdmin = ADMIN_EMAILS.includes(u.email);
                   const ts = taskStatsMap[u.id];
                   const hasAssessment = assessmentSet.has(u.id);
+                  const rs = roadmapStatusMap[u.id];
+                  const hasCert = certificateSet.has(u.id);
                   const isSelected = selectedIds.has(u.id);
                   return (
                     <tr
@@ -848,20 +874,50 @@ export default function AdminPage() {
                       </td>
                       <td style={{ ...tdStyle, color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>{formatDate(u.createdAt)}</td>
                       <td style={tdStyle}>
-                        {hasAssessment
-                          ? <CheckCircle2 size={16} color="#22c55e" />
-                          : <span style={{ color: 'var(--on-surface-variant)' }}>&mdash;</span>
-                        }
+                        <span style={{
+                          display: 'inline-block', padding: '2px 10px', borderRadius: '999px',
+                          fontSize: '0.72rem', fontWeight: 700,
+                          background: hasAssessment ? '#22c55e18' : 'var(--surface-container)',
+                          color: hasAssessment ? '#16a34a' : 'var(--on-surface-variant)',
+                          border: hasAssessment ? '1px solid #22c55e44' : '1px solid var(--outline-variant)',
+                        }}>
+                          {hasAssessment ? 'Done' : 'Not yet'}
+                        </span>
                       </td>
-                      <td style={{ ...tdStyle, fontSize: '0.8rem' }}>
+                      <td style={{ ...tdStyle, fontSize: '0.8rem', color: 'var(--primary)' }}>
                         {ts ? `${ts.completed}/${ts.total} done` : '0/0 done'}
+                      </td>
+                      <td style={tdStyle}>
+                        <span style={{
+                          display: 'inline-block', padding: '2px 10px', borderRadius: '999px',
+                          fontSize: '0.72rem', fontWeight: 700,
+                          background: rs ? '#22c55e18' : 'var(--surface-container)',
+                          color: rs ? '#16a34a' : 'var(--on-surface-variant)',
+                          border: rs ? '1px solid #22c55e44' : '1px solid var(--outline-variant)',
+                        }}>
+                          {rs ? 'Active' : 'None'}
+                        </span>
+                      </td>
+                      <td style={{ ...tdStyle, fontSize: '0.8rem', color: 'var(--primary)' }}>
+                        {rs ? `${rs.milestonesCompleted}/${rs.milestonesTotal}` : <span style={{ color: 'var(--on-surface-variant)' }}>&mdash;</span>}
+                      </td>
+                      <td style={tdStyle}>
+                        <span style={{
+                          display: 'inline-block', padding: '2px 10px', borderRadius: '999px',
+                          fontSize: '0.72rem', fontWeight: 700,
+                          background: hasCert ? '#22c55e18' : 'var(--surface-container)',
+                          color: hasCert ? '#16a34a' : 'var(--on-surface-variant)',
+                          border: hasCert ? '1px solid #22c55e44' : '1px solid var(--outline-variant)',
+                        }}>
+                          {hasCert ? 'Yes' : 'No'}
+                        </span>
                       </td>
                     </tr>
                   );
                 })}
                 {filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ ...tdStyle, textAlign: 'center', padding: '2rem', color: 'var(--on-surface-variant)' }}>
+                    <td colSpan={10} style={{ ...tdStyle, textAlign: 'center', padding: '2rem', color: 'var(--on-surface-variant)' }}>
                       {search ? 'No users match your search.' : 'No users found.'}
                     </td>
                   </tr>

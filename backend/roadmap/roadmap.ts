@@ -419,6 +419,46 @@ export const adminRoadmapStats = api(
   }
 );
 
+export interface AdminUserRoadmapStatus {
+  userId: string;
+  hasRoadmap: boolean;
+  milestonesTotal: number;
+  milestonesCompleted: number;
+}
+
+export interface AdminUserRoadmapStatusResponse {
+  statuses: AdminUserRoadmapStatus[];
+}
+
+export const adminUserRoadmapStatus = api(
+  { expose: true, method: "GET", path: "/admin/roadmap-user-status", auth: true },
+  async (): Promise<AdminUserRoadmapStatusResponse> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    const statuses: AdminUserRoadmapStatus[] = [];
+    try {
+      const rows = db.query`
+        SELECT r.user_id,
+               (SELECT COUNT(*) FROM milestones WHERE roadmap_id = r.id) AS total,
+               (SELECT COUNT(*) FROM milestones WHERE roadmap_id = r.id AND status = 'completed') AS completed
+        FROM roadmaps r
+      `;
+      for await (const row of rows) {
+        statuses.push({
+          userId: row.user_id,
+          hasRoadmap: true,
+          milestonesTotal: Number(row.total),
+          milestonesCompleted: Number(row.completed),
+        });
+      }
+    } catch {}
+
+    return { statuses };
+  }
+);
+
 export const adminDeleteUserRoadmap = api(
   { expose: true, method: "DELETE", path: "/admin/user-roadmap/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
