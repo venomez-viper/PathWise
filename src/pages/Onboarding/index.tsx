@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap, assessment } from '../../lib/api';
 import { Panda } from '../../components/panda';
