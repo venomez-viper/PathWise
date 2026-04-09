@@ -157,7 +157,7 @@ export const notifications = {
 // --- Admin ---
 export const admin = {
   getUsers: () => request<{ users: any[] }>('/admin/users'),
-  getTaskStats: () => request<{ stats: { userId: string; total: number; completed: number }[] }>('/admin/task-stats'),
+  getTaskStats: () => request<{ stats: { userId: string; taskCount: number; completedTaskCount: number }[] }>('/admin/task-stats'),
   getAssessmentStats: () => request<{ userIds: string[] }>('/admin/assessment-stats'),
   deleteUser: (userId: string) => request<{ success: boolean }>(`/admin/users/${userId}`, { method: 'DELETE' }),
   getUserDetail: (userId: string) => request<any>(`/admin/user/${userId}/detail`),
