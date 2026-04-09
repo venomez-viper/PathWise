@@ -342,13 +342,31 @@ export const adminLastActive = api(
     const { isAdmin } = await checkAdmin({ userID });
     if (!isAdmin) throw APIError.permissionDenied("admin access required");
 
-    const users: { userId: string; lastActiveDate: string | null }[] = [];
+    const map: Record<string, string | null> = {};
+
+    // Get last_active_date from streaks table
     try {
       const rows = db.query`SELECT user_id, last_active_date FROM streaks`;
       for await (const row of rows) {
-        users.push({ userId: (row as any).user_id, lastActiveDate: (row as any).last_active_date });
+        const uid = (row as any).user_id;
+        const date = (row as any).last_active_date;
+        if (date) map[uid] = date;
       }
     } catch {}
+
+    // Also check activity_log for most recent activity per user (more reliable)
+    try {
+      const rows = db.query`SELECT user_id, MAX(active_date) as latest FROM activity_log GROUP BY user_id`;
+      for await (const row of rows) {
+        const uid = (row as any).user_id;
+        const latest = (row as any).latest;
+        if (latest && (!map[uid] || latest > map[uid]!)) {
+          map[uid] = latest;
+        }
+      }
+    } catch {}
+
+    const users = Object.entries(map).map(([userId, lastActiveDate]) => ({ userId, lastActiveDate }));
     return { users };
   }
 );
