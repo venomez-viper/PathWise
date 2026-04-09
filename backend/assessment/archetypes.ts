@@ -796,6 +796,48 @@ export const ARCHETYPES: Archetype[] = [
       "Independent practice, experimental labs, or organisations that have deliberately built a tolerance for unresolved ideas and incomplete attempts.",
   },
 
+  {
+    id: "digital_storyteller",
+    name: "The Digital Storyteller",
+    family: "Creators",
+    tagline: "You turn everyday moments into content that millions want to watch.",
+    primaryRIASEC: "A",
+    secondaryRIASEC: "E",
+    tertiaryRIASEC: "S",
+    bigFiveCentroid: {
+      openness: 80,
+      conscientiousness: 60,
+      extraversion: 75,
+      agreeableness: 60,
+      emotionalStability: 60,
+    },
+    bigFiveWeights: {
+      openness: 1.5,
+      conscientiousness: 1.5,
+      extraversion: 2.0,
+      agreeableness: 1.0,
+      emotionalStability: 0.5,
+    },
+    description:
+      "You think in hooks, thumbnails, and scroll-stopping moments. Your creative instinct is matched by a strategic mind — you understand that great content is equal parts art and distribution. You read audiences intuitively, adapt your voice across platforms, and treat every post as both an experiment and a product. Where others see a camera, you see a publishing pipeline.",
+    typicalCareers: [
+      "Content Creator",
+      "YouTuber",
+      "Podcast Host",
+      "Social Media Manager",
+      "Brand Content Strategist",
+      "Video Producer",
+      "Newsletter Writer",
+      "Influencer & Personal Brand",
+    ],
+    superpower:
+      "Turning ideas into audience-resonant content at a pace and consistency that compounds into real influence.",
+    growthEdge:
+      "The algorithm can become the audience. The most durable creator brands are built on a point of view that exists independent of any single platform's reward system.",
+    idealEnvironment:
+      "Independent creator studios, media startups, or brand teams that value creative autonomy and measure impact in audience growth rather than hours logged.",
+  },
+
   // ── FAMILY 4: THE CONNECTORS (Social/Enterprising-dominant) ──────────────
 
   {
