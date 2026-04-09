@@ -77,7 +77,7 @@ export default function SignIn() {
           <div className="input-group">
             <div className="input-label-row">
               <label className="input-label">Password</label>
-              <span className="auth-link-sm" style={{ opacity: 0.4, cursor: 'not-allowed', fontSize: '0.72rem' }}>Forgot password?</span>
+              <Link to="/forgot-password" className="auth-link-sm" style={{ fontSize: '0.72rem' }}>Forgot password?</Link>
             </div>
             <div className="input-wrap">
               <Lock size={16} className="input-icon" />
