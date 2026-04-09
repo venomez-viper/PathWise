@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowRight, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap, assessment } from '../../lib/api';
+import { Panda } from '../../components/panda';
 import './Onboarding.css';
 
 const TIMELINES = [
@@ -15,7 +16,7 @@ export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState<'welcome' | 'role' | 'generating'>('welcome');
   const [targetRole, setTargetRole] = useState('');
   const [timeline, setTimeline] = useState('6mo');
   const [_generating, setGenerating] = useState(false);
@@ -24,34 +25,29 @@ export default function Onboarding() {
 
   const firstName = user?.name?.split(' ')[0] ?? 'there';
 
-  // Pre-fill from assessment if navigated from results page
+  // If coming back from Assessment V2 results with a role, skip to role confirmation
   useEffect(() => {
-    // Check query param first (from v2 results "Build Roadmap for X" button)
     const params = new URLSearchParams(location.search);
     const roleParam = params.get('role');
-
     const state = location.state as { targetRole?: string; pathwayTime?: string } | null;
     const prefilledRole = roleParam || state?.targetRole;
 
     if (prefilledRole) {
       setTargetRole(prefilledRole);
       if (state?.pathwayTime) {
-        // Map pathwayTime to timeline
         const pt = state.pathwayTime.toLowerCase();
         if (pt.includes('3') || pt.includes('short')) setTimeline('3mo');
         else if (pt.includes('12') || pt.includes('year') || pt.includes('long')) setTimeline('12mo');
         else setTimeline('6mo');
       }
-      // Skip welcome, go straight to role confirmation / duration picker
-      setStep(1);
+      setStep('role');
     }
 
-    // Also load assessment matches for role suggestions
+    // Load assessment matches for role suggestions
     if (user) {
       assessment.getResult(user.id).then((res: any) => {
         if (res?.result?.careerMatches?.length) {
           setAssessmentMatches(res.result.careerMatches);
-          // If no role pre-filled, default to top match
           if (!prefilledRole && res.result.careerMatches[0]?.title) {
             setTargetRole(res.result.careerMatches[0].title);
           }
@@ -62,7 +58,7 @@ export default function Onboarding() {
 
   const handleGenerate = async () => {
     if (!targetRole.trim() || !user) return;
-    setStep(2);
+    setStep('generating');
     setGenerating(true);
     setError('');
     try {
@@ -70,45 +66,40 @@ export default function Onboarding() {
       setTimeout(() => navigate('/app', { replace: true }), 1000);
     } catch (err: unknown) {
       setGenerating(false);
-      setStep(1);
+      setStep('role');
       setError(err instanceof Error ? err.message : 'Failed to generate roadmap. Please try again.');
     }
   };
 
   return (
     <div className="onboarding">
-      {/* Progress dots */}
-      {step < 2 && (
-        <div className="onboarding__dots">
-          {[0, 1].map(i => (
-            <div key={i} className={`onboarding__dot${i === step ? ' active' : i < step ? ' done' : ''}`} />
-          ))}
-        </div>
-      )}
+      {/* Welcome — single page, directs straight to Assessment V2 */}
+      {step === 'welcome' && (
+        <div className="onboarding__card" style={{ textAlign: 'center' }}>
+          <Panda mood="celebrating" size={120} animate />
 
-      {/* Step 0: Welcome */}
-      {step === 0 && (
-        <div className="onboarding__card">
-          <div className="onboarding__icon"><Sparkles size={28} color="#6245a4" /></div>
-          <h1 className="onboarding__title">Hey {firstName}, let's build<br />your career roadmap.</h1>
-          <p className="onboarding__sub">
-            PathWise will generate a personalised roadmap with milestones, tasks, and skill guidance — all tailored to your target role.
+          <h1 className="onboarding__title" style={{ marginTop: '1.25rem' }}>
+            Welcome to PathWise, {firstName}!
+          </h1>
+          <p className="onboarding__sub" style={{ maxWidth: 420, margin: '0.75rem auto 2rem' }}>
+            Let's explore your Career DNA. Take a quick assessment and we'll map
+            out your ideal career path with personalized matches, a roadmap,
+            and daily action steps.
           </p>
-          <div className="onboarding__features">
-            {['AI-generated career milestones', 'Skill gap analysis', 'Daily task planner'].map(f => (
-              <div key={f} className="onboarding__feature"><CheckCircle2 size={16} color="#006a62" /><span>{f}</span></div>
-            ))}
-          </div>
-          <button className="onboarding__btn" onClick={() => setStep(1)}>
-            Get Started <ArrowRight size={16} />
+
+          <button
+            className="onboarding__btn"
+            onClick={() => navigate('/app/assessment-v2')}
+          >
+            Explore My Career DNA <ArrowRight size={16} />
           </button>
         </div>
       )}
 
-      {/* Step 1: Target role */}
-      {step === 1 && (
+      {/* Role confirmation — shown when returning from assessment with a pre-filled role */}
+      {step === 'role' && (
         <div className="onboarding__card">
-          <p className="onboarding__eyebrow">STEP 1 OF 2</p>
+          <p className="onboarding__eyebrow">ALMOST THERE</p>
           <h1 className="onboarding__title">
             {assessmentMatches.length > 0 ? 'Confirm your career path' : 'What role are you\nworking towards?'}
           </h1>
@@ -178,8 +169,8 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* Step 2: Generating */}
-      {step === 2 && (
+      {/* Generating */}
+      {step === 'generating' && (
         <div className="onboarding__card onboarding__card--center">
           <div className="onboarding__generating">
             <Loader2 size={40} color="#006a62" style={{ animation: 'spin 0.8s linear infinite' }} />
