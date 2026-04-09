@@ -1408,6 +1408,114 @@ const RIASEC_SIGNALS: Record<keyof RIASECScores, { dims: Record<string, string[]
   ],
 };
 
+// ── V2 Likert-based scoring ────────────────────────────────────────────
+
+/** Map likert-3 answer to 0-100 */
+function likert3Score(val: string | undefined): number {
+  if (!val) return 50;
+  const v = val.toLowerCase();
+  if (v === 'like') return 100;
+  if (v === 'dislike') return 0;
+  return 50; // neutral
+}
+
+/** Map likert-5 answer (1-5) to 0-100, optionally reverse-coded */
+function likert5Score(val: string | undefined, reverse = false): number {
+  if (!val) return 50;
+  let n = parseInt(val, 10);
+  if (isNaN(n) || n < 1 || n > 5) return 50;
+  if (reverse) n = 6 - n;
+  return (n - 1) * 25; // 1→0, 2→25, 3→50, 4→75, 5→100
+}
+
+/** Detect v2 answers by checking for ri_ or bf_ prefixed keys */
+function isV2Answers(answers: Record<string, any>): boolean {
+  return Object.keys(answers).some(k => k.startsWith('ri_') || k.startsWith('bf_'));
+}
+
+/** V2 RIASEC question ID prefixes → RIASEC type */
+const V2_RIASEC_MAP: Record<string, keyof RIASECScores> = {
+  'ri_r': 'realistic', 'ri_i': 'investigative', 'ri_a': 'artistic',
+  'ri_s': 'social', 'ri_e': 'enterprising', 'ri_c': 'conventional',
+};
+
+/** V2 Big Five question ID prefixes → trait, with reverse-coded IDs */
+const V2_BF_MAP: Record<string, keyof BigFiveScores> = {
+  'bf_o': 'openness', 'bf_c': 'conscientiousness', 'bf_e': 'extraversion',
+  'bf_a': 'agreeableness', 'bf_es': 'emotionalStability',
+};
+const V2_BF_REVERSE_CODED = new Set([
+  'bf_o2', 'bf_o4', 'bf_c2', 'bf_c4', 'bf_e2', 'bf_e4', 'bf_a2', 'bf_a4', 'bf_es2', 'bf_es4',
+]);
+
+/**
+ * Compute RIASEC scores from v2 likert-3 answers.
+ * Each type has 4 questions (ri_r1-ri_r4 etc), scored like=100, neutral=50, dislike=0.
+ */
+export function computeRIASECV2(answers: Record<string, any>): RIASECScores {
+  const sums: Record<keyof RIASECScores, number[]> = {
+    realistic: [], investigative: [], artistic: [],
+    social: [], enterprising: [], conventional: [],
+  };
+
+  for (const [key, val] of Object.entries(answers)) {
+    // Match ri_r, ri_i, ri_a, ri_s, ri_e, ri_c prefixes
+    const prefix = key.replace(/\d+$/, '');
+    const type = V2_RIASEC_MAP[prefix];
+    if (type) {
+      const raw = Array.isArray(val) ? val[0] : val;
+      sums[type].push(likert3Score(String(raw)));
+    }
+  }
+
+  const result: RIASECScores = {
+    realistic: 0, investigative: 0, artistic: 0,
+    social: 0, enterprising: 0, conventional: 0,
+  };
+  for (const [type, scores] of Object.entries(sums) as [keyof RIASECScores, number[]][]) {
+    result[type] = scores.length > 0
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      : 0;
+  }
+  return result;
+}
+
+/**
+ * Compute Big Five scores from v2 likert-5 answers.
+ * Each trait has 4 questions, 2 normal + 2 reverse-coded.
+ */
+export function computeBigFiveV2(answers: Record<string, any>): BigFiveScores {
+  const sums: Record<keyof BigFiveScores, number[]> = {
+    openness: [], conscientiousness: [], extraversion: [],
+    agreeableness: [], emotionalStability: [],
+  };
+
+  for (const [key, val] of Object.entries(answers)) {
+    // Match bf_o, bf_c, bf_e, bf_a, bf_es prefixes
+    // Try bf_es first (longer prefix), then bf_o, bf_c, bf_e, bf_a
+    let prefix = key.startsWith('bf_es') ? 'bf_es' : key.replace(/\d+$/, '');
+    const trait = V2_BF_MAP[prefix];
+    if (trait) {
+      const raw = Array.isArray(val) ? val[0] : val;
+      const reverse = V2_BF_REVERSE_CODED.has(key);
+      sums[trait].push(likert5Score(String(raw), reverse));
+    }
+  }
+
+  const result: BigFiveScores = {
+    openness: 0, conscientiousness: 0, extraversion: 0,
+    agreeableness: 0, emotionalStability: 0,
+  };
+  for (const [trait, scores] of Object.entries(sums) as [keyof BigFiveScores, number[]][]) {
+    result[trait] = scores.length > 0
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      : 0;
+  }
+  return result;
+}
+
+// ── V1 signal-based scoring (legacy) ───────────────────────────────────
+
 /**
  * Compute RIASEC (Holland Code) scores from user answers.
  * Each of the six types is scored 0-100 based on answer signal strength.

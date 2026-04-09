@@ -1,7 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
-import { AuthData, checkAdmin, ADMIN_EMAIL } from "../auth/auth";
+import { AuthData, checkAdmin, ADMIN_EMAILS } from "../auth/auth";
 import { RateLimits } from "../shared/rate-limiter";
 
 const db = new SQLDatabase("tickets", { migrations: "./migrations" });
@@ -56,9 +56,9 @@ export const submitTicket = api(
       // Confirm to user
       const confirm = contactConfirmationEmail(params.name);
       await sendEmail({ to: params.email, ...confirm });
-      // Notify admin
+      // Notify all admins
       const notify = adminTicketNotificationEmail(params.name, params.email, params.subject || '', params.message);
-      await sendEmail({ to: ADMIN_EMAIL, ...notify });
+      await Promise.all(ADMIN_EMAILS.map(email => sendEmail({ to: email, ...notify })));
     } catch {}
 
     return { id, success: true };

@@ -36,7 +36,7 @@ export default function SignUp() {
       const res = await auth.signup({ name: form.name, email: form.email, password: form.password });
       tokenStore.set(res.token);
       login(res.user as AuthUser);
-      navigate('/app/onboarding');
+      navigate('/app');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
       setError(msg.includes('fetch') ? 'Could not reach the server. Check your connection.' : (msg || 'Sign up failed. Please try again.'));

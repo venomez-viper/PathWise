@@ -6,7 +6,7 @@ import {
 import { useAuth } from '../../lib/auth-context';
 import { admin as adminApi } from '../../lib/api';
 
-const ADMIN_EMAIL = 'akashagakash@gmail.com';
+const ADMIN_EMAILS = ['akashagakash@gmail.com', 'eaintkphyu98@gmail.com'];
 
 interface AdminUser {
   id: string;
@@ -61,7 +61,7 @@ function UserDetailPanel({
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [impersonating, setImpersonating] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
-  const isAdmin = user.email === ADMIN_EMAIL;
+  const isAdmin = ADMIN_EMAILS.includes(user.email);
 
   useEffect(() => {
     setLoadingDetail(true);
@@ -347,7 +347,7 @@ export default function AdminPage() {
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.email !== ADMIN_EMAIL) return;
+    if (!ADMIN_EMAILS.includes(user?.email ?? '')) return;
     loadData();
   }, [user]);
 
@@ -471,7 +471,7 @@ export default function AdminPage() {
   }, [users, search, sortKey, sortDir, assessmentSet, taskStatsMap]);
 
   const handleDelete = async (u: AdminUser) => {
-    if (u.email === ADMIN_EMAIL) return;
+    if (ADMIN_EMAILS.includes(u.email)) return;
     if (!window.confirm(`Delete user ${u.name} (${u.email})? This removes all their data permanently.`)) return;
     try {
       await adminApi.deleteUser(u.id);
@@ -486,7 +486,7 @@ export default function AdminPage() {
   const handleBulkDelete = async () => {
     const ids = [...selectedIds].filter(id => {
       const u = users.find(x => x.id === id);
-      return u && u.email !== ADMIN_EMAIL;
+      return u && !ADMIN_EMAILS.includes(u.email);
     });
     if (ids.length === 0) return;
     if (!window.confirm(`Delete ${ids.length} user${ids.length > 1 ? 's' : ''}? This is permanent.`)) return;
@@ -503,7 +503,7 @@ export default function AdminPage() {
   const handleBulkPlanChange = async (plan: string) => {
     const ids = [...selectedIds].filter(id => {
       const u = users.find(x => x.id === id);
-      return u && u.email !== ADMIN_EMAIL;
+      return u && !ADMIN_EMAILS.includes(u.email);
     });
     if (ids.length === 0) return;
     try {
@@ -570,7 +570,7 @@ export default function AdminPage() {
   };
 
   // Access guard
-  if (user?.email !== ADMIN_EMAIL) {
+  if (!ADMIN_EMAILS.includes(user?.email ?? '')) {
     return (
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
         <div style={{ textAlign: 'center' }}>
@@ -794,7 +794,7 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {filteredUsers.map((u, idx) => {
-                  const isAdmin = u.email === ADMIN_EMAIL;
+                  const isAdmin = ADMIN_EMAILS.includes(u.email);
                   const ts = taskStatsMap[u.id];
                   const hasAssessment = assessmentSet.has(u.id);
                   const isSelected = selectedIds.has(u.id);

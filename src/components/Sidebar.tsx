@@ -69,7 +69,7 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
             )}
           </NavLink>
         ))}
-        {user.email === 'akashagakash@gmail.com' && (
+        {['akashagakash@gmail.com', 'eaintkphyu98@gmail.com'].includes(user.email) && (
           <NavLink
             to="/app/admin"
             className={({ isActive }) => `sidebar__link${isActive ? ' active' : ''}`}

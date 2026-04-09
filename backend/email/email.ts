@@ -217,3 +217,16 @@ export function adminTicketNotificationEmail(
     `),
   };
 }
+
+export function passwordResetEmail(resetUrl: string): { subject: string; html: string } {
+  return {
+    subject: "Reset your PathWise password",
+    html: layout(`
+      ${h1("Reset your password")}
+      ${p("We received a request to reset your PathWise account password. Click the button below to choose a new password.")}
+      ${button("Reset Password", escapeHtml(resetUrl))}
+      ${p("This link expires in <strong>1 hour</strong>. If you didn't request a password reset, you can safely ignore this email.")}
+      ${p('Need help? Contact us at <a href="mailto:support@pathwise.fit" style="color: ' + BRAND_COLOR + ';">support@pathwise.fit</a>.')}
+    `),
+  };
+}

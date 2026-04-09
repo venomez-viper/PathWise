@@ -272,14 +272,103 @@ export const changePassword = api(
   }
 );
 
+// ── Password Reset ───────────────────────────────────────────────────────────
+
+interface ForgotPasswordParams {
+  email: string;
+}
+
+export const forgotPassword = api(
+  { expose: true, method: "POST", path: "/auth/forgot-password", auth: false },
+  async (params: ForgotPasswordParams): Promise<{ success: boolean }> => {
+    RateLimits.auth("forgot:" + params.email);
+
+    // Always return success to avoid email enumeration
+    const row = await db.queryRow`SELECT id FROM users WHERE email = ${params.email}`;
+    if (!row) return { success: true };
+
+    // Delete existing tokens for this user
+    await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${row.id}`;
+
+    // Generate secure token
+    const token = crypto.randomUUID() + "-" + crypto.randomUUID();
+    const tokenHash = await bcrypt.hash(token, 10);
+    const id = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+    await db.exec`
+      INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at)
+      VALUES (${id}, ${row.id}, ${tokenHash}, ${expiresAt})
+    `;
+
+    // Send reset email
+    try {
+      const { sendEmail, passwordResetEmail } = await import("../email/email");
+      const baseUrl = process.env.FRONTEND_URL || "https://pathwise.fit";
+      const resetUrl = `${baseUrl}/reset-password?token=${token}&id=${id}`;
+      const email = passwordResetEmail(resetUrl);
+      await sendEmail({ to: params.email, ...email });
+    } catch (err) {
+      console.error("Failed to send reset email:", err);
+    }
+
+    return { success: true };
+  }
+);
+
+interface ResetPasswordParams {
+  tokenId: string;
+  token: string;
+  newPassword: string;
+}
+
+export const resetPassword = api(
+  { expose: true, method: "POST", path: "/auth/reset-password", auth: false },
+  async (params: ResetPasswordParams): Promise<{ success: boolean }> => {
+    RateLimits.auth("reset:" + params.tokenId);
+
+    if (!params.newPassword || params.newPassword.length < 8) {
+      throw APIError.invalidArgument("password must be at least 8 characters");
+    }
+
+    const row = await db.queryRow`
+      SELECT id, user_id, token_hash, expires_at FROM password_reset_tokens WHERE id = ${params.tokenId}
+    `;
+
+    if (!row) throw APIError.notFound("invalid or expired reset link");
+
+    if (new Date(row.expires_at) < new Date()) {
+      await db.exec`DELETE FROM password_reset_tokens WHERE id = ${params.tokenId}`;
+      throw APIError.invalidArgument("reset link has expired — please request a new one");
+    }
+
+    const valid = await bcrypt.compare(params.token, row.token_hash);
+    if (!valid) throw APIError.unauthenticated("invalid reset link");
+
+    // Update password
+    const newHash = await bcrypt.hash(params.newPassword, 12);
+    await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${row.user_id}`;
+
+    // Delete used token
+    await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${row.user_id}`;
+
+    return { success: true };
+  }
+);
+
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
 // Centralized admin config — change in ONE place
-export const ADMIN_EMAIL = "akashagakash@gmail.com";
+export const ADMIN_EMAILS: string[] = [
+  "akashagakash@gmail.com",
+  "eaintkphyu98@gmail.com",
+];
+/** @deprecated Use ADMIN_EMAILS instead */
+export const ADMIN_EMAIL = ADMIN_EMAILS[0];
 
 async function requireAdmin(userID: string): Promise<void> {
   const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
-  if (!row || row.email !== ADMIN_EMAIL) {
+  if (!row || !ADMIN_EMAILS.includes(row.email)) {
     throw APIError.permissionDenied("admin access required");
   }
 }
@@ -336,8 +425,8 @@ export const adminDeleteUser = api(
     // Don't allow deleting the admin themselves
     const targetRow = await db.queryRow`SELECT email FROM users WHERE id = ${userId}`;
     if (!targetRow) throw APIError.notFound("user not found");
-    if (targetRow.email === ADMIN_EMAIL) {
-      throw APIError.invalidArgument("cannot delete the admin user");
+    if (ADMIN_EMAILS.includes(targetRow.email)) {
+      throw APIError.invalidArgument("cannot delete an admin user");
     }
 
     // Delete from users table (user_oauth_providers will cascade if FK exists)
@@ -436,7 +525,7 @@ export const checkAdmin = api(
   { expose: false },
   async ({ userID }: { userID: string }): Promise<{ isAdmin: boolean }> => {
     const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
-    return { isAdmin: !!row && row.email === ADMIN_EMAIL };
+    return { isAdmin: !!row && ADMIN_EMAILS.includes(row.email) };
   }
 );
 
@@ -450,7 +539,7 @@ export const deleteAccount = api(
     // Don't allow admin to self-delete via this endpoint
     const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
     if (!row) throw APIError.notFound("user not found");
-    if (row.email === ADMIN_EMAIL) {
+    if (ADMIN_EMAILS.includes(row.email)) {
       throw APIError.invalidArgument("admin account cannot be deleted from settings");
     }
 

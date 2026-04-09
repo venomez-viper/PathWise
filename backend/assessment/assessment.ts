@@ -9,7 +9,7 @@ import {
   getCareerRecsForRole,
   analyzeSkillGapsForRole,
 } from "./career-brain";
-import { getTopCareerMatchesV2, computeRIASEC, computeBigFive } from "./career-brain-v2";
+import { getTopCareerMatchesV2, computeRIASEC, computeBigFive, computeRIASECV2, computeBigFiveV2 } from "./career-brain-v2";
 import { determineArchetype } from "./archetypes";
 import { generateNarrative } from "./narrative-generator";
 import { awardAchievement } from "../streaks/streaks";
@@ -372,9 +372,10 @@ export const submitAssessmentV2 = api(
 
     const rawAnswers = params.rawAnswers ?? {};
 
-    // Compute scores
-    const riasec = computeRIASEC(rawAnswers as Record<string, string[]>);
-    const bigFive = computeBigFive(rawAnswers as Record<string, string[]>);
+    // Compute scores — detect v2 answer format (ri_/bf_ prefixed keys) vs v1 (int1/ws1)
+    const hasV2Keys = Object.keys(rawAnswers).some(k => k.startsWith('ri_') || k.startsWith('bf_'));
+    const riasec = hasV2Keys ? computeRIASECV2(rawAnswers) : computeRIASEC(rawAnswers as Record<string, string[]>);
+    const bigFive = hasV2Keys ? computeBigFiveV2(rawAnswers) : computeBigFive(rawAnswers as Record<string, string[]>);
     const archetype = determineArchetype(riasec, bigFive);
 
     // Get career matches using v2 engine

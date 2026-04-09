@@ -35,6 +35,8 @@ import SkillGaps    from './pages/SkillGaps';
 import SkillGapAssessment from './pages/SkillGapAssessment';
 import SignIn       from './pages/SignIn';
 import SignUp       from './pages/SignUp';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import LogoutPage   from './pages/Logout';
 import Streaks      from './pages/Streaks';
 import AchievementsPage from './pages/Achievements';
@@ -147,6 +149,8 @@ export default function App() {
           <Route element={<AuthLayout />}>
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/logout" element={<LogoutPage />} />
           </Route>
 

@@ -459,6 +459,28 @@ export default function AssessmentResults() {
 
       {/* Section: Top Career Matches — HERO */}
       <section style={{ marginBottom: '2.5rem' }}>
+        {/* Guidance banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(0,106,98,0.08) 0%, rgba(0,106,98,0.03) 100%)',
+          borderRadius: '1.25rem',
+          padding: '1.25rem 1.5rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          border: '1px solid rgba(0,106,98,0.12)',
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>&#x1F3AF;</span>
+          <div>
+            <p style={{ margin: 0, fontWeight: 700, color: 'var(--on-surface, #222)', fontSize: '0.95rem' }}>
+              Next step: Choose a career path below to build your personalised roadmap
+            </p>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.82rem', color: 'var(--on-surface-variant, #666)' }}>
+              Click "Build Roadmap" on any match to get milestones, tasks, and skill guidance tailored to that role.
+            </p>
+          </div>
+        </div>
+
         <h2 style={{
           fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.4rem',
           color: 'var(--on-surface, #222)', margin: '0 0 0.4rem',
