@@ -69,11 +69,11 @@ export default function SkillProgress({ tasks, milestones = [] }: SkillProgressP
             const color = CATEGORY_COLORS[category] || '#8b4f2c';
             return (
               <div key={category}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface)', textTransform: 'capitalize' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3, gap: 8 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface)', textTransform: 'capitalize', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
                     {CATEGORY_LABELS[category] ?? category}
                   </span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                     {catDone}/{catTotal}
                   </span>
                 </div>
