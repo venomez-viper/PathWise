@@ -327,7 +327,7 @@ function FilterBar({
           borderTop: '1px solid var(--outline-variant, rgba(73,69,79,0.10))',
         }}>
           {DOMAINS.map(d => {
-            const active = selectedDomains.size === 0 || selectedDomains.has(d);
+            // const active = selectedDomains.size === 0 || selectedDomains.has(d);
             const checked = selectedDomains.has(d);
             const color = DOMAIN_COLORS[d];
             return (
@@ -434,9 +434,7 @@ export default function CareerExplorer({ allMatches }: CareerExplorerProps) {
     });
   }
 
-  function handleClearDomains() {
-    setSelectedDomains(new Set());
-  }
+  void function handleClearDomains() { setSelectedDomains(new Set()); };
 
   return (
     <div style={{ fontFamily: 'var(--font-body, Inter, system-ui, sans-serif)' }}>

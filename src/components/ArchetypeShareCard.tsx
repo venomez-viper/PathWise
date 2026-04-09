@@ -19,7 +19,7 @@ export interface ArchetypeShareCardProps {
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const DARK_BG = '#1a1a2e';
-const DARK_SURFACE = '#16213e';
+// const DARK_SURFACE = '#16213e';
 const TEAL = '#00c9bb';
 const TEAL_DIM = 'rgba(0,201,187,0.18)';
 const TEAL_BORDER = 'rgba(0,201,187,0.35)';

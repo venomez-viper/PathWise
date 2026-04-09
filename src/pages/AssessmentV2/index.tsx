@@ -387,7 +387,7 @@ export default function AssessmentV2() {
   }, [searchParams, tier1LastIdx, tier2LastIdx]);
 
   /* ── Derived values ── */
-  const { currentPhase, currentQuestion, answers, showTransition, showAnalyzing, showTierCheckpoint, completedTier } = state;
+  const { currentPhase, currentQuestion, answers, showTransition, showAnalyzing, showTierCheckpoint } = state;
   const phases = ASSESSMENT_PHASES;
   const phase = currentPhase >= 0 && currentPhase < phases.length ? phases[currentPhase] : null;
   const question = phase ? phase.questions[currentQuestion] : null;

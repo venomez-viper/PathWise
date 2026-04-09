@@ -14,6 +14,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "leader"], requiredSkills: ["Financial Modeling", "SQL", "Excel", "Data Analysis", "Communication"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Finance", "Consulting"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.20, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep - Financial Modeling" },
       { skill: "SQL", importance: "high", learningResource: "Mode Analytics SQL Tutorial" },
@@ -57,6 +58,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "doer"], requiredSkills: ["Requirements Gathering", "SQL", "Process Mapping", "Stakeholder Management", "Data Analysis"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Finance", "Consulting", "Technology"],
     pathwayTime: "4-9 months",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Requirements Gathering", importance: "high", learningResource: "IIBA BABOK Guide" },
       { skill: "SQL", importance: "high", learningResource: "W3Schools SQL Tutorial" },
@@ -100,6 +102,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["GAAP", "Excel", "Tax Preparation", "Bookkeeping", "Attention to Detail"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Finance"],
     pathwayTime: "6-18 months",
+    scoringWeights: { interest: 0.15, personality: 0.15, values: 0.25, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "GAAP", importance: "high", learningResource: "Coursera Financial Accounting Fundamentals" },
       { skill: "Tax Preparation", importance: "high", learningResource: "IRS Free File training materials" },
@@ -143,6 +146,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "leader"], requiredSkills: ["Financial Modeling", "Equity Research", "Bloomberg Terminal", "Valuation", "Communication"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Finance"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.20, personality: 0.15, values: 0.15, aptitude: 0.30, environment: 0.05, stage: 0.15 },
     skillGaps: [
       { skill: "Equity Research", importance: "high", learningResource: "Aswath Damodaran NYU lectures (free)" },
       { skill: "Bloomberg Terminal", importance: "high", learningResource: "Bloomberg Market Concepts (BMC)" },
@@ -186,6 +190,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "facilitator"], requiredSkills: ["Sales Strategy", "CRM Tools", "Team Leadership", "Negotiation", "Pipeline Management"],
     experienceLevels: ["mid", "senior"], domains: ["E-commerce", "Technology"],
     pathwayTime: "3-9 months",
+    scoringWeights: { interest: 0.20, personality: 0.30, values: 0.15, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Sales Strategy", importance: "high", learningResource: "HubSpot Sales Management Training" },
       { skill: "CRM Tools", importance: "high", learningResource: "Salesforce Trailhead" },
@@ -229,6 +234,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Prospecting", "Negotiation", "CRM Tools", "Presentation Skills", "Closing"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["E-commerce", "Consulting", "Technology"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.20, personality: 0.30, values: 0.15, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Prospecting", importance: "high", learningResource: "Fanatical Prospecting by Jeb Blount" },
       { skill: "Negotiation", importance: "high", learningResource: "Never Split the Difference (Chris Voss)" },
@@ -272,6 +278,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["Cold Calling", "Email Outreach", "CRM Tools", "Research", "Communication"],
     experienceLevels: ["entry", "junior"], domains: ["E-commerce", "Technology"],
     pathwayTime: "1-3 months",
+    scoringWeights: { interest: 0.25, personality: 0.30, values: 0.15, aptitude: 0.05, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Cold Calling", importance: "high", learningResource: "Fanatical Prospecting by Jeb Blount" },
       { skill: "Email Outreach", importance: "high", learningResource: "HubSpot Email Marketing Course" },
@@ -315,6 +322,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "leader"], requiredSkills: ["Employment Law", "Talent Acquisition", "Employee Relations", "HRIS Systems", "Communication"],
     experienceLevels: ["mid", "senior"], domains: ["Education", "Technology"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.25, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Employment Law", importance: "high", learningResource: "SHRM Learning System" },
       { skill: "HRIS Systems", importance: "high", learningResource: "Workday or BambooHR training" },
@@ -358,6 +366,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "doer"], requiredSkills: ["Sourcing", "Interviewing", "ATS Tools", "Negotiation", "Communication"],
     experienceLevels: ["entry", "junior", "mid"], domains: ["Education", "Technology"],
     pathwayTime: "2-4 months",
+    scoringWeights: { interest: 0.25, personality: 0.30, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Sourcing", importance: "high", learningResource: "LinkedIn Recruiter training" },
       { skill: "ATS Tools", importance: "high", learningResource: "Greenhouse or Lever tutorials" },
@@ -401,6 +410,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "supporter"], requiredSkills: ["Instructional Design", "Public Speaking", "LMS Tools", "Needs Assessment", "Facilitation"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Education", "Technology"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.25, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Instructional Design", importance: "high", learningResource: "ATD Instructional Design Certificate" },
       { skill: "LMS Tools", importance: "high", learningResource: "Articulate 360 tutorials" },
@@ -444,6 +454,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "supporter"], requiredSkills: ["Active Listening", "Career Development", "Resume Writing", "Interview Coaching", "Personal Branding"],
     experienceLevels: ["mid", "senior"], domains: ["Education", "Consulting"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.25, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Coaching Methodology", importance: "high", learningResource: "ICF Coach Training programs" },
       { skill: "Career Development Theory", importance: "high", learningResource: "NCDA Career Development Facilitator course" },
@@ -487,6 +498,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "facilitator"], requiredSkills: ["Healthcare Regulations", "Budget Management", "Operations Management", "Leadership", "Communication"],
     experienceLevels: ["mid", "senior"], domains: ["Healthcare"],
     pathwayTime: "6-18 months",
+    scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Healthcare Regulations", importance: "high", learningResource: "ACHE Healthcare Management courses" },
       { skill: "Budget Management", importance: "high", learningResource: "Coursera Healthcare Financial Management" },
@@ -530,6 +542,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["Clinical Trial Design", "Biostatistics", "GCP Compliance", "Data Analysis", "Scientific Writing"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Healthcare"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.30, personality: 0.10, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Clinical Trial Design", importance: "high", learningResource: "Coursera Clinical Trials course (Johns Hopkins)" },
       { skill: "Biostatistics", importance: "high", learningResource: "edX Biostatistics for Public Health" },
@@ -573,6 +586,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "facilitator"], requiredSkills: ["Project Management", "Regulatory Knowledge", "Cross-functional Leadership", "Risk Management", "Stakeholder Communication"],
     experienceLevels: ["mid", "senior"], domains: ["Healthcare", "Product Management"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.20, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Biotech Regulatory", importance: "high", learningResource: "RAPS Regulatory Affairs Certification prep" },
       { skill: "Project Management", importance: "high", learningResource: "PMI PMP Certification prep" },
@@ -616,6 +630,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["EHR Systems", "SQL", "Healthcare Standards", "Data Analysis", "HIPAA Compliance"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Healthcare", "Data & Analytics"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "EHR Systems", importance: "high", learningResource: "Epic training programs or Cerner certification" },
       { skill: "HL7/FHIR Standards", importance: "high", learningResource: "HL7 International free resources" },
@@ -659,6 +674,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "creator"], requiredSkills: ["Adobe Creative Suite", "Typography", "Layout Design", "Brand Identity", "Color Theory"],
     experienceLevels: ["entry", "junior", "mid"], domains: ["Design & UX", "Media & Entertainment"],
     pathwayTime: "3-9 months",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Adobe Creative Suite", importance: "high", learningResource: "Adobe Creative Cloud tutorials" },
       { skill: "Typography", importance: "high", learningResource: "Butterick's Practical Typography (free)" },
@@ -702,6 +718,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["creator", "leader"], requiredSkills: ["Video Editing", "Storytelling", "Camera Operation", "Adobe Premiere", "Motion Graphics"],
     experienceLevels: ["entry", "junior", "mid"], domains: ["Media & Entertainment"],
     pathwayTime: "3-9 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Video Editing", importance: "high", learningResource: "Adobe Premiere Pro tutorials on LinkedIn Learning" },
       { skill: "Motion Graphics", importance: "high", learningResource: "School of Motion After Effects Kickstart" },
@@ -745,6 +762,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["creator", "doer"], requiredSkills: ["Copywriting", "SEO", "Brand Voice", "Storytelling", "Research"],
     experienceLevels: ["entry", "junior", "mid"], domains: ["Media & Entertainment", "Marketing"],
     pathwayTime: "2-6 months",
+    scoringWeights: { interest: 0.35, personality: 0.15, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Copywriting", importance: "high", learningResource: "The Copywriter's Handbook by Robert Bly" },
       { skill: "SEO Writing", importance: "high", learningResource: "Yoast SEO Academy (free)" },
@@ -788,6 +806,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "creator"], requiredSkills: ["Brand Strategy", "Market Research", "Consumer Insights", "Storytelling", "Competitive Analysis"],
     experienceLevels: ["mid", "senior"], domains: ["Marketing", "Media & Entertainment"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Brand Strategy", importance: "high", learningResource: "Brand Master Academy on Skillshare" },
       { skill: "Consumer Insights", importance: "high", learningResource: "Coursera Consumer Behavior course" },
@@ -831,6 +850,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["SIEM Tools", "Network Security", "Incident Response", "Vulnerability Assessment", "Linux"],
     experienceLevels: ["entry", "junior", "mid"], domains: ["Technology"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "SIEM Tools", importance: "high", learningResource: "Splunk Fundamentals (free)" },
       { skill: "Network Security", importance: "high", learningResource: "CompTIA Security+ study guide" },
@@ -874,6 +894,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "creator"], requiredSkills: ["Ethical Hacking", "Linux", "Networking", "Web App Security", "Scripting"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Technology"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Ethical Hacking", importance: "high", learningResource: "TryHackMe and HackTheBox" },
       { skill: "Web App Security", importance: "high", learningResource: "PortSwigger Web Security Academy (free)" },
@@ -917,6 +938,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "creator"], requiredSkills: ["Product Development", "Sales", "Fundraising", "Leadership", "Financial Literacy"],
     experienceLevels: ["mid", "senior"], domains: ["E-commerce", "Technology"],
     pathwayTime: "6-24 months",
+    scoringWeights: { interest: 0.30, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Product Development", importance: "high", learningResource: "Y Combinator Startup School (free)" },
       { skill: "Fundraising", importance: "high", learningResource: "Venture Deals by Brad Feld" },
