@@ -11,6 +11,7 @@ const db = new SQLDatabase("users", { migrations: "./migrations" });
 
 // ── Secrets (set via `encore secret set`) ────────────────────────────────────
 const jwtSecret = secret("JWTSecret");
+const frontendUrl = secret("FrontendURL");
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -304,7 +305,7 @@ export const forgotPassword = api(
     // Send reset email
     try {
       const { sendEmail, passwordResetEmail } = await import("../email/email");
-      const baseUrl = process.env.FRONTEND_URL || "https://pathwise.fit";
+      const baseUrl = frontendUrl();
       const resetUrl = `${baseUrl}/reset-password?token=${token}&id=${id}`;
       const email = passwordResetEmail(resetUrl);
       await sendEmail({ to: params.email, ...email });
