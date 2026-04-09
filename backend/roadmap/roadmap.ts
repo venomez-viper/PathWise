@@ -207,6 +207,65 @@ export const completeMilestone = api(
   }
 );
 
+// PATCH /roadmap/timeline — Rescale milestone dates without losing progress
+export const updateTimeline = api(
+  { expose: true, method: "PATCH", path: "/roadmap/timeline", auth: true },
+  async (params: { userId: string; timeline: string }): Promise<GetRoadmapResponse> => {
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
+    if (userID !== params.userId) throw APIError.permissionDenied("not your data");
+
+    const timelineRaw = params.timeline ?? "6mo";
+    const timelineWeeks = timelineRaw === "3mo" ? 13 : timelineRaw === "12mo" ? 52 : 26;
+
+    const roadmapRow = await db.queryRow`SELECT id FROM roadmaps WHERE user_id = ${params.userId}`;
+    if (!roadmapRow) throw APIError.notFound("no roadmap found — generate one first");
+
+    // Get all milestones (preserving their status, tasks, everything)
+    const milestones: { id: string; estimatedWeeks: number; status: string }[] = [];
+    const rows = db.query`
+      SELECT id, estimated_weeks, status FROM milestones
+      WHERE roadmap_id = ${roadmapRow.id} ORDER BY position ASC
+    `;
+    for await (const row of rows) {
+      milestones.push({
+        id: row.id,
+        estimatedWeeks: row.estimated_weeks ?? 4,
+        status: row.status,
+      });
+    }
+
+    if (milestones.length === 0) throw APIError.notFound("no milestones to rescale");
+
+    // Rescale durations proportionally to new timeline
+    const totalRawWeeks = milestones.reduce((s, m) => s + m.estimatedWeeks, 0);
+    const scaleFactor = totalRawWeeks > 0 ? timelineWeeks / totalRawWeeks : 1;
+    const now = new Date();
+    let cumulativeWeeks = 0;
+
+    for (const m of milestones) {
+      const newDuration = Math.max(1, Math.round(m.estimatedWeeks * scaleFactor));
+      cumulativeWeeks += newDuration;
+      const newDueDate = new Date(now.getTime() + cumulativeWeeks * 7 * 86400000).toISOString().split("T")[0];
+
+      await db.exec`
+        UPDATE milestones SET estimated_weeks = ${newDuration}, due_date = ${newDueDate}
+        WHERE id = ${m.id}
+      `;
+
+      // Also update task due dates for this milestone
+      await db.exec`UPDATE tasks SET due_date = ${newDueDate} WHERE milestone_id = ${m.id}`;
+    }
+
+    // Update roadmap estimated_weeks
+    await db.exec`UPDATE roadmaps SET estimated_weeks = ${timelineWeeks} WHERE id = ${roadmapRow.id}`;
+
+    // Return updated roadmap
+    return getRoadmap({ userId: params.userId });
+  }
+);
+
 export interface GenerateRoadmapParams {
   userId: string;
   targetRole: string;

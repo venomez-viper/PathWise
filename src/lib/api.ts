@@ -112,6 +112,8 @@ export const assessment = {
 export const roadmap = {
   get:      (userId: string) => request(`/roadmap/${userId}`),
   generate: (data: unknown)  => request('/roadmap', { method: 'POST', body: JSON.stringify(data) }),
+  updateTimeline: (data: { userId: string; timeline: string }) =>
+    request('/roadmap/timeline', { method: 'PATCH', body: JSON.stringify(data) }),
   completeMilestone: (milestoneId: string) =>
     request(`/roadmap/milestones/${milestoneId}/complete`, { method: 'POST', body: JSON.stringify({}) }),
   getCertificate: () => request<{ certificate: { id: string; targetRole: string; issuedAt: string } | null }>('/roadmap/certificate'),

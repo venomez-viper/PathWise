@@ -157,7 +157,7 @@ export default function Roadmap() {
     setSavingTimeline(true);
     setActionError(null);
     try {
-      await roadmapApi.generate({ userId: user.id, targetRole: data.targetRole, timeline: selectedTimeline });
+      await roadmapApi.updateTimeline({ userId: user.id, timeline: selectedTimeline });
       await loadData(user.id);
       setShowTimeline(false);
     } catch (err) {
@@ -303,7 +303,7 @@ export default function Roadmap() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       }}>
                       {savingTimeline ? <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> : null}
-                      {savingTimeline ? 'Regenerating...' : 'Save'}
+                      {savingTimeline ? 'Updating...' : 'Save'}
                     </button>
                     <button onClick={() => setShowTimeline(false)}
                       style={{
@@ -314,11 +314,9 @@ export default function Roadmap() {
                       Cancel
                     </button>
                   </div>
-                  {savingTimeline && (
-                    <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', marginTop: '0.5rem', textAlign: 'center' }}>
-                      This will regenerate your roadmap with the new timeline.
-                    </p>
-                  )}
+                  <p style={{ fontSize: '0.68rem', color: 'var(--on-surface-muted)', marginTop: '0.5rem', textAlign: 'center' }}>
+                    Your progress and completed tasks are preserved.
+                  </p>
                 </div>
               )}
               <button onClick={() => { setSelectedMilestoneId(activeMilestone?.id || null); setModalError(null); setShowAddTask(true); }} disabled={milestones.length === 0}
