@@ -216,7 +216,19 @@ export default function Streaks() {
                   else if (cell.active) cellClass += ' streaks__month-cell--active';
                   else if (cell.isToday) cellClass += ' streaks__month-cell--today';
                   else if (!cell.isCurrentWeek) cellClass += ' streaks__month-cell--past';
-                  return <div key={i} className={cellClass} />;
+                  return (
+                    <div key={i} className={cellClass} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {cell.inMonth && (
+                        <span style={{
+                          fontSize: '0.62rem', fontWeight: cell.isToday ? 700 : 500,
+                          color: cell.active ? '#fff' : cell.isToday ? 'var(--secondary)' : 'var(--on-surface-muted)',
+                          lineHeight: 1,
+                        }}>
+                          {cell.date}
+                        </span>
+                      )}
+                    </div>
+                  );
                 })}
               </div>
               <div className="streaks__month-legend">
