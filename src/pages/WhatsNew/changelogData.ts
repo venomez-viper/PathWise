@@ -33,6 +33,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.14.0',
+    date: 'April 9, 2026',
+    title: 'Smart Notifications, Streaks & Widget Controls',
+    tag: 'feature',
+    description: 'Get notified when it matters, track your streaks over time, and customise your sidebar.',
+    highlights: [
+      'Smart notifications — get notified when you complete tasks, hit milestones, or reach streak goals',
+      'Streak calendar — toggle between Week, Month, and Year views to see your consistency over time',
+      'Streak milestones — unlock achievements at 3, 7, 14, 30, 60, and 100 day streaks',
+      'Hide or show widgets — hover to dismiss, or manage them all from Settings',
+      'Skill progress widget now shows real data from your tasks and milestones',
+      'Dashboard and widgets refresh automatically when you navigate back',
+      'Pro page — see what\'s coming next for PathWise Pro members',
+    ],
+  },
+  {
     version: '0.13.0',
     date: 'April 9, 2026',
     title: 'Password Recovery & Smarter Results',
