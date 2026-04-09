@@ -52,6 +52,17 @@ export default function AppWidgetPanel() {
     if (loaded) loadData();
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Refresh when page becomes visible (user switches tabs, navigates back)
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === 'visible') loadData(); };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', loadData);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', loadData);
+    };
+  }, [loadData]);
+
   // Check if we should show the panel on this route
   const currentPath = location.pathname.replace(/\/$/, '') || '/app';
   if (HIDDEN_ROUTES.has(currentPath)) return null;
