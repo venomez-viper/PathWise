@@ -106,8 +106,8 @@ export const signup = api(
     const passwordHash = await bcrypt.hash(params.password, 12);
 
     await db.exec`
-      INSERT INTO users (id, name, email, password_hash, plan, created_at)
-      VALUES (${id}, ${params.name}, ${params.email}, ${passwordHash}, 'free', ${now})
+      INSERT INTO users (id, name, email, password_hash, plan, created_at, last_login_at)
+      VALUES (${id}, ${params.name}, ${params.email}, ${passwordHash}, 'free', ${now}, ${now})
     `;
 
     // Send welcome email (fire and forget)
