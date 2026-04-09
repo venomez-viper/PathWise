@@ -20,8 +20,8 @@ interface AdminUser {
 
 interface TaskStat {
   userId: string;
-  total: number;
-  completed: number;
+  taskCount: number;
+  completedTaskCount: number;
 }
 
 interface UserDetail {
@@ -75,7 +75,7 @@ function UserDetailPanel({
         ...user,
         ...(d ?? {}),
         assessment: a ?? null,
-        taskStats: taskStat ? { total: taskStat.total, completed: taskStat.completed } : null,
+        taskStats: taskStat ? { total: taskStat.taskCount, completed: taskStat.completedTaskCount } : null,
       });
     }).finally(() => setLoadingDetail(false));
   }, [user.id]);
@@ -116,8 +116,8 @@ function UserDetailPanel({
     .toUpperCase()
     .slice(0, 2);
 
-  const completionRate = taskStat && taskStat.total > 0
-    ? Math.round((taskStat.completed / taskStat.total) * 100)
+  const completionRate = taskStat && taskStat.taskCount > 0
+    ? Math.round((taskStat.completedTaskCount / taskStat.taskCount) * 100)
     : 0;
 
   const formatDate = (d: string) => {
@@ -258,11 +258,11 @@ function UserDetailPanel({
             <p style={sectionLabel}>Tasks</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
               <div style={{ background: 'var(--surface-container)', borderRadius: '1rem', padding: '0.75rem', textAlign: 'center' }}>
-                <p style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, fontFamily: 'var(--font-display)' }}>{taskStat?.total ?? 0}</p>
+                <p style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, fontFamily: 'var(--font-display)' }}>{taskStat?.taskCount ?? 0}</p>
                 <p style={{ fontSize: '0.65rem', color: 'var(--on-surface-variant)', margin: 0, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</p>
               </div>
               <div style={{ background: 'var(--surface-container)', borderRadius: '1rem', padding: '0.75rem', textAlign: 'center' }}>
-                <p style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, fontFamily: 'var(--font-display)', color: '#22c55e' }}>{taskStat?.completed ?? 0}</p>
+                <p style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, fontFamily: 'var(--font-display)', color: '#22c55e' }}>{taskStat?.completedTaskCount ?? 0}</p>
                 <p style={{ fontSize: '0.65rem', color: 'var(--on-surface-variant)', margin: 0, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Done</p>
               </div>
               <div style={{ background: 'var(--surface-container)', borderRadius: '1rem', padding: '0.75rem', textAlign: 'center' }}>
@@ -473,8 +473,8 @@ export default function AdminPage() {
         case 'createdAt': cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); break;
         case 'assessment': cmp = (assessmentSet.has(a.id) ? 1 : 0) - (assessmentSet.has(b.id) ? 1 : 0); break;
         case 'tasks': {
-          const ta = taskStatsMap[a.id]?.completed ?? 0;
-          const tb = taskStatsMap[b.id]?.completed ?? 0;
+          const ta = taskStatsMap[a.id]?.completedTaskCount ?? 0;
+          const tb = taskStatsMap[b.id]?.completedTaskCount ?? 0;
           cmp = ta - tb;
           break;
         }
@@ -563,8 +563,8 @@ export default function AdminPage() {
       return [
         u.name, u.email, u.plan, u.createdAt,
         assessmentSet.has(u.id) ? 'Yes' : 'No',
-        taskStatsMap[u.id]?.completed ?? 0,
-        taskStatsMap[u.id]?.total ?? 0,
+        taskStatsMap[u.id]?.completedTaskCount ?? 0,
+        taskStatsMap[u.id]?.taskCount ?? 0,
         rs ? 'Active' : 'None',
         rs?.milestonesCompleted ?? 0,
         rs?.milestonesTotal ?? 0,
@@ -582,8 +582,8 @@ export default function AdminPage() {
   // Stats
   const totalUsers = users?.length ?? 0;
   const withAssessment = assessmentUserIds?.length ?? 0;
-  const totalTasks = (taskStats ?? []).reduce((s, t) => s + (t?.total ?? 0), 0);
-  const completedTasks = (taskStats ?? []).reduce((s, t) => s + (t?.completed ?? 0), 0);
+  const totalTasks = (taskStats ?? []).reduce((s, t) => s + (t?.taskCount ?? 0), 0);
+  const completedTasks = (taskStats ?? []).reduce((s, t) => s + (t?.completedTaskCount ?? 0), 0);
 
   const formatDate = (d: string) => {
     try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
@@ -885,7 +885,7 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td style={{ ...tdStyle, fontSize: '0.8rem', color: 'var(--primary)' }}>
-                        {ts ? `${ts.completed}/${ts.total} done` : '0/0 done'}
+                        {ts ? `${ts.completedTaskCount}/${ts.taskCount} done` : '0/0 done'}
                       </td>
                       <td style={tdStyle}>
                         <span style={{
