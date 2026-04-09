@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { X, Plus, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
+import { X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Task, Milestone } from './types';
 import DailyFocus from './DailyFocus';
 import QuickStart from './QuickStart';
