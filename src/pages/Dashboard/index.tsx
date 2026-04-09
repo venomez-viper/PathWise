@@ -31,6 +31,21 @@ export default function Dashboard() {
     milestones: [], activeMilestone: null, activeMilestoneTasks: [], activeDone: 0, doneCount: 0,
   });
 
+  const [loadKey, setLoadKey] = useState(0);
+
+  // Refetch when page becomes visible (user navigates back from Tasks, etc.)
+  useEffect(() => {
+    const onFocus = () => setLoadKey(k => k + 1);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') onFocus();
+    });
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -50,12 +65,18 @@ export default function Dashboard() {
         const doneCount = taskList.filter((t: any) => t.status === 'done').length;
         const activeMilestoneTasks = activeMilestone ? taskList.filter((t: any) => t.milestoneId === activeMilestone.id) : [];
         const activeDone = activeMilestoneTasks.filter((t: any) => t.status === 'done').length;
+
+        // Show most recent tasks: pending first, then recently completed
+        const pending = taskList.filter((t: any) => t.status !== 'done');
+        const done = taskList.filter((t: any) => t.status === 'done');
+        const recentTasks = [...pending.slice(0, 3), ...done.slice(0, 1)].slice(0, 4);
+
         setData({
           roadmapPct: roadmapData?.completionPercent ?? 0,
           targetRole: roadmapData?.targetRole ?? '—',
           hasAssessment: !!assessResult,
           careerMatches: (assessResult?.careerMatches ?? []).slice(0, 3),
-          recentTasks: taskList.slice(0, 4),
+          recentTasks,
           allTasks: taskList,
           stats: { tasksFinished: statsData?.tasksFinished ?? doneCount, tasksTotal: taskList.length, jobReadinessScore: statsData?.jobReadinessScore ?? 0 },
           milestones, activeMilestone, activeMilestoneTasks, activeDone, doneCount,
@@ -64,7 +85,7 @@ export default function Dashboard() {
     }
     load();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, loadKey]);
 
   const [showTour, setShowTour] = useState(false);
 
