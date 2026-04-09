@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Flame, TrendingUp, Zap, Clock, Loader2, CheckCircle2, Award, Target, Calendar, ArrowRight } from 'lucide-react';
+import { Flame, Zap, Clock, Loader2, CheckCircle2, Award, Target, Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { streaks as streaksApi } from '../../lib/api';
@@ -66,8 +66,6 @@ export default function Streaks() {
   const bestStreak = data?.bestStreak ?? 0;
   const nextMilestone = STREAK_MILESTONES.find(m => m.days > currentStreak);
   const daysToNext = nextMilestone ? nextMilestone.days - currentStreak : 0;
-  const achievedMilestones = STREAK_MILESTONES.filter(m => m.days <= currentStreak);
-
   if (loading) return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
       <Panda mood="thinking" size={130} animate />
