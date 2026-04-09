@@ -47,16 +47,6 @@ export const getStreak = api(
       row = { current_streak: 0, best_streak: 0, last_active_date: null, consistency_score: 0, total_xp: 0 };
     }
 
-    // Build weekly progress (M-S) based on streak
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0=Sun
-    const weeklyProgress: boolean[] = [];
-    for (let i = 0; i < 7; i++) {
-      // Mon=0..Sun=6 mapped from JS getDay
-      const d = i < 6 ? i + 1 : 0;
-      weeklyProgress.push(d <= dayOfWeek && (row as any).current_streak > 0 && i < (row as any).current_streak);
-    }
-
     // Fetch activity log for this user (last 365 days)
     const activeDays: string[] = [];
     try {
@@ -66,6 +56,19 @@ export const getStreak = api(
         activeDays.push((r as any).active_date);
       }
     } catch {}
+
+    // Build weekly progress (Mon-Sun) from actual activity_log data
+    const activeDaysSet = new Set(activeDays);
+    const today = new Date();
+    const todayDow = today.getDay(); // 0=Sun
+    const mondayOffset = todayDow === 0 ? 6 : todayDow - 1; // days since Monday
+    const weeklyProgress: boolean[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - mondayOffset + i);
+      const dateStr = d.toISOString().split("T")[0];
+      weeklyProgress.push(activeDaysSet.has(dateStr));
+    }
 
     return {
       streak: {
