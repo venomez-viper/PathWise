@@ -20,6 +20,8 @@ export const CATEGORY_LABELS: Record<string, string> = {
   interview_prep: 'Interview Prep',
   certification: 'Certification',
   reflection: 'Reflection',
+  research: 'Research',
+  uncategorized: 'General',
 };
 
 /* ── Category colors for progress bars ── */

@@ -66,7 +66,7 @@ export default function WidgetSidebar({
         <QuickStart todoTasks={todoTasks} onMoveTask={handleMoveTask} />
       )}
       {widgetSet.has('skillProgress') && (
-        <SkillProgress tasks={tasks} />
+        <SkillProgress tasks={tasks} milestones={milestones} />
       )}
       {widgetSet.has('streak') && userId && (
         <StreakWidget userId={userId} />
