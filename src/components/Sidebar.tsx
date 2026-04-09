@@ -96,15 +96,17 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
       </div>
 
       <div className="sidebar__footer">
-        {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt={user.name} className="sidebar__avatar" />
-        ) : (
-          <div className="sidebar__avatar sidebar__avatar--initials">{initials}</div>
-        )}
-        <div className="sidebar__user-info">
-          <span className="sidebar__user-name">{user.name}</span>
-          <span className="sidebar__user-plan">{user.plan === 'premium' ? 'Pro Plan' : 'Free Plan'}</span>
-        </div>
+        <Link to="/app/settings" className="sidebar__user-link" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}>
+          {user.avatarUrl ? (
+            <img src={user.avatarUrl} alt={user.name} className="sidebar__avatar" />
+          ) : (
+            <div className="sidebar__avatar sidebar__avatar--initials">{initials}</div>
+          )}
+          <div className="sidebar__user-info">
+            <span className="sidebar__user-name">{user.name}</span>
+            <span className="sidebar__user-plan">{user.plan === 'premium' ? 'Pro Plan' : 'Free Plan'}</span>
+          </div>
+        </Link>
         <button className="sidebar__logout" onClick={handleLogout} aria-label="Log out">
           <LogOut size={15} />
         </button>
