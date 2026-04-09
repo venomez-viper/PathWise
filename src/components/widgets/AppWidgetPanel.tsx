@@ -12,6 +12,8 @@ import { tasks as tasksApi, roadmap as roadmapApi } from '../../lib/api';
 import type { Task, Milestone } from './types';
 import WidgetSidebar from './WidgetSidebar';
 
+import type { WidgetName } from './WidgetSidebar';
+
 /** Routes where the widget panel should NOT appear */
 const HIDDEN_ROUTES = new Set([
   '/app',           // Dashboard (index)
@@ -20,6 +22,22 @@ const HIDDEN_ROUTES = new Set([
   '/app/settings',
   '/app/onboarding',
 ]);
+
+/** Widget order per page — most relevant first */
+const PAGE_WIDGETS: Record<string, WidgetName[]> = {
+  '/app/roadmap':      ['milestoneMap', 'skillProgress', 'dailyFocus', 'streak', 'quote'],
+  '/app/tasks':        ['dailyFocus', 'quickStart', 'weeklyOverview', 'streak', 'milestoneMap'],
+  '/app/progress':     ['skillProgress', 'weeklyOverview', 'streak', 'milestoneMap', 'quote'],
+  '/app/streaks':      ['streak', 'weeklyOverview', 'dailyFocus', 'quote'],
+  '/app/achievements': ['streak', 'milestoneMap', 'skillProgress', 'quote'],
+  '/app/certificates': ['milestoneMap', 'skillProgress', 'streak', 'quote'],
+  '/app/search':       ['dailyFocus', 'quickStart', 'resourceTip', 'quote'],
+  '/app/help':         ['resourceTip', 'quote', 'dailyFocus', 'streak'],
+  '/app/whats-new':    ['quote', 'streak', 'dailyFocus'],
+  '/app/notifications':['dailyFocus', 'streak', 'quickStart', 'quote'],
+};
+
+const DEFAULT_WIDGETS: WidgetName[] = ['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview'];
 
 export default function AppWidgetPanel() {
   const { user } = useAuth();
@@ -80,7 +98,7 @@ export default function AppWidgetPanel() {
   return (
     <aside className="app-widget-panel">
       <WidgetSidebar
-        widgets={['dailyFocus', 'quickStart', 'skillProgress', 'streak', 'milestoneMap', 'quote', 'resourceTip', 'weeklyOverview']}
+        widgets={PAGE_WIDGETS[currentPath] ?? DEFAULT_WIDGETS}
         tasks={tasks}
         milestones={milestones}
         userId={user.id}

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { X, Plus, ChevronDown } from 'lucide-react';
+import { X, Plus, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import type { Task, Milestone } from './types';
 import DailyFocus from './DailyFocus';
 import QuickStart from './QuickStart';
@@ -32,6 +32,7 @@ const WIDGET_LABELS: Record<WidgetName, string> = {
 };
 
 const STORAGE_KEY = 'pw_hidden_widgets';
+const ORDER_KEY = 'pw_widget_order';
 
 function getHiddenWidgets(): Set<WidgetName> {
   try {
@@ -43,6 +44,18 @@ function getHiddenWidgets(): Set<WidgetName> {
 
 function saveHiddenWidgets(hidden: Set<WidgetName>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...hidden]));
+}
+
+function getCustomOrder(): WidgetName[] | null {
+  try {
+    const raw = localStorage.getItem(ORDER_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return null;
+}
+
+function saveCustomOrder(order: WidgetName[]) {
+  localStorage.setItem(ORDER_KEY, JSON.stringify(order));
 }
 
 interface WidgetSidebarProps {
@@ -65,6 +78,7 @@ export default function WidgetSidebar({
   onFilterChange,
 }: WidgetSidebarProps) {
   const [hidden, setHidden] = useState<Set<WidgetName>>(getHiddenWidgets);
+  const [customOrder, setCustomOrder] = useState<WidgetName[] | null>(getCustomOrder);
   const [showManage, setShowManage] = useState(false);
 
   const hideWidget = useCallback((name: WidgetName) => {
@@ -102,8 +116,24 @@ export default function WidgetSidebar({
   const handleFilterChange = onFilterChange ?? (() => {});
 
   const widgetSet = new Set(widgets);
-  const hiddenWidgets = widgets.filter(w => widgetSet.has(w) && hidden.has(w));
-  const visibleWidgets = widgets.filter(w => widgetSet.has(w) && !hidden.has(w));
+  // Use custom order if set, otherwise use page-provided order
+  const orderedWidgets = customOrder
+    ? [...customOrder.filter(w => widgetSet.has(w)), ...widgets.filter(w => !customOrder.includes(w))]
+    : widgets;
+  const hiddenWidgets = orderedWidgets.filter(w => widgetSet.has(w) && hidden.has(w));
+  const visibleWidgets = orderedWidgets.filter(w => widgetSet.has(w) && !hidden.has(w));
+
+  const moveWidget = useCallback((name: WidgetName, dir: -1 | 1) => {
+    const current = customOrder ?? [...widgets];
+    const idx = current.indexOf(name);
+    if (idx < 0) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= current.length) return;
+    const next = [...current];
+    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    setCustomOrder(next);
+    saveCustomOrder(next);
+  }, [customOrder, widgets]);
 
   const renderWidget = (name: WidgetName) => {
     switch (name) {
@@ -121,36 +151,55 @@ export default function WidgetSidebar({
 
   return (
     <div className="tasks-widget-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flexShrink: 0 }}>
-      {visibleWidgets.map(name => (
-        <div key={name} style={{ position: 'relative' }}>
-          <button
-            onClick={() => hideWidget(name)}
-            title={`Hide ${WIDGET_LABELS[name]}`}
-            style={{
-              position: 'absolute', top: 8, right: 8, zIndex: 2,
-              width: 22, height: 22, borderRadius: '50%',
-              background: 'var(--surface-container)', border: 'none',
+      {visibleWidgets.map((name, idx) => (
+        <div
+          key={name}
+          style={{ position: 'relative' }}
+          className="widget-wrapper"
+          onMouseEnter={e => {
+            const ctrls = e.currentTarget.querySelector('.widget-controls') as HTMLElement;
+            if (ctrls) ctrls.style.opacity = '1';
+          }}
+          onMouseLeave={e => {
+            const ctrls = e.currentTarget.querySelector('.widget-controls') as HTMLElement;
+            if (ctrls) ctrls.style.opacity = '0';
+          }}
+        >
+          {/* Controls: reorder + hide */}
+          <div className="widget-controls" style={{
+            position: 'absolute', top: 6, right: 6, zIndex: 2,
+            display: 'flex', gap: 2, opacity: 0, transition: 'opacity 0.15s',
+          }}>
+            {idx > 0 && (
+              <button onClick={() => moveWidget(name, -1)} title="Move up" style={{
+                width: 22, height: 22, borderRadius: '50%', border: 'none',
+                background: 'var(--surface-container)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--on-surface-variant)',
+              }}>
+                <ChevronUp size={12} />
+              </button>
+            )}
+            {idx < visibleWidgets.length - 1 && (
+              <button onClick={() => moveWidget(name, 1)} title="Move down" style={{
+                width: 22, height: 22, borderRadius: '50%', border: 'none',
+                background: 'var(--surface-container)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--on-surface-variant)',
+              }}>
+                <ChevronDown size={12} />
+              </button>
+            )}
+            <button onClick={() => hideWidget(name)} title={`Hide ${WIDGET_LABELS[name]}`} style={{
+              width: 22, height: 22, borderRadius: '50%', border: 'none',
+              background: 'var(--surface-container)', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', opacity: 0, transition: 'opacity 0.15s',
               color: 'var(--on-surface-variant)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '0'; }}
-          >
-            <X size={12} />
-          </button>
-          <div
-            onMouseEnter={e => {
-              const btn = e.currentTarget.querySelector('button') as HTMLButtonElement;
-              if (btn) btn.style.opacity = '1';
-            }}
-            onMouseLeave={e => {
-              const btn = e.currentTarget.querySelector('button') as HTMLButtonElement;
-              if (btn) btn.style.opacity = '0';
-            }}
-          >
-            {renderWidget(name)}
+            }}>
+              <X size={12} />
+            </button>
           </div>
+          {renderWidget(name)}
         </div>
       ))}
 
