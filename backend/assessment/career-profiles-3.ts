@@ -18,6 +18,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["Legal Research", "Contract Drafting", "Negotiation", "Oral Advocacy", "Client Counseling"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Law & Policy", "Consulting"],
     pathwayTime: "3-7 years (JD required)",
+    scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Legal Research", importance: "high", learningResource: "Westlaw and LexisNexis tutorials via law school access" },
       { skill: "Contract Drafting", importance: "high", learningResource: "American Bar Association Contract Drafting courses" },
@@ -59,6 +60,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Legal Research", "Document Management", "Case Management Software", "Legal Writing", "Client Communication"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Law & Policy"],
     pathwayTime: "1-2 years",
+    scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Legal Research", importance: "high", learningResource: "Paralegal Studies textbooks; free LexisNexis academic access" },
       { skill: "Case Management Software", importance: "high", learningResource: "Clio Academy (free training for Clio practice management)" },
@@ -99,6 +101,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "leader"], requiredSkills: ["Regulatory Knowledge", "Risk Assessment", "Policy Writing", "Audit Management", "Data Privacy (GDPR/CCPA)"],
     experienceLevels: ["mid", "senior"], domains: ["Law & Policy", "Finance", "Healthcare"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Regulatory Frameworks (GDPR, SOX, HIPAA)", importance: "high", learningResource: "IAPP Privacy Law training; COSO framework guides" },
       { skill: "Risk Assessment", importance: "high", learningResource: "RIMS Risk Management fundamentals course" },
@@ -141,6 +144,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "leader"], requiredSkills: ["AutoCAD", "Revit (BIM)", "Building Codes", "Structural Systems", "Sustainable Design"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction", "Design & UX"],
     pathwayTime: "5-8 years (licensure required)",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "Revit / BIM Modeling", importance: "high", learningResource: "Autodesk Revit official tutorials on Autodesk Learning" },
       { skill: "Building Codes (IBC)", importance: "high", learningResource: "International Building Code study guides via ICC" },
@@ -182,6 +186,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "leader"], requiredSkills: ["AutoCAD Civil 3D", "Structural Analysis", "Hydrology", "Geotechnical Engineering", "Project Management"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction"],
     pathwayTime: "4-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "AutoCAD Civil 3D", importance: "high", learningResource: "Autodesk Civil 3D official learning path on Autodesk University" },
       { skill: "Structural Analysis (STAAD/SAP2000)", importance: "high", learningResource: "Bentley STAAD.Pro tutorials and ASCE training resources" },
@@ -222,6 +227,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Scheduling (Primavera/MS Project)", "Cost Estimating", "Contract Administration", "Safety (OSHA 30)", "Subcontractor Management"],
     experienceLevels: ["mid", "senior"], domains: ["Architecture & Construction"],
     pathwayTime: "4-8 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.15, stage: 0.05 },
     skillGaps: [
       { skill: "Primavera P6 Scheduling", importance: "high", learningResource: "Oracle Primavera P6 free tutorials on Oracle University" },
       { skill: "Cost Estimating (Procore/Bluebeam)", importance: "high", learningResource: "Procore Certification free online training" },
@@ -264,6 +270,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["News Writing", "Investigative Research", "Source Development", "Multimedia Production", "AP Style"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Media & Journalism"],
     pathwayTime: "1-3 years",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Investigative Research & FOIA", importance: "high", learningResource: "IRE (Investigative Reporters and Editors) tipsheets and training" },
       { skill: "Data Journalism", importance: "high", learningResource: "Knight Center for Journalism MOOC: Introduction to Data Journalism" },
@@ -304,6 +311,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["communicator", "ideator"], requiredSkills: ["Press Release Writing", "Media Relations", "Crisis Communications", "Cision/Meltwater", "Social Media Strategy"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Media & Journalism", "Marketing"],
     pathwayTime: "1-2 years",
+    scoringWeights: { interest: 0.30, personality: 0.25, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Press Release Writing & AP Style", importance: "high", learningResource: "Associated Press Stylebook; PR Daily writing workshops" },
       { skill: "Media Database Tools (Cision)", importance: "high", learningResource: "Cision free demo and training videos on Cision.com" },
@@ -346,6 +354,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["communicator", "doer"], requiredSkills: ["Client Relationships", "Contract Negotiation", "Market Analysis (CMAs)", "MLS Platforms", "Lead Generation"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Real Estate"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.30, values: 0.15, aptitude: 0.05, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Real Estate Law & Contracts", importance: "high", learningResource: "State real estate pre-license course (Kaplan or Champions School)" },
       { skill: "Comparative Market Analysis (CMA)", importance: "high", learningResource: "NAR Center for REALTOR Development courses" },
@@ -386,6 +395,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Lease Administration", "Tenant Relations", "Maintenance Coordination", "Budgeting", "Fair Housing Laws"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Real Estate"],
     pathwayTime: "1-3 years",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Property Management Software (AppFolio/Yardi)", importance: "high", learningResource: "AppFolio free training videos; Yardi Voyager training on Yardi Client Central" },
       { skill: "Lease Administration & Fair Housing Law", importance: "high", learningResource: "IREM courses; NAA Lease Addendum training" },
@@ -428,6 +438,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["NEC Code Knowledge", "Blueprint Reading", "Conduit Bending", "Panel Installation", "Troubleshooting"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Trades & Skilled Labor"],
     pathwayTime: "4-5 years (apprenticeship)",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.20, aptitude: 0.15, environment: 0.20, stage: 0.00 },
     skillGaps: [
       { skill: "National Electrical Code (NEC)", importance: "high", learningResource: "Mike Holt NEC Illustrated Guide and free YouTube lectures" },
       { skill: "Blueprint & Schematic Reading", importance: "high", learningResource: "IBEW/NECA apprenticeship training materials" },
@@ -468,6 +479,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer"], requiredSkills: ["Pipe Fitting & Soldering", "Plumbing Codes (UPC/IPC)", "Drain-Waste-Vent Systems", "Gas Piping", "Fixture Installation"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Trades & Skilled Labor"],
     pathwayTime: "4-5 years (apprenticeship)",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.25, aptitude: 0.10, environment: 0.20, stage: 0.00 },
     skillGaps: [
       { skill: "Uniform Plumbing Code (UPC) / IPC", importance: "high", learningResource: "IAPMO UPC study guide; ICC IPC exam prep books" },
       { skill: "Pipe Fitting & Soldering", importance: "high", learningResource: "UA (United Association) apprenticeship program training materials" },
@@ -508,6 +520,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Refrigeration Fundamentals", "Electrical Diagnostics", "EPA 608 Certification", "Ductwork Fabrication", "BAS/Controls"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Trades & Skilled Labor"],
     pathwayTime: "2-5 years",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.20, aptitude: 0.15, environment: 0.20, stage: 0.00 },
     skillGaps: [
       { skill: "EPA 608 Refrigerant Handling", importance: "high", learningResource: "HVAC Excellence EPA 608 study guide; Esco Group certification prep" },
       { skill: "Electrical Diagnostics & Controls", importance: "high", learningResource: "NATE HVAC technician study guides" },
@@ -550,6 +563,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "advocate"], requiredSkills: ["Quantitative Research", "Policy Writing", "Cost-Benefit Analysis", "Statistical Analysis (R/Stata)", "Legislative Process Knowledge"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Law & Policy"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.30, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Quantitative Policy Research", importance: "high", learningResource: "Urban Institute free policy research methods course" },
       { skill: "Statistical Analysis (R or Stata)", importance: "high", learningResource: "DataCamp Statistical Inference with R course" },
@@ -590,6 +604,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "leader"], requiredSkills: ["GIS (ArcGIS/QGIS)", "Zoning Law", "Community Engagement", "Transportation Planning", "Environmental Review (NEPA/CEQA)"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction", "Law & Policy"],
     pathwayTime: "3-5 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.30, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "GIS (ArcGIS or QGIS)", importance: "high", learningResource: "Esri ArcGIS training (esri.com/training); QGIS free tutorials on QGIS.org" },
       { skill: "Zoning Law & Entitlements", importance: "high", learningResource: "APA Zoning Practice publication; state planning association training" },
@@ -632,6 +647,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["Game Design Documentation (GDD)", "Unity or Unreal Engine", "Prototyping", "Player Psychology", "Systems Design"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Arts & Entertainment", "Technology"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Unity Game Development", importance: "high", learningResource: "Unity Learn free tutorials (learn.unity.com)" },
       { skill: "Game Design Documentation (GDD)", importance: "high", learningResource: "The Art of Game Design by Jesse Schell; GDC Vault free lectures" },
@@ -672,6 +688,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "ideator"], requiredSkills: ["Maya or Blender", "12 Principles of Animation", "Character Rigging", "Motion Capture", "Compositing (After Effects/Nuke)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Arts & Entertainment", "Design & UX"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Maya or Blender 3D Animation", importance: "high", learningResource: "AnimSchool free lectures; Blender Guru YouTube channel" },
       { skill: "12 Principles of Animation", importance: "high", learningResource: "The Animator's Survival Kit by Richard Williams" },
@@ -712,6 +729,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "ideator"], requiredSkills: ["Screenwriting", "Cinematography Fundamentals", "Directing Actors", "Production Management", "Post-Production Workflow"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Arts & Entertainment", "Media & Journalism"],
     pathwayTime: "5-10 years",
+    scoringWeights: { interest: 0.35, personality: 0.25, values: 0.15, aptitude: 0.10, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Screenwriting", importance: "high", learningResource: "Save the Cat! by Blake Snyder; Final Draft 12 screenwriting software" },
       { skill: "Directing Actors", importance: "high", learningResource: "Directing Actors by Judith Weston; Masterclass David Lynch" },
@@ -752,6 +770,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["Instrument Proficiency", "Music Theory", "Recording/DAW (Ableton/Logic)", "Music Business & Licensing", "Live Performance"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Arts & Entertainment"],
     pathwayTime: "3-7 years",
+    scoringWeights: { interest: 0.40, personality: 0.20, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Music Production (Ableton or Logic Pro)", importance: "high", learningResource: "Coursera Berklee Online Music Production courses; YouTube: In The Mix" },
       { skill: "Music Business & Licensing", importance: "high", learningResource: "Music Business Worldwide; Billboard Pro; Berklee Online Music Business courses" },
@@ -794,6 +813,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Environmental Regulations (EPA/CERCLA)", "Remediation Engineering", "Fate & Transport Modeling", "Permitting (NPDES, CAA)", "AutoCAD"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Agriculture & Environment"],
     pathwayTime: "4-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.30, aptitude: 0.20, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "EPA Regulations (CERCLA, RCRA, NPDES)", importance: "high", learningResource: "EPA.gov training resources; ENSR/Ramboll online regulatory training" },
       { skill: "Fate & Transport Modeling (MODFLOW/BIOSCREEN)", importance: "high", learningResource: "USGS MODFLOW tutorials; EPA groundwater modeling resources" },
@@ -834,6 +854,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "advocate"], requiredSkills: ["Field Data Collection", "GIS Mapping", "Species Identification", "Ecological Statistics (R)", "Grant Writing"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Agriculture & Environment"],
     pathwayTime: "4-6 years",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.35, aptitude: 0.10, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "Ecological Statistics in R", importance: "high", learningResource: "Mixed Effects Models and Extensions in Ecology with R; Coursera Data Science in R" },
       { skill: "GIS for Habitat Analysis", importance: "high", learningResource: "Esri ArcGIS training; QGIS conservation mapping tutorials" },
@@ -876,6 +897,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["ERP Systems (SAP/Oracle)", "Demand Forecasting", "Vendor Management", "Logistics & Transportation", "Lean/Six Sigma"],
     experienceLevels: ["mid", "senior"], domains: ["Logistics & Operations"],
     pathwayTime: "3-6 years",
+    scoringWeights: { interest: 0.20, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.15, stage: 0.05 },
     skillGaps: [
       { skill: "SAP SCM or Oracle Supply Chain", importance: "high", learningResource: "SAP Learning Hub free tutorials; Oracle University supply chain courses" },
       { skill: "Demand Planning & Forecasting", importance: "high", learningResource: "APICS CPIM study materials; IBF Demand Planning certification" },
@@ -916,6 +938,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["Process Improvement", "KPI Management", "Budget Management", "Team Leadership", "Operations Software (ERP/HRIS)"],
     experienceLevels: ["mid", "senior"], domains: ["Logistics & Operations"],
     pathwayTime: "3-5 years",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.15, environment: 0.15, stage: 0.05 },
     skillGaps: [
       { skill: "Lean Six Sigma Process Improvement", importance: "high", learningResource: "ASQ Lean Six Sigma Green Belt study guide; Coursera Six Sigma Fundamentals" },
       { skill: "Financial Acumen & P&L Management", importance: "high", learningResource: "Harvard Business School Online Finance for Non-Finance Managers" },
@@ -958,6 +981,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Flight Maneuvers", "Instrument Flying (IFR)", "CRM (Crew Resource Management)", "Aircraft Systems Knowledge", "FAA Regulations (FAR/AIM)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Aviation"],
     pathwayTime: "3-6 years",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "Instrument Flying (IFR)", importance: "high", learningResource: "Sporty's Instrument Rating course; FAA Instrument Flying Handbook (free PDF)" },
       { skill: "FAA Regulations (FAR/AIM)", importance: "high", learningResource: "ASA FAR/AIM annual publication; Sheppard Air FAA exam prep" },
@@ -998,6 +1022,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Radar Separation Standards", "Pilot Phraseology", "Aircraft Performance Knowledge", "TRACON/ARTCC Systems", "Emergency Procedures"],
     experienceLevels: ["student", "junior"], domains: ["Aviation"],
     pathwayTime: "3-5 years",
+    scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.25, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "FAA Regulations & Airspace Classification", importance: "high", learningResource: "FAA Aeronautical Information Manual (AIM) free PDF; Sheppard Air study tools" },
       { skill: "Radar Separation & Procedures", importance: "high", learningResource: "FAA JO 7110.65 Air Traffic Control Order (free from FAA.gov)" },
@@ -1040,6 +1065,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Revenue Management", "Property Management Systems (Opera/Maestro)", "F&B Operations", "HR & Scheduling", "Guest Relations"],
     experienceLevels: ["mid", "senior"], domains: ["Hospitality & Tourism"],
     pathwayTime: "4-8 years",
+    scoringWeights: { interest: 0.25, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.15, stage: 0.05 },
     skillGaps: [
       { skill: "Revenue Management & Yield Optimization", importance: "high", learningResource: "Cornell eCornell Revenue Management course; HSMAI Revenue Management certification" },
       { skill: "Property Management System (Opera)", importance: "high", learningResource: "Oracle Opera free training on Oracle University" },
@@ -1080,6 +1106,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Event Budgeting", "Vendor Management", "Event Design", "Contract Negotiation", "CRM & Event Software (Cvent/Eventbrite)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Hospitality & Tourism"],
     pathwayTime: "1-3 years",
+    scoringWeights: { interest: 0.30, personality: 0.25, values: 0.20, aptitude: 0.05, environment: 0.15, stage: 0.05 },
     skillGaps: [
       { skill: "Event Software (Cvent or Eventbrite)", importance: "high", learningResource: "Cvent Academy free certification courses; Eventbrite Organizer free training" },
       { skill: "Event Budgeting & Financial Management", importance: "high", learningResource: "MPI (Meeting Professionals International) budget training; PCMA education" },
@@ -1120,6 +1147,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Classical Knife Skills", "Menu Development", "Food Cost Management", "HACCP Food Safety", "Kitchen Brigade Leadership"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Hospitality & Tourism"],
     pathwayTime: "5-10 years",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.25, aptitude: 0.05, environment: 0.20, stage: 0.05 },
     skillGaps: [
       { skill: "Advanced Culinary Techniques (French/Modernist)", importance: "high", learningResource: "CIA Pro Chef textbook; Jacques Pepin Heart & Soul cookbook and YouTube" },
       { skill: "Food Cost Management & Recipe Costing", importance: "high", learningResource: "Restaurant365 free webinars; Chef's pencil food cost calculator guides" },
@@ -1162,6 +1190,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Experimental Design", "Statistical Analysis", "Scientific Writing", "Python or R", "Literature Review & Citation Management"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Science & Research"],
     pathwayTime: "5-8 years (PhD typically required)",
+    scoringWeights: { interest: 0.35, personality: 0.10, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Experimental Design & DOE", importance: "high", learningResource: "Design of Experiments by Douglas Montgomery; Coursera Research Methods Specialization" },
       { skill: "Statistical Analysis (R or Python)", importance: "high", learningResource: "DataCamp Data Science in Python; StatQuest with Josh Starmer (YouTube)" },
@@ -1202,6 +1231,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Drug Information & Pharmacology", "Clinical Drug Review", "Pharmacy Law & Ethics", "Patient Counseling", "Drug Utilization Review"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Science & Research", "Healthcare"],
     pathwayTime: "6-8 years (PharmD required)",
+    scoringWeights: { interest: 0.20, personality: 0.15, values: 0.25, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Clinical Pharmacology & Therapeutics", importance: "high", learningResource: "Pharmacotherapy: A Pathophysiologic Approach (DiPiro et al.) 12th edition" },
       { skill: "Pharmacy Law (HIPAA, DEA Regulations)", importance: "high", learningResource: "Federal Pharmacy Law by Alan Leal (MPJE prep book)" },
@@ -1242,6 +1272,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Clinical Diagnosis", "Surgical Skills", "Pharmacology", "Animal Handling", "Client Communication"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Science & Research", "Healthcare"],
     pathwayTime: "8-10 years (DVM required)",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "Clinical Diagnosis & Physical Exam", importance: "high", learningResource: "Small Animal Internal Medicine by Richard Nelson; NAVLE prep resources" },
       { skill: "Surgical Techniques", importance: "high", learningResource: "Veterinary Surgery: Small Animal (Johnston & Tobias); wet-lab surgical training" },
@@ -1284,6 +1315,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["advocate", "doer"], requiredSkills: ["Case Management", "Crisis Intervention", "Motivational Interviewing", "DSM Assessment", "Resource Navigation"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Social Services", "Healthcare"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.30, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Motivational Interviewing", importance: "high", learningResource: "MINT (Motivational Interviewing Network of Trainers) workshops; free MI training videos on YouTube" },
       { skill: "DSM-5 Assessment & Diagnosis", importance: "high", learningResource: "DSM-5-TR; ASWB Clinical Study Guide for LCSW exam" },
@@ -1324,6 +1356,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["advocate", "doer"], requiredSkills: ["Therapeutic Alliance", "CBT & DBT Techniques", "DSM-5 Diagnosis", "Crisis Intervention", "Documentation & HIPAA"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Social Services", "Healthcare"],
     pathwayTime: "4-6 years",
+    scoringWeights: { interest: 0.20, personality: 0.30, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "CBT & DBT Therapy Techniques", importance: "high", learningResource: "Beck Institute CBT training; Marsha Linehan DBT Skills Training Manual" },
       { skill: "DSM-5 Diagnostic Assessment", importance: "high", learningResource: "DSM-5-TR Clinical Cases book; NBCC NCE exam prep resources" },
@@ -1364,6 +1397,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "advocate"], requiredSkills: ["Grant Writing", "Program Management", "Budget Management", "Volunteer Management", "Impact Measurement (Logic Models)"],
     experienceLevels: ["mid", "senior"], domains: ["Social Services"],
     pathwayTime: "3-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.25, values: 0.30, aptitude: 0.05, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Grant Writing & Reporting", importance: "high", learningResource: "GrantSpace.org by Candid; Grant Writing USA workshops" },
       { skill: "Logic Model & Impact Measurement", importance: "high", learningResource: "W.K. Kellogg Foundation Logic Model Development Guide (free PDF)" },
@@ -1406,6 +1440,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "advocate"], requiredSkills: ["Foreign Language Proficiency", "International Relations", "Diplomatic Protocol", "Policy Analysis", "Cross-Cultural Communication"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Law & Policy"],
     pathwayTime: "3-5 years",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.30, aptitude: 0.10, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Foreign Language (FSI Level 3+)", importance: "high", learningResource: "Pimsleur or Rosetta Stone; Defense Language Institute open courseware" },
       { skill: "International Relations & Foreign Policy", importance: "high", learningResource: "Council on Foreign Relations CFR.org resources; Coursera International Relations courses" },
@@ -1446,6 +1481,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "ideator"], requiredSkills: ["ADDIE / SAM Models", "Articulate Storyline or Rise", "LMS Administration", "Learning Objectives Writing", "Needs Assessment"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Education", "Technology"],
     pathwayTime: "1-3 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Articulate Storyline 360", importance: "high", learningResource: "Articulate community free tutorials at community.articulate.com" },
       { skill: "Instructional Design Theory (ADDIE, Bloom's Taxonomy)", importance: "high", learningResource: "e-Learning Instructional Design by Clark and Mayer; Coursera Learning Design courses" },
@@ -1486,6 +1522,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["SIEM (Splunk/Microsoft Sentinel)", "Incident Response", "Network Security", "Penetration Testing Basics", "NIST/ISO 27001 Frameworks"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology"],
     pathwayTime: "1-3 years",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "SIEM & Log Analysis (Splunk)", importance: "high", learningResource: "Splunk free training at Splunk Education; TryHackMe Splunk learning path" },
       { skill: "Incident Response & Threat Hunting", importance: "high", learningResource: "SANS FOR508 Incident Response course; TryHackMe SOC Level 1 path" },
@@ -1526,6 +1563,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["Employee Relations", "Talent Management", "HR Analytics", "Employment Law", "Performance Management"],
     experienceLevels: ["mid", "senior"], domains: ["Human Resources"],
     pathwayTime: "3-6 years",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.25, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "HR Analytics & Workforce Planning", importance: "high", learningResource: "SHRM HR Analytics Certificate; Coursera People Analytics by UPenn" },
       { skill: "Employment Law (FMLA, ADA, Title VII)", importance: "high", learningResource: "SHRM Learning System; Employment Law for HR Professionals by BLR" },
@@ -1566,6 +1604,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Financial Modeling (LBO/DCF)", "Pitch Book Creation", "M&A Process", "Valuation Methods", "Capital Markets"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Finance", "Consulting"],
     pathwayTime: "2-4 years",
+    scoringWeights: { interest: 0.20, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.20 },
     skillGaps: [
       { skill: "LBO & M&A Financial Modeling", importance: "high", learningResource: "Wall Street Prep IB modeling course; Breaking Into Wall Street BIWS" },
       { skill: "Pitch Book & Presentation Design", importance: "high", learningResource: "Macabacus PowerPoint add-in; Practitioner's Guide to IB Pitch Books" },
@@ -1606,6 +1645,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Musculoskeletal Assessment", "Manual Therapy", "Therapeutic Exercise Prescription", "Gait & Movement Analysis", "Documentation (SOAP notes)"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Healthcare", "Science & Research"],
     pathwayTime: "6-7 years (DPT required)",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.25, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Musculoskeletal Assessment & Special Tests", importance: "high", learningResource: "Orthopedic Physical Assessment by Magee; NPTE prep resources by TherapyEd" },
       { skill: "Manual Therapy Techniques", importance: "high", learningResource: "NAIOMT manual therapy courses; AAOMPT continuing education" },
