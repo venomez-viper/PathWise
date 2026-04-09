@@ -1649,4 +1649,96 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     ],
   },
 
+  // ── CONTENT CREATION & DIGITAL MEDIA ──────────────────────────────────
+
+  {
+    id: "content-creator", title: "Content Creator", domain: "Media & Entertainment",
+    description: "Build an audience and brand across platforms like YouTube, TikTok, Instagram, and podcasts through engaging video, written, and audio content.",
+    interests: ["artistic", "social", "enterprising"], problemTypes: ["creative", "strategic"], archetypes: ["creator", "communicator"],
+    workStyles: ["open", "experiment"], decisionStyle: ["intuition", "feeling"], collaboration: ["solo", "mixed"],
+    ambiguityStyle: ["experiment", "consult"], coreValues: ["autonomy", "purpose", "mastery"], tradeoffs: ["growth_over_comfort", "purpose_over_wealth"],
+    frustrations: ["monotony", "micromanaged"], rewards: ["recognition", "impact", "learning"],
+    environments: ["remote", "flexible"], teamSizes: ["solo", "small"], paces: ["burst", "fast"],
+    managementStyles: ["handsoff", "coaching"], careerStages: ["exploring", "building", "pivoting"],
+    riskLevels: ["high", "moderate"], trajectories: ["entrepreneur", "generalist"],
+    groupRoles: ["ideator", "leader"], requiredSkills: ["Content Strategy", "Video Production/Editing", "Copywriting", "Social Media", "SEO", "Analytics"],
+    experienceLevels: ["student", "junior", "mid"], domains: ["Media & Entertainment", "Marketing", "Design & UX"],
+    pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.10 },
+    skillGaps: [
+      { skill: "Video Editing", importance: "high", learningResource: "DaVinci Resolve free tutorials on YouTube" },
+      { skill: "Content Strategy", importance: "high", learningResource: "HubSpot Content Marketing Certification (free)" },
+      { skill: "SEO & Analytics", importance: "medium", learningResource: "Google Analytics Academy" },
+      { skill: "Copywriting", importance: "medium", learningResource: "Copyblogger free resources" },
+      { skill: "Thumbnail & Graphic Design", importance: "medium", learningResource: "Canva Design School" },
+    ],
+    certifications: [
+      { skill: "Content Marketing", certName: "HubSpot Content Marketing Certification", provider: "HubSpot Academy", url: "https://academy.hubspot.com/courses/content-marketing", duration: "6 hours", level: "Beginner", cost: "Free", whyRecommended: "Industry-standard content strategy credential" },
+      { skill: "Social Media", certName: "Meta Social Media Marketing Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/facebook-social-media-marketing", duration: "7 months", level: "Beginner", cost: "$49/month", whyRecommended: "Covers strategy, analytics, and paid promotion" },
+      { skill: "Video", certName: "YouTube Creator Academy", provider: "YouTube", url: "https://creatoracademy.youtube.com/", duration: "Self-paced", level: "Beginner", cost: "Free", whyRecommended: "Direct from the platform — algorithm insights and best practices" },
+    ],
+    portfolioProjects: [
+      { type: "portfolio", title: "Launch a YouTube Channel", description: "Create and publish 10 videos in your niche with consistent branding and thumbnails.", why: "Proves you can plan, produce, and publish consistently.", actionStep: "Pick your niche, film your first video this week." },
+      { type: "portfolio", title: "Build a Content Calendar", description: "Create a 30-day cross-platform content plan with themes, formats, and posting schedule.", why: "Shows strategic thinking beyond just posting.", actionStep: "Map out next month's content in a spreadsheet or Notion." },
+      { type: "portfolio", title: "Write a Viral Thread or Blog Post", description: "Publish a long-form piece that demonstrates expertise in your niche.", why: "Written content showcases depth and attracts brand deals.", actionStep: "Pick a topic you know well and outline 10 key points." },
+    ],
+    networkingRecs: [
+      { type: "networking", title: "Creator Economy Discord Servers", description: "Join communities like The Creator Economy or Creator Club.", platform: "Discord", url: "https://discord.com/", why: "Connect with other creators for collabs and advice.", actionStep: "Join one server and introduce yourself today." },
+      { type: "networking", title: "LinkedIn Creator Mode", description: "Turn on Creator Mode and post content about your niche.", platform: "LinkedIn", url: "https://www.linkedin.com/", why: "B2B brands discover creators here for partnerships.", actionStep: "Enable Creator Mode and write your first creator post." },
+    ],
+    jobTargets: [
+      { type: "job_application", title: "Brand Partnership Platforms", description: "Sign up for influencer marketplaces.", platform: "Web", url: "https://www.aspireiq.com/", why: "Brands find and pay creators through these platforms.", actionStep: "Create profiles on AspireIQ, Collabstr, and Grin." },
+      { type: "job_application", title: "Freelance Content Roles", description: "Apply for social media manager and content producer jobs.", platform: "LinkedIn", url: "https://www.linkedin.com/jobs/", why: "Paid content roles fund your creator journey.", actionStep: "Search 'Content Creator' or 'Social Media Manager' on LinkedIn." },
+    ],
+    milestones: [
+      { title: "Content Foundations", description: "Pick your niche, set up accounts, learn basic production", tasks: ["Define your niche and target audience", "Set up accounts on 2-3 platforms (YouTube, TikTok, Instagram, or podcast)", "Learn basic video editing with DaVinci Resolve or CapCut", "Study 10 top creators in your niche — analyze what works"], estimatedWeeks: 3 },
+      { title: "First 10 Posts", description: "Start publishing consistently and find your voice", tasks: ["Create and publish 10 pieces of content", "Design a consistent visual brand (colors, fonts, thumbnails)", "Write compelling hooks and titles for each piece", "Track analytics on each post — what performed best?"], estimatedWeeks: 4 },
+      { title: "Growth & Engagement", description: "Build audience and learn the algorithm", tasks: ["Implement an SEO strategy for discoverability", "Engage with 20 creators in your niche daily (comments, shares)", "Experiment with 3 different content formats (short, long, carousel)", "Reach your first 100 engaged followers"], estimatedWeeks: 6 },
+      { title: "Monetisation & Partnerships", description: "Turn your audience into income", tasks: ["Apply to creator monetisation programs (YouTube Partner, TikTok Creator Fund)", "Pitch 5 brands for sponsored content opportunities", "Create a media kit showcasing your stats and audience demographics", "Set up an additional revenue stream (newsletter, digital product, or merch)"], estimatedWeeks: 8 },
+      { title: "Scale & Systematise", description: "Build systems for sustainable growth", tasks: ["Create a content calendar and batch-produce content weekly", "Outsource one task (editing, thumbnails, or scheduling)", "Build an email list with a lead magnet", "Set 6-month growth targets and review analytics monthly"], estimatedWeeks: 6 },
+    ],
+  },
+
+  {
+    id: "social-media-manager", title: "Social Media Manager", domain: "Marketing",
+    description: "Plan, create, and manage social media presence for brands and organisations across all major platforms.",
+    interests: ["artistic", "social", "enterprising"], problemTypes: ["creative", "strategic", "human"], archetypes: ["communicator", "connector"],
+    workStyles: ["open", "organized"], decisionStyle: ["intuition", "consensus"], collaboration: ["collaborative", "mixed"],
+    ambiguityStyle: ["experiment", "consult"], coreValues: ["autonomy", "mastery"], tradeoffs: ["balance_over_creativity"],
+    frustrations: ["no_impact", "monotony"], rewards: ["recognition", "learning"],
+    environments: ["remote", "hybrid"], teamSizes: ["small", "medium"], paces: ["fast", "burst"],
+    managementStyles: ["handsoff", "mentorship"], careerStages: ["exploring", "building"],
+    riskLevels: ["moderate", "calculated"], trajectories: ["generalist", "specialist"],
+    groupRoles: ["ideator", "doer"], requiredSkills: ["Content Strategy", "Copywriting", "Analytics", "Graphic Design", "Community Management"],
+    experienceLevels: ["student", "junior", "mid"], domains: ["Marketing", "Media & Entertainment"],
+    pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
+    skillGaps: [
+      { skill: "Social Media Strategy", importance: "high", learningResource: "HubSpot Social Media Certification (free)" },
+      { skill: "Analytics & Reporting", importance: "high", learningResource: "Google Analytics Academy" },
+      { skill: "Graphic Design", importance: "medium", learningResource: "Canva Design School" },
+      { skill: "Copywriting", importance: "medium", learningResource: "Copyblogger fundamentals" },
+    ],
+    certifications: [
+      { skill: "Social Media", certName: "HubSpot Social Media Marketing Certification", provider: "HubSpot Academy", url: "https://academy.hubspot.com/courses/social-media", duration: "5 hours", level: "Beginner", cost: "Free", whyRecommended: "Covers strategy, listening, and ROI measurement" },
+      { skill: "Meta Ads", certName: "Meta Certified Digital Marketing Associate", provider: "Meta", url: "https://www.facebook.com/business/learn/certification", duration: "Self-paced", level: "Intermediate", cost: "$99", whyRecommended: "Validates paid social advertising skills" },
+    ],
+    portfolioProjects: [
+      { type: "portfolio", title: "Manage a Brand's Social Presence", description: "Volunteer or freelance to manage social for a local business or nonprofit for 30 days.", why: "Real client work is the strongest portfolio piece.", actionStep: "Reach out to 3 local businesses this week." },
+      { type: "portfolio", title: "Social Media Audit Case Study", description: "Audit a brand's social presence and present improvement recommendations.", why: "Shows strategic and analytical thinking.", actionStep: "Pick a brand, analyse their last 30 days of content." },
+    ],
+    networkingRecs: [
+      { type: "networking", title: "Social Media Examiner", description: "Industry-leading community and conference.", platform: "Web", url: "https://www.socialmediaexaminer.com/", why: "Stay current on platform changes and strategy.", actionStep: "Subscribe to their podcast and newsletter." },
+    ],
+    jobTargets: [
+      { type: "job_application", title: "LinkedIn & Indeed", description: "Search social media manager and coordinator roles.", platform: "LinkedIn", url: "https://www.linkedin.com/jobs/", why: "Most social media roles are posted here.", actionStep: "Set alerts for 'Social Media Manager' in your area." },
+    ],
+    milestones: [
+      { title: "Platform Mastery", description: "Learn each platform's best practices and tools", tasks: ["Complete HubSpot Social Media Certification", "Master a scheduling tool (Buffer, Hootsuite, or Later)", "Study platform algorithms — Instagram, TikTok, LinkedIn, Twitter", "Create templates for posts, stories, and reels in Canva"], estimatedWeeks: 4 },
+      { title: "Strategy & Content Creation", description: "Build strategy skills and create sample content", tasks: ["Conduct a social media audit of 3 brands", "Create a 30-day content calendar for a sample brand", "Write 20 social media captions in different tones/styles", "Design 10 graphics/carousels for a mock campaign"], estimatedWeeks: 5 },
+      { title: "Analytics & Client Work", description: "Get real experience and measure results", tasks: ["Manage social media for a real client (volunteer or freelance)", "Create a monthly analytics report with insights and recommendations", "Run a small paid ad campaign and track ROI", "Build a case study from your client work"], estimatedWeeks: 6 },
+      { title: "Job Search & Portfolio", description: "Land your first role", tasks: ["Build a portfolio site showcasing your case studies and content samples", "Optimise your LinkedIn profile for social media manager roles", "Apply to 10 social media manager positions", "Prepare for interviews with platform-specific knowledge"], estimatedWeeks: 4 },
+    ],
+  },
+
 ];

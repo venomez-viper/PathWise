@@ -128,7 +128,7 @@ export default function Onboarding() {
           {assessmentMatches.length === 0 && (
             <div className="onboarding__chips">
               {['Frontend Developer', 'Backend Developer', 'Data Scientist', 'UX Designer',
-                'Product Manager', 'Digital Marketer', 'Business Analyst', 'DevOps/SRE Engineer'
+                'Product Manager', 'Digital Marketer', 'Content Creator', 'Business Analyst'
               ].map(role => (
                 <button
                   key={role}
