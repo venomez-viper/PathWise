@@ -30,6 +30,7 @@ interface StreakData {
   consistencyScore: number;
   totalXp: number;
   weeklyProgress: boolean[];
+  activeDays: string[];
 }
 
 export interface GetStreakResponse { streak: StreakData; }
@@ -56,6 +57,16 @@ export const getStreak = api(
       weeklyProgress.push(d <= dayOfWeek && (row as any).current_streak > 0 && i < (row as any).current_streak);
     }
 
+    // Fetch activity log for this user (last 365 days)
+    const activeDays: string[] = [];
+    try {
+      const cutoff = new Date(Date.now() - 365 * 86400000).toISOString().split("T")[0];
+      const rows = db.query`SELECT active_date FROM activity_log WHERE user_id = ${userId} AND active_date >= ${cutoff} ORDER BY active_date`;
+      for await (const r of rows) {
+        activeDays.push((r as any).active_date);
+      }
+    } catch {}
+
     return {
       streak: {
         currentStreak: (row as any).current_streak,
@@ -64,6 +75,7 @@ export const getStreak = api(
         consistencyScore: (row as any).consistency_score,
         totalXp: (row as any).total_xp,
         weeklyProgress,
+        activeDays,
       },
     };
   }
@@ -81,8 +93,12 @@ export const recordActivity = api(
 
     if (!row) {
       await db.exec`INSERT INTO streaks (user_id, current_streak, best_streak, last_active_date, total_xp) VALUES (${userId}, 1, 1, ${today}, 10)`;
+      try { await db.exec`INSERT INTO activity_log (user_id, active_date) VALUES (${userId}, ${today}) ON CONFLICT DO NOTHING`; } catch {}
       return getStreak({ userId });
     }
+
+    // Log this day in activity_log
+    try { await db.exec`INSERT INTO activity_log (user_id, active_date) VALUES (${userId}, ${today}) ON CONFLICT DO NOTHING`; } catch {}
 
     const r = row as any;
     const lastDate = r.last_active_date;

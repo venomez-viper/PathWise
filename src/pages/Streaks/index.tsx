@@ -71,41 +71,39 @@ export default function Streaks() {
   const weeklyDone = data?.weeklyProgress?.filter(Boolean).length ?? 0;
   const currentStreak = data?.currentStreak ?? 0;
 
+  // Build a set of active dates for fast lookup
+  const activeDaysSet = useMemo(() => new Set(data?.activeDays ?? []), [data?.activeDays]);
+
   // Month view: build a grid of weeks for the current month
   const monthGrid = useMemo(() => {
     const year = now.getFullYear();
     const month = now.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDayOfMonth = new Date(year, month, 1).getDay();
-    // Convert Sunday=0 to Monday-based index (Mon=0 .. Sun=6)
     const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
     const todayDate = now.getDate();
 
-    // Figure out which week row "today" falls in, and which days of that week are active
-    const todayGridIdx = startOffset + todayDate - 1;
-    const todayWeekRow = Math.floor(todayGridIdx / 7);
-    const todayDayCol = todayGridIdx % 7;
-
-    // Build cells: each cell has { date, inMonth, isCurrentWeek, active, isToday }
     const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
-    const cells: Array<{ date: number; inMonth: boolean; isCurrentWeek: boolean; active: boolean; isToday: boolean }> = [];
+    const cells: Array<{ date: number; inMonth: boolean; active: boolean; isToday: boolean }> = [];
 
     for (let i = 0; i < totalCells; i++) {
       const dayNum = i - startOffset + 1;
       const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
-      const weekRow = Math.floor(i / 7);
-      const isCurrentWeek = weekRow === todayWeekRow;
-      const dayCol = i % 7;
-      // For the current week row, map activity from weeklyProgress
-      const active = isCurrentWeek && inMonth && dayCol <= todayDayCol
-        ? (data?.weeklyProgress?.[dayCol] ?? false)
-        : false;
       const isToday = inMonth && dayNum === todayDate;
-      cells.push({ date: dayNum, inMonth, isCurrentWeek, active, isToday });
+
+      // Check activity from activeDays log
+      let active = false;
+      if (inMonth) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+        active = activeDaysSet.has(dateStr);
+      }
+
+      cells.push({ date: dayNum, inMonth, active, isToday });
     }
 
-    return { cells, monthName: MONTH_LABELS[month], year };
-  }, [data, now.getMonth(), now.getFullYear(), now.getDate()]);
+    const activeCount = cells.filter(c => c.active).length;
+    return { cells, monthName: MONTH_LABELS[month], year, activeCount };
+  }, [data, activeDaysSet, now.getMonth(), now.getFullYear(), now.getDate()]);
 
   // Year view: 12 months, current month highlighted
   const currentMonth = now.getMonth();
@@ -202,20 +200,17 @@ export default function Streaks() {
             <>
               <div className="streaks__weekly-header">
                 <span className="streaks__weekly-label">{monthGrid.monthName} {monthGrid.year}</span>
-                <span className="streaks__weekly-count">{weeklyDone} active this week</span>
+                <span className="streaks__weekly-count">{monthGrid.activeCount} active day{monthGrid.activeCount !== 1 ? 's' : ''}</span>
               </div>
               <div className="streaks__month-grid">
-                {/* Day-of-week headers */}
                 {days.map((d, i) => (
                   <span key={`hdr-${i}`} className="streaks__month-header">{d}</span>
                 ))}
-                {/* Day cells */}
                 {monthGrid.cells.map((cell, i) => {
                   let cellClass = 'streaks__month-cell';
                   if (!cell.inMonth) cellClass += ' streaks__month-cell--outside';
                   else if (cell.active) cellClass += ' streaks__month-cell--active';
-                  else if (cell.isToday) cellClass += ' streaks__month-cell--today';
-                  else if (!cell.isCurrentWeek) cellClass += ' streaks__month-cell--past';
+                  else if (cell.isToday && !cell.active) cellClass += ' streaks__month-cell--today';
                   return (
                     <div key={i} className={cellClass} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {cell.inMonth && (
@@ -230,11 +225,6 @@ export default function Streaks() {
                     </div>
                   );
                 })}
-              </div>
-              <div className="streaks__month-legend">
-                <Info size={12} color="var(--on-surface-muted)" />
-                <span>Historical daily data coming soon</span>
-              </div>
             </>
           )}
 
