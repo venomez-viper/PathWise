@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Copy, ExternalLink, Bell, Navigation } from 'lucide-react';
+import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Copy, ExternalLink, Bell, Navigation, LayoutGrid } from 'lucide-react';
 import { Panda } from '../../components/panda';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -561,6 +561,60 @@ export default function SettingsPage() {
           </button>,
           localStorage.getItem('pathwise_notif_off') === '1' ? 'Notifications are disabled' : 'Notification bell is active',
         )}
+      </div>
+
+      {/* ── WIDGETS ── */}
+      <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem', marginTop: '1rem' }}>
+        {sectionLabel('Widgets')}
+
+        {(() => {
+          const WIDGET_LIST: { key: string; label: string }[] = [
+            { key: 'dailyFocus', label: 'Daily Focus' },
+            { key: 'quickStart', label: 'Quick Start' },
+            { key: 'skillProgress', label: 'Skill Progress' },
+            { key: 'streak', label: 'Streak' },
+            { key: 'milestoneMap', label: 'Milestone Map' },
+            { key: 'quote', label: 'Motivational Quote' },
+            { key: 'resourceTip', label: 'Resource Tip' },
+            { key: 'weeklyOverview', label: 'Weekly Overview' },
+          ];
+          const storageKey = 'pw_hidden_widgets';
+          const getHidden = (): string[] => {
+            try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; }
+          };
+          const [hiddenWidgets, setHiddenWidgets] = [getHidden(), (v: string[]) => {
+            localStorage.setItem(storageKey, JSON.stringify(v));
+            window.location.reload();
+          }];
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {WIDGET_LIST.map(w => {
+                const isHidden = hiddenWidgets.includes(w.key);
+                return settingRow(
+                  <LayoutGrid size={16} color="var(--primary)" />,
+                  w.label,
+                  <button
+                    onClick={() => {
+                      const hidden = getHidden();
+                      const next = isHidden ? hidden.filter((k: string) => k !== w.key) : [...hidden, w.key];
+                      setHiddenWidgets(next);
+                    }}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '0.78rem', fontWeight: 600,
+                      color: isHidden ? 'var(--secondary)' : 'var(--on-surface-muted)',
+                      display: 'flex', alignItems: 'center', gap: 4,
+                    }}
+                  >
+                    {isHidden ? 'Show' : 'Hide'} <ChevronRight size={14} />
+                  </button>,
+                  isHidden ? 'Currently hidden' : 'Visible in sidebar',
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
