@@ -33,18 +33,35 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.12.1',
+    date: 'April 8, 2026',
+    title: 'Stronger Security',
+    tag: 'security',
+    description: 'Security improvements across the platform to keep your data safe.',
+    highlights: [
+      'Improved email security',
+      'Stronger input validation on all forms',
+      'Admin session tokens now expire faster',
+    ],
+  },
+  {
     version: '0.12.0',
     date: 'April 8, 2026',
-    title: 'Assessment v2: Career DNA',
+    title: 'Assessment v2: Discover Your Career DNA',
     tag: 'feature',
-    description: 'Complete assessment overhaul with 82 questions across 6 scientific dimensions, one-question-per-screen flow, and career archetype matching.',
+    description: 'A completely redesigned career assessment built on scientific research. Deeper questions, smarter matching, and a personalized career identity.',
     highlights: [
-      '82 questions across RIASEC interests, Big Five personality, Schwartz values, work style, aptitudes, and life context',
-      'One-question-per-screen design with smooth transitions',
-      '30 career archetypes with memorable names',
-      'RIASEC hexagonal radar chart and Big Five bar chart',
-      'Partial results at Phase 4 for 2.7x completion boost',
-      'Save and resume capability',
+      'New 6-phase assessment covering interests, personality, values, work style, strengths, and life context',
+      'One question at a time with smooth transitions and progress tracking',
+      'Discover your career archetype from 30 unique types like "The Analytical Architect" or "The Creative Catalyst"',
+      'RIASEC interest radar chart showing your career interest fingerprint',
+      'Big Five personality profile matched to career fit',
+      'See an early preview of your archetype halfway through the assessment',
+      'Save your progress and resume anytime',
+      '"How to boost your match" shows which skills to learn for each career',
+      'Explore all career paths with filters by domain and match score',
+      'Download and share your career DNA card on social media',
+      'Personalized 500-word career profile narrative unique to you',
     ],
   },
   {
