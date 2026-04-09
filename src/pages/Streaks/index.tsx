@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Flame, Zap, Clock, Loader2, CheckCircle2, Award, Target, Calendar, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Flame, Zap, Clock, Loader2, CheckCircle2, Award, Target, Calendar, ArrowRight, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { streaks as streaksApi } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import './Streaks.css';
+
+type ViewMode = 'week' | 'month' | 'year';
+
+const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const STREAK_MILESTONES = [
   { days: 3, label: '3-Day Spark', emoji: '⚡' },
@@ -58,11 +62,53 @@ export default function Streaks() {
     return () => document.removeEventListener('visibilitychange', refresh);
   }, [user]);
 
+  const [viewMode, setViewMode] = useState<ViewMode>('week');
+
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const todayIdx = new Date().getDay();
+  const now = new Date();
+  const todayIdx = now.getDay();
   const todayMapped = todayIdx === 0 ? 6 : todayIdx - 1;
   const weeklyDone = data?.weeklyProgress?.filter(Boolean).length ?? 0;
   const currentStreak = data?.currentStreak ?? 0;
+
+  // Month view: build a grid of weeks for the current month
+  const monthGrid = useMemo(() => {
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    // Convert Sunday=0 to Monday-based index (Mon=0 .. Sun=6)
+    const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+    const todayDate = now.getDate();
+
+    // Figure out which week row "today" falls in, and which days of that week are active
+    const todayGridIdx = startOffset + todayDate - 1;
+    const todayWeekRow = Math.floor(todayGridIdx / 7);
+    const todayDayCol = todayGridIdx % 7;
+
+    // Build cells: each cell has { date, inMonth, isCurrentWeek, active, isToday }
+    const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+    const cells: Array<{ date: number; inMonth: boolean; isCurrentWeek: boolean; active: boolean; isToday: boolean }> = [];
+
+    for (let i = 0; i < totalCells; i++) {
+      const dayNum = i - startOffset + 1;
+      const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
+      const weekRow = Math.floor(i / 7);
+      const isCurrentWeek = weekRow === todayWeekRow;
+      const dayCol = i % 7;
+      // For the current week row, map activity from weeklyProgress
+      const active = isCurrentWeek && inMonth && dayCol <= todayDayCol
+        ? (data?.weeklyProgress?.[dayCol] ?? false)
+        : false;
+      const isToday = inMonth && dayNum === todayDate;
+      cells.push({ date: dayNum, inMonth, isCurrentWeek, active, isToday });
+    }
+
+    return { cells, monthName: MONTH_LABELS[month], year };
+  }, [data, now.getMonth(), now.getFullYear(), now.getDate()]);
+
+  // Year view: 12 months, current month highlighted
+  const currentMonth = now.getMonth();
   const bestStreak = data?.bestStreak ?? 0;
   const nextMilestone = STREAK_MILESTONES.find(m => m.days > currentStreak);
   const daysToNext = nextMilestone ? nextMilestone.days - currentStreak : 0;
@@ -101,38 +147,114 @@ export default function Streaks() {
           <Panda mood={getPandaMood(currentStreak)} size={110} animate />
         </div>
 
-        {/* Weekly Progress */}
+        {/* Activity View */}
         <div className="streaks__weekly">
-          <div className="streaks__weekly-header">
-            <span className="streaks__weekly-label">This Week</span>
-            <span className="streaks__weekly-count">{weeklyDone}/7 complete</span>
+          {/* Segmented Toggle */}
+          <div className="streaks__view-toggle">
+            {(['week', 'month', 'year'] as ViewMode[]).map((mode) => (
+              <button
+                key={mode}
+                className={`streaks__view-btn${viewMode === mode ? ' streaks__view-btn--active' : ''}`}
+                onClick={() => setViewMode(mode)}
+              >
+                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </button>
+            ))}
           </div>
-          <div className="streaks__days">
-            {days.map((d, i) => {
-              const active = data?.weeklyProgress?.[i];
-              const isToday = i === todayMapped;
-              let circleClass = 'streaks__day-circle';
-              if (active) circleClass += ' streaks__day-circle--done';
-              else if (isToday) circleClass += ' streaks__day-circle--today';
-              else circleClass += ' streaks__day-circle--empty';
 
-              return (
-                <div key={i} className="streaks__day">
-                  <span className="streaks__day-label">{d}</span>
-                  <div className={circleClass}>
-                    {active && <CheckCircle2 size={16} color="#fff" strokeWidth={2.5} />}
-                    {isToday && !active && <Zap size={14} color="var(--secondary)" />}
-                  </div>
+          {/* Week View */}
+          {viewMode === 'week' && (
+            <>
+              <div className="streaks__weekly-header">
+                <span className="streaks__weekly-label">This Week</span>
+                <span className="streaks__weekly-count">{weeklyDone}/7 complete</span>
+              </div>
+              <div className="streaks__days">
+                {days.map((d, i) => {
+                  const active = data?.weeklyProgress?.[i];
+                  const isToday = i === todayMapped;
+                  let circleClass = 'streaks__day-circle';
+                  if (active) circleClass += ' streaks__day-circle--done';
+                  else if (isToday) circleClass += ' streaks__day-circle--today';
+                  else circleClass += ' streaks__day-circle--empty';
+
+                  return (
+                    <div key={i} className="streaks__day">
+                      <span className="streaks__day-label">{d}</span>
+                      <div className={circleClass}>
+                        {active && <CheckCircle2 size={16} color="#fff" strokeWidth={2.5} />}
+                        {isToday && !active && <Zap size={14} color="var(--secondary)" />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: '1rem' }}>
+                <div className="streaks__bar-track">
+                  <div className="streaks__bar-fill" style={{ width: `${(weeklyDone / 7) * 100}%` }} />
                 </div>
-              );
-            })}
-          </div>
-          {/* Weekly progress bar */}
-          <div style={{ marginTop: '1rem' }}>
-            <div className="streaks__bar-track">
-              <div className="streaks__bar-fill" style={{ width: `${(weeklyDone / 7) * 100}%` }} />
-            </div>
-          </div>
+              </div>
+            </>
+          )}
+
+          {/* Month View */}
+          {viewMode === 'month' && (
+            <>
+              <div className="streaks__weekly-header">
+                <span className="streaks__weekly-label">{monthGrid.monthName} {monthGrid.year}</span>
+                <span className="streaks__weekly-count">{weeklyDone} active this week</span>
+              </div>
+              <div className="streaks__month-grid">
+                {/* Day-of-week headers */}
+                {days.map((d, i) => (
+                  <span key={`hdr-${i}`} className="streaks__month-header">{d}</span>
+                ))}
+                {/* Day cells */}
+                {monthGrid.cells.map((cell, i) => {
+                  let cellClass = 'streaks__month-cell';
+                  if (!cell.inMonth) cellClass += ' streaks__month-cell--outside';
+                  else if (cell.active) cellClass += ' streaks__month-cell--active';
+                  else if (cell.isToday) cellClass += ' streaks__month-cell--today';
+                  else if (!cell.isCurrentWeek) cellClass += ' streaks__month-cell--past';
+                  return <div key={i} className={cellClass} />;
+                })}
+              </div>
+              <div className="streaks__month-legend">
+                <Info size={12} color="var(--on-surface-muted)" />
+                <span>Historical daily data coming soon</span>
+              </div>
+            </>
+          )}
+
+          {/* Year View */}
+          {viewMode === 'year' && (
+            <>
+              <div className="streaks__weekly-header">
+                <span className="streaks__weekly-label">{now.getFullYear()} Overview</span>
+              </div>
+              <div className="streaks__year-grid">
+                {MONTH_LABELS.map((label, i) => {
+                  const isCurrent = i === currentMonth;
+                  const isPast = i < currentMonth;
+                  let blockClass = 'streaks__year-block';
+                  if (isCurrent) blockClass += ' streaks__year-block--current';
+                  else if (isPast) blockClass += ' streaks__year-block--past';
+                  return (
+                    <div key={label} className={blockClass}>
+                      <span className="streaks__year-label">{label}</span>
+                      {isCurrent && (
+                        <span className="streaks__year-badge">Now</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="streaks__month-legend">
+                <Info size={12} color="var(--on-surface-muted)" />
+                <span>Monthly activity tracking coming soon</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
