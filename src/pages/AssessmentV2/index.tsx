@@ -65,7 +65,7 @@ const s = {
   },
   header: {
     width: '100%',
-    maxWidth: 640,
+    maxWidth: 960,
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
@@ -107,7 +107,7 @@ const s = {
   },
   card: {
     width: '100%',
-    maxWidth: 640,
+    maxWidth: 960,
     background: 'var(--surface-container-lowest, #ffffff)',
     borderRadius: 'var(--radius-2xl, 2rem)',
     boxShadow: 'var(--shadow-sm, 0 2px 12px rgba(0,106,98,0.08))',
@@ -570,22 +570,35 @@ export default function AssessmentV2() {
   const handleSubmit = async () => {
     if (!user) { navigate('/login'); return; }
     try {
+      // Extract fields the backend expects from raw answers
+      const skills = Array.isArray(answers['lc_skills']) ? answers['lc_skills'] as string[] : [];
+      const domains = Array.isArray(answers['lc_domains']) ? answers['lc_domains'] as string[] : [];
+      const expLevel = typeof answers['lc_experience'] === 'string' ? answers['lc_experience'] : 'junior';
+
       const payload = {
         userId: user.id,
         rawAnswers: answers,
-        completedTier: state.completedTier || 1,
+        currentSkills: skills,
+        interests: domains,
+        experienceLevel: expLevel,
+        trajectory: typeof answers['lc_stage'] === 'string' ? answers['lc_stage'] : 'exploring',
+        workStyle: typeof answers['wd_3'] === 'string' ? answers['wd_3'] : 'mixed',
+        strengths: [],
+        values: [],
       };
 
       const res: any = await assessmentApi.submitV2(payload);
       // Keep answers in localStorage so user can resume for deeper tiers
-      const tierCompleted = state.completedTier || 1;
+      const tierCompleted = (state as any).completedTier || 1;
       if (tierCompleted < 3) {
         saveState({ ...state, showAnalyzing: false, showTransition: false, showTierCheckpoint: false });
       } else {
         localStorage.removeItem(STORAGE_KEY);
       }
       navigate('/app/assessment-v2/results', { state: { result: res.result, completedTier: tierCompleted } });
-    } catch {
+    } catch (err) {
+      console.error('Assessment submit failed:', err);
+      alert('Something went wrong submitting your assessment. Please try again.');
       // On error go back to last answered phase so user can retry
       const lastPhaseIdx = Math.min(state.currentPhase, phases.length - 1);
       setState(prev => ({
