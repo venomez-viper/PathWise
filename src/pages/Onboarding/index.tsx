@@ -26,15 +26,23 @@ export default function Onboarding() {
 
   // Pre-fill from assessment if navigated from results page
   useEffect(() => {
+    // Check query param first (from v2 results "Build Roadmap for X" button)
+    const params = new URLSearchParams(location.search);
+    const roleParam = params.get('role');
+
     const state = location.state as { targetRole?: string; pathwayTime?: string } | null;
-    if (state?.targetRole) {
-      setTargetRole(state.targetRole);
-      // Map pathwayTime to timeline
-      const pt = state.pathwayTime?.toLowerCase() ?? '';
-      if (pt.includes('3') || pt.includes('short')) setTimeline('3mo');
-      else if (pt.includes('12') || pt.includes('year') || pt.includes('long')) setTimeline('12mo');
-      else setTimeline('6mo');
-      // Skip welcome, go straight to role confirmation
+    const prefilledRole = roleParam || state?.targetRole;
+
+    if (prefilledRole) {
+      setTargetRole(prefilledRole);
+      if (state?.pathwayTime) {
+        // Map pathwayTime to timeline
+        const pt = state.pathwayTime.toLowerCase();
+        if (pt.includes('3') || pt.includes('short')) setTimeline('3mo');
+        else if (pt.includes('12') || pt.includes('year') || pt.includes('long')) setTimeline('12mo');
+        else setTimeline('6mo');
+      }
+      // Skip welcome, go straight to role confirmation / duration picker
       setStep(1);
     }
 
@@ -44,7 +52,7 @@ export default function Onboarding() {
         if (res?.result?.careerMatches?.length) {
           setAssessmentMatches(res.result.careerMatches);
           // If no role pre-filled, default to top match
-          if (!state?.targetRole && res.result.careerMatches[0]?.title) {
+          if (!prefilledRole && res.result.careerMatches[0]?.title) {
             setTargetRole(res.result.careerMatches[0].title);
           }
         }
