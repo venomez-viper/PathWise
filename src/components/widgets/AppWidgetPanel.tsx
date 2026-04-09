@@ -98,7 +98,12 @@ export default function AppWidgetPanel() {
   return (
     <aside className="app-widget-panel">
       <WidgetSidebar
-        widgets={PAGE_WIDGETS[currentPath] ?? DEFAULT_WIDGETS}
+        widgets={(() => {
+          const pageWidgets = PAGE_WIDGETS[currentPath] ?? DEFAULT_WIDGETS;
+          // Always include all widgets — page config just sets order, rest appended after
+          const remaining = DEFAULT_WIDGETS.filter(w => !pageWidgets.includes(w));
+          return [...pageWidgets, ...remaining];
+        })()}
         tasks={tasks}
         milestones={milestones}
         userId={user.id}
