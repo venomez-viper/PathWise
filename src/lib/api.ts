@@ -166,6 +166,7 @@ export const admin = {
   getAssessment: (userId: string) => request<any>(`/admin/assessment/${userId}`),
   getRoadmapUserStatus: () => request<{ statuses: { userId: string; hasRoadmap: boolean; milestonesTotal: number; milestonesCompleted: number }[] }>('/admin/roadmap-user-status'),
   getCertificateStatus: () => request<{ userIds: string[] }>('/admin/certificate-status'),
+  getLastActive: () => request<{ users: { userId: string; lastActiveDate: string | null }[] }>('/admin/last-active'),
   getAnalytics: () => request<{ totalAssessments: number; topCareers: { title: string; count: number }[] }>('/admin/analytics'),
   getTickets: () => request<{ tickets: any[] }>('/admin/tickets'),
   updateTicket: (ticketId: string, status: string) =>

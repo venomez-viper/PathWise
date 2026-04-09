@@ -335,6 +335,24 @@ export const adminCertificateStatus = api(
   }
 );
 
+export const adminLastActive = api(
+  { expose: true, method: "GET", path: "/admin/last-active", auth: true },
+  async (): Promise<{ users: { userId: string; lastActiveDate: string | null }[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) throw APIError.permissionDenied("admin access required");
+
+    const users: { userId: string; lastActiveDate: string | null }[] = [];
+    try {
+      const rows = db.query`SELECT user_id, last_active_date FROM streaks`;
+      for await (const row of rows) {
+        users.push({ userId: (row as any).user_id, lastActiveDate: (row as any).last_active_date });
+      }
+    } catch {}
+    return { users };
+  }
+);
+
 export const adminDeleteUserStreaks = api(
   { expose: true, method: "DELETE", path: "/admin/user-streaks/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {

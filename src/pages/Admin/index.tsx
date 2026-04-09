@@ -329,6 +329,7 @@ export default function AdminPage() {
   const [assessmentUserIds, setAssessmentUserIds] = useState<string[]>([]);
   const [roadmapStatuses, setRoadmapStatuses] = useState<{ userId: string; hasRoadmap: boolean; milestonesTotal: number; milestonesCompleted: number }[]>([]);
   const [certificateUserIds, setCertificateUserIds] = useState<string[]>([]);
+  const [lastActiveData, setLastActiveData] = useState<{ userId: string; lastActiveDate: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
@@ -366,12 +367,13 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     try {
-      const [usersRes, tasksRes, assessRes, roadmapRes, certRes] = await Promise.allSettled([
+      const [usersRes, tasksRes, assessRes, roadmapRes, certRes, activeRes] = await Promise.allSettled([
         adminApi.getUsers(),
         adminApi.getTaskStats(),
         adminApi.getAssessmentStats(),
         adminApi.getRoadmapUserStatus(),
         adminApi.getCertificateStatus(),
+        adminApi.getLastActive(),
       ]);
       if (usersRes.status === 'fulfilled') setUsers(usersRes.value?.users ?? []);
       else throw new Error(usersRes.reason?.message || 'Failed to load users');
@@ -379,6 +381,7 @@ export default function AdminPage() {
       if (assessRes.status === 'fulfilled') setAssessmentUserIds(assessRes.value?.userIds ?? []);
       if (roadmapRes.status === 'fulfilled') setRoadmapStatuses(roadmapRes.value?.statuses ?? []);
       if (certRes.status === 'fulfilled') setCertificateUserIds(certRes.value?.userIds ?? []);
+      if (activeRes.status === 'fulfilled') setLastActiveData(activeRes.value?.users ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin data.');
     } finally {
@@ -448,6 +451,12 @@ export default function AdminPage() {
   }, [roadmapStatuses]);
 
   const certificateSet = useMemo(() => new Set(certificateUserIds ?? []), [certificateUserIds]);
+
+  const lastActiveMap = useMemo(() => {
+    const map: Record<string, string | null> = {};
+    (lastActiveData ?? []).forEach(u => { if (u?.userId) map[u.userId] = u.lastActiveDate; });
+    return map;
+  }, [lastActiveData]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -557,7 +566,7 @@ export default function AdminPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Name', 'Email', 'Plan', 'Joined', 'Has Assessment', 'Tasks Done', 'Tasks Total', 'Roadmap', 'Milestones Completed', 'Milestones Total', 'Certificate'];
+    const headers = ['Name', 'Email', 'Plan', 'Joined', 'Has Assessment', 'Tasks Done', 'Tasks Total', 'Roadmap', 'Milestones Completed', 'Milestones Total', 'Certificate', 'Last Active'];
     const rows = filteredUsers.map(u => {
       const rs = roadmapStatusMap[u.id];
       return [
@@ -569,6 +578,7 @@ export default function AdminPage() {
         rs?.milestonesCompleted ?? 0,
         rs?.milestonesTotal ?? 0,
         certificateSet.has(u.id) ? 'Yes' : 'No',
+        lastActiveMap[u.id] ?? 'Never',
       ];
     });
     const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -814,6 +824,7 @@ export default function AdminPage() {
                   <th style={{ ...thStyle, cursor: 'default' }}>Roadmap</th>
                   <th style={{ ...thStyle, cursor: 'default' }}>Milestones</th>
                   <th style={{ ...thStyle, cursor: 'default' }}>Certificate</th>
+                  <th style={{ ...thStyle, cursor: 'default' }}>Last Active</th>
                 </tr>
               </thead>
               <tbody>
@@ -912,12 +923,27 @@ export default function AdminPage() {
                           {hasCert ? 'Yes' : 'No'}
                         </span>
                       </td>
+                      <td style={{ ...tdStyle, fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>
+                        {lastActiveMap[u.id]
+                          ? (() => {
+                              const d = new Date(lastActiveMap[u.id]!);
+                              const now = new Date();
+                              const diffMs = now.getTime() - d.getTime();
+                              const diffDays = Math.floor(diffMs / 86400000);
+                              if (diffDays === 0) return 'Today';
+                              if (diffDays === 1) return 'Yesterday';
+                              if (diffDays < 7) return `${diffDays}d ago`;
+                              return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            })()
+                          : <span style={{ color: 'var(--on-surface-muted)' }}>Never</span>
+                        }
+                      </td>
                     </tr>
                   );
                 })}
                 {filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan={10} style={{ ...tdStyle, textAlign: 'center', padding: '2rem', color: 'var(--on-surface-variant)' }}>
+                    <td colSpan={11} style={{ ...tdStyle, textAlign: 'center', padding: '2rem', color: 'var(--on-surface-variant)' }}>
                       {search ? 'No users match your search.' : 'No users found.'}
                     </td>
                   </tr>
