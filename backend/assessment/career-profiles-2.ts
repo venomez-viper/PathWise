@@ -982,6 +982,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "facilitator"], requiredSkills: ["Domain Expertise", "Client Management", "Business Development", "Communication", "Problem Solving"],
     experienceLevels: ["mid", "senior"], domains: ["Consulting"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.25, values: 0.20, aptitude: 0.15, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Business Development", importance: "high", learningResource: "Million Dollar Consulting by Alan Weiss" },
       { skill: "Client Management", importance: "high", learningResource: "The Trusted Advisor by Maister" },
@@ -1025,6 +1026,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "doer"], requiredSkills: ["Carbon Accounting", "Environmental Regulations", "Stakeholder Engagement", "Data Analysis", "Report Writing"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Sustainability"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.30, aptitude: 0.10, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Carbon Accounting", importance: "high", learningResource: "GHG Protocol Corporate Standard (free)" },
       { skill: "Environmental Regulations", importance: "high", learningResource: "EPA Compliance resources" },
@@ -1068,6 +1070,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["ESG Frameworks", "Financial Analysis", "Data Analysis", "Research", "Report Writing"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Sustainability", "Finance"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.20, personality: 0.15, values: 0.30, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "ESG Frameworks", importance: "high", learningResource: "CFA ESG Investing Certificate prep" },
       { skill: "Financial Analysis", importance: "high", learningResource: "Coursera Financial Analysis Fundamentals" },
