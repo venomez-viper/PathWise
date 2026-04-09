@@ -321,17 +321,17 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
       transform: visible ? 'translateY(0)' : 'translateY(24px)',
       transition: 'opacity 0.4s ease, transform 0.4s ease',
     }}>
-      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-        <div style={{ flexShrink: 0, textAlign: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ textAlign: 'center' }}>
           <ScoreGauge score={match.matchScore} />
           <span style={{ fontSize: 11, fontWeight: 600, color: tierCfg.color, display: 'block', marginTop: 2 }}>
             {tierCfg.label}
           </span>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.25rem' }}>
+        <div style={{ width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.25rem', justifyContent: 'center' }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: TEAL }}>#{rank}</span>
-            <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-display, Georgia, serif)', color: 'var(--on-surface, #222)' }}>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontFamily: 'var(--font-display, Georgia, serif)', color: 'var(--on-surface, #222)', textAlign: 'center' }}>
               {match.title}
             </h3>
           </div>
@@ -356,8 +356,8 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
             )}
             {match.growthOutlook && <span>Growth: {match.growthOutlook}</span>}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-            <Link to="/app/onboarding" style={{
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '1rem' }}>
+            <Link to={`/app/onboarding?role=${encodeURIComponent(match.title)}`} style={{
               display: 'inline-block',
               padding: '0.6rem 1.5rem', borderRadius: '2rem',
               background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
@@ -366,7 +366,7 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
               onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
               onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
             >
-              Build Roadmap
+              Build Roadmap for {match.title}
             </Link>
             <button
               onClick={() => setShowWhatIf(v => !v)}
@@ -434,7 +434,7 @@ export default function AssessmentResults() {
 
   return (
     <div style={{
-      maxWidth: 820, margin: '0 auto', padding: '2rem 1rem 4rem',
+      maxWidth: 1280, margin: '0 auto', padding: '2rem 2rem 4rem',
       fontFamily: 'var(--font-body, system-ui, sans-serif)',
     }}>
       {/* Section: Archetype */}
@@ -457,6 +457,24 @@ export default function AssessmentResults() {
         )}
       </section>
 
+      {/* Section: Top Career Matches — HERO */}
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h2 style={{
+          fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.4rem',
+          color: 'var(--on-surface, #222)', margin: '0 0 0.4rem',
+        }}>
+          Your Top Career Matches
+        </h2>
+        <p style={{ fontSize: 14, color: 'var(--on-surface-variant, #666)', margin: '0 0 1.25rem' }}>
+          Pick a role and build your personalised roadmap.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+          {matches.slice(0, 3).map((m: any, i: number) => (
+            <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} />
+          ))}
+        </div>
+      </section>
+
       {/* Section: Charts side-by-side */}
       <section style={{
         display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2.5rem',
@@ -473,21 +491,6 @@ export default function AssessmentResults() {
             Personality Traits
           </h2>
           <BigFiveBars scores={bigFive} animate={showCharts} />
-        </div>
-      </section>
-
-      {/* Section: Top Career Matches */}
-      <section style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{
-          fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.4rem',
-          color: 'var(--on-surface, #222)', margin: '0 0 1.25rem',
-        }}>
-          Your Top Career Matches
-        </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {matches.map((m: any, i: number) => (
-            <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} />
-          ))}
         </div>
       </section>
 
@@ -553,29 +556,15 @@ export default function AssessmentResults() {
         <CareerExplorer allMatches={matches} userRiasec={riasec} />
       </section>
 
-      {/* CTA + Share */}
+      {/* Retake */}
       <section style={{
         textAlign: 'center',
         opacity: phase >= 5 ? 1 : 0,
         transition: 'opacity 0.5s ease',
       }}>
-        <Link to="/app/onboarding" style={{
-          display: 'inline-block',
-          padding: '0.85rem 2.5rem', borderRadius: '2rem',
-          background: TEAL, color: '#fff', fontWeight: 700, fontSize: 16,
-          textDecoration: 'none', transition: 'background 0.2s', marginBottom: '2rem',
-        }}
-          onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
-          onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
-        >
-          Build Your Roadmap
+        <Link to="/app/assessment-v2" style={{ color: 'var(--on-surface-variant)', fontSize: '0.82rem' }}>
+          Retake Assessment
         </Link>
-
-        <div style={{ marginTop: '1.5rem' }}>
-          <Link to="/app/assessment-v2" style={{ color: 'var(--on-surface-variant)', fontSize: '0.82rem' }}>
-            Retake Assessment
-          </Link>
-        </div>
       </section>
 
       {/* Section: Share Your Career DNA */}

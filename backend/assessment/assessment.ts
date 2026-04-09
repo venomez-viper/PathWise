@@ -362,7 +362,7 @@ export const submitAssessmentV2 = api(
       experienceLevel: params.experienceLevel ?? 'junior',
       interests: params.interests ?? [],
       answers: rawAnswers,
-    }, 5);
+    }, 3);
 
     // Generate narrative
     const narrative = generateNarrative(
