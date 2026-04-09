@@ -1,10 +1,39 @@
 import { useState, useEffect } from 'react';
-import { Flame, TrendingUp, Zap, Clock, Loader2, CheckCircle2 } from 'lucide-react';
+import { Flame, TrendingUp, Zap, Clock, Loader2, CheckCircle2, Award, Target, Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { streaks as streaksApi } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import './Streaks.css';
+
+const STREAK_MILESTONES = [
+  { days: 3, label: '3-Day Spark', emoji: '⚡' },
+  { days: 7, label: '1-Week Focus', emoji: '🔥' },
+  { days: 14, label: '2-Week Habit', emoji: '💪' },
+  { days: 30, label: 'Monthly Master', emoji: '🏆' },
+  { days: 60, label: '60-Day Champion', emoji: '⭐' },
+  { days: 100, label: 'Centurion', emoji: '👑' },
+];
+
+function getStreakMessage(streak: number): string {
+  if (streak === 0) return "Start completing tasks to ignite your streak!";
+  if (streak === 1) return "Day one done — the hardest part is starting!";
+  if (streak < 3) return "Building momentum — keep showing up!";
+  if (streak < 7) return "You're on fire! A week is within reach.";
+  if (streak < 14) return "Incredible consistency — you're forming a real habit!";
+  if (streak < 30) return "Two weeks strong! You're in the top 10% of users.";
+  if (streak < 60) return "A full month of growth — that's elite dedication.";
+  return "Unstoppable. You're a career growth machine.";
+}
+
+function getPandaMood(streak: number) {
+  if (streak >= 30) return 'cool' as const;
+  if (streak >= 14) return 'celebrating' as const;
+  if (streak >= 7) return 'happy' as const;
+  if (streak >= 3) return 'loving' as const;
+  if (streak >= 1) return 'curious' as const;
+  return 'sleepy' as const;
+}
 
 export default function Streaks() {
   const { user } = useAuth();
@@ -17,10 +46,27 @@ export default function Streaks() {
       .catch(() => { setData({ currentStreak: 0, bestStreak: 0, consistencyScore: 0, totalXp: 0, weeklyProgress: [false,false,false,false,false,false,false] }); setLoading(false); });
   }, [user]);
 
+  // Refresh on focus
+  useEffect(() => {
+    if (!user) return;
+    const refresh = () => {
+      if (document.visibilityState === 'visible') {
+        streaksApi.get(user.id).then((res: any) => setData(res.streak)).catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', refresh);
+    return () => document.removeEventListener('visibilitychange', refresh);
+  }, [user]);
+
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const todayIdx = new Date().getDay();
   const todayMapped = todayIdx === 0 ? 6 : todayIdx - 1;
   const weeklyDone = data?.weeklyProgress?.filter(Boolean).length ?? 0;
+  const currentStreak = data?.currentStreak ?? 0;
+  const bestStreak = data?.bestStreak ?? 0;
+  const nextMilestone = STREAK_MILESTONES.find(m => m.days > currentStreak);
+  const daysToNext = nextMilestone ? nextMilestone.days - currentStreak : 0;
+  const achievedMilestones = STREAK_MILESTONES.filter(m => m.days <= currentStreak);
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
@@ -34,34 +80,27 @@ export default function Streaks() {
       {/* Header */}
       <div className="streaks__header">
         <h1 className="streaks__title">Momentum</h1>
-        <p className="streaks__subtitle">
-          {data?.currentStreak > 0
-            ? "You're building momentum — keep it going!"
-            : "Start completing tasks to build your streak."}
-        </p>
+        <p className="streaks__subtitle">{getStreakMessage(currentStreak)}</p>
       </div>
 
       {/* Streak Hero */}
-      <div className="streaks__hero" style={{ position: 'relative' }}>
+      <div className="streaks__hero">
         <div className="streaks__hero-top">
-          <div className="streaks__flame-icon">
-            <Flame size={24} color="var(--secondary)" />
-          </div>
           <div>
-            <p className="streaks__count">{data?.currentStreak ?? 0}-day streak</p>
-            <p className="streaks__best">Personal best: {data?.bestStreak ?? 0} days</p>
+            <div className="streaks__flame-icon">
+              <Flame size={24} color="var(--secondary)" />
+            </div>
           </div>
-          <Panda
-            mood={
-              (data?.currentStreak ?? 0) >= 14 ? 'cool' :
-              (data?.currentStreak ?? 0) >= 7 ? 'celebrating' :
-              (data?.currentStreak ?? 0) >= 3 ? 'happy' :
-              (data?.currentStreak ?? 0) >= 1 ? 'loving' :
-              'sleepy'
-            }
-            size={130}
-            animate
-          />
+          <div style={{ flex: 1 }}>
+            <p className="streaks__count">{currentStreak}-day streak</p>
+            <p className="streaks__best">Personal best: {bestStreak} days</p>
+            {nextMilestone && (
+              <p style={{ fontSize: '0.78rem', color: 'var(--secondary)', fontWeight: 600, marginTop: '0.3rem' }}>
+                {nextMilestone.emoji} {daysToNext} day{daysToNext !== 1 ? 's' : ''} to "{nextMilestone.label}"
+              </p>
+            )}
+          </div>
+          <Panda mood={getPandaMood(currentStreak)} size={110} animate />
         </div>
 
         {/* Weekly Progress */}
@@ -90,47 +129,119 @@ export default function Streaks() {
               );
             })}
           </div>
+          {/* Weekly progress bar */}
+          <div style={{ marginTop: '1rem' }}>
+            <div className="streaks__bar-track">
+              <div className="streaks__bar-fill" style={{ width: `${(weeklyDone / 7) * 100}%` }} />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="streaks__stats">
+      {/* Stats Grid — 3 columns */}
+      <div className="streaks__stats" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
         <div className="streaks__stat-card">
-          <p className="streaks__stat-label">Peak Hour</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Clock size={18} color="var(--secondary)" />
-            <span className="streaks__stat-value">9 AM</span>
-          </div>
-          <p className="streaks__stat-detail">Your most productive time</p>
-        </div>
-        <div className="streaks__stat-card">
-          <p className="streaks__stat-label">Total XP</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="streaks__stat-icon-wrap">
             <Zap size={18} color="var(--primary)" />
-            <span className="streaks__stat-value">{data?.totalXp ?? 0}</span>
           </div>
-          <p className="streaks__stat-detail">Experience points earned</p>
+          <span className="streaks__stat-value">{data?.totalXp ?? 0}</span>
+          <p className="streaks__stat-label">Total XP</p>
+        </div>
+        <div className="streaks__stat-card">
+          <div className="streaks__stat-icon-wrap">
+            <Clock size={18} color="var(--secondary)" />
+          </div>
+          <span className="streaks__stat-value">9 AM</span>
+          <p className="streaks__stat-label">Peak Hour</p>
+        </div>
+        <div className="streaks__stat-card">
+          <div className="streaks__stat-icon-wrap">
+            <Calendar size={18} color="#8b4f2c" />
+          </div>
+          <span className="streaks__stat-value">{weeklyDone}</span>
+          <p className="streaks__stat-label">This Week</p>
         </div>
       </div>
 
-      {/* Consistency */}
+      {/* Consistency Score */}
       <div className="streaks__consistency">
         <div className="streaks__consistency-header">
-          <span className="streaks__consistency-title">Consistency Score</span>
-          <TrendingUp size={18} color="var(--secondary)" />
+          <div>
+            <span className="streaks__consistency-title">Consistency Score</span>
+            <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', marginTop: '0.15rem' }}>14-day rolling average</p>
+          </div>
+          <span style={{
+            fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800,
+            color: (data?.consistencyScore ?? 0) >= 70 ? 'var(--secondary)' : (data?.consistencyScore ?? 0) >= 40 ? '#8b4f2c' : 'var(--on-surface-variant)',
+          }}>
+            {data?.consistencyScore ?? 0}%
+          </span>
         </div>
-        <div className="streaks__consistency-row">
-          <span className="streaks__consistency-label">14-day rolling average</span>
-          <span className="streaks__consistency-pct">{data?.consistencyScore ?? 0}%</span>
+        <div className="streaks__bar-track" style={{ height: 8 }}>
+          <div className="streaks__bar-fill" style={{
+            width: `${data?.consistencyScore ?? 0}%`,
+            background: (data?.consistencyScore ?? 0) >= 70 ? 'var(--secondary)' : (data?.consistencyScore ?? 0) >= 40 ? '#8b4f2c' : 'var(--on-surface-variant)',
+          }} />
         </div>
-        <div className="streaks__bar-track">
-          <div className="streaks__bar-fill" style={{ width: `${data?.consistencyScore ?? 0}%` }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--on-surface-muted)' }}>Getting started</span>
+          <span style={{ fontSize: '0.68rem', color: 'var(--on-surface-muted)' }}>On track</span>
+          <span style={{ fontSize: '0.68rem', color: 'var(--on-surface-muted)' }}>Crushing it</span>
+        </div>
+      </div>
+
+      {/* Streak Milestones */}
+      <div className="streaks__milestones">
+        <h2 style={{
+          fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700,
+          color: 'var(--on-surface)', marginBottom: '0.75rem',
+        }}>
+          Streak Milestones
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {STREAK_MILESTONES.map((m) => {
+            const achieved = currentStreak >= m.days;
+            const isCurrent = nextMilestone?.days === m.days;
+            const progress = isCurrent ? Math.round((currentStreak / m.days) * 100) : achieved ? 100 : 0;
+            return (
+              <div key={m.days} style={{
+                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                background: achieved ? 'rgba(0,106,98,0.06)' : 'var(--surface-container-lowest)',
+                borderRadius: 'var(--radius-lg)', padding: '0.75rem 1rem',
+                border: isCurrent ? '1.5px solid var(--secondary)' : '1px solid var(--outline-variant)',
+                opacity: !achieved && !isCurrent ? 0.5 : 1,
+              }}>
+                <span style={{ fontSize: '1.25rem', width: 28, textAlign: 'center' }}>
+                  {achieved ? m.emoji : <Award size={18} color="var(--on-surface-muted)" />}
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{
+                      fontSize: '0.85rem', fontWeight: 700,
+                      color: achieved ? 'var(--secondary)' : 'var(--on-surface)',
+                    }}>{m.label}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-muted)', fontWeight: 600 }}>
+                      {m.days} days
+                    </span>
+                  </div>
+                  {isCurrent && (
+                    <div style={{ marginTop: '0.35rem' }}>
+                      <div className="streaks__bar-track" style={{ height: 4 }}>
+                        <div className="streaks__bar-fill" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {achieved && <CheckCircle2 size={16} color="var(--secondary)" />}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* CTA */}
       <Link to="/app/tasks" className="streaks__cta">
-        <Zap size={16} /> Complete Today's Tasks
+        <Target size={16} /> {currentStreak === 0 ? 'Start Your Streak' : "Complete Today's Tasks"} <ArrowRight size={16} />
       </Link>
     </div>
   );
