@@ -679,11 +679,47 @@ export default function AssessmentV2() {
     );
   }
 
+  /* ── Tier 1 Checkpoint ── */
+  if (showTierCheckpoint === 1) {
+    return (
+      <div style={s.page}>
+        <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out' }}>
+          <div style={s.center}>
+            <Panda mood="celebrating" size={120} animate />
+            <h2 style={{ ...s.questionText, fontSize: '1.5rem', marginBottom: '0.5rem' }}>Your Career Matches Are Ready!</h2>
+            <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '1rem', marginBottom: '1.5rem', maxWidth: 400 }}>We have enough data to show your top career matches.</p>
+            <button style={s.cta('var(--secondary, #006a62)')} onClick={submitAtCheckpoint}>See My Results Now <ArrowRight size={18} /></button>
+            <p style={{ marginTop: '2rem', color: 'var(--on-surface-variant, #49454f)', fontSize: '0.9rem' }}>Want even more accurate results?</p>
+            <button style={s.ctaSecondary} onClick={continueToNextTier}>Continue for Deeper Insights (+5 min)</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Tier 2 Checkpoint ── */
+  if (showTierCheckpoint === 2) {
+    return (
+      <div style={s.page}>
+        <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out' }}>
+          <div style={s.center}>
+            <Panda mood="cool" size={100} animate />
+            <h2 style={{ ...s.questionText, fontSize: '1.5rem', marginBottom: '0.5rem' }}>Great! Your profile is much stronger now.</h2>
+            <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '1rem', marginBottom: '1.5rem', maxWidth: 400 }}>Personality insights are locked in. Your matches will be more precise.</p>
+            <button style={s.cta('var(--secondary, #006a62)')} onClick={submitAtCheckpoint}>See Enhanced Results <ArrowRight size={18} /></button>
+            <p style={{ marginTop: '2rem', color: 'var(--on-surface-variant, #49454f)', fontSize: '0.9rem' }}>Want maximum precision?</p>
+            <button style={s.ctaSecondary} onClick={continueToNextTier}>Maximum Precision (+4 min)</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   /* ── Phase Transition Screen ── */
   if (showTransition && phase) {
-    // Phase 4 (index 3) — archetype preview: manual-only, no auto-advance.
+    // Work DNA phase (id=4) — archetype preview: manual-only, no auto-advance.
     // This forced pause is the key retention moment (2.7x completion boost).
-    if (currentPhase === 3) {
+    if (currentPhase === workDnaPhaseIdx) {
       const preview = getArchetypePreview(answers);
       return (
         <div style={s.page}>
