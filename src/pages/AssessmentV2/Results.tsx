@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ArchetypeShareCard from '../../components/ArchetypeShareCard';
 import CareerExplorer from './CareerExplorer';
+import WhatIfPanel, { generateWhatIfSkills } from './WhatIfPanel';
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface RIASECScores {
@@ -310,61 +311,93 @@ function ArchetypeCard({ archetype, riasec, bigFive, visible }: {
 function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: number; visible: boolean }) {
   const tier = getMatchTier(match.matchScore);
   const tierCfg = TIER_CONFIG[tier];
+  const [showWhatIf, setShowWhatIf] = useState(false);
 
   return (
     <div style={{
       ...card,
-      display: 'flex', gap: '1.5rem', alignItems: 'flex-start',
+      display: 'flex', flexDirection: 'column', gap: 0,
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(24px)',
       transition: 'opacity 0.4s ease, transform 0.4s ease',
     }}>
-      <div style={{ flexShrink: 0, textAlign: 'center' }}>
-        <ScoreGauge score={match.matchScore} />
-        <span style={{ fontSize: 11, fontWeight: 600, color: tierCfg.color, display: 'block', marginTop: 2 }}>
-          {tierCfg.label}
-        </span>
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.25rem' }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: TEAL }}>#{rank}</span>
-          <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-display, Georgia, serif)', color: 'var(--on-surface, #222)' }}>
-            {match.title}
-          </h3>
-        </div>
-        {match.careerFamily && (
-          <span style={{ fontSize: 12, color: 'var(--on-surface, #777)', marginBottom: '0.75rem', display: 'block' }}>
-            {match.careerFamily}
+      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+        <div style={{ flexShrink: 0, textAlign: 'center' }}>
+          <ScoreGauge score={match.matchScore} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: tierCfg.color, display: 'block', marginTop: 2 }}>
+            {tierCfg.label}
           </span>
-        )}
-        {match.whyThisFits && (
-          <div style={{ marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: TEAL, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>
-              Why this fits you
-            </span>
-            <ul style={{ margin: '0.25rem 0 0', paddingLeft: '1.25rem', fontSize: 14, lineHeight: 1.6, color: 'var(--on-surface, #444)' }}>
-              {match.whyThisFits.map((b, i) => <li key={i}>{b}</li>)}
-            </ul>
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: 13, color: 'var(--on-surface, #555)' }}>
-          {match.salaryRange && (
-            <span>${(match.salaryRange.min / 1000).toFixed(0)}k – ${(match.salaryRange.max / 1000).toFixed(0)}k</span>
-          )}
-          {match.growthOutlook && <span>Growth: {match.growthOutlook}</span>}
         </div>
-        <Link to="/app/onboarding" style={{
-          display: 'inline-block',
-          marginTop: '1rem', padding: '0.6rem 1.5rem', borderRadius: '2rem',
-          background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
-          textDecoration: 'none', transition: 'background 0.2s',
-        }}
-          onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
-          onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
-        >
-          Build Roadmap
-        </Link>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: TEAL }}>#{rank}</span>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-display, Georgia, serif)', color: 'var(--on-surface, #222)' }}>
+              {match.title}
+            </h3>
+          </div>
+          {match.careerFamily && (
+            <span style={{ fontSize: 12, color: 'var(--on-surface, #777)', marginBottom: '0.75rem', display: 'block' }}>
+              {match.careerFamily}
+            </span>
+          )}
+          {match.whyThisFits && (
+            <div style={{ marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: TEAL, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>
+                Why this fits you
+              </span>
+              <ul style={{ margin: '0.25rem 0 0', paddingLeft: '1.25rem', fontSize: 14, lineHeight: 1.6, color: 'var(--on-surface, #444)' }}>
+                {match.whyThisFits.map((b, i) => <li key={i}>{b}</li>)}
+              </ul>
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: 13, color: 'var(--on-surface, #555)' }}>
+            {match.salaryRange && (
+              <span>${(match.salaryRange.min / 1000).toFixed(0)}k – ${(match.salaryRange.max / 1000).toFixed(0)}k</span>
+            )}
+            {match.growthOutlook && <span>Growth: {match.growthOutlook}</span>}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+            <Link to="/app/onboarding" style={{
+              display: 'inline-block',
+              padding: '0.6rem 1.5rem', borderRadius: '2rem',
+              background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
+              textDecoration: 'none', transition: 'background 0.2s',
+            }}
+              onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
+              onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
+            >
+              Build Roadmap
+            </Link>
+            <button
+              onClick={() => setShowWhatIf(v => !v)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: TEAL,
+                fontSize: 14,
+                fontWeight: 600,
+                padding: '0.4rem 0',
+                textDecoration: 'underline',
+                textUnderlineOffset: 2,
+                transition: 'color 0.15s ease',
+              }}
+              onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = TEAL_LIGHT)}
+              onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = TEAL)}
+            >
+              {showWhatIf ? 'Hide boost tips' : 'How to boost your match'}
+            </button>
+          </div>
+        </div>
       </div>
+
+      {showWhatIf && (
+        <WhatIfPanel
+          careerTitle={match.title}
+          currentScore={match.matchScore}
+          skills={generateWhatIfSkills(match.title, match.matchScore)}
+        />
+      )}
     </div>
   );
 }
