@@ -274,6 +274,29 @@ export const aiGenerateTasks = api(
     RateLimits.aiGenerate("aigen:" + userID);
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
 
+    // Check if AI tasks already exist for this milestone
+    const existingCount = await db.queryRow`
+      SELECT COUNT(*) as cnt FROM tasks
+      WHERE user_id = ${params.userId} AND milestone_id = ${params.milestoneId} AND ai_generated = true
+    `;
+    if (existingCount && Number(existingCount.cnt) > 0) {
+      // Return existing tasks instead of creating duplicates
+      const existing: Task[] = [];
+      const existingRows = db.query`
+        SELECT id, user_id, milestone_id, title, description, status, priority, category, due_date, created_at
+        FROM tasks WHERE user_id = ${params.userId} AND milestone_id = ${params.milestoneId} AND ai_generated = true
+        ORDER BY created_at ASC
+      `;
+      for await (const row of existingRows) {
+        existing.push({
+          id: row.id, userId: row.user_id, milestoneId: row.milestone_id,
+          title: row.title, description: row.description, status: row.status,
+          priority: row.priority, category: row.category, createdAt: row.created_at,
+        });
+      }
+      return { tasks: existing };
+    }
+
     // Find matching milestone from brain and extract its tasks
     const milestones = getMilestonesForRole(params.targetRole);
     const match = milestones.find(m =>

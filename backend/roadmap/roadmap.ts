@@ -350,7 +350,14 @@ export const generateRoadmap = api(
     `;
     const finalRoadmapId = roadmapRow!.id;
 
-    // Clear old milestones and tasks linked to this roadmap
+    // Clear old milestones and their tasks before regenerating
+    try {
+      // Delete tasks linked to old milestones
+      const oldMilestoneRows = db.query`SELECT id FROM milestones WHERE roadmap_id = ${finalRoadmapId}`;
+      for await (const mRow of oldMilestoneRows) {
+        await db.exec`DELETE FROM tasks WHERE milestone_id = ${mRow.id}`;
+      }
+    } catch {}
     await db.exec`DELETE FROM milestones WHERE roadmap_id = ${finalRoadmapId}`;
 
     const milestones: Milestone[] = [];

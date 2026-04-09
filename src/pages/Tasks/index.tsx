@@ -395,7 +395,7 @@ export default function Tasks() {
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             <Sparkles size={14} />
-            {aiPanelOpen ? 'Close AI' : 'Generate with AI'}
+            {aiPanelOpen ? 'Close' : 'Generate Tasks'}
           </button>
           <button className="btn-page-action" onClick={() => setAddingTask(true)}>
             <Plus size={14} /> Add Task
@@ -433,7 +433,7 @@ export default function Tasks() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1rem' }}>
             <Sparkles size={16} color="#a78bfa" />
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, color: 'var(--on-surface)', margin: 0 }}>
-              Generate Tasks with AI
+              Generate Tasks
             </h3>
           </div>
 
