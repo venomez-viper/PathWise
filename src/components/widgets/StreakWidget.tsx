@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Flame } from 'lucide-react';
+import { Flame, Zap } from 'lucide-react';
 import { widgetTitleStyle } from './types';
 import { streaks as streaksApi } from '../../lib/api';
 
@@ -7,15 +7,34 @@ interface StreakWidgetProps {
   userId: string;
 }
 
-export default function StreakWidget({ userId }: StreakWidgetProps) {
-  const [streakData, setStreakData] = useState<any>(null);
+const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-  useEffect(() => {
+export default function StreakWidget({ userId }: StreakWidgetProps) {
+  const [data, setData] = useState<any>(null);
+
+  const load = () => {
     if (!userId) return;
-    streaksApi.get(userId).then((data: any) => {
-      setStreakData(data);
-    }).catch(() => {});
+    streaksApi.get(userId).then((res: any) => setData(res.streak ?? res)).catch(() => {});
+  };
+
+  useEffect(() => { load(); }, [userId]);
+
+  // Refresh on focus
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', load);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', load);
+    };
   }, [userId]);
+
+  const currentStreak = data?.currentStreak ?? 0;
+  const bestStreak = data?.bestStreak ?? 0;
+  const weeklyProgress = data?.weeklyProgress ?? [];
+  const todayIdx = new Date().getDay();
+  const todayMapped = todayIdx === 0 ? 6 : todayIdx - 1;
 
   return (
     <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
@@ -23,44 +42,47 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
         <Flame size={15} color="#ef4444" /> Streak
       </h4>
       <div style={{ marginTop: 10 }}>
-        {streakData ? (
+        {data ? (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#8b4f2c', fontFamily: 'var(--font-display)' }}>
-                  {streakData.currentStreak ?? streakData.streak?.currentStreak ?? 0}
+                  {currentStreak}
                 </span>
                 <p style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', margin: '2px 0 0', fontWeight: 600 }}>CURRENT</p>
               </div>
               <div style={{ width: 1, height: 32, background: 'var(--outline-variant)' }} />
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#006a62', fontFamily: 'var(--font-display)' }}>
-                  {streakData.bestStreak ?? streakData.streak?.bestStreak ?? 0}
+                  {bestStreak}
                 </span>
                 <p style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', margin: '2px 0 0', fontWeight: 600 }}>BEST</p>
               </div>
             </div>
-            {/* 7-day indicator */}
-            <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-              {Array.from({ length: 7 }).map((_, i) => {
-                const activeDays = streakData.activeDays ?? streakData.streak?.activeDays ?? [];
-                const isActive = i < (streakData.currentStreak ?? streakData.streak?.currentStreak ?? 0) || activeDays[i];
+            {/* Weekly progress dots */}
+            <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+              {DAYS.map((d, i) => {
+                const active = weeklyProgress[i] ?? false;
+                const isToday = i === todayMapped;
                 return (
-                  <div
-                    key={i}
-                    style={{
-                      width: 10, height: 10, borderRadius: '50%',
-                      background: isActive ? '#8b4f2c' : 'var(--surface-container)',
-                      border: `1.5px solid ${isActive ? '#8b4f2c' : 'var(--outline-variant)'}`,
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontSize: '0.55rem', fontWeight: 600, color: 'var(--on-surface-muted)' }}>{d}</span>
+                    <div style={{
+                      width: 12, height: 12, borderRadius: '50%',
+                      background: active ? 'var(--secondary)' : 'var(--surface-container)',
+                      border: isToday && !active ? '1.5px solid var(--secondary)' : 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                       transition: 'background 0.2s',
-                    }}
-                  />
+                    }}>
+                      {isToday && !active && <Zap size={6} color="var(--secondary)" />}
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </>
         ) : (
-          <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>Loading streak data...</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>Loading...</p>
         )}
       </div>
     </div>
