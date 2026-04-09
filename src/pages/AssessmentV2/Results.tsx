@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import ArchetypeShareCard from '../../components/ArchetypeShareCard';
+import CareerExplorer from './CareerExplorer';
+import WhatIfPanel, { generateWhatIfSkills } from './WhatIfPanel';
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface RIASECScores {
@@ -308,93 +311,93 @@ function ArchetypeCard({ archetype, riasec, bigFive, visible }: {
 function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: number; visible: boolean }) {
   const tier = getMatchTier(match.matchScore);
   const tierCfg = TIER_CONFIG[tier];
+  const [showWhatIf, setShowWhatIf] = useState(false);
 
   return (
     <div style={{
       ...card,
-      display: 'flex', gap: '1.5rem', alignItems: 'flex-start',
+      display: 'flex', flexDirection: 'column', gap: 0,
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(24px)',
       transition: 'opacity 0.4s ease, transform 0.4s ease',
     }}>
-      <div style={{ flexShrink: 0, textAlign: 'center' }}>
-        <ScoreGauge score={match.matchScore} />
-        <span style={{ fontSize: 11, fontWeight: 600, color: tierCfg.color, display: 'block', marginTop: 2 }}>
-          {tierCfg.label}
-        </span>
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.25rem' }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: TEAL }}>#{rank}</span>
-          <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-display, Georgia, serif)', color: 'var(--on-surface, #222)' }}>
-            {match.title}
-          </h3>
-        </div>
-        {match.careerFamily && (
-          <span style={{ fontSize: 12, color: 'var(--on-surface, #777)', marginBottom: '0.75rem', display: 'block' }}>
-            {match.careerFamily}
+      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+        <div style={{ flexShrink: 0, textAlign: 'center' }}>
+          <ScoreGauge score={match.matchScore} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: tierCfg.color, display: 'block', marginTop: 2 }}>
+            {tierCfg.label}
           </span>
-        )}
-        {match.whyThisFits && (
-          <div style={{ marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: TEAL, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>
-              Why this fits you
-            </span>
-            <ul style={{ margin: '0.25rem 0 0', paddingLeft: '1.25rem', fontSize: 14, lineHeight: 1.6, color: 'var(--on-surface, #444)' }}>
-              {match.whyThisFits.map((b, i) => <li key={i}>{b}</li>)}
-            </ul>
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: 13, color: 'var(--on-surface, #555)' }}>
-          {match.salaryRange && (
-            <span>${(match.salaryRange.min / 1000).toFixed(0)}k – ${(match.salaryRange.max / 1000).toFixed(0)}k</span>
-          )}
-          {match.growthOutlook && <span>Growth: {match.growthOutlook}</span>}
         </div>
-        <Link to="/app/onboarding" style={{
-          display: 'inline-block',
-          marginTop: '1rem', padding: '0.6rem 1.5rem', borderRadius: '2rem',
-          background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
-          textDecoration: 'none', transition: 'background 0.2s',
-        }}
-          onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
-          onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
-        >
-          Build Roadmap
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Share Card (screenshot-friendly) ──────────────────────────── */
-
-function ShareCard({ archetype, riasec, matches }: {
-  archetype: Archetype; riasec: RIASECScores; matches: CareerMatch[];
-}) {
-  return (
-    <div style={{
-      ...card, maxWidth: 400, margin: '0 auto', textAlign: 'center',
-      background: 'linear-gradient(145deg, #f7fafa, #eefcfe)',
-    }}>
-      <h2 style={{ fontFamily: 'var(--font-display, Georgia, serif)', color: TEAL, margin: '0 0 0.25rem', fontSize: '1.4rem' }}>
-        {archetype.name}
-      </h2>
-      <p style={{ fontSize: 13, color: COPPER, fontStyle: 'italic', margin: '0 0 1rem' }}>{archetype.tagline}</p>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-        <RIASECHexagon scores={riasec} size={140} animate={false} />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        {matches.slice(0, 3).map((m, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', fontSize: 14 }}>
-            <span style={{ color: 'var(--on-surface, #333)' }}>{m.title}</span>
-            <span style={{ fontWeight: 700, color: TIER_CONFIG[getMatchTier(m.matchScore)].color }}>{m.matchScore}%</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: TEAL }}>#{rank}</span>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-display, Georgia, serif)', color: 'var(--on-surface, #222)' }}>
+              {match.title}
+            </h3>
           </div>
-        ))}
+          {match.careerFamily && (
+            <span style={{ fontSize: 12, color: 'var(--on-surface, #777)', marginBottom: '0.75rem', display: 'block' }}>
+              {match.careerFamily}
+            </span>
+          )}
+          {match.whyThisFits && (
+            <div style={{ marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: TEAL, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>
+                Why this fits you
+              </span>
+              <ul style={{ margin: '0.25rem 0 0', paddingLeft: '1.25rem', fontSize: 14, lineHeight: 1.6, color: 'var(--on-surface, #444)' }}>
+                {match.whyThisFits.map((b, i) => <li key={i}>{b}</li>)}
+              </ul>
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: 13, color: 'var(--on-surface, #555)' }}>
+            {match.salaryRange && (
+              <span>${(match.salaryRange.min / 1000).toFixed(0)}k – ${(match.salaryRange.max / 1000).toFixed(0)}k</span>
+            )}
+            {match.growthOutlook && <span>Growth: {match.growthOutlook}</span>}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+            <Link to="/app/onboarding" style={{
+              display: 'inline-block',
+              padding: '0.6rem 1.5rem', borderRadius: '2rem',
+              background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
+              textDecoration: 'none', transition: 'background 0.2s',
+            }}
+              onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
+              onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
+            >
+              Build Roadmap
+            </Link>
+            <button
+              onClick={() => setShowWhatIf(v => !v)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: TEAL,
+                fontSize: 14,
+                fontWeight: 600,
+                padding: '0.4rem 0',
+                textDecoration: 'underline',
+                textUnderlineOffset: 2,
+                transition: 'color 0.15s ease',
+              }}
+              onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = TEAL_LIGHT)}
+              onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = TEAL)}
+            >
+              {showWhatIf ? 'Hide boost tips' : 'How to boost your match'}
+            </button>
+          </div>
+        </div>
       </div>
-      <p style={{ fontSize: 11, color: 'var(--on-surface, #999)', margin: 0 }}>
-        Discover yours at <strong>pathwise.fit</strong>
-      </p>
+
+      {showWhatIf && (
+        <WhatIfPanel
+          careerTitle={match.title}
+          currentScore={match.matchScore}
+          skills={generateWhatIfSkills(match.title, match.matchScore)}
+        />
+      )}
     </div>
   );
 }
@@ -405,6 +408,7 @@ export default function AssessmentResults() {
   const location = useLocation();
   const result = (location.state as any)?.result;
 
+  const completedTier: number = (location.state as any)?.completedTier ?? 3;
   const archetype = result?.archetype ?? MOCK_ARCHETYPE;
   const riasec = result?.riasec ?? MOCK_RIASEC;
   const bigFive = result?.bigFive ?? MOCK_BIGFIVE;
@@ -487,6 +491,68 @@ export default function AssessmentResults() {
         </div>
       </section>
 
+      {/* Tier upsell: encourage deeper profiling */}
+      {completedTier === 1 && (
+        <div style={{
+          background: 'rgba(0,106,98,0.06)', textAlign: 'center', padding: '1.5rem',
+          marginBottom: '2rem', borderRadius: '1.25rem',
+        }}>
+          <p style={{ fontWeight: 600, color: 'var(--on-surface, #222)', margin: '0 0 0.5rem' }}>
+            Want more accurate matches?
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #666)', margin: '0 0 0.75rem' }}>
+            Answer 22 more personality questions to unlock deeper insights.
+          </p>
+          <Link to="/app/assessment-v2?tier=2" style={{
+            display: 'inline-block', padding: '0.7rem 1.5rem', borderRadius: '2rem',
+            background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
+            textDecoration: 'none', transition: 'background 0.2s',
+          }}>
+            Unlock Deeper Insights
+          </Link>
+        </div>
+      )}
+      {completedTier === 2 && (
+        <div style={{
+          background: 'rgba(0,106,98,0.06)', textAlign: 'center', padding: '1.5rem',
+          marginBottom: '2rem', borderRadius: '1.25rem',
+        }}>
+          <p style={{ fontWeight: 600, color: 'var(--on-surface, #222)', margin: '0 0 0.5rem' }}>
+            Unlock maximum precision
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #666)', margin: '0 0 0.75rem' }}>
+            Answer 20 more work-style and aptitude questions for the most accurate results possible.
+          </p>
+          <Link to="/app/assessment-v2?tier=3" style={{
+            display: 'inline-block', padding: '0.7rem 1.5rem', borderRadius: '2rem',
+            background: TEAL, color: '#fff', fontWeight: 600, fontSize: 14,
+            textDecoration: 'none', transition: 'background 0.2s',
+          }}>
+            Maximum Precision
+          </Link>
+        </div>
+      )}
+
+      {/* Section: Explore All Career Paths */}
+      <section style={{
+        marginBottom: '2.5rem',
+        opacity: phase >= 5 ? 1 : 0,
+        transition: 'opacity 0.6s ease 0.2s',
+      }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display, Georgia, serif)', fontSize: '1.4rem',
+            color: 'var(--on-surface, #222)', margin: '0 0 0.4rem',
+          }}>
+            Explore All Career Paths
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--on-surface-variant, #49454f)', margin: 0 }}>
+            Browse all careers and filter by domain, match score, or pathway time.
+          </p>
+        </div>
+        <CareerExplorer allMatches={matches} userRiasec={riasec} />
+      </section>
+
       {/* CTA + Share */}
       <section style={{
         textAlign: 'center',
@@ -505,23 +571,38 @@ export default function AssessmentResults() {
           Build Your Roadmap
         </Link>
 
-        <details style={{ marginTop: '1rem' }}>
-          <summary style={{
-            cursor: 'pointer', fontSize: 14, color: TEAL, fontWeight: 600,
-            listStyle: 'none', display: 'inline-block',
-          }}>
-            Share Your Results
-          </summary>
-          <div style={{ marginTop: '1rem' }}>
-            <ShareCard archetype={archetype} riasec={riasec} matches={matches} />
-          </div>
-        </details>
-
         <div style={{ marginTop: '1.5rem' }}>
           <Link to="/app/assessment-v2" style={{ color: 'var(--on-surface-variant)', fontSize: '0.82rem' }}>
             Retake Assessment
           </Link>
         </div>
+      </section>
+
+      {/* Section: Share Your Career DNA */}
+      <section style={{
+        marginTop: '2.5rem',
+        opacity: phase >= 5 ? 1 : 0,
+        transition: 'opacity 0.6s ease 0.3s',
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display, Georgia, serif)',
+            fontSize: '1.4rem',
+            color: 'var(--on-surface, #222)',
+            margin: '0 0 0.5rem',
+          }}>
+            Share Your Career DNA
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--on-surface-variant, #666)', margin: 0 }}>
+            Show the world what makes you unique — download or share your archetype card.
+          </p>
+        </div>
+        <ArchetypeShareCard
+          archetypeName={archetype.name}
+          archetypeTagline={archetype.tagline}
+          riasec={riasec}
+          topMatches={matches.slice(0, 3).map((m: CareerMatch) => ({ title: m.title, score: m.matchScore }))}
+        />
       </section>
     </div>
   );

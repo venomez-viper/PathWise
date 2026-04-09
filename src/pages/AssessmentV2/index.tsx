@@ -1,87 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, warmup } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import { getArchetypePreview } from './archetypePreview';
-
-/* ══════════════════════════════════════════════════════════════════
-   PLACEHOLDER QUESTION DATA
-   Will be replaced by import from ./questionData once that file lands.
-   ══════════════════════════════════════════════════════════════════ */
-
-type QuestionFormat = 'likert3' | 'likert5' | 'forcedChoice' | 'scenario' | 'chips';
-
-interface Question {
-  id: string;
-  text: string;
-  format: QuestionFormat;
-  options?: { value: string; label: string; description?: string }[];
-  chipOptions?: string[];
-  chipMin?: number;
-  chipMax?: number;
-}
-
-interface Phase {
-  id: string;
-  title: string;
-  subtitle: string;
-  accent: string;
-  questions: Question[];
-  transitionMessage: string;
-}
-
-const ASSESSMENT_PHASES: Phase[] = [
-  {
-    id: 'riasec',
-    title: 'Interests',
-    subtitle: 'What activities excite you?',
-    accent: 'var(--secondary, #006a62)',
-    transitionMessage: 'Great start! We can already see some patterns forming...',
-    questions: [
-      { id: 'r1', text: 'Building or fixing things with your hands', format: 'likert3', options: [
-        { value: 'like', label: 'Like' }, { value: 'neutral', label: 'Neutral' }, { value: 'dislike', label: 'Dislike' },
-      ]},
-      { id: 'r2', text: 'Analyzing data to uncover hidden patterns', format: 'likert3', options: [
-        { value: 'like', label: 'Like' }, { value: 'neutral', label: 'Neutral' }, { value: 'dislike', label: 'Dislike' },
-      ]},
-      { id: 'r3', text: 'Designing visual layouts or experiences', format: 'likert3', options: [
-        { value: 'like', label: 'Like' }, { value: 'neutral', label: 'Neutral' }, { value: 'dislike', label: 'Dislike' },
-      ]},
-      { id: 'r4', text: 'Coaching someone through a challenge', format: 'likert3', options: [
-        { value: 'like', label: 'Like' }, { value: 'neutral', label: 'Neutral' }, { value: 'dislike', label: 'Dislike' },
-      ]},
-      { id: 'r5', text: 'Persuading people to try a new idea', format: 'likert3', options: [
-        { value: 'like', label: 'Like' }, { value: 'neutral', label: 'Neutral' }, { value: 'dislike', label: 'Dislike' },
-      ]},
-    ],
-  },
-  {
-    id: 'bigfive',
-    title: 'Personality',
-    subtitle: 'How do you typically behave?',
-    accent: 'var(--copper, #8b4f2c)',
-    transitionMessage: "Your personality profile is taking shape. Let's explore your values next.",
-    questions: [
-      { id: 'b1', text: 'I enjoy trying new and unfamiliar experiences', format: 'likert5', options: [
-        { value: '1', label: 'SD' }, { value: '2', label: 'D' }, { value: '3', label: 'N' }, { value: '4', label: 'A' }, { value: '5', label: 'SA' },
-      ]},
-      { id: 'b2', text: 'I keep my workspace organized and tidy', format: 'likert5', options: [
-        { value: '1', label: 'SD' }, { value: '2', label: 'D' }, { value: '3', label: 'N' }, { value: '4', label: 'A' }, { value: '5', label: 'SA' },
-      ]},
-      { id: 'b3', text: 'I feel energized after spending time with a large group', format: 'likert5', options: [
-        { value: '1', label: 'SD' }, { value: '2', label: 'D' }, { value: '3', label: 'N' }, { value: '4', label: 'A' }, { value: '5', label: 'SA' },
-      ]},
-      { id: 'b4', text: 'I find it easy to empathize with others\u2019 feelings', format: 'likert5', options: [
-        { value: '1', label: 'SD' }, { value: '2', label: 'D' }, { value: '3', label: 'N' }, { value: '4', label: 'A' }, { value: '5', label: 'SA' },
-      ]},
-      { id: 'b5', text: 'I stay calm under pressure', format: 'likert5', options: [
-        { value: '1', label: 'SD' }, { value: '2', label: 'D' }, { value: '3', label: 'N' }, { value: '4', label: 'A' }, { value: '5', label: 'SA' },
-      ]},
-    ],
-  },
-];
+import { ASSESSMENT_PHASES, getLastPhaseIndexForTier } from '../Assessment/questionData';
 
 /* ══════════════════════════════════════════════════════════════════
    CONSTANTS & TYPES
@@ -97,6 +21,8 @@ interface AssessmentV2State {
   answers: Record<string, string | string[] | number>;
   showTransition: boolean;
   showAnalyzing: boolean;
+  showTierCheckpoint: false | 1 | 2;  // which tier checkpoint to show
+  completedTier: 0 | 1 | 2 | 3;       // highest completed tier
   startedAt: string;
 }
 
@@ -107,7 +33,21 @@ const ANALYZING_MESSAGES = [
   'Building your career fingerprint...',
 ];
 
-const PHASE_PANDA_MOODS = ['curious', 'thinking', 'happy', 'cool', 'working', 'celebrating'] as const;
+const PHASE_PANDA_MOODS = ['curious', 'happy', 'thinking', 'cool', 'thinking', 'cool', 'working', 'celebrating'] as const;
+
+const PHASE_TRANSITION_MESSAGES = [
+  // Tier 1 phases (0-2)
+  'Great start! Your interest profile is taking shape...',
+  'Values locked in. Just a few context questions to personalize your results.',
+  'Core profile complete! Your career matches are ready.',
+  // Tier 2 phases (3-4)
+  'Your personality profile is forming. Almost done with this tier...',
+  'Deeper insights unlocked! Your matches are getting more precise.',
+  // Tier 3 phases (5-7)
+  "Excellent! Your work DNA is mapped. Aptitudes next...",
+  'Strengths noted. Just a couple more context questions.',
+  'All done! Building your career fingerprint...',
+];
 
 /* ══════════════════════════════════════════════════════════════════
    STYLES
@@ -219,61 +159,110 @@ const s = {
     transform: selected ? 'scale(1.02)' : 'scale(1)',
   }),
   /* likert5 */
-  likert5Wrap: { display: 'flex', gap: '0.5rem', justifyContent: 'center', width: '100%' },
-  likert5Btn: (selected: boolean) => ({
-    width: 52,
-    height: 52,
+  likert5Wrap: { display: 'flex', gap: '0.5rem', justifyContent: 'center', width: '100%', flexWrap: 'wrap' as const },
+  likert5Btn: (selected: boolean, accent: string) => ({
+    flex: '1 1 80px',
+    minWidth: 80,
+    padding: '0.75rem 0.5rem',
     borderRadius: 'var(--radius-full, 9999px)',
     border: '2px solid',
-    borderColor: selected ? 'var(--copper, #8b4f2c)' : 'var(--surface-container-low, #e8f6f8)',
-    background: selected ? 'rgba(139,79,44,0.1)' : 'var(--surface-container-low, #e8f6f8)',
-    color: selected ? 'var(--copper, #8b4f2c)' : 'var(--on-surface-variant, #49454f)',
-    fontSize: '0.85rem',
+    borderColor: selected ? accent : 'var(--surface-container-low, #e8f6f8)',
+    background: selected ? `${accent}18` : 'var(--surface-container-low, #e8f6f8)',
+    color: selected ? accent : 'var(--on-surface-variant, #49454f)',
+    fontSize: '0.8rem',
     fontWeight: selected ? 700 : 500,
     cursor: 'pointer',
     transition: 'var(--transition-spring, 0.5s cubic-bezier(0.34,1.56,0.64,1))',
-    transform: selected ? 'scale(1.1)' : 'scale(1)',
+    transform: selected ? 'scale(1.05)' : 'scale(1)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    textAlign: 'center' as const,
   }),
   /* forcedChoice */
-  choiceCard: (selected: boolean) => ({
+  choiceCard: (selected: boolean, accent: string) => ({
     width: '100%',
     padding: '1.25rem',
     borderRadius: '1.25rem',
     border: '2px solid',
-    borderColor: selected ? 'var(--copper, #8b4f2c)' : 'var(--surface-container-low, #e8f6f8)',
-    background: selected ? 'rgba(139,79,44,0.06)' : 'var(--surface-container-lowest, #ffffff)',
+    borderColor: selected ? accent : 'var(--surface-container-low, #e8f6f8)',
+    background: selected ? `${accent}0f` : 'var(--surface-container-lowest, #ffffff)',
     cursor: 'pointer',
     textAlign: 'left' as const,
     transition: 'var(--transition-base, 0.3s cubic-bezier(0.33,1,0.68,1))',
   }),
   /* scenario */
-  scenarioCard: (selected: boolean) => ({
+  scenarioCard: (selected: boolean, accent: string) => ({
     width: '100%',
     padding: '1rem 1.25rem',
     borderRadius: '1rem',
     border: '2px solid',
-    borderColor: selected ? 'var(--secondary, #006a62)' : 'var(--surface-container-low, #e8f6f8)',
-    background: selected ? 'rgba(0,106,98,0.06)' : 'var(--surface-container-lowest, #ffffff)',
+    borderColor: selected ? accent : 'var(--surface-container-low, #e8f6f8)',
+    background: selected ? `${accent}0f` : 'var(--surface-container-lowest, #ffffff)',
     cursor: 'pointer',
     textAlign: 'left' as const,
     transition: 'var(--transition-base, 0.3s cubic-bezier(0.33,1,0.68,1))',
   }),
   /* chips */
   chipsWrap: { display: 'flex', flexWrap: 'wrap' as const, gap: '0.5rem', justifyContent: 'center', width: '100%' },
-  chip: (selected: boolean) => ({
+  chip: (selected: boolean, accent: string) => ({
     padding: '0.5rem 1rem',
     borderRadius: 'var(--radius-full, 9999px)',
     border: '2px solid',
-    borderColor: selected ? 'var(--copper, #8b4f2c)' : 'var(--surface-container-low, #e8f6f8)',
-    background: selected ? 'rgba(139,79,44,0.08)' : 'var(--surface-container-low, #e8f6f8)',
-    color: selected ? 'var(--copper, #8b4f2c)' : 'var(--on-surface, #1a1c1f)',
+    borderColor: selected ? accent : 'var(--surface-container-low, #e8f6f8)',
+    background: selected ? `${accent}14` : 'var(--surface-container-low, #e8f6f8)',
+    color: selected ? accent : 'var(--on-surface, #1a1c1f)',
     fontSize: '0.9rem',
     fontWeight: selected ? 600 : 400,
     cursor: 'pointer',
     transition: 'var(--transition-spring, 0.5s cubic-bezier(0.34,1.56,0.64,1))',
+  }),
+  /* select */
+  selectBtn: (selected: boolean, accent: string) => ({
+    width: '100%',
+    padding: '1rem 1.25rem',
+    borderRadius: '1rem',
+    border: '2px solid',
+    borderColor: selected ? accent : 'var(--surface-container-low, #e8f6f8)',
+    background: selected ? `${accent}0f` : 'var(--surface-container-lowest, #ffffff)',
+    color: 'var(--on-surface, #1a1c1f)',
+    fontSize: '0.95rem',
+    fontWeight: selected ? 600 : 400,
+    cursor: 'pointer',
+    textAlign: 'left' as const,
+    transition: 'var(--transition-base, 0.3s cubic-bezier(0.33,1,0.68,1))',
+    transform: selected ? 'scale(1.01)' : 'scale(1)',
+  }),
+  /* ranking */
+  rankingItem: (selected: boolean, accent: string) => ({
+    width: '100%',
+    padding: '0.875rem 1.25rem',
+    borderRadius: '1rem',
+    border: '2px solid',
+    borderColor: selected ? accent : 'var(--surface-container-low, #e8f6f8)',
+    background: selected ? `${accent}0f` : 'var(--surface-container-lowest, #ffffff)',
+    color: 'var(--on-surface, #1a1c1f)',
+    fontSize: '0.95rem',
+    fontWeight: selected ? 600 : 400,
+    cursor: 'pointer',
+    textAlign: 'left' as const,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    transition: 'var(--transition-base, 0.3s cubic-bezier(0.33,1,0.68,1))',
+  }),
+  rankBadge: (accent: string) => ({
+    minWidth: 28,
+    height: 28,
+    borderRadius: '50%',
+    background: accent,
+    color: '#fff',
+    fontSize: '0.85rem',
+    fontWeight: 700,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   }),
   /* CTA button */
   cta: (accent: string) => ({
@@ -310,9 +299,14 @@ const s = {
 export default function AssessmentV2() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Wake up backend
   useEffect(() => { warmup(); }, []);
+
+  // Tier boundaries (index of last phase in each tier)
+  const tier1LastIdx = getLastPhaseIndexForTier(1);
+  const tier2LastIdx = getLastPhaseIndexForTier(2);
 
   const [state, setState] = useState<AssessmentV2State>({
     currentPhase: -1, // -1 = welcome
@@ -320,6 +314,8 @@ export default function AssessmentV2() {
     answers: {},
     showTransition: false,
     showAnalyzing: false,
+    showTierCheckpoint: false,
+    completedTier: 0,
     startedAt: new Date().toISOString(),
   });
   const [slideDir, setSlideDir] = useState<'left' | 'right'>('left');
@@ -359,20 +355,46 @@ export default function AssessmentV2() {
   }, []);
 
   const startFresh = useCallback(() => {
+    // If resuming for tier 2/3, skip to that tier's first phase
+    const tierParam = searchParams.get('tier');
+    const resumeTier = tierParam === '2' || tierParam === '3' ? parseInt(tierParam) as 2 | 3 : null;
+
+    if (resumeTier) {
+      // Load existing answers from storage, start at the next tier's first phase
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const saved: AssessmentV2State = JSON.parse(raw);
+          const startPhase = resumeTier === 2 ? tier1LastIdx + 1 : tier2LastIdx + 1;
+          setState({
+            ...saved,
+            currentPhase: startPhase,
+            currentQuestion: 0,
+            showTransition: false,
+            showAnalyzing: false,
+            showTierCheckpoint: false,
+          });
+          setSlideKey(k => k + 1);
+          return;
+        }
+      } catch {}
+    }
+
     localStorage.removeItem(STORAGE_KEY);
     setHasSavedState(false);
-    setState(prev => ({ ...prev, currentPhase: 0, currentQuestion: 0, answers: {}, startedAt: new Date().toISOString() }));
+    setState(prev => ({ ...prev, currentPhase: 0, currentQuestion: 0, answers: {}, showTierCheckpoint: false, startedAt: new Date().toISOString() }));
     setSlideKey(k => k + 1);
-  }, []);
+  }, [searchParams, tier1LastIdx, tier2LastIdx]);
 
   /* ── Derived values ── */
-  const { currentPhase, currentQuestion, answers, showTransition, showAnalyzing } = state;
+  const { currentPhase, currentQuestion, answers, showTransition, showAnalyzing, showTierCheckpoint } = state;
   const phases = ASSESSMENT_PHASES;
   const phase = currentPhase >= 0 && currentPhase < phases.length ? phases[currentPhase] : null;
   const question = phase ? phase.questions[currentQuestion] : null;
   const totalQuestions = phases.reduce((a, p) => a + p.questions.length, 0);
   const questionsBeforePhase = phases.slice(0, Math.max(0, currentPhase)).reduce((a, p) => a + p.questions.length, 0);
   const globalProgress = currentPhase < 0 ? 0 : Math.round(((questionsBeforePhase + currentQuestion) / totalQuestions) * 100);
+  const phaseAccent = phase?.color ?? 'var(--secondary, #006a62)';
 
   /* ── Answer handler ── */
   const setAnswer = useCallback((qId: string, value: string | string[]) => {
@@ -401,6 +423,19 @@ export default function AssessmentV2() {
       } else {
         return prev;
       }
+      const updated = { ...prev, answers: { ...prev.answers, [qId]: next } };
+      saveState(updated);
+      return updated;
+    });
+  }, [saveState]);
+
+  /* Toggle for ranking — ordered list, click appends/removes */
+  const toggleRank = useCallback((qId: string, value: string) => {
+    setState(prev => {
+      const current = (prev.answers[qId] as string[]) || [];
+      const next = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
       const updated = { ...prev, answers: { ...prev.answers, [qId]: next } };
       saveState(updated);
       return updated;
@@ -464,26 +499,55 @@ export default function AssessmentV2() {
   const advancePhase = useCallback(() => {
     setState(prev => {
       const nextPhase = prev.currentPhase + 1;
+
+      // Check if we just finished a tier boundary -> show checkpoint
+      if (prev.currentPhase === tier1LastIdx && prev.completedTier < 1) {
+        const next = { ...prev, showTransition: false, showTierCheckpoint: 1 as const, completedTier: 1 as const };
+        saveState(next);
+        return next;
+      }
+      if (prev.currentPhase === tier2LastIdx && prev.completedTier < 2) {
+        const next = { ...prev, showTransition: false, showTierCheckpoint: 2 as const, completedTier: 2 as const };
+        saveState(next);
+        return next;
+      }
+
       if (nextPhase >= phases.length) {
         // All phases done -> analyzing
-        return { ...prev, showTransition: false, showAnalyzing: true };
+        return { ...prev, showTransition: false, showTierCheckpoint: false, completedTier: 3 as const, showAnalyzing: true };
       }
-      const next = { ...prev, currentPhase: nextPhase, currentQuestion: 0, showTransition: false };
+      const next = { ...prev, currentPhase: nextPhase, currentQuestion: 0, showTransition: false, showTierCheckpoint: false as const };
       saveState(next);
       setSlideKey(k => k + 1);
       return next;
     });
-  }, [phases, saveState]);
+  }, [phases, saveState, tier1LastIdx, tier2LastIdx]);
+
+  /** Continue from a tier checkpoint into the next tier */
+  const continueToNextTier = useCallback(() => {
+    setState(prev => {
+      const nextPhaseIdx = prev.showTierCheckpoint === 1 ? tier1LastIdx + 1 : tier2LastIdx + 1;
+      const next = { ...prev, currentPhase: nextPhaseIdx, currentQuestion: 0, showTierCheckpoint: false as const };
+      saveState(next);
+      setSlideKey(k => k + 1);
+      return next;
+    });
+  }, [tier1LastIdx, tier2LastIdx, saveState]);
+
+  /** Submit at the current tier checkpoint (skip remaining tiers) */
+  const submitAtCheckpoint = useCallback(() => {
+    setState(prev => ({ ...prev, showTierCheckpoint: false as const, showAnalyzing: true }));
+  }, []);
 
   // Auto-advance transition screen.
-  // Phase 4 (index 3) is the archetype preview — it MUST be manually dismissed
-  // (the forced pause is what drives the 2.7x completion boost).
+  // The Work DNA phase (id=4) has the archetype preview — manual-only dismiss.
+  const workDnaPhaseIdx = phases.findIndex(p => p.id === 4);
   useEffect(() => {
-    if (showTransition && currentPhase !== 3) {
+    if (showTransition && currentPhase !== workDnaPhaseIdx) {
       transitionTimer.current = setTimeout(advancePhase, TRANSITION_AUTO_MS);
       return () => { if (transitionTimer.current) clearTimeout(transitionTimer.current); };
     }
-  }, [showTransition, currentPhase, advancePhase]);
+  }, [showTransition, currentPhase, workDnaPhaseIdx, advancePhase]);
 
   /* ── Analyzing sequence ── */
   useEffect(() => {
@@ -508,38 +572,29 @@ export default function AssessmentV2() {
     try {
       const payload = {
         userId: user.id,
-        workStyle: (answers.b3 as string) === '5' ? 'collaborative' : (answers.b3 as string) === '1' ? 'solo' : 'mixed',
-        strengths: Object.entries(answers)
-          .filter(([k]) => k.startsWith('r') && answers[k] === 'like')
-          .map(([k]) => k),
-        values: Object.entries(answers)
-          .filter(([k]) => k.startsWith('b'))
-          .map(([, v]) => String(v)),
-        currentSkills: [],
-        experienceLevel: 'mid',
-        interests: Object.entries(answers)
-          .filter(([k]) => k.startsWith('r'))
-          .map(([, v]) => String(v)),
-        currentRole: '',
-        personalityType: 'v2-assessment',
         rawAnswers: answers,
+        completedTier: state.completedTier || 1,
       };
 
-      const res: any = await assessmentApi.submit(payload);
-      localStorage.removeItem(STORAGE_KEY);
-      if (res?.result?.careerMatches?.length) {
-        navigate('/app/career-match', { state: { result: res.result } });
+      const res: any = await assessmentApi.submitV2(payload);
+      // Keep answers in localStorage so user can resume for deeper tiers
+      const tierCompleted = state.completedTier || 1;
+      if (tierCompleted < 3) {
+        saveState({ ...state, showAnalyzing: false, showTransition: false, showTierCheckpoint: false });
       } else {
-        navigate('/app/career-match');
+        localStorage.removeItem(STORAGE_KEY);
       }
+      navigate('/app/assessment-v2/results', { state: { result: res.result, completedTier: tierCompleted } });
     } catch {
-      // On error go back to last phase so user can retry
+      // On error go back to last answered phase so user can retry
+      const lastPhaseIdx = Math.min(state.currentPhase, phases.length - 1);
       setState(prev => ({
         ...prev,
         showAnalyzing: false,
         showTransition: false,
-        currentPhase: phases.length - 1,
-        currentQuestion: phases[phases.length - 1].questions.length - 1,
+        showTierCheckpoint: false as const,
+        currentPhase: lastPhaseIdx,
+        currentQuestion: phases[lastPhaseIdx].questions.length - 1,
       }));
     }
   };
@@ -594,7 +649,7 @@ export default function AssessmentV2() {
               Discover Your Career DNA
             </h1>
             <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '1rem', marginBottom: '1.5rem' }}>
-              ~15 minutes &middot; no wrong answers
+              ~8 minutes &middot; no wrong answers
             </p>
             <button style={s.cta('var(--secondary, #006a62)')} onClick={startFresh}>
               Start Assessment <ArrowRight size={18} />
@@ -629,11 +684,47 @@ export default function AssessmentV2() {
     );
   }
 
+  /* ── Tier 1 Checkpoint ── */
+  if (showTierCheckpoint === 1) {
+    return (
+      <div style={s.page}>
+        <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out' }}>
+          <div style={s.center}>
+            <Panda mood="celebrating" size={120} animate />
+            <h2 style={{ ...s.questionText, fontSize: '1.5rem', marginBottom: '0.5rem' }}>Your Career Matches Are Ready!</h2>
+            <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '1rem', marginBottom: '1.5rem', maxWidth: 400 }}>We have enough data to show your top career matches.</p>
+            <button style={s.cta('var(--secondary, #006a62)')} onClick={submitAtCheckpoint}>See My Results Now <ArrowRight size={18} /></button>
+            <p style={{ marginTop: '2rem', color: 'var(--on-surface-variant, #49454f)', fontSize: '0.9rem' }}>Want even more accurate results?</p>
+            <button style={s.ctaSecondary} onClick={continueToNextTier}>Continue for Deeper Insights (+5 min)</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Tier 2 Checkpoint ── */
+  if (showTierCheckpoint === 2) {
+    return (
+      <div style={s.page}>
+        <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out' }}>
+          <div style={s.center}>
+            <Panda mood="cool" size={100} animate />
+            <h2 style={{ ...s.questionText, fontSize: '1.5rem', marginBottom: '0.5rem' }}>Great! Your profile is much stronger now.</h2>
+            <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '1rem', marginBottom: '1.5rem', maxWidth: 400 }}>Personality insights are locked in. Your matches will be more precise.</p>
+            <button style={s.cta('var(--secondary, #006a62)')} onClick={submitAtCheckpoint}>See Enhanced Results <ArrowRight size={18} /></button>
+            <p style={{ marginTop: '2rem', color: 'var(--on-surface-variant, #49454f)', fontSize: '0.9rem' }}>Want maximum precision?</p>
+            <button style={s.ctaSecondary} onClick={continueToNextTier}>Maximum Precision (+4 min)</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   /* ── Phase Transition Screen ── */
   if (showTransition && phase) {
-    // Phase 4 (index 3) — archetype preview: manual-only, no auto-advance.
+    // Work DNA phase (id=4) — archetype preview: manual-only, no auto-advance.
     // This forced pause is the key retention moment (2.7x completion boost).
-    if (currentPhase === 3) {
+    if (currentPhase === workDnaPhaseIdx) {
       const preview = getArchetypePreview(answers);
       return (
         <div style={s.page}>
@@ -698,19 +789,20 @@ export default function AssessmentV2() {
     }
 
     // All other phases — generic transition with auto-advance.
+    const transitionMsg = PHASE_TRANSITION_MESSAGES[currentPhase] ?? 'Great work! On to the next section...';
     return (
       <div style={s.page}>
         <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out', cursor: 'pointer' }} onClick={advancePhase}>
           <div style={s.center}>
             <Panda mood={PHASE_PANDA_MOODS[currentPhase] || 'happy'} size={100} />
-            <p style={{ ...s.eyebrow, color: phase.accent }}>
+            <p style={{ ...s.eyebrow, color: phaseAccent }}>
               Phase {currentPhase + 1} of {phases.length} complete
             </p>
             <h2 style={{ ...s.questionText, fontSize: '1.35rem', marginBottom: '0.25rem' }}>
               {phase.title}, done!
             </h2>
             <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '0.95rem' }}>
-              {phase.transitionMessage}
+              {transitionMsg}
             </p>
             <p style={{ color: 'var(--on-surface-muted, #78747e)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
               Tap to continue or wait...
@@ -731,7 +823,7 @@ export default function AssessmentV2() {
       case 'likert3':
         return (
           <div style={s.likert3Wrap}>
-            {question.options!.map(opt => (
+            {question.options.map(opt => (
               <button
                 key={opt.value}
                 style={s.likert3Btn(currentAnswer === opt.value, opt.value as 'like' | 'neutral' | 'dislike')}
@@ -746,10 +838,10 @@ export default function AssessmentV2() {
       case 'likert5':
         return (
           <div style={s.likert5Wrap}>
-            {question.options!.map(opt => (
+            {question.options.map(opt => (
               <button
                 key={opt.value}
-                style={s.likert5Btn(currentAnswer === opt.value)}
+                style={s.likert5Btn(currentAnswer === opt.value, phaseAccent)}
                 onClick={() => selectSingle(question.id, opt.value)}
               >
                 {opt.label}
@@ -761,14 +853,13 @@ export default function AssessmentV2() {
       case 'forcedChoice':
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
-            {question.options!.map(opt => (
+            {question.options.map(opt => (
               <button
                 key={opt.value}
-                style={s.choiceCard(currentAnswer === opt.value)}
+                style={s.choiceCard(currentAnswer === opt.value, phaseAccent)}
                 onClick={() => selectSingle(question.id, opt.value)}
               >
-                <div style={{ fontWeight: 600, color: 'var(--on-surface, #1a1c1f)', marginBottom: opt.description ? '0.25rem' : 0 }}>{opt.label}</div>
-                {opt.description && <div style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #49454f)' }}>{opt.description}</div>}
+                <div style={{ fontWeight: 600, color: 'var(--on-surface, #1a1c1f)' }}>{opt.label}</div>
               </button>
             ))}
           </div>
@@ -777,14 +868,13 @@ export default function AssessmentV2() {
       case 'scenario':
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%' }}>
-            {question.options!.map(opt => (
+            {question.options.map(opt => (
               <button
                 key={opt.value}
-                style={s.scenarioCard(currentAnswer === opt.value)}
+                style={s.scenarioCard(currentAnswer === opt.value, phaseAccent)}
                 onClick={() => selectSingle(question.id, opt.value)}
               >
-                <div style={{ fontWeight: 600, color: 'var(--on-surface, #1a1c1f)', marginBottom: opt.description ? '0.25rem' : 0 }}>{opt.label}</div>
-                {opt.description && <div style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant, #49454f)' }}>{opt.description}</div>}
+                <div style={{ fontWeight: currentAnswer === opt.value ? 600 : 400, color: 'var(--on-surface, #1a1c1f)', fontSize: '0.9rem', lineHeight: 1.45 }}>{opt.label}</div>
               </button>
             ))}
           </div>
@@ -792,27 +882,93 @@ export default function AssessmentV2() {
 
       case 'chips': {
         const selected = (currentAnswer as string[]) || [];
-        const max = question.chipMax || 6;
-        const min = question.chipMin || 1;
+        // lc_skills: no upper limit; lc_domains: up to 8; lc_learning: up to 3
+        const max = question.id === 'lc_skills' ? Infinity : question.id === 'lc_domains' ? 8 : 3;
+        const min = question.id === 'lc_skills' ? 0 : 1;
         return (
           <div>
             <div style={s.chipsWrap}>
-              {(question.chipOptions || []).map(chip => (
+              {question.options.map(opt => (
                 <button
-                  key={chip}
-                  style={s.chip(selected.includes(chip))}
-                  onClick={() => toggleChip(question.id, chip, max)}
+                  key={opt.value}
+                  style={s.chip(selected.includes(opt.value), phaseAccent)}
+                  onClick={() => toggleChip(question.id, opt.value, max)}
                 >
-                  {selected.includes(chip) && '\u2713 '}{chip}
+                  {selected.includes(opt.value) && '\u2713 '}{opt.label}
                 </button>
               ))}
             </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--on-surface-muted, #78747e)', textAlign: 'center', marginTop: '0.75rem' }}>
-              {selected.length}/{max} selected (min {min})
+              {max === Infinity
+                ? `${selected.length} selected`
+                : `${selected.length}/${max} selected${min > 0 ? ` (min ${min})` : ''}`}
             </p>
-            {selected.length >= min && (
+            {(min === 0 || selected.length >= min) && (
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-                <button style={s.cta(phase.accent)} onClick={goNext}>
+                <button style={s.cta(phaseAccent)} onClick={goNext}>
+                  Continue <ArrowRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      case 'select':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%' }}>
+            {question.options.map(opt => (
+              <button
+                key={opt.value}
+                style={s.selectBtn(currentAnswer === opt.value, phaseAccent)}
+                onClick={() => selectSingle(question.id, opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        );
+
+      case 'ranking': {
+        // Ordered tap-to-rank: user taps items in priority order, badge shows rank number.
+        const ranked = (currentAnswer as string[]) || [];
+        return (
+          <div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--on-surface-muted, #78747e)', textAlign: 'center', marginBottom: '0.75rem' }}>
+              Tap in order from most to least important. Tap again to remove.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%' }}>
+              {question.options.map(opt => {
+                const rankPos = ranked.indexOf(opt.value);
+                const isSelected = rankPos !== -1;
+                return (
+                  <button
+                    key={opt.value}
+                    style={s.rankingItem(isSelected, phaseAccent)}
+                    onClick={() => toggleRank(question.id, opt.value)}
+                  >
+                    {isSelected ? (
+                      <span style={s.rankBadge(phaseAccent)}>{rankPos + 1}</span>
+                    ) : (
+                      <span style={{
+                        minWidth: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        border: '2px dashed var(--surface-container-low, #e8f6f8)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }} />
+                    )}
+                    <span>{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {ranked.length === question.options.length && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                <button style={s.cta(phaseAccent)} onClick={goNext}>
                   Continue <ArrowRight size={16} />
                 </button>
               </div>
@@ -837,7 +993,7 @@ export default function AssessmentV2() {
         )}
         <div style={s.progressOuter}>
           <div style={s.progressBar}>
-            <div style={s.progressFill(globalProgress, phase.accent)} />
+            <div style={s.progressFill(globalProgress, phaseAccent)} />
           </div>
           <span style={s.progressLabel}>
             Phase {currentPhase + 1} of {phases.length} &mdash; {phase.title}

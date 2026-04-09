@@ -1,7 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
-import { AuthData, checkAdmin } from "../auth/auth";
+import { AuthData, checkAdmin, ADMIN_EMAIL } from "../auth/auth";
 import { RateLimits } from "../shared/rate-limiter";
 
 const db = new SQLDatabase("tickets", { migrations: "./migrations" });
@@ -36,6 +36,10 @@ export const submitTicket = api(
     if (params.message.trim().length < 10) {
       throw APIError.invalidArgument("message must be at least 10 characters");
     }
+    if (params.name.length > 100) throw APIError.invalidArgument("name too long");
+    if (params.email.length > 255) throw APIError.invalidArgument("email too long");
+    if (params.subject && params.subject.length > 500) throw APIError.invalidArgument("subject too long");
+    if (params.message.length > 5000) throw APIError.invalidArgument("message too long");
 
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -54,7 +58,7 @@ export const submitTicket = api(
       await sendEmail({ to: params.email, ...confirm });
       // Notify admin
       const notify = adminTicketNotificationEmail(params.name, params.email, params.subject || '', params.message);
-      await sendEmail({ to: "akashagakash@gmail.com", ...notify });
+      await sendEmail({ to: ADMIN_EMAIL, ...notify });
     } catch {}
 
     return { id, success: true };

@@ -27,6 +27,7 @@ export interface Phase {
   icon: string;
   color: string;
   questions: Question[];
+  tier: 1 | 2 | 3;
 }
 
 // ---------------------------------------------------------------------------
@@ -1083,7 +1084,19 @@ const phase6Questions: Question[] = [
 // Assembled phases
 // ---------------------------------------------------------------------------
 
+// Split Phase 6 questions by tier
+const phase6Tier1Questions = phase6Questions.filter(q =>
+  ['lc_age', 'lc_stage', 'lc_experience', 'lc_skills'].includes(q.id)
+);
+const phase6Tier2Questions = phase6Questions.filter(q =>
+  ['lc_domains', 'lc_learning'].includes(q.id)
+);
+const phase6Tier3Questions = phase6Questions.filter(q =>
+  ['lc_decision', 'lc_financial'].includes(q.id)
+);
+
 export const ASSESSMENT_PHASES: Phase[] = [
+  // ── Tier 1: Core Assessment (40 questions, ~8 min) ──
   {
     id: 1,
     title: 'What Energizes You?',
@@ -1091,14 +1104,7 @@ export const ASSESSMENT_PHASES: Phase[] = [
     icon: 'Compass',
     color: '#006a62',
     questions: phase1Questions,
-  },
-  {
-    id: 2,
-    title: 'Your Work Personality',
-    subtitle: 'How you naturally tend to operate at work.',
-    icon: 'Brain',
-    color: '#8b4f2c',
-    questions: phase2Questions,
+    tier: 1,
   },
   {
     id: 3,
@@ -1107,7 +1113,37 @@ export const ASSESSMENT_PHASES: Phase[] = [
     icon: 'Heart',
     color: '#c9a96e',
     questions: phase3Questions,
+    tier: 1,
   },
+  {
+    id: 6,
+    title: 'Your Career Context',
+    subtitle: 'Help us tailor recommendations to your situation.',
+    icon: 'User',
+    color: '#006a62',
+    questions: phase6Tier1Questions,
+    tier: 1,
+  },
+  // ── Tier 2: Deeper Insights (22 questions, ~5 min) ──
+  {
+    id: 2,
+    title: 'Your Work Personality',
+    subtitle: 'How you naturally tend to operate at work.',
+    icon: 'Brain',
+    color: '#8b4f2c',
+    questions: phase2Questions,
+    tier: 2,
+  },
+  {
+    id: 7,
+    title: 'More About You',
+    subtitle: 'Domains and learning preferences.',
+    icon: 'User',
+    color: '#006a62',
+    questions: phase6Tier2Questions,
+    tier: 2,
+  },
+  // ── Tier 3: Maximum Precision (20 questions, ~4 min) ──
   {
     id: 4,
     title: 'Your Work Style',
@@ -1115,6 +1151,7 @@ export const ASSESSMENT_PHASES: Phase[] = [
     icon: 'Dna',
     color: '#006a62',
     questions: phase4Questions,
+    tier: 3,
   },
   {
     id: 5,
@@ -1123,13 +1160,37 @@ export const ASSESSMENT_PHASES: Phase[] = [
     icon: 'Zap',
     color: '#8b4f2c',
     questions: phase5Questions,
+    tier: 3,
   },
   {
-    id: 6,
-    title: 'Your Career Context',
-    subtitle: 'Help us tailor recommendations to your situation.',
+    id: 8,
+    title: 'Final Context',
+    subtitle: 'Decision-making and financial context.',
     icon: 'User',
     color: '#006a62',
-    questions: phase6Questions,
+    questions: phase6Tier3Questions,
+    tier: 3,
   },
 ];
+
+/** Helper: get only phases for a given tier (and below) */
+export function getPhasesForTier(tier: 1 | 2 | 3): Phase[] {
+  return ASSESSMENT_PHASES.filter(p => p.tier <= tier);
+}
+
+/** Helper: get the last phase index for a given tier */
+export function getLastPhaseIndexForTier(tier: 1 | 2 | 3): number {
+  const phases = ASSESSMENT_PHASES;
+  let lastIndex = -1;
+  for (let i = 0; i < phases.length; i++) {
+    if (phases[i].tier <= tier) lastIndex = i;
+  }
+  return lastIndex;
+}
+
+/** Count total questions for a given tier range */
+export function getQuestionCountForTier(tier: 1 | 2 | 3): number {
+  return ASSESSMENT_PHASES
+    .filter(p => p.tier === tier)
+    .reduce((sum, p) => sum + p.questions.length, 0);
+}

@@ -12,6 +12,14 @@ export interface CareerProfile {
   careerStages: string[]; riskLevels: string[]; trajectories: string[];
   groupRoles: string[]; requiredSkills: string[]; experienceLevels: string[];
   domains: string[]; pathwayTime: string;
+  scoringWeights?: {
+    interest: number;      // 0-1, sum to 1.0
+    personality: number;
+    values: number;
+    aptitude: number;
+    environment: number;
+    stage: number;
+  };
   skillGaps: SkillGapEntry[]; certifications: CertEntry[];
   portfolioProjects: RecEntry[]; networkingRecs: RecEntry[];
   jobTargets: RecEntry[]; milestones: MilestoneEntry[];
@@ -32,6 +40,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "ideator"], requiredSkills: ["JavaScript/TypeScript", "React", "CSS", "Git", "Testing"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology", "Design & UX"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "React", importance: "high", learningResource: "React.dev official tutorial" },
       { skill: "TypeScript", importance: "high", learningResource: "TypeScript Handbook" },
@@ -77,6 +86,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Node.js/Python/Go", "SQL", "REST APIs", "Git", "Docker"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology"],
     pathwayTime: "4-8 months",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Node.js or Python", importance: "high", learningResource: "The Odin Project backend path" },
       { skill: "SQL & Databases", importance: "high", learningResource: "SQLBolt interactive tutorials" },
@@ -122,6 +132,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "connector"], requiredSkills: ["JavaScript/TypeScript", "React", "Node.js", "SQL", "Git", "Docker"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Technology"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Full-Stack Frameworks", importance: "high", learningResource: "Next.js official docs" },
       { skill: "Database Design", importance: "high", learningResource: "PostgreSQL Tutorial" },
@@ -167,6 +178,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "ideator"], requiredSkills: ["React Native/Flutter", "JavaScript/Dart", "Mobile UI", "REST APIs", "Git"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology", "Design & UX"],
     pathwayTime: "4-8 months",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "React Native or Flutter", importance: "high", learningResource: "React Native docs or Flutter.dev" },
       { skill: "Mobile UI Patterns", importance: "high", learningResource: "Material Design guidelines" },
@@ -212,6 +224,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Linux", "Docker", "Kubernetes", "CI/CD", "Cloud (AWS/GCP)", "Terraform"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Technology"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Kubernetes", importance: "high", learningResource: "Kubernetes.io official tutorials" },
       { skill: "Terraform/IaC", importance: "high", learningResource: "HashiCorp Learn tutorials" },
@@ -257,6 +270,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "critic"], requiredSkills: ["Test Automation", "Selenium/Cypress", "API Testing", "SQL", "CI/CD"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Test Automation", importance: "high", learningResource: "Cypress.io documentation" },
       { skill: "API Testing", importance: "high", learningResource: "Postman Learning Center" },
@@ -302,6 +316,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "ideator"], requiredSkills: ["Python", "Statistics", "ML/sklearn", "SQL", "Data Visualization"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Data & Analytics", "Technology"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.35, personality: 0.10, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Machine Learning", importance: "high", learningResource: "Andrew Ng's ML Specialization on Coursera" },
       { skill: "Statistics", importance: "high", learningResource: "Khan Academy Statistics" },
@@ -347,6 +362,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "presenter"], requiredSkills: ["SQL", "Excel", "Tableau/Power BI", "Python/R", "Statistics"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Data & Analytics", "Finance"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "SQL", importance: "high", learningResource: "Mode Analytics SQL Tutorial" },
       { skill: "Tableau/Power BI", importance: "high", learningResource: "Tableau Public free training" },
@@ -392,6 +408,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Python", "TensorFlow/PyTorch", "MLOps", "Docker", "SQL", "Cloud"],
     experienceLevels: ["mid", "senior"], domains: ["Data & Analytics", "Technology"],
     pathwayTime: "8-14 months",
+    scoringWeights: { interest: 0.30, personality: 0.10, values: 0.15, aptitude: 0.30, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Deep Learning", importance: "high", learningResource: "fast.ai Practical Deep Learning" },
       { skill: "MLOps", importance: "high", learningResource: "Made With ML MLOps course" },
@@ -437,6 +454,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["SQL", "Python", "Spark", "Airflow", "Cloud (AWS/GCP)", "Data Modeling"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Data & Analytics", "Technology"],
     pathwayTime: "6-10 months",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Apache Spark", importance: "high", learningResource: "Databricks Academy free courses" },
       { skill: "Airflow/Orchestration", importance: "high", learningResource: "Apache Airflow documentation" },
@@ -482,6 +500,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["presenter", "analyst"], requiredSkills: ["SQL", "Power BI/Tableau", "Excel", "Data Modeling", "ETL Basics"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Data & Analytics", "Finance"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Power BI", importance: "high", learningResource: "Microsoft Learn Power BI path" },
       { skill: "SQL", importance: "high", learningResource: "W3Schools SQL Tutorial" },
@@ -527,6 +546,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["ideator", "facilitator"], requiredSkills: ["Figma", "User Research", "Wireframing", "Prototyping", "Usability Testing"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Design & UX"],
     pathwayTime: "4-8 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Figma", importance: "high", learningResource: "Figma official tutorials" },
       { skill: "User Research", importance: "high", learningResource: "NNGroup articles on UX research" },
@@ -572,6 +592,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["Figma", "Visual Design", "Typography", "Color Theory", "Design Systems"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Design & UX"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Figma Advanced", importance: "high", learningResource: "Figma community tutorials" },
       { skill: "Design Systems", importance: "high", learningResource: "Figma Design Systems guide" },
@@ -617,6 +638,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "facilitator"], requiredSkills: ["User Interviews", "Survey Design", "Usability Testing", "Data Analysis", "Research Synthesis"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Design & UX"],
     pathwayTime: "4-8 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Qualitative Research", importance: "high", learningResource: "NNGroup UX research articles" },
       { skill: "Survey Design", importance: "high", learningResource: "Qualtrics survey methodology guide" },
@@ -662,6 +684,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["ideator", "facilitator"], requiredSkills: ["Figma", "User Research", "Prototyping", "Visual Design", "Design Thinking"],
     experienceLevels: ["mid", "senior"], domains: ["Design & UX", "Technology"],
     pathwayTime: "6-10 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Design Thinking", importance: "high", learningResource: "IDEO Design Thinking resources" },
       { skill: "Figma Advanced", importance: "high", learningResource: "Figma official tutorials" },
@@ -707,6 +730,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["facilitator", "connector"], requiredSkills: ["Product Strategy", "Prioritization", "Data Analysis", "User Research", "Roadmapping"],
     experienceLevels: ["mid", "senior"], domains: ["Product Management", "Technology"],
     pathwayTime: "4-8 months",
+    scoringWeights: { interest: 0.25, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Product Strategy", importance: "high", learningResource: "Inspired by Marty Cagan (book)" },
       { skill: "Data-Driven Decisions", importance: "high", learningResource: "Google Data Analytics basics" },
@@ -752,6 +776,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["coordinator", "facilitator"], requiredSkills: ["Project Planning", "Agile/Scrum", "Risk Management", "Budgeting", "Stakeholder Management"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Product Management", "Consulting"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Agile/Scrum", importance: "high", learningResource: "Scrum.org learning path" },
       { skill: "Project Planning", importance: "high", learningResource: "Google Project Management Certificate" },
@@ -797,6 +822,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["facilitator", "coach"], requiredSkills: ["Scrum Framework", "Facilitation", "Coaching", "Jira", "Conflict Resolution"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Product Management", "Technology"],
     pathwayTime: "2-4 months",
+    scoringWeights: { interest: 0.20, personality: 0.30, values: 0.20, aptitude: 0.05, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Scrum Framework", importance: "high", learningResource: "Scrum Guide (scrumguides.org)" },
       { skill: "Facilitation", importance: "high", learningResource: "Liberating Structures" },
@@ -842,6 +868,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["coordinator", "connector"], requiredSkills: ["Program Management", "Technical Knowledge", "Stakeholder Mgmt", "Risk Mgmt", "Communication"],
     experienceLevels: ["mid", "senior"], domains: ["Technology", "Product Management"],
     pathwayTime: "6-12 months",
+    scoringWeights: { interest: 0.20, personality: 0.20, values: 0.15, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Program Management", importance: "high", learningResource: "Google Project Management Certificate" },
       { skill: "Technical Architecture", importance: "high", learningResource: "System Design Primer (GitHub)" },
@@ -887,6 +914,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["Google Ads", "Social Media", "Analytics", "Email Marketing", "Content Strategy"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Marketing"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Google Ads", importance: "high", learningResource: "Google Skillshop" },
       { skill: "Analytics", importance: "high", learningResource: "Google Analytics Academy" },
@@ -932,6 +960,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["ideator", "presenter"], requiredSkills: ["Writing", "SEO", "Content Planning", "Analytics", "CMS"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Marketing", "Media & Entertainment"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.35, personality: 0.20, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Content Strategy", importance: "high", learningResource: "Content Strategy for the Web (book)" },
       { skill: "SEO Writing", importance: "high", learningResource: "Yoast SEO blog" },
@@ -977,6 +1006,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Technical SEO", "Keyword Research", "Content Optimization", "Analytics", "Link Building"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Marketing", "E-commerce"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Technical SEO", importance: "high", learningResource: "Google Search Central docs" },
       { skill: "Keyword Research", importance: "high", learningResource: "Ahrefs Academy" },
@@ -1022,6 +1052,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["Analytics", "A/B Testing", "Paid Ads", "SQL", "Product Sense"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Marketing", "E-commerce"],
     pathwayTime: "3-6 months",
+    scoringWeights: { interest: 0.30, personality: 0.20, values: 0.15, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "A/B Testing", importance: "high", learningResource: "Optimizely Academy" },
       { skill: "Analytics & SQL", importance: "high", learningResource: "Mode Analytics SQL tutorial" },
@@ -1067,6 +1098,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["ideator", "presenter"], requiredSkills: ["Content Creation", "Copywriting", "Analytics", "Community Mgmt", "Paid Social"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Marketing", "Media & Entertainment"],
     pathwayTime: "2-4 months",
+    scoringWeights: { interest: 0.35, personality: 0.25, values: 0.15, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Content Creation", importance: "high", learningResource: "Canva Design School" },
       { skill: "Social Analytics", importance: "high", learningResource: "Meta Blueprint" },
@@ -1112,6 +1144,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "presenter"], requiredSkills: ["Problem Solving", "Data Analysis", "Presentation", "Excel/Modeling", "Communication"],
     experienceLevels: ["student", "junior", "mid", "senior"], domains: ["Consulting", "Finance"],
     pathwayTime: "4-8 months",
+    scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Case Interview Prep", importance: "high", learningResource: "Case in Point (book)" },
       { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep free resources" },
