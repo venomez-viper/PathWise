@@ -378,7 +378,7 @@ export default function AdminPage() {
       if (usersRes.status === 'fulfilled') setUsers(usersRes.value?.users ?? []);
       else throw new Error(usersRes.reason?.message || 'Failed to load users');
       if (tasksRes.status === 'fulfilled') setTaskStats(tasksRes.value?.stats ?? []);
-      if (assessRes.status === 'fulfilled') setAssessmentUserIds(assessRes.value?.userIds ?? []);
+      if (assessRes.status === 'fulfilled') setAssessmentUserIds(assessRes.value?.userIdsWithAssessment ?? []);
       if (roadmapRes.status === 'fulfilled') setRoadmapStatuses(roadmapRes.value?.statuses ?? []);
       if (certRes.status === 'fulfilled') setCertificateUserIds(certRes.value?.userIds ?? []);
       if (activeRes.status === 'fulfilled') setLastActiveData(activeRes.value?.users ?? []);
