@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { MagicTextReveal } from '@/components/ui/magic-text-reveal';
+import { TextScramble } from '@/components/ui/text-scramble';
 import './HowItWorks.css';
 
 const STEPS = [
@@ -50,24 +50,15 @@ export default function HowItWorks() {
       <div className="container">
         <div className="how__header fade-up">
           <span className="how__eyebrow">How It Works</span>
-          <div className="how__magic-reveal">
-            <MagicTextReveal
-              text="From uncertainty to clarity"
-              color="rgba(255, 255, 255, 1)"
-              fontSize={52}
-              fontFamily="Manrope, sans-serif"
-              fontWeight={800}
-              spread={35}
-              speed={0.4}
-              density={4}
-              resetOnMouseLeave={true}
-              style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                backdropFilter: 'none',
-              }}
-            />
-          </div>
+          <TextScramble
+            as="h2"
+            className="how__title"
+            trigger={true}
+            duration={1.2}
+            speed={0.03}
+          >
+            From uncertainty to clarity
+          </TextScramble>
           <p className="how__subtitle">Three steps. Five minutes. A roadmap built around you.</p>
         </div>
 
