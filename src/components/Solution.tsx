@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   Compass, Fingerprint, BarChart3,
   Map, GraduationCap, Sparkles,
-  CalendarDays, TrendingUp,
+  CalendarDays,
   Trophy, ArrowRight, Brain, Dna,
   FlaskConical, Target,
 } from 'lucide-react';
@@ -19,9 +19,9 @@ const SECTIONS = [
     id: 'science',
     label: 'Scientific Assessment',
     title: 'Built on decades of career science',
-    desc: 'Most career tools ask you what job you want. We measure who you are. Our assessment combines four validated psychological frameworks to build a multi-dimensional picture of your career identity — in just 5 minutes.',
+    desc: 'Most career tools ask you what job you want. We measure who you are. Our assessment combines four validated psychological frameworks to build a multi-dimensional picture of your career identity. Five minutes. That is all it takes.',
     features: [
-      { icon: Dna, text: 'Holland RIASEC interest mapping — the gold standard in vocational psychology' },
+      { icon: Dna, text: 'Holland RIASEC interest mapping, the gold standard in vocational psychology' },
       { icon: Fingerprint, text: 'Big Five personality profiling tied to workplace performance research' },
       { icon: Compass, text: 'Schwartz Values + O*NET work context alignment' },
     ],
@@ -31,11 +31,11 @@ const SECTIONS = [
     id: 'brain',
     label: 'AI Career Brain',
     title: 'Intelligence without surveillance',
-    desc: "Here's what makes us different: we don't need years of your browsing history, job applications, or social media data. Our AI career brain uses vector-space cosine similarity and Jaccard scoring to match you against 90+ deeply researched career profiles — using only what you tell us in the assessment.",
+    desc: "Here is what makes us different: we do not need years of your browsing history, job applications, or social media data. Our AI career brain uses vector-space scoring to match you against 90+ deeply researched career profiles, using only what you tell us in the assessment.",
     features: [
       { icon: Brain, text: 'Multi-dimensional scoring across 12 career dimensions simultaneously' },
-      { icon: FlaskConical, text: '30 unique archetypes derived from RIASEC × Big Five combinations' },
-      { icon: Target, text: 'Accurate recommendations from minimal data — no tracking, no profiling' },
+      { icon: FlaskConical, text: '30 unique archetypes derived from RIASEC and Big Five combinations' },
+      { icon: Target, text: 'Accurate recommendations from minimal data. No tracking. No profiling.' },
     ],
     color: '#5ef6e6',
   },
@@ -43,7 +43,7 @@ const SECTIONS = [
     id: 'research',
     label: 'Deep Research',
     title: 'Every career path, thoroughly mapped',
-    desc: 'Each of our 90+ career profiles was built from extensive research — real salary ranges, growth outlooks, skill gap analysis, certification paths, portfolio recommendations, and networking strategies. Not scraped. Not generated. Researched and validated.',
+    desc: 'Each of our 90+ career profiles was built from extensive research. Real salary ranges, growth outlooks, skill gap analysis, certification paths, portfolio recommendations, and networking strategies. Not scraped. Not generated. Researched and validated.',
     features: [
       { icon: BarChart3, text: 'Real salary data, growth outlooks, and industry demand signals' },
       { icon: GraduationCap, text: 'Curated certifications and learning resources per career path' },
@@ -55,7 +55,7 @@ const SECTIONS = [
     id: 'roadmap',
     label: 'Personalised Roadmap',
     title: 'From clarity to action, in one click',
-    desc: "Your career match becomes a living roadmap — milestones with due dates, daily tasks, skill tracking, and streak-based motivation. Choose 3, 6, or 12 months. Adjust anytime. Your progress is always preserved.",
+    desc: "Your career match becomes a living roadmap. Milestones with due dates, daily tasks, skill tracking, and streak-based motivation. Choose 3, 6, or 12 months. Adjust anytime. Your progress is always preserved.",
     features: [
       { icon: Map, text: 'AI-generated milestones scaled to your chosen timeline' },
       { icon: CalendarDays, text: 'Daily task planner with priorities and progress tracking' },
