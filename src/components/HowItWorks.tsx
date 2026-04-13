@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { HandWrittenTitle } from '@/components/ui/hand-writing-text';
 import './HowItWorks.css';
 
 const STEPS = [
@@ -48,12 +47,10 @@ export default function HowItWorks() {
     <section className="how" id="how-it-works" ref={ref}>
       <div className="how__bg-accent" />
       <div className="container">
-        {/* Animated handwriting title — dark mode overrides */}
-        <div style={{ '--on-surface': '#fff', '--on-surface-variant': 'rgba(255,255,255,0.5)' } as React.CSSProperties}>
-          <HandWrittenTitle
-            title="How It Works"
-            subtitle="From uncertainty to clarity in 3 steps"
-          />
+        <div className="how__header fade-up">
+          <span className="how__eyebrow">How It Works</span>
+          <h2 className="how__title">From uncertainty to clarity</h2>
+          <p className="how__subtitle">Three steps. Five minutes. A roadmap built around you.</p>
         </div>
 
         <div className="how__steps">
