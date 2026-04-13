@@ -17,48 +17,52 @@ const SECTIONS = [
   {
     id: 'science',
     label: 'Scientific Assessment',
-    title: 'Built on decades of career science',
-    desc: 'Most career tools ask you what job you want. We measure who you are. Our assessment combines four validated psychological frameworks to build a multi-dimensional picture of your career identity. Five minutes. That is all it takes.',
+    stat: '4 frameworks',
+    title: 'We do not guess. We measure.',
+    desc: 'Other platforms hand you a personality quiz and call it career guidance. We built ours on the same validated frameworks used by occupational psychologists, career researchers, and the U.S. Department of Labor. Four of them, working together, in a single five-minute assessment.',
     features: [
-      { icon: Dna, text: 'Holland RIASEC interest mapping, the gold standard in vocational psychology' },
-      { icon: Fingerprint, text: 'Big Five personality profiling tied to workplace performance research' },
-      { icon: Compass, text: 'Schwartz Values and O*NET work context alignment' },
+      { icon: Dna, text: 'Holland RIASEC model: six interest dimensions mapped to real occupations, backed by 60+ years of research' },
+      { icon: Fingerprint, text: 'Big Five personality traits: the most replicated finding in all of psychology, now tied to career fit' },
+      { icon: Compass, text: 'Schwartz Values theory and O*NET work context data: what matters to you, matched to roles that deliver it' },
     ],
     color: '#a78bfa',
   },
   {
     id: 'brain',
     label: 'AI Career Brain',
-    title: 'Intelligence without surveillance',
-    desc: "Here is what makes us different: we do not need years of your browsing history, job applications, or social media data. Our AI career brain uses vector-space scoring to match you against 90+ deeply researched career profiles, using only what you tell us in the assessment.",
+    stat: '12 dimensions',
+    title: 'Precise matching. Zero surveillance.',
+    desc: 'Most AI career tools need your entire digital footprint to make a recommendation. Ours needs five minutes. Our scoring engine evaluates you across 12 independent dimensions simultaneously, using a blend of cosine similarity and Jaccard overlap scoring that penalises vague matches and rewards genuine alignment.',
     features: [
-      { icon: Brain, text: 'Multi-dimensional scoring across 12 career dimensions simultaneously' },
-      { icon: FlaskConical, text: '30 unique archetypes derived from RIASEC and Big Five combinations' },
-      { icon: Target, text: 'Accurate recommendations from minimal data. No tracking. No profiling.' },
+      { icon: Brain, text: 'Vector-space scoring engine: each career profile is a point in 12-dimensional space, and we find the closest ones to you' },
+      { icon: FlaskConical, text: '30 distinct career archetypes: not generic labels, but real personality-interest combinations like "The Digital Storyteller" or "The Analytical Architect"' },
+      { icon: Target, text: 'No browsing history. No social media scraping. No employer data. Just your honest answers, scored with mathematical precision' },
     ],
     color: '#5ef6e6',
   },
   {
     id: 'research',
     label: 'Deep Research',
-    title: 'Every career path, thoroughly mapped',
-    desc: 'Each of our 90+ career profiles was built from extensive research. Real salary ranges, growth outlooks, skill gap analysis, certification paths, portfolio recommendations, and networking strategies. Not scraped. Not generated. Researched and validated.',
+    stat: '90+ careers',
+    title: 'Hand-built career intelligence.',
+    desc: 'Every one of our career profiles was researched and written by humans. Not scraped from job boards. Not hallucinated by a language model. Each profile contains salary benchmarks, growth projections, skill gap analysis, certification recommendations, portfolio project ideas, networking strategies, and real job targets. That is what 90+ profiles of original research looks like.',
     features: [
-      { icon: BarChart3, text: 'Real salary data, growth outlooks, and industry demand signals' },
-      { icon: GraduationCap, text: 'Curated certifications and learning resources per career path' },
-      { icon: Sparkles, text: 'Personalised "why this fits you" reasoning for every match' },
+      { icon: BarChart3, text: 'Real salary ranges sourced from industry data, broken down by experience level and region' },
+      { icon: GraduationCap, text: 'Curated certifications with direct links, cost, duration, and why each one matters for that specific role' },
+      { icon: Sparkles, text: 'Personalised "why this fits you" reasoning generated from the intersection of your profile and the career requirements' },
     ],
     color: '#fbbf24',
   },
   {
     id: 'roadmap',
     label: 'Personalised Roadmap',
-    title: 'From clarity to action, in one click',
-    desc: "Your career match becomes a living roadmap. Milestones with due dates, daily tasks, skill tracking, and streak-based motivation. Choose 3, 6, or 12 months. Adjust anytime. Your progress is always preserved.",
+    stat: '3 to 12 months',
+    title: 'Your plan. Your pace. Your progress.',
+    desc: 'Knowing where to go means nothing without knowing how to get there. Every career match becomes a living, breathing roadmap: milestones with real deadlines, tasks you can act on today, and a progress system that makes career growth feel like a game you are winning. Change your timeline whenever you want. Your completed work stays completed.',
     features: [
-      { icon: Map, text: 'AI-generated milestones scaled to your chosen timeline' },
-      { icon: CalendarDays, text: 'Daily task planner with priorities and progress tracking' },
-      { icon: Trophy, text: 'Achievements, certificates, and career readiness score' },
+      { icon: Map, text: 'AI-generated milestones with due dates that scale proportionally when you adjust your timeline' },
+      { icon: CalendarDays, text: 'Daily task planner with priority levels, streak tracking, and smart notifications when you hit milestones' },
+      { icon: Trophy, text: 'Achievement badges, completion certificates, and a career readiness percentage that climbs as you work' },
     ],
     color: '#f87171',
   },
@@ -225,12 +229,12 @@ export default function Solution() {
         >
           <span className="solution-hero__label">Our Approach</span>
           <h1 className="solution-hero__title">
-            Career guidance that{' '}
-            <span className="solution-hero__title-accent">actually works</span>
+            We built what career guidance{' '}
+            <span className="solution-hero__title-accent">should have been</span>
           </h1>
           <p className="solution-hero__desc">
-            Four layers of intelligence. Zero data harvesting. Scroll to see how we solve
-            the career puzzle differently.
+            Four frameworks. Ninety career profiles. Twelve scoring dimensions.
+            Zero data harvesting. Scroll to see what went into this.
           </p>
           <div className="solution-hero__scroll-hint">
             <motion.div
@@ -263,7 +267,10 @@ export default function Solution() {
             <div className="solution__text-side">
               {SECTIONS.map((s, i) => (
                 <div key={s.id} ref={el => { panelRefs.current[i] = el; }} className="solution__panel" style={{ opacity: 0 }}>
-                  <span className="solution__panel-label" style={{ color: s.color }}>{s.label}</span>
+                  <div className="solution__panel-top">
+                    <span className="solution__panel-label" style={{ color: s.color }}>{s.label}</span>
+                    <span className="solution__panel-stat" style={{ color: s.color }}>{s.stat}</span>
+                  </div>
                   <h2 className="solution__panel-title">{s.title}</h2>
                   <p className="solution__panel-desc">{s.desc}</p>
                   <div className="solution__panel-features">
