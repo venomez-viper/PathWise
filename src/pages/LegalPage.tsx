@@ -9,19 +9,27 @@ export default function LegalPage({ docKey }: { docKey: LegalDocKey }) {
 
   return (
     <>
-      <section className="legal-page">
-        <div className="legal-page__bg" />
-        <div className="container legal-page__container">
-          <header className="legal-hero">
-            <span className="section-label">Legal</span>
-            <h1 className="legal-hero__title display-lg">{document.title}</h1>
-            <p className="legal-hero__summary">{document.summary}</p>
-            <p className="legal-hero__updated">Last updated {document.lastUpdated}</p>
-          </header>
+      {/* Hero */}
+      <section className="legal-hero-section">
+        {/* Ambient orbs */}
+        <div className="legal-hero-orb legal-hero-orb--purple" />
+        <div className="legal-hero-orb legal-hero-orb--teal" />
 
-          <article className="legal-card card">
-            {document.sections.map((section) => (
+        <div className="container legal-hero-inner">
+          <span className="section-label">Legal</span>
+          <h1 className="legal-hero__title display-lg">{document.title}</h1>
+          <p className="legal-hero__summary">{document.summary}</p>
+          <p className="legal-hero__updated">Last updated {document.lastUpdated}</p>
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="legal-content-section">
+        <div className="container">
+          <article className="legal-glass-card">
+            {document.sections.map((section, i) => (
               <div key={section.title} className="legal-section">
+                <div className="legal-section__number">{String(i + 1).padStart(2, '0')}</div>
                 <h2 className="legal-section__title">{section.title}</h2>
                 {section.paragraphs.map((paragraph) => (
                   <p key={paragraph} className="legal-section__text">
@@ -44,6 +52,7 @@ export default function LegalPage({ docKey }: { docKey: LegalDocKey }) {
           </article>
         </div>
       </section>
+
       <Footer />
     </>
   );

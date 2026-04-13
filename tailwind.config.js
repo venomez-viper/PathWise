@@ -18,11 +18,13 @@ export default {
           light: '#a78bfa',
           container: '#7b5ebf',
           fixed: '#e9ddff',
+          foreground: '#ffffff',
         },
         secondary: {
           DEFAULT: '#006a62',
           container: '#5ef6e6',
           light: '#00a396',
+          foreground: '#ffffff',
         },
         copper: '#8b4f2c',
         surface: {
@@ -33,6 +35,32 @@ export default {
           high: '#e8e6ef',
           highest: '#e0deea',
         },
+        /* shadcn/ui semantic tokens mapped to PathWise design system */
+        background: '#ffffff',
+        foreground: '#1a1c1f',
+        card: {
+          DEFAULT: '#ffffff',
+          foreground: '#1a1c1f',
+        },
+        popover: {
+          DEFAULT: '#ffffff',
+          foreground: '#1a1c1f',
+        },
+        muted: {
+          DEFAULT: '#e8f6f8',
+          foreground: '#78747e',
+        },
+        accent: {
+          DEFAULT: '#e8f6f8',
+          foreground: '#1a1c1f',
+        },
+        destructive: {
+          DEFAULT: '#e53935',
+          foreground: '#ffffff',
+        },
+        border: 'rgba(73, 69, 79, 0.15)',
+        input: 'rgba(73, 69, 79, 0.15)',
+        ring: '#6245a4',
       },
       borderRadius: {
         'xl': '1.5rem',

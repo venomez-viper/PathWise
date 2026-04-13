@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LogOut, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import posthog from 'posthog-js';
 import { tokenStore } from '../../lib/api';
+import { Button } from '@/components/ui/button';
 import { Panda } from '../../components/panda';
-import Logo from '../../components/ui/Logo';
 
 export default function LogoutPage() {
   const [done, setDone] = useState(false);
@@ -12,73 +12,80 @@ export default function LogoutPage() {
   useEffect(() => {
     tokenStore.clear();
     posthog.reset();
-    // Brief delay for the animation
     const timer = setTimeout(() => setDone(true), 600);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="auth-page">
-      <div className="auth-brand">
-        <Logo size={32} variant="full" />
+    <div
+      className="min-h-svh flex items-center justify-center px-4 py-8"
+      style={{
+        background: 'linear-gradient(145deg, #eefcfe 0%, #e8f6f8 30%, #f4f3f8 60%, #e9ddff 100%)',
+      }}
+    >
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #a78bfa 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #5ef6e6 0%, transparent 70%)' }} />
       </div>
 
-      <div className="auth-card" style={{ textAlign: 'center' }}>
+      <div
+        className="relative z-10 w-full max-w-md rounded-3xl p-8 md:p-10 text-center"
+        style={{
+          background: 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(20px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 8px 40px rgba(98, 69, 164, 0.08), 0 1px 3px rgba(98, 69, 164, 0.04)',
+        }}
+      >
+        <div className="flex justify-center mb-6">
+          <img src="/logo.svg" alt="PathWise" className="h-12 object-contain" />
+        </div>
+
         {!done ? (
-          <div style={{ padding: '3rem 1rem' }}>
-            <div style={{
-              width: 40, height: 40, margin: '0 auto 1.5rem',
-              border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4',
-              borderRadius: '50%', animation: 'spin 0.8s linear infinite',
-            }} />
-            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.95rem' }}>
-              Signing you out...
-            </p>
+          <div className="py-8">
+            <div
+              className="w-10 h-10 mx-auto mb-4 rounded-full animate-spin"
+              style={{ border: '3px solid var(--surface-container-high)', borderTopColor: 'var(--primary)' }}
+            />
+            <p className="text-sm" style={{ color: 'var(--on-surface-variant)' }}>Signing you out...</p>
           </div>
         ) : (
-          <div style={{ padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <>
             <Panda mood="sad" size={120} animate />
 
-            <h1 style={{
-              fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800,
-              color: 'var(--on-surface)', letterSpacing: '-0.03em', marginTop: '1.5rem',
-            }}>
+            <h1 className="font-['Manrope'] text-2xl font-bold tracking-tight mt-4 mb-2" style={{ color: 'var(--on-surface)' }}>
               You've been signed out
             </h1>
-
-            <p style={{
-              fontSize: '0.95rem', color: 'var(--on-surface-variant)', lineHeight: 1.6,
-              marginTop: '0.5rem', marginBottom: '2rem',
-            }}>
+            <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--on-surface-variant)' }}>
               Thanks for using PathWise. Your progress is saved and waiting for you when you return.
             </p>
 
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/signin" className="btn-auth-primary" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '0.85rem 2rem', borderRadius: 'var(--radius-full)',
-                textDecoration: 'none', width: 'auto',
-              }}>
-                Sign Back In <ArrowRight size={16} />
-              </Link>
-
-              <Link to="/" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '0.85rem 1.5rem', borderRadius: 'var(--radius-full)',
-                border: '1px solid var(--surface-container-high)',
-                background: 'var(--surface-container-lowest)',
-                color: 'var(--on-surface)', fontWeight: 600, fontSize: '0.9rem',
-                textDecoration: 'none',
-              }}>
-                <LogOut size={14} />
-                Logout
-              </Link>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <Button
+                asChild
+                className="h-11 rounded-xl font-semibold text-white px-6"
+                style={{
+                  background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
+                  boxShadow: '0 4px 20px rgba(98, 69, 164, 0.25)',
+                }}
+              >
+                <Link to="/signin">
+                  Sign Back In <ArrowRight size={16} className="ml-1" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 rounded-xl bg-white/80 border-black/8 hover:bg-white font-medium"
+                style={{ color: 'var(--on-surface)' }}
+              >
+                <Link to="/">Go Home</Link>
+              </Button>
             </div>
-          </div>
+          </>
         )}
       </div>
-
-      <div className="auth-glow" />
     </div>
   );
 }
