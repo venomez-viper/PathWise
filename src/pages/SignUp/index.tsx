@@ -70,7 +70,7 @@ export default function SignUp() {
 
       {/* Glass card */}
       <div
-        className="relative z-10 w-full max-w-md rounded-3xl p-8 md:p-10 overflow-y-auto max-h-[95svh]"
+        className="relative z-10 w-full max-w-lg rounded-3xl p-8 md:p-12 overflow-y-auto max-h-[95svh]"
         style={{
           background: 'rgba(255, 255, 255, 0.65)',
           backdropFilter: 'blur(20px) saturate(1.4)',
@@ -85,7 +85,7 @@ export default function SignUp() {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <h1 className="font-['Manrope'] text-2xl font-bold tracking-tight" style={{ color: 'var(--on-surface)' }}>
             Create your account
           </h1>
@@ -132,10 +132,10 @@ export default function SignUp() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name + Email side by side */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="signup-name" style={{ color: 'var(--on-surface)' }}>Full Name</Label>
               <Input
                 id="signup-name"
@@ -148,7 +148,7 @@ export default function SignUp() {
                 className="bg-white/80 border-black/8 text-[var(--on-surface)] placeholder:text-[var(--on-surface-muted)] focus-visible:border-[var(--primary)] focus-visible:ring-[var(--primary)]/15 rounded-xl h-11"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label htmlFor="signup-email" style={{ color: 'var(--on-surface)' }}>Email</Label>
               <Input
                 id="signup-email"
@@ -164,7 +164,7 @@ export default function SignUp() {
           </div>
 
           {/* Password */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="signup-password" style={{ color: 'var(--on-surface)' }}>Password</Label>
             <div className="relative">
               <Input
@@ -191,7 +191,7 @@ export default function SignUp() {
           </div>
 
           {/* Confirm Password */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label htmlFor="signup-confirm" style={{ color: 'var(--on-surface)' }}>Confirm Password</Label>
             <div className="relative">
               <Input
@@ -258,7 +258,7 @@ export default function SignUp() {
         </form>
 
         {/* Footer */}
-        <p className="text-sm text-center mt-5" style={{ color: 'var(--on-surface-variant)' }}>
+        <p className="text-sm text-center mt-6" style={{ color: 'var(--on-surface-variant)' }}>
           Already have an account?{' '}
           <Link to="/signin" className="font-semibold hover:underline" style={{ color: 'var(--primary)' }}>
             Sign in

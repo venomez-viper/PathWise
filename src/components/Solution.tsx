@@ -147,18 +147,36 @@ export default function Solution() {
     ctx.drawImage(img, 0, 0);
   }, []);
 
-  // Scroll handler — uses refs, no React state, rAF-throttled
+  // Scroll handler — lerp-smoothed animation loop for buttery transitions
   useEffect(() => {
-    let ticking = false;
+    // Smoothed value that lerps toward target scroll percentage
+    const smooth = { pct: 0 };
+    let targetPct = 0;
+    let running = true;
 
-    const updatePanels = () => {
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const EASE = 0.08; // lower = smoother/slower, higher = snappier
+
+    const tick = () => {
+      if (!running) return;
+
+      // Read target from DOM
       const container = containerRef.current;
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
-      const scrollHeight = container.offsetHeight - window.innerHeight;
-      if (scrollHeight <= 0) return;
-      const scrolled = -rect.top;
-      const pct = Math.max(0, Math.min(1, scrolled / scrollHeight));
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const scrollHeight = container.offsetHeight - window.innerHeight;
+        if (scrollHeight > 0) {
+          const scrolled = -rect.top;
+          targetPct = Math.max(0, Math.min(1, scrolled / scrollHeight));
+        }
+      }
+
+      // Lerp toward target
+      smooth.pct = lerp(smooth.pct, targetPct, EASE);
+      // Snap when close enough to avoid infinite micro-updates
+      if (Math.abs(smooth.pct - targetPct) < 0.0001) smooth.pct = targetPct;
+
+      const pct = smooth.pct;
 
       // Update frame (direct canvas draw, no state)
       const frameIdx = Math.min(TOTAL_FRAMES - 1, Math.floor(pct * TOTAL_FRAMES));
@@ -167,11 +185,11 @@ export default function Solution() {
         drawFrame(frameIdx);
       }
 
-      // Apple-style cube transforms: scale up from 0.85 to 1.1, subtle perspective tilt
+      // Apple-style cube transforms: scale up from 0.85 to 1.15, subtle perspective tilt
       if (cubeSideRef.current) {
-        const scale = 0.85 + pct * 0.3; // 0.85 -> 1.15
-        const rotateY = (pct - 0.5) * -8; // subtle tilt -4 to +4 deg
-        const rotateX = Math.sin(pct * Math.PI) * 3; // gentle nod
+        const scale = 0.85 + pct * 0.3;
+        const rotateY = (pct - 0.5) * -8;
+        const rotateX = Math.sin(pct * Math.PI) * 3;
         cubeSideRef.current.style.transform = `perspective(1200px) scale(${scale}) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
       }
 
@@ -202,20 +220,12 @@ export default function Solution() {
         ctaRef.current.style.transform = `translateY(${pct > 0.85 ? 0 : 20}px)`;
       }
 
-      ticking = false;
+      rafId.current = requestAnimationFrame(tick);
     };
 
-    const handleScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        rafId.current = requestAnimationFrame(updatePanels);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    updatePanels();
+    rafId.current = requestAnimationFrame(tick);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      running = false;
       cancelAnimationFrame(rafId.current);
     };
   }, [drawFrame, imagesLoaded]);
