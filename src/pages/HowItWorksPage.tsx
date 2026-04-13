@@ -1,15 +1,15 @@
 import HowItWorks from '@/components/HowItWorks';
 import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
-import { FloatingPathsBackground } from '@/components/ui/floating-paths';
+import AnimatedShaderBackground from '@/components/ui/animated-shader-background';
 
 export default function HowItWorksPage() {
   return (
     <>
-      <FloatingPathsBackground position={-1} className="min-h-screen bg-[#030303]">
+      <AnimatedShaderBackground className="min-h-screen">
         <div className="page-hero-pad" />
         <HowItWorks />
-      </FloatingPathsBackground>
+      </AnimatedShaderBackground>
       <CTA />
       <Footer />
     </>
