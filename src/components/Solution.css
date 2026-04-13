@@ -43,12 +43,12 @@
 }
 
 .solution-hero__title {
-  font-family: var(--font-display, Manrope, sans-serif);
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 800;
+  font-family: var(--font-body, Inter, sans-serif);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 700;
   color: #fff;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
   margin: 0 0 1.5rem;
 }
 
@@ -60,10 +60,12 @@
 }
 
 .solution-hero__desc {
-  font-size: 1.15rem;
-  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-body, Inter, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
   line-height: 1.7;
-  max-width: 520px;
+  max-width: 480px;
   margin: 0 auto 3rem;
 }
 
@@ -158,58 +160,64 @@
   z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: center;
   width: 100%;
-  max-width: 1200px;
-  padding: 0 4rem;
-  gap: 4rem;
+  max-width: 1140px;
+  padding: 0 3.5rem;
+  gap: 3rem;
   height: 100%;
 }
 
 /* ── Text Panels ── */
 .solution__text-side {
-  flex: 1;
+  flex: 1.1;
   position: relative;
-  min-height: 400px;
+  display: flex;
+  align-items: center;
+  min-height: 0;
 }
 
 .solution__panel {
   position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  max-width: 500px;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 480px;
   will-change: opacity, transform;
 }
 
 .solution__panel-label {
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
+  font-family: var(--font-body, Inter, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   display: inline-block;
-  margin-bottom: 1.25rem;
-  padding: 4px 12px;
+  margin-bottom: 1rem;
+  width: fit-content;
+  padding: 5px 14px;
   border-radius: 9999px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
 }
 
 .solution__panel-title {
-  font-family: var(--font-display, Manrope, sans-serif);
-  font-size: 2.25rem;
-  font-weight: 800;
+  font-family: var(--font-body, Inter, sans-serif);
+  font-size: 2rem;
+  font-weight: 700;
   color: #fff;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin: 0 0 1rem;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0 0 0.85rem;
 }
 
 .solution__panel-desc {
-  font-size: 1rem;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.75;
-  margin: 0 0 1.75rem;
+  font-family: var(--font-body, Inter, sans-serif);
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.7;
+  margin: 0 0 1.5rem;
+  font-weight: 400;
 }
 
 .solution__panel-features {
@@ -221,11 +229,12 @@
 .solution__panel-feature {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.6);
-  font-weight: 500;
-  line-height: 1.5;
+  gap: 0.7rem;
+  font-family: var(--font-body, Inter, sans-serif);
+  font-size: 0.84rem;
+  color: rgba(255,255,255,0.55);
+  font-weight: 400;
+  line-height: 1.55;
 }
 
 .solution__panel-feature-icon {
@@ -243,11 +252,11 @@
 
 /* ── Cube ── */
 .solution__cube-side {
-  flex: 1;
+  flex: 0.9;
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 520px;
+  max-width: 460px;
   position: relative;
 }
 
