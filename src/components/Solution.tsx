@@ -4,54 +4,64 @@ import {
   Compass, Fingerprint, BarChart3,
   Map, GraduationCap, Sparkles,
   CalendarDays, TrendingUp,
-  Trophy, ArrowRight,
+  Trophy, ArrowRight, Brain, Dna,
+  FlaskConical, Target,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import './Solution.css';
 
 const TOTAL_FRAMES = 60;
-const SCROLL_HEIGHT_VH = 500;
+const SCROLL_HEIGHT_VH = 600;
 
 const SECTIONS = [
   {
-    id: 'discover',
-    label: 'Discovery',
-    title: 'Discover who you really are',
-    desc: 'Our AI assessment maps your interests, personality, values, and work style to reveal your unique career DNA.',
+    id: 'science',
+    label: 'Scientific Assessment',
+    title: 'Built on decades of career science',
+    desc: 'Most career tools ask you what job you want. We measure who you are. Our assessment combines four validated psychological frameworks to build a multi-dimensional picture of your career identity — in just 5 minutes.',
     features: [
-      { icon: Fingerprint, text: 'RIASEC + Big Five personality profiling' },
-      { icon: Compass, text: '90+ career paths scored against your profile' },
-      { icon: BarChart3, text: 'Personalized archetype and career matches' },
+      { icon: Dna, text: 'Holland RIASEC interest mapping — the gold standard in vocational psychology' },
+      { icon: Fingerprint, text: 'Big Five personality profiling tied to workplace performance research' },
+      { icon: Compass, text: 'Schwartz Values + O*NET work context alignment' },
     ],
-    frameRange: [0, 15],
     color: '#a78bfa',
   },
   {
-    id: 'plan',
-    label: 'Planning',
-    title: 'Build your roadmap',
-    desc: 'AI generates a step-by-step career roadmap with milestones, timelines, and skill-building tasks tailored to your goals.',
+    id: 'brain',
+    label: 'AI Career Brain',
+    title: 'Intelligence without surveillance',
+    desc: "Here's what makes us different: we don't need years of your browsing history, job applications, or social media data. Our AI career brain uses vector-space cosine similarity and Jaccard scoring to match you against 90+ deeply researched career profiles — using only what you tell us in the assessment.",
     features: [
-      { icon: Map, text: 'Milestone-based roadmap with due dates' },
-      { icon: GraduationCap, text: 'Curated learning resources per skill gap' },
-      { icon: Sparkles, text: 'Adjustable timeline: 3, 6, or 12 months' },
+      { icon: Brain, text: 'Multi-dimensional scoring across 12 career dimensions simultaneously' },
+      { icon: FlaskConical, text: '30 unique archetypes derived from RIASEC × Big Five combinations' },
+      { icon: Target, text: 'Accurate recommendations from minimal data — no tracking, no profiling' },
     ],
-    frameRange: [15, 35],
     color: '#5ef6e6',
   },
   {
-    id: 'execute',
-    label: 'Execution',
-    title: 'Take action every day',
-    desc: 'Your roadmap becomes daily tasks. Track streaks, earn achievements, and watch your career readiness score climb.',
+    id: 'research',
+    label: 'Deep Research',
+    title: 'Every career path, thoroughly mapped',
+    desc: 'Each of our 90+ career profiles was built from extensive research — real salary ranges, growth outlooks, skill gap analysis, certification paths, portfolio recommendations, and networking strategies. Not scraped. Not generated. Researched and validated.',
     features: [
-      { icon: CalendarDays, text: 'Daily task planner with priority levels' },
-      { icon: TrendingUp, text: 'Progress dashboard and streak tracking' },
-      { icon: Trophy, text: 'Achievements and completion certificates' },
+      { icon: BarChart3, text: 'Real salary data, growth outlooks, and industry demand signals' },
+      { icon: GraduationCap, text: 'Curated certifications and learning resources per career path' },
+      { icon: Sparkles, text: 'Personalised "why this fits you" reasoning for every match' },
     ],
-    frameRange: [35, 59],
     color: '#fbbf24',
+  },
+  {
+    id: 'roadmap',
+    label: 'Personalised Roadmap',
+    title: 'From clarity to action, in one click',
+    desc: "Your career match becomes a living roadmap — milestones with due dates, daily tasks, skill tracking, and streak-based motivation. Choose 3, 6, or 12 months. Adjust anytime. Your progress is always preserved.",
+    features: [
+      { icon: Map, text: 'AI-generated milestones scaled to your chosen timeline' },
+      { icon: CalendarDays, text: 'Daily task planner with priorities and progress tracking' },
+      { icon: Trophy, text: 'Achievements, certificates, and career readiness score' },
+    ],
+    color: '#f87171',
   },
 ];
 
