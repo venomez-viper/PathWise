@@ -1,75 +1,262 @@
+/* ── Solution — Premium Scroll-Driven Cube Animation ── */
+
 .solution {
-  background-color: var(--surface);
+  position: relative;
+  background: #09090b;
 }
 
-.solution__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-6);
-}
-
-.solution__layer-card {
-  border-left: 4px solid var(--layer-color, var(--primary));
-  background: var(--surface-container-lowest);
-}
-
-.solution__layer-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  margin-bottom: var(--spacing-6);
-}
-
-.solution__layer-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.85rem;
-  flex-shrink: 0;
-}
-
-.solution__layer-name {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--layer-color, var(--primary));
-}
-
-.solution__features {
+/* Sticky viewport — fills screen while scrolling through */
+.solution__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.solution__feature {
+/* Dark cinematic background */
+.solution__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 50%, rgba(98, 69, 164, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 30% 40%, rgba(0, 106, 98, 0.04) 0%, transparent 70%),
+    #09090b;
+  z-index: 0;
+}
+
+/* Floating shapes container */
+.solution__shapes {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ── Progress Indicator (vertical dots, right side) ── */
+.solution__progress-track {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-3);
+  flex-direction: column;
+  gap: 2rem;
+  z-index: 10;
 }
 
-.solution__feature-icon {
+.solution__progress-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  background: transparent;
+  cursor: default;
+  position: relative;
+  padding: 0;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.solution__progress-dot.active {
+  background: var(--dot-color);
+  border-color: var(--dot-color);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--dot-color) 40%, transparent);
+}
+
+.solution__progress-label {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.solution__progress-dot.active .solution__progress-label {
+  opacity: 1;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── Main Content Layout ── */
+.solution__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 4rem;
+  gap: 4rem;
+  height: 100%;
+}
+
+/* ── Text Panels (Left Side) ── */
+.solution__text-side {
+  flex: 1;
+  position: relative;
+  min-height: 360px;
+}
+
+.solution__panel {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  transition: opacity 0.1s ease, transform 0.1s ease;
+  max-width: 480px;
+}
+
+.solution__panel-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.solution__panel-title {
+  font-family: var(--font-display, Manrope, sans-serif);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 1rem;
+}
+
+.solution__panel-desc {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.7;
+  margin: 0 0 1.75rem;
+}
+
+.solution__panel-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.solution__panel-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: 500;
+}
+
+.solution__panel-feature-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
-.solution__feature-title {
-  font-weight: 600;
+/* ── Cube Canvas (Right Side) ── */
+.solution__cube-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 520px;
+}
+
+.solution__canvas {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  border-radius: 1rem;
+  filter: drop-shadow(0 0 60px rgba(98, 69, 164, 0.15));
+}
+
+/* ── Bottom CTA ── */
+.solution__bottom-cta {
+  position: absolute;
+  bottom: 3rem;
+  z-index: 10;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.solution__cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.9rem 2rem;
+  border-radius: 9999px;
+  background: #fff;
+  color: #09090b;
+  font-weight: 800;
   font-size: 0.95rem;
-  color: var(--on-surface);
-  margin-bottom: 2px;
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.2s ease;
+  box-shadow: 0 4px 30px rgba(255,255,255,0.1);
 }
 
-.solution__feature-desc {
-  font-size: 0.85rem;
-  color: var(--on-surface-variant);
-  line-height: 1.5;
+.solution__cta-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 40px rgba(255,255,255,0.15);
 }
 
-@media (max-width: 768px) {
-  .solution__grid { grid-template-columns: 1fr; }
+.solution__cta-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .solution__content {
+    flex-direction: column-reverse;
+    padding: 2rem;
+    gap: 2rem;
+  }
+
+  .solution__text-side {
+    min-height: 280px;
+  }
+
+  .solution__panel-title {
+    font-size: 1.75rem;
+  }
+
+  .solution__cube-side {
+    max-width: 300px;
+  }
+
+  .solution__progress-track {
+    right: 1rem;
+  }
+
+  .solution__progress-label {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .solution__panel-title {
+    font-size: 1.4rem;
+  }
+
+  .solution__panel-desc {
+    font-size: 0.9rem;
+  }
+
+  .solution__cube-side {
+    max-width: 240px;
+  }
 }
