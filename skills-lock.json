@@ -20,6 +20,11 @@
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
       "computedHash": "2fb5ecec2f71badbd51cdc0ad4a5a4887fd98c2bb36c24f1adcbbeb57f9f1851"
+    },
+    "emil-design-eng": {
+      "source": "emilkowalski/skill",
+      "sourceType": "github",
+      "computedHash": "8bdf9e4e6de7a4969147bf4828a4ad2c5aacd9fba4b690b250a85e0467ca387d"
     }
   }
 }

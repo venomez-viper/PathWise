@@ -47,9 +47,9 @@ export default function CareerMatchDetail() {
   const ringR = 50; const circ = 2 * Math.PI * ringR;
   const offset = circ * (1 - score / 100);
 
-  // Generate reasons from match data
+  // Generate reasons from match data — prefer whyThisFits from assessment engine
   const requiredSkills: string[] = match.requiredSkills ?? match.skills ?? [];
-  const reasons = match.reasons ?? [
+  const reasons = match.whyThisFits ?? match.reasons ?? [
     requiredSkills.length > 0
       ? `Your skills align with key requirements: ${requiredSkills.slice(0, 2).join(', ')}.`
       : `Your profile strengths match the core competencies for this role.`,
@@ -59,13 +59,15 @@ export default function CareerMatchDetail() {
       : `A strong match based on your cognitive and professional profile.`,
   ];
 
-  // Salary benchmarks from match data or reasonable defaults based on score
-  const baseSalary = Math.round(45 + (score / 100) * 30);
-  const salaries = match.salaryBenchmarks ?? {
-    low: `$${baseSalary}K`,
-    median: `$${baseSalary + 17}K`,
-    high: `$${baseSalary + 40}K`,
-  };
+  // Salary benchmarks from match data — prefer salaryRange from assessment engine
+  const salaries = match.salaryBenchmarks ?? (match.salaryRange ? {
+    low: `$${Math.round(match.salaryRange.min / 1000)}K`,
+    median: `$${Math.round((match.salaryRange.min + match.salaryRange.max) / 2000)}K`,
+    high: `$${Math.round(match.salaryRange.max / 1000)}K`,
+  } : (() => {
+    const baseSalary = Math.round(45 + (score / 100) * 30);
+    return { low: `$${baseSalary}K`, median: `$${baseSalary + 17}K`, high: `$${baseSalary + 40}K` };
+  })());
 
   // Skills readiness from match data
   const skills: { name: string; level: string; desc: string }[] = match.skillsReadiness ??

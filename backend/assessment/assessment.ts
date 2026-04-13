@@ -22,6 +22,11 @@ export interface CareerMatch {
   description: string;
   requiredSkills: string[];
   pathwayTime: string;
+  careerFamily?: string;
+  domain?: string;
+  whyThisFits?: string[];
+  salaryRange?: { min: number; max: number };
+  growthOutlook?: string;
 }
 
 export interface SkillGap {
@@ -358,7 +363,14 @@ interface NarrativeResult {
 
 interface AssessmentV2Response {
   result: {
-    careerMatches: { title: string; matchScore: number; description: string; requiredSkills: string[]; pathwayTime: string }[];
+    careerMatches: {
+      title: string; matchScore: number; description: string;
+      requiredSkills: string[]; pathwayTime: string;
+      careerFamily?: string; domain?: string;
+      whyThisFits?: string[];
+      salaryRange?: { min: number; max: number };
+      growthOutlook?: string;
+    }[];
     skillGaps: { skill: string; importance: string; learningResource: string }[];
     archetype: { id: string; name: string; tagline: string; description: string };
     riasec: RIASECResult;

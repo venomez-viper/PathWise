@@ -1084,52 +1084,6 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     ],
   },
 
-  // 24. Social Media Manager
-  {
-    id: "social-media-manager", title: "Social Media Manager", domain: "Marketing",
-    description: "Manage brand presence and engagement across social media platforms.",
-    interests: ["artistic", "social"], problemTypes: ["creative", "communication"], archetypes: ["creator", "connector"],
-    workStyles: ["open", "collaborative"], decisionStyle: ["intuitive", "feeling"], collaboration: ["team", "mixed"],
-    ambiguityStyle: ["experiment", "explore"], coreValues: ["creativity", "connection"], tradeoffs: ["purpose_over_wealth"],
-    frustrations: ["algorithm_changes", "content_burnout"], rewards: ["creativity", "engagement"],
-    environments: ["remote", "hybrid"], teamSizes: ["small", "medium"], paces: ["fast", "burst"],
-    managementStyles: ["handsoff", "collaborative"], careerStages: ["exploring", "building"],
-    riskLevels: ["low", "moderate"], trajectories: ["generalist", "specialist"],
-    groupRoles: ["ideator", "presenter"], requiredSkills: ["Content Creation", "Copywriting", "Analytics", "Community Mgmt", "Paid Social"],
-    experienceLevels: ["student", "junior", "mid"], domains: ["Marketing", "Media & Entertainment"],
-    pathwayTime: "2-4 months",
-    scoringWeights: { interest: 0.35, personality: 0.25, values: 0.15, aptitude: 0.05, environment: 0.10, stage: 0.10 },
-    skillGaps: [
-      { skill: "Content Creation", importance: "high", learningResource: "Canva Design School" },
-      { skill: "Social Analytics", importance: "high", learningResource: "Meta Blueprint" },
-      { skill: "Community Management", importance: "medium", learningResource: "Sprout Social resources" },
-    ],
-    certifications: [
-      { skill: "Social Media", certName: "Meta Social Media Marketing Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/facebook-social-media-marketing", duration: "5 months", level: "Beginner", cost: "$49/month", whyRecommended: "Meta-backed social media credential" },
-      { skill: "Social", certName: "HubSpot Social Media Certification", provider: "HubSpot", url: "https://academy.hubspot.com/courses/social-media", duration: "1 month", level: "Beginner", cost: "Free", whyRecommended: "Free social media marketing cert" },
-    ],
-    portfolioProjects: [
-      { type: "portfolio", title: "Social Media Strategy", description: "Create a 30-day social media plan for a brand.", why: "Core deliverable for social media roles.", actionStep: "Pick a brand and create a content calendar." },
-      { type: "portfolio", title: "Content Portfolio", description: "Create 20 sample social media posts with graphics.", why: "Shows content creation skills.", actionStep: "Design 5 posts in Canva today." },
-    ],
-    networkingRecs: [
-      { type: "networking", title: "Social Media Examiner", description: "Leading social media marketing resource.", platform: "Web", url: "https://www.socialmediaexaminer.com/", why: "Stay updated on social media trends.", actionStep: "Subscribe to the podcast." },
-      { type: "networking", title: "LinkedIn Marketing Groups", description: "Social media professional groups.", platform: "LinkedIn", url: "https://www.linkedin.com/groups/", why: "Connect with other social media managers.", actionStep: "Join 2 groups and share insights." },
-    ],
-    jobTargets: [
-      { type: "job_application", title: "LinkedIn Social Media Jobs", description: "Search for Social Media Manager roles.", platform: "LinkedIn", url: "https://www.linkedin.com/jobs/", why: "Most social media roles listed here.", actionStep: "Apply to 3 social media roles." },
-      { type: "job_application", title: "MediaBistro", description: "Media and marketing job board.", platform: "MediaBistro", url: "https://www.mediabistro.com/", why: "Social media roles at media companies.", actionStep: "Browse and apply to 2 roles." },
-    ],
-    milestones: [
-      { title: "Social Media Basics", description: "Learn platform best practices", tasks: ["Study each major platform's features", "Learn posting best practices", "Understand social media algorithms"], estimatedWeeks: 2 },
-      { title: "Content Creation", description: "Master content creation tools", tasks: ["Learn Canva for graphics", "Practice short-form video editing", "Write 20 social media captions"], estimatedWeeks: 3 },
-      { title: "Strategy & Planning", description: "Build social media strategies", tasks: ["Create a content calendar template", "Learn social media scheduling tools", "Study competitor social strategies"], estimatedWeeks: 3 },
-      { title: "Analytics & Paid", description: "Learn measurement and paid social", tasks: ["Learn social media analytics tools", "Run a practice paid campaign", "Build a reporting template"], estimatedWeeks: 3 },
-      { title: "Portfolio", description: "Build social media portfolio", tasks: ["Create a 30-day content plan", "Build a content creation portfolio", "Document campaign results"], estimatedWeeks: 3 },
-      { title: "Job Search", description: "Apply for social media roles", tasks: ["Get Meta social media cert", "Apply to 10+ positions", "Prepare content samples"], estimatedWeeks: 4 },
-    ],
-  },
-
   // 25. Management Consultant
   {
     id: "management-consultant", title: "Management Consultant", domain: "Consulting",

@@ -13,11 +13,13 @@ import { CAREER_PROFILES_PART1 } from "./career-profiles";
 import { CAREER_PROFILES_PART2 } from "./career-profiles-2";
 import { CAREER_PROFILES_3 } from "./career-profiles-3";
 
-const ALL_PROFILES: CareerProfile[] = [
-  ...CAREER_PROFILES_PART1,
-  ...CAREER_PROFILES_PART2,
-  ...CAREER_PROFILES_3,
-];
+// Deduplicate profiles by id — last occurrence wins (newer files take precedence)
+const ALL_PROFILES: CareerProfile[] = (() => {
+  const merged = [...CAREER_PROFILES_PART1, ...CAREER_PROFILES_PART2, ...CAREER_PROFILES_3];
+  const byId = new Map<string, CareerProfile>();
+  for (const p of merged) byId.set(p.id, p);
+  return Array.from(byId.values());
+})();
 
 // ── Re-export types matching v1 for backward compat ─────────────────────
 
@@ -27,6 +29,11 @@ export interface CareerMatch {
   description: string;
   requiredSkills: string[];
   pathwayTime: string;
+  careerFamily?: string;
+  whyThisFits?: string[];
+  salaryRange?: { min: number; max: number };
+  growthOutlook?: string;
+  domain?: string;
 }
 
 export interface SkillGap {
@@ -305,6 +312,22 @@ function encodeDimensionVectors(
   return [userVec, profileVec];
 }
 
+/**
+ * Jaccard similarity: |intersection| / |union|.
+ * Unlike cosine similarity, Jaccard penalises profiles that have many traits
+ * the user did NOT select. This prevents overly broad profiles from matching
+ * everyone. Returns 0 if both vectors are all-zeros.
+ */
+function jaccardSimilarity(a: number[], b: number[]): number {
+  let intersection = 0;
+  let union = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] > 0 || b[i] > 0) union++;
+    if (a[i] > 0 && b[i] > 0) intersection++;
+  }
+  return union === 0 ? 0 : intersection / union;
+}
+
 // ── 2. Cosine Similarity ────────────────────────────────────────────────
 
 /**
@@ -399,11 +422,16 @@ export function scoreDimensional(
   const [ue, pe] = encodeDimensionVectors(userAnswers, profile, ENVIRONMENT_DIMS);
   const [us, ps] = encodeDimensionVectors(userAnswers, profile, STAGE_DIMS);
 
-  const interest = cosineSimilarity(ui, pi);
-  const personality = cosineSimilarity(up, pp);
-  const values = cosineSimilarity(uv, pv);
-  const environment = cosineSimilarity(ue, pe);
-  const stage = cosineSimilarity(us, ps);
+  // Blend cosine similarity (direction match) with Jaccard similarity (overlap penalty)
+  // to prevent overly broad profiles from matching everyone. 60% cosine + 40% Jaccard.
+  const blendSim = (u: number[], p: number[]): number =>
+    cosineSimilarity(u, p) * 0.6 + jaccardSimilarity(u, p) * 0.4;
+
+  const interest = blendSim(ui, pi);
+  const personality = blendSim(up, pp);
+  const values = blendSim(uv, pv);
+  const environment = blendSim(ue, pe);
+  const stage = blendSim(us, ps);
 
   // Aptitude: skill overlap ratio (simple since we don't have per-skill vectors)
   // handled separately; placeholder cosine = 0 until we have aptitude vectors
@@ -1223,6 +1251,180 @@ function scoreProfileV2(
   return { rawScore: Math.max(0, score), dimensions: dims };
 }
 
+// ── Salary & Growth Lookup ────────────────────────────────────────────────
+
+/** Approximate salary ranges (USD) by career profile id */
+const SALARY_RANGES: Record<string, { min: number; max: number }> = {
+  "frontend-dev":         { min: 65000, max: 130000 },
+  "backend-dev":          { min: 70000, max: 145000 },
+  "fullstack-dev":        { min: 75000, max: 150000 },
+  "mobile-dev":           { min: 70000, max: 140000 },
+  "devops-sre":           { min: 85000, max: 165000 },
+  "qa-engineer":          { min: 60000, max: 120000 },
+  "data-scientist":       { min: 90000, max: 165000 },
+  "data-analyst":         { min: 55000, max: 110000 },
+  "ml-engineer":          { min: 100000, max: 180000 },
+  "data-engineer":        { min: 85000, max: 160000 },
+  "bi-analyst":           { min: 55000, max: 105000 },
+  "ux-designer":          { min: 65000, max: 130000 },
+  "ui-designer":          { min: 60000, max: 120000 },
+  "ux-researcher":        { min: 70000, max: 135000 },
+  "product-designer":     { min: 75000, max: 145000 },
+  "product-manager":      { min: 90000, max: 170000 },
+  "project-manager":      { min: 70000, max: 130000 },
+  "scrum-master":         { min: 75000, max: 130000 },
+  "technical-program-manager": { min: 100000, max: 175000 },
+  "cybersecurity-analyst":{ min: 75000, max: 140000 },
+  "cloud-architect":      { min: 110000, max: 190000 },
+  "solutions-architect":  { min: 105000, max: 180000 },
+  "technical-writer":     { min: 55000, max: 105000 },
+  "marketing-analyst":    { min: 50000, max: 95000 },
+  "digital-marketer":     { min: 45000, max: 90000 },
+  "content-strategist":   { min: 50000, max: 100000 },
+  "seo-specialist":       { min: 45000, max: 85000 },
+  "financial-analyst":    { min: 60000, max: 120000 },
+  "management-consultant":{ min: 80000, max: 170000 },
+  "business-analyst":     { min: 60000, max: 115000 },
+  "game-developer":       { min: 55000, max: 120000 },
+  "blockchain-developer": { min: 90000, max: 175000 },
+  "embedded-engineer":    { min: 75000, max: 145000 },
+  "systems-engineer":     { min: 80000, max: 150000 },
+  "network-engineer":     { min: 65000, max: 125000 },
+  "database-admin":       { min: 65000, max: 125000 },
+  "it-support":           { min: 40000, max: 75000 },
+  "healthcare-admin":     { min: 50000, max: 100000 },
+  "clinical-researcher":  { min: 60000, max: 120000 },
+  "teacher-educator":     { min: 40000, max: 75000 },
+  "instructional-designer": { min: 55000, max: 100000 },
+  "hr-specialist":        { min: 50000, max: 95000 },
+  "recruiter":            { min: 45000, max: 90000 },
+  "sales-engineer":       { min: 80000, max: 160000 },
+  "account-executive":    { min: 55000, max: 130000 },
+  "supply-chain-analyst": { min: 55000, max: 100000 },
+  "operations-manager":   { min: 65000, max: 130000 },
+  "legal-analyst":        { min: 55000, max: 110000 },
+  "compliance-officer":   { min: 60000, max: 120000 },
+  "growth-hacker":        { min: 55000, max: 110000 },
+  "financial-analyst":    { min: 60000, max: 120000 },
+  "business-analyst":     { min: 60000, max: 115000 },
+  "accountant":           { min: 50000, max: 95000 },
+  "investment-analyst":   { min: 70000, max: 140000 },
+  "investment-banker":    { min: 90000, max: 200000 },
+  "sales-manager":        { min: 65000, max: 140000 },
+  "account-executive":    { min: 55000, max: 130000 },
+  "business-development-rep": { min: 45000, max: 90000 },
+  "hr-manager":           { min: 60000, max: 115000 },
+  "hr-business-partner":  { min: 65000, max: 120000 },
+  "recruiter":            { min: 45000, max: 90000 },
+  "corporate-trainer":    { min: 50000, max: 90000 },
+  "career-coach":         { min: 45000, max: 85000 },
+  "healthcare-administrator": { min: 55000, max: 110000 },
+  "clinical-researcher":  { min: 60000, max: 120000 },
+  "biotech-project-manager": { min: 80000, max: 150000 },
+  "health-informatics-specialist": { min: 65000, max: 120000 },
+  "graphic-designer":     { min: 45000, max: 90000 },
+  "video-producer":       { min: 45000, max: 95000 },
+  "copywriter":           { min: 45000, max: 90000 },
+  "brand-strategist":     { min: 55000, max: 110000 },
+  "security-analyst":     { min: 75000, max: 140000 },
+  "penetration-tester":   { min: 80000, max: 150000 },
+  "startup-founder":      { min: 40000, max: 200000 },
+  "freelance-consultant": { min: 50000, max: 150000 },
+  "sustainability-consultant": { min: 55000, max: 105000 },
+  "esg-analyst":          { min: 60000, max: 110000 },
+  "lawyer":               { min: 70000, max: 180000 },
+  "paralegal":            { min: 40000, max: 75000 },
+  "architect":            { min: 60000, max: 130000 },
+  "civil-engineer":       { min: 65000, max: 120000 },
+  "construction-manager": { min: 65000, max: 130000 },
+  "journalist":           { min: 35000, max: 80000 },
+  "pr-specialist":        { min: 45000, max: 90000 },
+  "real-estate-agent":    { min: 40000, max: 120000 },
+  "property-manager":     { min: 45000, max: 85000 },
+  "electrician":          { min: 45000, max: 90000 },
+  "plumber":              { min: 45000, max: 90000 },
+  "hvac-technician":      { min: 45000, max: 85000 },
+  "policy-analyst":       { min: 50000, max: 100000 },
+  "urban-planner":        { min: 50000, max: 95000 },
+  "game-designer":        { min: 50000, max: 110000 },
+  "animator":             { min: 45000, max: 95000 },
+  "film-director":        { min: 40000, max: 150000 },
+  "musician":             { min: 30000, max: 90000 },
+  "environmental-engineer": { min: 60000, max: 110000 },
+  "conservation-biologist": { min: 45000, max: 85000 },
+  "supply-chain-manager": { min: 65000, max: 120000 },
+  "operations-manager":   { min: 65000, max: 130000 },
+  "commercial-pilot":     { min: 80000, max: 180000 },
+  "air-traffic-controller": { min: 70000, max: 140000 },
+  "hotel-manager":        { min: 45000, max: 95000 },
+  "event-planner":        { min: 40000, max: 80000 },
+  "executive-chef":       { min: 45000, max: 100000 },
+  "research-scientist":   { min: 65000, max: 130000 },
+  "pharmacist":           { min: 110000, max: 160000 },
+  "veterinarian":         { min: 80000, max: 130000 },
+  "social-worker":        { min: 40000, max: 70000 },
+  "counselor":            { min: 40000, max: 75000 },
+  "nonprofit-manager":    { min: 45000, max: 85000 },
+  "diplomat":             { min: 60000, max: 120000 },
+  "instructional-designer": { min: 55000, max: 100000 },
+  "physical-therapist":   { min: 70000, max: 110000 },
+  "content-creator":      { min: 35000, max: 100000 },
+  "social-media-manager": { min: 45000, max: 85000 },
+};
+
+/** Approximate growth outlook by domain */
+const DOMAIN_GROWTH: Record<string, string> = {
+  "Technology":              "High",
+  "Data & Analytics":        "High",
+  "Design & UX":             "Moderate-High",
+  "Product Management":      "High",
+  "Cybersecurity":           "Very High",
+  "Cloud & Infrastructure":  "Very High",
+  "Marketing":               "Moderate",
+  "Finance":                 "Moderate",
+  "Finance/Consulting":      "Moderate",
+  "Consulting":              "Moderate",
+  "Healthcare":              "High",
+  "Healthcare/Product Management": "High",
+  "Healthcare/Data & Analytics":   "High",
+  "Education":               "Moderate",
+  "Education/Consulting":    "Moderate",
+  "Engineering":             "Moderate-High",
+  "Legal":                   "Moderate",
+  "Law & Policy":            "Moderate",
+  "Sales":                   "Moderate",
+  "E-commerce":              "Moderate-High",
+  "E-commerce/Consulting":   "Moderate-High",
+  "E-commerce/Technology":   "High",
+  "Operations":              "Moderate",
+  "Logistics & Operations":  "Moderate",
+  "Human Resources":         "Moderate",
+  "Media & Entertainment":   "Moderate",
+  "Media & Journalism":      "Low-Moderate",
+  "Design & UX/Media & Entertainment": "Moderate",
+  "Marketing/Media & Entertainment":   "Moderate",
+  "Media & Entertainment/Marketing":   "Moderate",
+  "Sustainability":          "High",
+  "Sustainability/Finance":  "High",
+  "Architecture & Construction": "Moderate",
+  "Real Estate":             "Moderate",
+  "Trades & Skilled Labor":  "Moderate-High",
+  "Arts & Entertainment":    "Low-Moderate",
+  "Agriculture & Environment": "Moderate",
+  "Aviation":                "Moderate",
+  "Hospitality & Tourism":   "Moderate",
+  "Science & Research":      "Moderate-High",
+  "Social Services":         "Moderate",
+};
+
+function getSalaryRange(profile: CareerProfile): { min: number; max: number } {
+  return SALARY_RANGES[profile.id] ?? { min: 50000, max: 100000 };
+}
+
+function getGrowthOutlook(profile: CareerProfile): string {
+  return DOMAIN_GROWTH[profile.domain] ?? "Moderate";
+}
+
 /** Experience-career fit scoring (ported from v1) */
 const EXPERIENCE_RANKS: Record<string, number> = {
   student: 0, junior: 1, mid: 2, senior: 3, expert: 4, executive: 5,
@@ -1282,14 +1484,19 @@ export function getTopCareerMatchesV2(
   // Sort by display score descending
   withDisplayScores.sort((a, b) => b.score - a.score);
 
-  // Build flat career matches (backward-compat)
+  // Build flat career matches with full data for frontend display
   const topProfiles = withDisplayScores.slice(0, count);
-  const careerMatches: CareerMatch[] = topProfiles.map(({ profile, score }) => ({
+  const careerMatches: CareerMatch[] = topProfiles.map(({ profile, score, dimensions }) => ({
     title: profile.title,
     matchScore: score,
     description: profile.description,
     requiredSkills: profile.requiredSkills,
     pathwayTime: profile.pathwayTime,
+    careerFamily: profile.domain,
+    domain: profile.domain,
+    whyThisFits: generateWhyThisFits(profile, dimensions, answers),
+    salaryRange: getSalaryRange(profile),
+    growthOutlook: getGrowthOutlook(profile),
   }));
 
   // Skill gaps from top matches
