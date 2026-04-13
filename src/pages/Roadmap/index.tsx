@@ -371,23 +371,43 @@ export default function Roadmap() {
                 <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 800, lineHeight: 1.2, marginBottom: 6 }}>
                   {m.title}
                 </p>
-                {isActive && mTasks.length > 0 && (
+                {(isActive || m.status === 'completed') && mTasks.length > 0 && (
                   <p style={{ fontSize: '0.72rem', opacity: 0.7, marginBottom: 8 }}>
                     {done}/{mTasks.length} tasks done
                   </p>
                 )}
+                {m.status === 'completed' && (
+                  <Link to={`/app/tasks?milestone=${m.id}`} style={{
+                    padding: '0.4rem', borderRadius: 'var(--radius-full)',
+                    background: 'var(--surface-container)', color: 'var(--on-surface)',
+                    fontSize: '0.7rem', fontWeight: 600, textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  }}>
+                    View Tasks <ArrowRight size={11} />
+                  </Link>
+                )}
                 {isActive && (
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => handleGenerateTasks(m)} disabled={!!generating || !!completing}
-                      style={{ flex: 1, padding: '0.4rem', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                      {generating === m.id ? <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Sparkles size={11} />}
-                      {generating === m.id ? 'Generating...' : 'Generate Tasks'}
-                    </button>
-                    <button onClick={() => handleComplete(m.id)} disabled={!!completing}
-                      style={{ flex: 1, padding: '0.4rem', borderRadius: 'var(--radius-full)', background: '#fff', color: '#8b4f2c', border: 'none', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                      {completing === m.id ? <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> : <CheckCircle2 size={11} />}
-                      Complete
-                    </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <Link to={`/app/tasks?milestone=${m.id}`} style={{
+                      padding: '0.45rem', borderRadius: 'var(--radius-full)',
+                      background: '#fff', color: '#8b4f2c', border: 'none',
+                      fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                    }}>
+                      <ArrowRight size={12} /> View Tasks
+                    </Link>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => handleGenerateTasks(m)} disabled={!!generating || !!completing}
+                        style={{ flex: 1, padding: '0.4rem', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                        {generating === m.id ? <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Sparkles size={11} />}
+                        {generating === m.id ? 'Generating...' : 'Generate Tasks'}
+                      </button>
+                      <button onClick={() => handleComplete(m.id)} disabled={!!completing}
+                        style={{ flex: 1, padding: '0.4rem', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.15)', color: '#fff', border: 'none', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                        {completing === m.id ? <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> : <CheckCircle2 size={11} />}
+                        Complete
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
