@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import {
   Compass, Fingerprint, BarChart3,
   Map, GraduationCap, Sparkles,
@@ -109,17 +109,19 @@ export default function Solution() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
-  const [activeSection, setActiveSection] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const dotRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const frameRef = useRef(0);
+  const canvasSized = useRef(false);
+  const rafId = useRef(0);
 
   // Preload all frames
   useEffect(() => {
     preloadImages(TOTAL_FRAMES).then(imgs => {
       imagesRef.current = imgs;
       setImagesLoaded(true);
-      // Draw first frame immediately
       drawFrame(0);
     });
   }, []);
@@ -131,14 +133,20 @@ export default function Solution() {
     if (!ctx) return;
     const img = imagesRef.current[frameIdx];
     if (!img || !img.complete || !img.naturalWidth) return;
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+    // Only set canvas size once
+    if (!canvasSized.current) {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvasSized.current = true;
+    }
     ctx.drawImage(img, 0, 0);
   }, []);
 
-  // Scroll handler
+  // Scroll handler — uses refs, no React state, rAF-throttled
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+
+    const updatePanels = () => {
       const container = containerRef.current;
       if (!container) return;
       const rect = container.getBoundingClientRect();
@@ -146,34 +154,58 @@ export default function Solution() {
       if (scrollHeight <= 0) return;
       const scrolled = -rect.top;
       const pct = Math.max(0, Math.min(1, scrolled / scrollHeight));
-      setProgress(pct);
 
+      // Update frame (direct canvas draw, no state)
       const frameIdx = Math.min(TOTAL_FRAMES - 1, Math.floor(pct * TOTAL_FRAMES));
       if (frameIdx !== frameRef.current) {
         frameRef.current = frameIdx;
         drawFrame(frameIdx);
       }
 
-      const sIdx = Math.min(SECTIONS.length - 1, Math.floor(pct * SECTIONS.length));
-      setActiveSection(sIdx);
+      // Update text panels via DOM (no React re-render)
+      const sectionPct = pct * SECTIONS.length;
+      const activeIdx = Math.min(SECTIONS.length - 1, Math.floor(sectionPct));
+
+      panelRefs.current.forEach((panel, i) => {
+        if (!panel) return;
+        const dist = Math.abs(sectionPct - i - 0.5);
+        const opacity = Math.max(0, 1 - dist * 1.6);
+        const ty = (sectionPct - i - 0.5) * -50;
+        panel.style.opacity = String(opacity);
+        panel.style.transform = `translateY(${ty}px)`;
+        panel.style.pointerEvents = i === activeIdx ? 'auto' : 'none';
+      });
+
+      // Update dots
+      dotRefs.current.forEach((dot, i) => {
+        if (!dot) return;
+        if (i === activeIdx) dot.classList.add('active');
+        else dot.classList.remove('active');
+      });
+
+      // Update CTA
+      if (ctaRef.current) {
+        ctaRef.current.style.opacity = pct > 0.85 ? '1' : '0';
+        ctaRef.current.style.transform = `translateY(${pct > 0.85 ? 0 : 20}px)`;
+      }
+
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        rafId.current = requestAnimationFrame(updatePanels);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    updatePanels();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(rafId.current);
+    };
   }, [drawFrame, imagesLoaded]);
-
-  const getSectionOpacity = (idx: number) => {
-    const sectionPct = progress * SECTIONS.length;
-    const dist = Math.abs(sectionPct - idx - 0.5);
-    return Math.max(0, 1 - dist * 1.6);
-  };
-
-  const getSectionTranslateY = (idx: number) => {
-    const sectionPct = progress * SECTIONS.length;
-    const diff = sectionPct - idx - 0.5;
-    return diff * -50;
-  };
 
   return (
     <>
@@ -219,7 +251,7 @@ export default function Solution() {
           {/* Progress dots */}
           <div className="solution__progress-track">
             {SECTIONS.map((s, i) => (
-              <button key={s.id} className={`solution__progress-dot${activeSection === i ? ' active' : ''}`} style={{ '--dot-color': s.color } as React.CSSProperties}>
+              <button key={s.id} ref={el => { dotRefs.current[i] = el; }} className="solution__progress-dot" style={{ '--dot-color': s.color } as React.CSSProperties}>
                 <span className="solution__progress-label">{s.label}</span>
               </button>
             ))}
@@ -230,11 +262,7 @@ export default function Solution() {
             {/* Text panels */}
             <div className="solution__text-side">
               {SECTIONS.map((s, i) => (
-                <div key={s.id} className="solution__panel" style={{
-                  opacity: getSectionOpacity(i),
-                  transform: `translateY(${getSectionTranslateY(i)}px)`,
-                  pointerEvents: activeSection === i ? 'auto' : 'none',
-                }}>
+                <div key={s.id} ref={el => { panelRefs.current[i] = el; }} className="solution__panel" style={{ opacity: 0 }}>
                   <span className="solution__panel-label" style={{ color: s.color }}>{s.label}</span>
                   <h2 className="solution__panel-title">{s.title}</h2>
                   <p className="solution__panel-desc">{s.desc}</p>
@@ -261,18 +289,14 @@ export default function Solution() {
               <canvas ref={canvasRef} className="solution__canvas" />
               {!imagesLoaded && (
                 <div className="solution__cube-loading">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#a78bfa', borderRadius: '50%' }}
-                  />
+                  <div style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                 </div>
               )}
             </div>
           </div>
 
           {/* Bottom CTA */}
-          <div className="solution__bottom-cta" style={{ opacity: progress > 0.85 ? 1 : 0, transform: `translateY(${progress > 0.85 ? 0 : 20}px)` }}>
+          <div ref={ctaRef} className="solution__bottom-cta" style={{ opacity: 0 }}>
             <Link to="/signup" className="solution__cta-btn">
               Start Your Journey <ArrowRight size={18} />
             </Link>
