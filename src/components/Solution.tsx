@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils';
 import './Solution.css';
 
 const TOTAL_FRAMES = 60;
-const SCROLL_HEIGHT_VH = 600;
 
 const SECTIONS = [
   {
@@ -23,7 +22,7 @@ const SECTIONS = [
     features: [
       { icon: Dna, text: 'Holland RIASEC interest mapping, the gold standard in vocational psychology' },
       { icon: Fingerprint, text: 'Big Five personality profiling tied to workplace performance research' },
-      { icon: Compass, text: 'Schwartz Values + O*NET work context alignment' },
+      { icon: Compass, text: 'Schwartz Values and O*NET work context alignment' },
     ],
     color: '#a78bfa',
   },
@@ -65,7 +64,7 @@ const SECTIONS = [
   },
 ];
 
-/* ── Floating Elegant Shapes (background decoration) ── */
+/* ── Elegant floating shape ── */
 function ElegantShape({
   className, delay = 0, width = 400, height = 100, rotate = 0, gradient = 'from-white/[0.08]',
 }: { className?: string; delay?: number; width?: number; height?: number; rotate?: number; gradient?: string }) {
@@ -73,7 +72,7 @@ function ElegantShape({
     <motion.div
       initial={{ opacity: 0, y: -150, rotate: rotate - 15 }}
       animate={{ opacity: 1, y: 0, rotate }}
-      transition={{ duration: 2.4, delay, ease: [0.23, 0.86, 0.39, 0.96], opacity: { duration: 1.2 } }}
+      transition={{ duration: 2.4, delay, ease: [0.23, 0.86, 0.39, 0.96] as [number, number, number, number], opacity: { duration: 1.2 } }}
       className={cn('absolute', className)}
     >
       <motion.div
@@ -87,22 +86,23 @@ function ElegantShape({
           gradient,
           'backdrop-blur-[2px] border-2 border-white/[0.15]',
           'shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]',
-          'after:absolute after:inset-0 after:rounded-full',
-          'after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]',
         )} />
       </motion.div>
     </motion.div>
   );
 }
 
-function preloadImages(count: number): HTMLImageElement[] {
-  const images: HTMLImageElement[] = [];
-  for (let i = 0; i < count; i++) {
-    const img = new Image();
-    img.src = `/cube/frame-${String(i).padStart(3, '0')}.jpg`;
-    images.push(img);
-  }
-  return images;
+function preloadImages(count: number): Promise<HTMLImageElement[]> {
+  return Promise.all(
+    Array.from({ length: count }, (_, i) => {
+      return new Promise<HTMLImageElement>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(img);
+        img.src = `/cube/frame-${String(i).padStart(3, '0')}.jpg`;
+      });
+    })
+  );
 }
 
 export default function Solution() {
@@ -111,9 +111,18 @@ export default function Solution() {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const [activeSection, setActiveSection] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const frameRef = useRef(0);
 
-  useEffect(() => { imagesRef.current = preloadImages(TOTAL_FRAMES); }, []);
+  // Preload all frames
+  useEffect(() => {
+    preloadImages(TOTAL_FRAMES).then(imgs => {
+      imagesRef.current = imgs;
+      setImagesLoaded(true);
+      // Draw first frame immediately
+      drawFrame(0);
+    });
+  }, []);
 
   const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
@@ -121,18 +130,20 @@ export default function Solution() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const img = imagesRef.current[frameIdx];
-    if (!img || !img.complete) return;
+    if (!img || !img.complete || !img.naturalWidth) return;
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
     ctx.drawImage(img, 0, 0);
   }, []);
 
+  // Scroll handler
   useEffect(() => {
     const handleScroll = () => {
       const container = containerRef.current;
       if (!container) return;
       const rect = container.getBoundingClientRect();
       const scrollHeight = container.offsetHeight - window.innerHeight;
+      if (scrollHeight <= 0) return;
       const scrolled = -rect.top;
       const pct = Math.max(0, Math.min(1, scrolled / scrollHeight));
       setProgress(pct);
@@ -148,89 +159,126 @@ export default function Solution() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    const timer = setTimeout(() => { drawFrame(0); handleScroll(); }, 200);
-    return () => { window.removeEventListener('scroll', handleScroll); clearTimeout(timer); };
-  }, [drawFrame]);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [drawFrame, imagesLoaded]);
 
   const getSectionOpacity = (idx: number) => {
     const sectionPct = progress * SECTIONS.length;
     const dist = Math.abs(sectionPct - idx - 0.5);
-    return Math.max(0, 1 - dist * 1.8);
+    return Math.max(0, 1 - dist * 1.6);
   };
 
   const getSectionTranslateY = (idx: number) => {
     const sectionPct = progress * SECTIONS.length;
     const diff = sectionPct - idx - 0.5;
-    return diff * -40;
+    return diff * -50;
   };
 
   return (
-    <section className="solution" id="solution" ref={containerRef} style={{ height: `${SCROLL_HEIGHT_VH}vh` }}>
-      <div className="solution__sticky">
-        {/* Cinematic dark bg */}
-        <div className="solution__bg" />
-
-        {/* Elegant floating shapes — background decoration */}
-        <div className="solution__shapes">
-          <ElegantShape delay={0.3} width={600} height={140} rotate={12} gradient="from-[#6245a4]/[0.12]" className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]" />
-          <ElegantShape delay={0.5} width={500} height={120} rotate={-15} gradient="from-[#006a62]/[0.10]" className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]" />
-          <ElegantShape delay={0.4} width={300} height={80} rotate={-8} gradient="from-[#a78bfa]/[0.10]" className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]" />
-          <ElegantShape delay={0.6} width={200} height={60} rotate={20} gradient="from-[#8b4f2c]/[0.10]" className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]" />
-          <ElegantShape delay={0.7} width={150} height={40} rotate={-25} gradient="from-[#5ef6e6]/[0.08]" className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]" />
+    <>
+      {/* ── Hero intro (before scroll section) ── */}
+      <div className="solution-hero">
+        <div className="solution-hero__shapes">
+          <ElegantShape delay={0.2} width={500} height={120} rotate={12} gradient="from-[#6245a4]/[0.12]" className="left-[-8%] top-[20%]" />
+          <ElegantShape delay={0.4} width={400} height={100} rotate={-15} gradient="from-[#006a62]/[0.10]" className="right-[-3%] top-[65%]" />
+          <ElegantShape delay={0.6} width={200} height={50} rotate={20} gradient="from-[#8b4f2c]/[0.10]" className="right-[20%] top-[12%]" />
         </div>
 
-        {/* Progress dots */}
-        <div className="solution__progress-track">
-          {SECTIONS.map((s, i) => (
-            <button key={s.id} className={`solution__progress-dot${activeSection === i ? ' active' : ''}`} style={{ '--dot-color': s.color } as React.CSSProperties}>
-              <span className="solution__progress-label">{s.label}</span>
-            </button>
-          ))}
-        </div>
+        <motion.div
+          className="solution-hero__content"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.4, 0.25, 1] as [number, number, number, number] }}
+        >
+          <span className="solution-hero__label">Our Approach</span>
+          <h1 className="solution-hero__title">
+            Career guidance that{' '}
+            <span className="solution-hero__title-accent">actually works</span>
+          </h1>
+          <p className="solution-hero__desc">
+            Four layers of intelligence. Zero data harvesting. Scroll to see how we solve
+            the career puzzle differently.
+          </p>
+          <div className="solution-hero__scroll-hint">
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <ArrowRight size={20} style={{ transform: 'rotate(90deg)' }} />
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
 
-        {/* Main content */}
-        <div className="solution__content">
-          {/* Text panels — left */}
-          <div className="solution__text-side">
+      {/* ── Scroll-driven cube section ── */}
+      <section className="solution" id="solution" ref={containerRef} style={{ height: '500vh' }}>
+        <div className="solution__sticky">
+          <div className="solution__bg" />
+
+          {/* Progress dots */}
+          <div className="solution__progress-track">
             {SECTIONS.map((s, i) => (
-              <div key={s.id} className="solution__panel" style={{
-                opacity: getSectionOpacity(i),
-                transform: `translateY(${getSectionTranslateY(i)}px)`,
-                pointerEvents: activeSection === i ? 'auto' : 'none',
-              }}>
-                <span className="solution__panel-label" style={{ color: s.color }}>{s.label}</span>
-                <h2 className="solution__panel-title">{s.title}</h2>
-                <p className="solution__panel-desc">{s.desc}</p>
-                <div className="solution__panel-features">
-                  {s.features.map((f, j) => {
-                    const Icon = f.icon;
-                    return (
-                      <div key={j} className="solution__panel-feature">
-                        <div className="solution__panel-feature-icon" style={{ color: s.color }}>
-                          <Icon size={16} />
-                        </div>
-                        <span>{f.text}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <button key={s.id} className={`solution__progress-dot${activeSection === i ? ' active' : ''}`} style={{ '--dot-color': s.color } as React.CSSProperties}>
+                <span className="solution__progress-label">{s.label}</span>
+              </button>
             ))}
           </div>
 
-          {/* Cube — right */}
-          <div className="solution__cube-side">
-            <canvas ref={canvasRef} className="solution__canvas" />
+          {/* Main content */}
+          <div className="solution__content">
+            {/* Text panels */}
+            <div className="solution__text-side">
+              {SECTIONS.map((s, i) => (
+                <div key={s.id} className="solution__panel" style={{
+                  opacity: getSectionOpacity(i),
+                  transform: `translateY(${getSectionTranslateY(i)}px)`,
+                  pointerEvents: activeSection === i ? 'auto' : 'none',
+                }}>
+                  <span className="solution__panel-label" style={{ color: s.color }}>{s.label}</span>
+                  <h2 className="solution__panel-title">{s.title}</h2>
+                  <p className="solution__panel-desc">{s.desc}</p>
+                  <div className="solution__panel-features">
+                    {s.features.map((f, j) => {
+                      const Icon = f.icon;
+                      return (
+                        <div key={j} className="solution__panel-feature">
+                          <div className="solution__panel-feature-icon" style={{ color: s.color }}>
+                            <Icon size={16} />
+                          </div>
+                          <span>{f.text}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Cube */}
+            <div className="solution__cube-side">
+              <div className="solution__cube-glow" />
+              <canvas ref={canvasRef} className="solution__canvas" />
+              {!imagesLoaded && (
+                <div className="solution__cube-loading">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#a78bfa', borderRadius: '50%' }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="solution__bottom-cta" style={{ opacity: progress > 0.85 ? 1 : 0, transform: `translateY(${progress > 0.85 ? 0 : 20}px)` }}>
+            <Link to="/signup" className="solution__cta-btn">
+              Start Your Journey <ArrowRight size={18} />
+            </Link>
           </div>
         </div>
-
-        {/* Bottom CTA */}
-        <div className="solution__bottom-cta" style={{ opacity: progress > 0.85 ? 1 : 0, transform: `translateY(${progress > 0.85 ? 0 : 20}px)` }}>
-          <Link to="/signup" className="solution__cta-btn">
-            Start Your Journey <ArrowRight size={18} />
-          </Link>
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
