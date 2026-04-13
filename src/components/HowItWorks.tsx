@@ -7,7 +7,7 @@ const STEPS = [
     step: '01',
     icon: '🧬',
     title: 'Discover Your Career Identity',
-    desc: 'Take our AI-powered assessment that maps your strengths, values, personality, and aspirations to find your true professional identity.',
+    desc: 'A five-minute assessment built on four validated psychological frameworks scores you across 12 dimensions and matches you to career paths that actually fit.',
     color: '#a78bfa',
   },
   {
