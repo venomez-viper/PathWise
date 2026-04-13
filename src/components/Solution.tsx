@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
+import { TextScramble } from '@/components/ui/text-scramble';
 import {
   Compass, Fingerprint, BarChart3,
   Map, GraduationCap, Sparkles,
@@ -118,6 +119,8 @@ export default function Solution() {
   const dotRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const ctaRef = useRef<HTMLDivElement>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [activeSection, setActiveSection] = useState(-1);
+  const activeSectionRef = useRef(-1);
   const frameRef = useRef(0);
   const canvasSized = useRef(false);
   const rafId = useRef(0);
@@ -207,6 +210,12 @@ export default function Solution() {
         panel.style.pointerEvents = i === activeIdx ? 'auto' : 'none';
       });
 
+      // Track active section for TextScramble trigger
+      if (activeIdx !== activeSectionRef.current) {
+        activeSectionRef.current = activeIdx;
+        setActiveSection(activeIdx);
+      }
+
       // Update dots
       dotRefs.current.forEach((dot, i) => {
         if (!dot) return;
@@ -290,7 +299,15 @@ export default function Solution() {
                     <span className="solution__panel-label" style={{ color: s.color }}>{s.label}</span>
                     <span className="solution__panel-stat" style={{ color: s.color }}>{s.stat}</span>
                   </div>
-                  <h2 className="solution__panel-title">{s.title}</h2>
+                  <TextScramble
+                    as="h2"
+                    className="solution__panel-title"
+                    trigger={activeSection === i}
+                    duration={0.6}
+                    speed={0.03}
+                  >
+                    {s.title}
+                  </TextScramble>
                   <p className="solution__panel-desc">{s.desc}</p>
                   <div className="solution__panel-features">
                     {s.features.map((f, j) => {

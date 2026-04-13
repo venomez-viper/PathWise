@@ -70,7 +70,7 @@ export default function SignUp() {
 
       {/* Glass card */}
       <div
-        className="relative z-10 w-full max-w-lg rounded-3xl p-8 md:p-12 overflow-y-auto max-h-[95svh]"
+        className="relative z-10 w-full max-w-md rounded-3xl p-8 md:p-10 overflow-y-auto max-h-[95svh]"
         style={{
           background: 'rgba(255, 255, 255, 0.65)',
           backdropFilter: 'blur(20px) saturate(1.4)',
@@ -85,7 +85,7 @@ export default function SignUp() {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="font-['Manrope'] text-2xl font-bold tracking-tight" style={{ color: 'var(--on-surface)' }}>
             Create your account
           </h1>

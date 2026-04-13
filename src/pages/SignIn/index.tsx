@@ -65,7 +65,7 @@ export default function SignIn() {
 
       {/* Glass card */}
       <div
-        className="relative z-10 w-full max-w-md rounded-3xl p-8 md:p-10"
+        className="relative z-10 w-full max-w-md rounded-3xl p-8 md:p-10 overflow-y-auto max-h-[95svh]"
         style={{
           background: 'rgba(255, 255, 255, 0.65)',
           backdropFilter: 'blur(20px) saturate(1.4)',
