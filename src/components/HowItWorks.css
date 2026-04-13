@@ -1,17 +1,12 @@
 .how {
-  background: var(--surface-container-low);
+  background: transparent;
   position: relative;
   overflow: hidden;
+  padding: var(--spacing-16) 0;
 }
 
 .how__bg-accent {
-  position: absolute;
-  top: -200px;
-  right: -200px;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(98,69,164,0.07) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 .how__steps {
@@ -37,7 +32,7 @@
   left: calc(50% + 40px);
   right: calc(-50% + 40px);
   height: 2px;
-  background: linear-gradient(90deg, var(--outline-variant), transparent);
+  background: linear-gradient(90deg, rgba(255,255,255,0.12), transparent);
   z-index: 0;
 }
 
@@ -76,12 +71,12 @@
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--on-surface);
+  color: #fff;
 }
 
 .how__step-desc {
   font-size: 0.9rem;
-  color: var(--on-surface-variant);
+  color: rgba(255,255,255,0.5);
   line-height: 1.65;
 }
 
