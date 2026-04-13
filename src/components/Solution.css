@@ -283,6 +283,10 @@
   justify-content: center;
   max-width: 460px;
   position: relative;
+  will-change: transform;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .solution__cube-glow {

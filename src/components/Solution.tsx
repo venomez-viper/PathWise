@@ -112,6 +112,7 @@ function preloadImages(count: number): Promise<HTMLImageElement[]> {
 export default function Solution() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cubeSideRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dotRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -164,6 +165,14 @@ export default function Solution() {
       if (frameIdx !== frameRef.current) {
         frameRef.current = frameIdx;
         drawFrame(frameIdx);
+      }
+
+      // Apple-style cube transforms: scale up from 0.85 to 1.1, subtle perspective tilt
+      if (cubeSideRef.current) {
+        const scale = 0.85 + pct * 0.3; // 0.85 -> 1.15
+        const rotateY = (pct - 0.5) * -8; // subtle tilt -4 to +4 deg
+        const rotateX = Math.sin(pct * Math.PI) * 3; // gentle nod
+        cubeSideRef.current.style.transform = `perspective(1200px) scale(${scale}) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
       }
 
       // Update text panels via DOM (no React re-render)
@@ -291,7 +300,7 @@ export default function Solution() {
             </div>
 
             {/* Cube */}
-            <div className="solution__cube-side">
+            <div ref={cubeSideRef} className="solution__cube-side">
               <div className="solution__cube-glow" />
               <canvas ref={canvasRef} className="solution__canvas" />
               {!imagesLoaded && (
