@@ -42,7 +42,7 @@ const STATUS_OPTIONS: { value: Task['status']; label: string }[] = [
 const PRIORITY_OPTIONS: { value: Task['priority']; label: string; color: string }[] = [
   { value: 'low', label: 'Low', color: '#34d399' },
   { value: 'medium', label: 'Medium', color: '#f59e0b' },
-  { value: 'high', label: 'High', color: '#ef4444' },
+  { value: 'high', label: 'High', color: 'var(--error, #ef4444)' },
 ];
 
 export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: TaskDetailPanelProps) {
@@ -113,6 +113,7 @@ export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: Tas
     background: 'rgba(0,0,0,0.3)',
     zIndex: 1000,
     animation: 'taskPanelFadeIn 0.2s ease',
+    cursor: 'pointer',
   };
 
   const panelStyle: React.CSSProperties = {
@@ -374,8 +375,8 @@ export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: Tas
               gap: 6,
               padding: '10px 16px',
               background: 'transparent',
-              color: '#ef4444',
-              border: '1.5px solid #ef4444',
+              color: 'var(--error, #ef4444)',
+              border: '1.5px solid var(--error, #ef4444)',
               borderRadius: 'var(--radius-md)',
               fontWeight: 600,
               fontSize: '0.875rem',

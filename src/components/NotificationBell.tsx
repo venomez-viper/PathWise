@@ -34,7 +34,7 @@ function timeAgo(dateStr: string): string {
 function NotifIcon({ type }: { type: string }) {
   const style = { flexShrink: 0, marginTop: 2 };
   if (type === 'achievement') return <Award size={16} color="#f59e0b" style={style} />;
-  if (type === 'roadmap')     return <Map size={16} color="#6245a4" style={style} />;
+  if (type === 'roadmap')     return <Map size={16} color="var(--primary)" style={style} />;
   if (type === 'warning')     return <AlertCircle size={16} color="#ef4444" style={style} />;
   return <Info size={16} color="#0ea5e9" style={style} />;
 }
@@ -116,7 +116,7 @@ export default function NotificationBell() {
     width: 40,
     height: 40,
     borderRadius: '50%',
-    border: '1.5px solid rgba(98,69,164,0.18)',
+    border: '1.5px solid var(--primary-fixed)',
     background: open ? 'rgba(98,69,164,0.08)' : 'var(--surface, #eefcfe)',
     cursor: 'pointer',
     boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
@@ -132,7 +132,7 @@ export default function NotificationBell() {
     height: 18,
     borderRadius: '999px',
     background: '#ef4444',
-    color: '#fff',
+    color: 'var(--surface-container-lowest)',
     fontSize: '0.65rem',
     fontWeight: 800,
     display: 'flex',
@@ -151,10 +151,10 @@ export default function NotificationBell() {
     width: 340,
     maxHeight: 400,
     overflowY: 'auto',
-    background: '#fff',
+    background: 'var(--surface-container-lowest)',
     borderRadius: 16,
     boxShadow: '0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)',
-    border: '1px solid rgba(98,69,164,0.12)',
+    border: '1px solid var(--primary-fixed)',
     zIndex: 200,
   };
 
@@ -171,7 +171,7 @@ export default function NotificationBell() {
     alignItems: 'center',
     gap: 4,
     fontSize: '0.75rem',
-    color: '#6245a4',
+    color: 'var(--primary)',
     background: 'none',
     border: 'none',
     cursor: marking ? 'default' : 'pointer',
@@ -185,7 +185,7 @@ export default function NotificationBell() {
   const emptyStyle: React.CSSProperties = {
     padding: '32px 16px',
     textAlign: 'center',
-    color: 'var(--on-surface-variant, #667)',
+    color: 'var(--on-surface-variant, var(--on-surface-muted))',
     fontSize: '0.85rem',
   };
 
@@ -262,7 +262,7 @@ export default function NotificationBell() {
                     <p style={{
                       margin: '2px 0 0',
                       fontSize: '0.77rem',
-                      color: 'var(--on-surface-variant, #667)',
+                      color: 'var(--on-surface-variant, var(--on-surface-muted))',
                       lineHeight: 1.4,
                       overflow: 'hidden',
                       display: '-webkit-box',
@@ -286,7 +286,7 @@ export default function NotificationBell() {
                       width: 7,
                       height: 7,
                       borderRadius: '50%',
-                      background: '#6245a4',
+                      background: 'var(--primary)',
                       flexShrink: 0,
                       marginTop: 5,
                     }} />

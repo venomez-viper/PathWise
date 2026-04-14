@@ -1,25 +1,26 @@
 import { useEffect, useRef } from 'react';
+import { Dna, Signpost, Trophy } from 'lucide-react';
 import { TextScramble } from '@/components/ui/text-scramble';
 import './HowItWorks.css';
 
 const STEPS = [
   {
     step: '01',
-    icon: '🧬',
+    icon: Dna,
     title: 'Discover Your Career Identity',
     desc: 'A five-minute assessment built on four validated psychological frameworks scores you across 12 dimensions and matches you to career paths that actually fit.',
     color: '#a78bfa',
   },
   {
     step: '02',
-    icon: '🛣️',
+    icon: Signpost,
     title: 'Get Your Personalized Roadmap',
     desc: 'PathWise generates a step-by-step career roadmap with curated skill development, certifications, and networking milestones - built for you.',
     color: '#5ef6e6',
   },
   {
     step: '03',
-    icon: '🏆',
+    icon: Trophy,
     title: 'Track Progress & Stay On Course',
     desc: 'Daily and weekly task planners, a career readiness score, and real-time opportunity insights keep you moving toward your goal.',
     color: '#fbbf24',
@@ -63,21 +64,24 @@ export default function HowItWorks() {
         </div>
 
         <div className="how__steps">
-          {STEPS.map((s, i) => (
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            return (
             <div key={i} className="how__step fade-up">
               <div className="how__connector" style={{ display: i === STEPS.length - 1 ? 'none' : undefined }} />
               <div className="how__step-number" style={{ color: s.color, borderColor: s.color }}>
                 {s.step}
               </div>
               <div className="how__step-icon" style={{ background: `${s.color}18`, color: s.color }}>
-                {s.icon}
+                <Icon size={28} color={s.color} />
               </div>
               <div className="how__step-body">
                 <h3 className="how__step-title">{s.title}</h3>
                 <p className="how__step-desc">{s.desc}</p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

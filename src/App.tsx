@@ -23,6 +23,10 @@ const BlogArticlePage  = lazy(() => import('./pages/BlogArticlePage'));
 const LegalPage        = lazy(() => import('./pages/LegalPage'));
 const ContactPage      = lazy(() => import('./pages/Contact'));
 const WhatsNewPage     = lazy(() => import('./pages/WhatsNew'));
+const AboutPage        = lazy(() => import('./pages/AboutPage'));
+const FAQPage          = lazy(() => import('./pages/FAQPage'));
+const FeaturesPage     = lazy(() => import('./pages/FeaturesPage'));
+const ComparePage      = lazy(() => import('./pages/ComparePage'));
 
 // Auth pages
 const SignIn           = lazy(() => import('./pages/SignIn'));
@@ -159,6 +163,10 @@ export default function App() {
             <Route path="/cookie-policy" element={<Suspense fallback={<PageLoader />}><LegalPage docKey="cookies" /></Suspense>} />
             <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
             <Route path="/whats-new" element={<Suspense fallback={<PageLoader />}><WhatsNewPage /></Suspense>} />
+            <Route path="/about" element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
+            <Route path="/faq" element={<Suspense fallback={<PageLoader />}><FAQPage /></Suspense>} />
+            <Route path="/features" element={<Suspense fallback={<PageLoader />}><FeaturesPage /></Suspense>} />
+            <Route path="/compare" element={<Suspense fallback={<PageLoader />}><ComparePage /></Suspense>} />
           </Route>
 
           {/* ── Public profile (standalone, no layout) ── */}

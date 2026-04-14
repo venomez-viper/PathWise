@@ -58,8 +58,8 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
               <span style={{
                 fontSize: '0.55rem',
                 fontWeight: 700,
-                background: '#6245a4',
-                color: '#fff',
+                background: 'var(--primary)',
+                color: 'var(--surface-container-lowest)',
                 padding: '1px 6px',
                 borderRadius: 999,
                 marginLeft: 'auto',

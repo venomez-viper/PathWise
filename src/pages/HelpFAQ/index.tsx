@@ -128,7 +128,7 @@ export default function HelpFAQ() {
               <div
                 key={cat.title}
                 onClick={() => scrollToSection(cat.title === 'Billing & Plans' ? 'Billing & Plans' : cat.title)}
-                className="panel"
+                className="panel help-category-card"
                 style={{
                   borderRadius: '1rem',
                   padding: '1.5rem',
@@ -137,14 +137,6 @@ export default function HelpFAQ() {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.75rem',
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = '';
                 }}
               >
                 <div style={{
@@ -216,7 +208,7 @@ export default function HelpFAQ() {
               return (
                 <div
                   key={key}
-                  className="panel"
+                  className="panel help-faq-item"
                   style={{
                     borderRadius: '0.75rem',
                     border: '1px solid var(--outline-variant)',
@@ -225,12 +217,6 @@ export default function HelpFAQ() {
                     transition: 'box-shadow 0.15s ease',
                   }}
                   onClick={() => toggle(key)}
-                  onMouseEnter={e => {
-                    if (!isOpen) (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = '';
-                  }}
                 >
                   <div style={{
                     display: 'flex',
@@ -382,6 +368,13 @@ export default function HelpFAQ() {
 
       {/* Responsive styles */}
       <style>{`
+        .help-category-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .help-faq-item:hover {
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
         @media (max-width: 640px) {
           .help-categories-grid {
             grid-template-columns: 1fr !important;

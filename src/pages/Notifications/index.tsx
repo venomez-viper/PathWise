@@ -7,7 +7,7 @@ const TYPE_ICONS: Record<string, any> = {
   task: Bell, achievement: CheckCircle2, streak: Flame, roadmap: Compass, progress: BarChart2,
 };
 const TYPE_COLORS: Record<string, string> = {
-  task: '#6245a4', achievement: '#f59e0b', streak: '#8b4f2c', roadmap: '#006a62', progress: '#334042',
+  task: 'var(--primary)', achievement: '#f59e0b', streak: 'var(--copper)', roadmap: 'var(--secondary)', progress: '#334042',
 };
 
 export default function Notifications() {
@@ -48,7 +48,7 @@ export default function Notifications() {
 
   if (loading) return (
     <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <Loader2 size={28} color="#8b4f2c" style={{ animation: 'spin 0.8s linear infinite' }} />
+      <Loader2 size={28} color="var(--copper)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 
@@ -103,7 +103,7 @@ function NotifCard({ n, formatTime }: { n: any; formatTime: (s: string) => strin
   const color = TYPE_COLORS[n.type] || '#334042';
   return (
     <div className="panel" style={{ borderRadius: '2rem', padding: '1.25rem', marginBottom: '0.75rem', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-      <div style={{ width: 40, height: 40, borderRadius: '50%', background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: `color-mix(in srgb, ${color} 7%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon size={18} color={color} />
       </div>
       <div style={{ flex: 1 }}>

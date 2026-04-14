@@ -50,7 +50,7 @@ export default function SearchPage() {
         <SearchIcon size={18} color="var(--on-surface-muted)" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} />
         <input
           className="settings-input"
-          style={{ paddingLeft: 44, paddingRight: 40, borderRadius: 'var(--radius-xl)', boxShadow: 'inset 0 0 0 1.5px var(--surface-container-high)' }}
+          style={{ paddingLeft: 44, paddingRight: 40, borderRadius: 'var(--radius-xl)', border: '1.5px solid var(--surface-container-high)' }}
           placeholder="Search roles, courses, skills..."
           value={query}
           onChange={e => setQuery(e.target.value)}
@@ -81,7 +81,8 @@ export default function SearchPage() {
                 <Link to="/app/career-match" key={i} className="panel" style={{
                   borderRadius: '2rem', padding: '1.25rem', marginBottom: '0.5rem',
                   display: 'flex', alignItems: 'center', gap: 14,
-                  boxShadow: i === 0 ? 'inset 0 0 0 1.5px rgba(98,69,164,0.15)' : 'var(--shadow-sm)',
+                  border: i === 0 ? '1.5px solid rgba(98,69,164,0.15)' : 'none',
+                  boxShadow: i === 0 ? 'none' : 'var(--shadow-sm)',
                 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-md)', background: 'var(--surface-container-low)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <TrendingUp size={20} color="var(--primary)" />

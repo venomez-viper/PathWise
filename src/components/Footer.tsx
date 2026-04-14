@@ -4,10 +4,14 @@ import './Footer.css';
 
 const ROUTE_MAP: Record<string, string> = {
   'How It Works': '/how-it-works',
+  'Features': '/features',
+  'Compare': '/compare',
   'Solution': '/solution',
   'Pricing': '/pricing',
   'Early Access': '/signup',
   Blog: '/blog',
+  'About Us': '/about',
+  FAQ: '/faq',
   Contact: '/contact',
   'Privacy Policy': '/privacy-policy',
   'Terms of Service': '/terms-of-service',
@@ -16,8 +20,8 @@ const ROUTE_MAP: Record<string, string> = {
 };
 
 const LINKS = {
-  Product: ['How It Works', 'Solution', 'Pricing', 'Early Access', "What's New"],
-  Company: ['Blog', 'Contact'],
+  Product: ['How It Works', 'Features', 'Compare', 'Pricing', "What's New"],
+  Company: ['About Us', 'Blog', 'FAQ', 'Contact'],
   Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
 };
 

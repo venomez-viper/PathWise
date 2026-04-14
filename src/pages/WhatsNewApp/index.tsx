@@ -5,16 +5,16 @@ import { Panda } from '../../components/panda';
 
 /* ── Tag display helpers ── */
 const TAG_META: Record<ChangelogEntry['tag'], { label: string; color: string; bg: string; Icon: typeof Rocket }> = {
-  feature:     { label: 'Feature',     color: '#8b4f2c', bg: 'rgba(139,79,44,0.10)',  Icon: Rocket },
-  improvement: { label: 'Improvement', color: '#0e7490', bg: 'rgba(14,116,144,0.10)', Icon: TrendingUp },
+  feature:     { label: 'Feature',     color: 'var(--copper)', bg: 'rgba(139,79,44,0.10)',  Icon: Rocket },
+  improvement: { label: 'Improvement', color: 'var(--secondary)', bg: 'rgba(14,116,144,0.10)', Icon: TrendingUp },
   fix:         { label: 'Fix',         color: '#d97706', bg: 'rgba(217,119,6,0.10)',   Icon: Wrench },
   security:    { label: 'Security',    color: '#dc2626', bg: 'rgba(220,38,38,0.10)',   Icon: ShieldCheck },
 };
 
 const FILTERS = [
   { key: 'all',         label: 'All Updates',  color: 'var(--on-surface)' },
-  { key: 'feature',     label: 'Features',     color: '#8b4f2c' },
-  { key: 'improvement', label: 'Improvements', color: '#0e7490' },
+  { key: 'feature',     label: 'Features',     color: 'var(--copper)' },
+  { key: 'improvement', label: 'Improvements', color: 'var(--secondary)' },
   { key: 'fix',         label: 'Fixes',        color: '#d97706' },
   { key: 'security',    label: 'Security',     color: '#dc2626' },
 ];
@@ -73,21 +73,13 @@ export default function WhatsNewAppPage() {
         return (
           <div
             key={entry.version}
-            className="panel"
+            className="panel whats-new-entry"
             style={{
               borderRadius: '1.25rem',
               padding: 0,
               overflow: 'hidden',
               marginBottom: '0.75rem',
               transition: 'transform 0.18s ease, box-shadow 0.18s ease',
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-              (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 20px rgba(0,0,0,0.10)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-              (e.currentTarget as HTMLDivElement).style.boxShadow = '';
             }}
           >
             {/* Color accent top bar */}
@@ -158,7 +150,7 @@ export default function WhatsNewAppPage() {
                 background: meta.bg,
                 padding: '4px 10px',
                 borderRadius: 999,
-                border: `1px solid ${meta.color}33`,
+                border: `1px solid color-mix(in srgb, ${meta.color} 20%, transparent)`,
                 whiteSpace: 'nowrap',
               }}>
                 {meta.label}
@@ -219,6 +211,13 @@ export default function WhatsNewAppPage() {
           <p style={{ color: 'var(--on-surface-variant)', marginTop: '1rem' }}>No updates in this category yet.</p>
         </div>
       )}
+
+      <style>{`
+        .whats-new-entry:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+        }
+      `}</style>
     </div>
   );
 }

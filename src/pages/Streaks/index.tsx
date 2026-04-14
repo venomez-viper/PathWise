@@ -154,6 +154,7 @@ export default function Streaks() {
                 key={mode}
                 className={`streaks__view-btn${viewMode === mode ? ' streaks__view-btn--active' : ''}`}
                 onClick={() => setViewMode(mode)}
+                style={{ cursor: 'pointer' }}
               >
                 {mode.charAt(0).toUpperCase() + mode.slice(1)}
               </button>
@@ -279,7 +280,7 @@ export default function Streaks() {
         </div>
         <div className="streaks__stat-card">
           <div className="streaks__stat-icon-wrap">
-            <Calendar size={18} color="#8b4f2c" />
+            <Calendar size={18} color="var(--copper)" />
           </div>
           <span className="streaks__stat-value">{weeklyDone}</span>
           <p className="streaks__stat-label">This Week</p>
@@ -295,7 +296,7 @@ export default function Streaks() {
           </div>
           <span style={{
             fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800,
-            color: (data?.consistencyScore ?? 0) >= 70 ? 'var(--secondary)' : (data?.consistencyScore ?? 0) >= 40 ? '#8b4f2c' : 'var(--on-surface-variant)',
+            color: (data?.consistencyScore ?? 0) >= 70 ? 'var(--secondary)' : (data?.consistencyScore ?? 0) >= 40 ? 'var(--copper)' : 'var(--on-surface-variant)',
           }}>
             {data?.consistencyScore ?? 0}%
           </span>
@@ -303,7 +304,7 @@ export default function Streaks() {
         <div className="streaks__bar-track" style={{ height: 8 }}>
           <div className="streaks__bar-fill" style={{
             width: `${data?.consistencyScore ?? 0}%`,
-            background: (data?.consistencyScore ?? 0) >= 70 ? 'var(--secondary)' : (data?.consistencyScore ?? 0) >= 40 ? '#8b4f2c' : 'var(--on-surface-variant)',
+            background: (data?.consistencyScore ?? 0) >= 70 ? 'var(--secondary)' : (data?.consistencyScore ?? 0) >= 40 ? 'var(--copper)' : 'var(--on-surface-variant)',
           }} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>

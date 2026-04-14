@@ -3,6 +3,7 @@ import { Loader2, ArrowRight, TrendingUp, TrendingDown, Minus, BarChart3, Target
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { progress as progressApi, tasks as tasksApi, roadmap as roadmapApi } from '../../lib/api';
+import './Progress.css';
 
 /* ─── helper: trend arrow ─── */
 function TrendBadge({ value }: { value: number }) {
@@ -64,7 +65,7 @@ function WeeklyChart({ data }: { data: number[] }) {
           <div style={{
             width: '100%', maxWidth: 32, borderRadius: '6px 6px 0 0',
             height: v > 0 ? Math.max((v / max) * barH, 8) : 8,
-            background: v > 0 ? 'linear-gradient(180deg, #6245a4, #8b6fd4)' : 'var(--surface-container-high)',
+            background: v > 0 ? 'linear-gradient(180deg, var(--primary), var(--primary-light))' : 'var(--surface-container-high)',
             transition: 'height 0.6s cubic-bezier(.33,1,.68,1)',
           }} />
           <span style={{ fontSize: '0.62rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>{days[i]}</span>
@@ -87,9 +88,9 @@ function Gauge({ value, mounted }: { value: number; mounted: boolean }) {
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
           <linearGradient id="gaugeArc" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#006a62" />
+            <stop offset="0%" stopColor="var(--secondary)" />
             <stop offset="50%" stopColor="#00b3a1" />
-            <stop offset="100%" stopColor="#5ef6e6" />
+            <stop offset="100%" stopColor="var(--secondary-container)" />
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--surface-container-high)" strokeWidth={strokeWidth} />
@@ -177,8 +178,8 @@ export default function Progress() {
 
   /* breakdown bars */
   const breakdownBars = [
-    { name: 'Milestones', pct: breakdown?.milestoneProgress ?? jobReadiness, color: '#6245a4' },
-    { name: 'Tasks', pct: breakdown?.taskCompletion ?? (tasksTotal > 0 ? Math.round((tasksFinished / tasksTotal) * 100) : 0), color: '#006a62' },
+    { name: 'Milestones', pct: breakdown?.milestoneProgress ?? jobReadiness, color: 'var(--primary)' },
+    { name: 'Tasks', pct: breakdown?.taskCompletion ?? (tasksTotal > 0 ? Math.round((tasksFinished / tasksTotal) * 100) : 0), color: 'var(--secondary)' },
     { name: 'Balance', pct: breakdown?.categoryBalance ?? 0, color: '#d97706' },
     { name: 'Momentum', pct: breakdown?.momentum ?? 0, color: '#2563eb' },
   ];
@@ -223,14 +224,14 @@ export default function Progress() {
           {/* ═══ ROW 1: KPI CARDS ═══ */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }} className="kpi-grid">
             {/* Job Readiness */}
-            <div style={kpiCard('#6245a4')}>
+            <div style={kpiCard('var(--primary)')}>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.02em', lineHeight: 1 }}>{jobReadiness}%</span>
               <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>Job Readiness</span>
               <TrendBadge value={jobReadiness} />
             </div>
 
             {/* Tasks Done */}
-            <div style={kpiCard('#006a62')}>
+            <div style={kpiCard('var(--secondary)')}>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.02em', lineHeight: 1 }}>{tasksFinished}<span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>/{tasksTotal}</span></span>
               <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>Tasks Done</span>
               <TrendBadge value={tasksTotal > 0 ? Math.round((tasksFinished / tasksTotal) * 100) : 0} />
@@ -327,11 +328,9 @@ export default function Progress() {
           {/* ═══ ROW 4: QUICK ACTIONS ═══ */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }} className="actions-grid">
             <Link to="/app/tasks" style={{ textDecoration: 'none' }}>
-              <div style={{ ...panelStyle, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'box-shadow 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--shadow-sm)')}>
+              <div className="progress-action-card" style={{ ...panelStyle, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,106,98,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <CheckCircle2 size={18} color="#006a62" />
+                  <CheckCircle2 size={18} color="var(--secondary)" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--on-surface)' }}>View Tasks</span>
@@ -342,11 +341,9 @@ export default function Progress() {
             </Link>
 
             <Link to="/app/roadmap" style={{ textDecoration: 'none' }}>
-              <div style={{ ...panelStyle, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'box-shadow 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--shadow-sm)')}>
+              <div className="progress-action-card" style={{ ...panelStyle, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(98,69,164,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Target size={18} color="#6245a4" />
+                  <Target size={18} color="var(--primary)" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--on-surface)' }}>View Roadmap</span>
@@ -357,9 +354,7 @@ export default function Progress() {
             </Link>
 
             <Link to="/app/streaks" style={{ textDecoration: 'none' }}>
-              <div style={{ ...panelStyle, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'box-shadow 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--shadow-sm)')}>
+              <div className="progress-action-card" style={{ ...panelStyle, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(37,99,235,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Zap size={18} color="#2563eb" />
                 </div>
@@ -374,14 +369,7 @@ export default function Progress() {
         </div>
       )}
 
-      {/* ── responsive overrides ── */}
-      <style>{`
-        @media (max-width: 768px) {
-          .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .charts-grid { grid-template-columns: 1fr !important; }
-          .actions-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
+      {/* responsive overrides moved to Progress.css */}
     </div>
   );
 }

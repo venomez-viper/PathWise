@@ -173,7 +173,7 @@ export default function Dashboard() {
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: 'var(--primary)', width: '100%', maxWidth: 320,
             color: '#fff', padding: '0.9rem 2rem', borderRadius: 'var(--radius-full)',
-            fontWeight: 700, fontSize: '1rem', textDecoration: 'none',
+            fontWeight: 700, fontSize: '1rem', textDecoration: 'none', cursor: 'pointer',
             boxShadow: '0 4px 16px rgba(98,69,164,0.25)', transition: 'transform 0.15s, box-shadow 0.15s',
           }}>
             Start Your Assessment <ArrowRight size={18} />
@@ -213,7 +213,7 @@ export default function Dashboard() {
           <Link
             to="/app/certificate"
             className="btn-page-action"
-            style={{ marginTop: '1rem', background: '#8b4f2c', textDecoration: 'none' }}
+            style={{ marginTop: '1rem', background: 'var(--copper)', textDecoration: 'none', cursor: 'pointer' }}
           >
             View Certificate
           </Link>
@@ -222,7 +222,7 @@ export default function Dashboard() {
 
       {/* ── HERO BANNER — Zen Stone gradient ── */}
       <div style={{
-        background: 'linear-gradient(135deg, #334042 0%, #4a5759 60%, #5a6b6e 100%)',
+        background: `linear-gradient(135deg, var(--surface-container) 0%, #4a5759 60%, #5a6b6e 100%)`,
         borderRadius: '2.5rem',
         padding: '2.25rem 2.5rem',
         marginBottom: '1.5rem',
@@ -244,11 +244,11 @@ export default function Dashboard() {
         <div style={{ display: 'flex', gap: 10, marginTop: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <Link to="/app/roadmap" style={{
             padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
-            background: '#8b4f2c', color: '#fff', fontWeight: 700, fontSize: '0.82rem',
+            background: 'var(--copper)', color: '#fff', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'none',
           }}>View Roadmap</Link>
           <Link to="/app/onboarding" style={{
             padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
-            background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 600, fontSize: '0.82rem',
+            background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'none',
           }}>Update Goals</Link>
           <ShareButton
             url="https://pathwise.fit"
@@ -260,7 +260,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── MAIN GRID — Progress + Career Matches ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
 
         {/* PROGRESS FILES */}
         <div className="panel" style={{ borderRadius: '2rem' }}>
@@ -275,7 +275,7 @@ export default function Dashboard() {
                 <div style={{ position: 'relative', width: ringSize, height: ringSize }}>
                   <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`}>
                     <circle cx={ringSize/2} cy={ringSize/2} r={ringR} fill="none" stroke="var(--surface-container)" strokeWidth={6} />
-                    <circle cx={ringSize/2} cy={ringSize/2} r={ringR} fill="none" stroke="#8b4f2c" strokeWidth={6}
+                    <circle cx={ringSize/2} cy={ringSize/2} r={ringR} fill="none" stroke="var(--copper)" strokeWidth={6}
                       strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={strokeOff}
                       style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 1s cubic-bezier(0.33, 1, 0.68, 1)' }}
                     />
@@ -288,7 +288,7 @@ export default function Dashboard() {
                   <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', lineHeight: 1.4 }}>
                     You've completed {roadmapPct}% of milestones in your pathway.
                   </p>
-                  <p style={{ fontSize: '0.72rem', color: '#8b4f2c', fontWeight: 600, marginTop: 4 }}>Optional Guidance</p>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--copper)', fontWeight: 600, marginTop: 4 }}>Optional Guidance</p>
                 </div>
               </div>
             </div>
@@ -309,7 +309,7 @@ export default function Dashboard() {
             <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)' }}>
               Aligned New Jobs
             </p>
-            <Link to="/app/assessment-v2" style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8b4f2c' }}>
+            <Link to="/app/assessment-v2" style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--copper)', cursor: 'pointer', textDecoration: 'none' }}>
               Explore All Matches &rarr;
             </Link>
           </div>
@@ -328,17 +328,18 @@ export default function Dashboard() {
                   padding: '1.25rem 1rem',
                   textAlign: 'center',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  cursor: 'pointer', textDecoration: 'none',
                 }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: 'var(--radius-md)',
                     background: i === 0 ? 'rgba(139, 79, 44, 0.1)' : 'var(--surface-container)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Target size={20} color={i === 0 ? '#8b4f2c' : 'var(--on-surface-variant)'} />
+                    <Target size={20} color={i === 0 ? 'var(--copper)' : 'var(--on-surface-variant)'} />
                   </div>
                   <p style={{ fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--on-surface)' }}>{m.title}</p>
                   <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', lineHeight: 1.4 }}>{m.description?.slice(0, 60)}</p>
-                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8b4f2c' }}>{m.matchScore}% match</p>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--copper)' }}>{m.matchScore}% match</p>
                 </Link>
               ))}
             </div>
@@ -347,7 +348,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── BOTTOM ROW — Active Milestone + Recent Tasks + Insights ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '1rem' }}>
 
         {/* ACTIVE MILESTONE */}
         <div className="panel" style={{ borderRadius: '2rem' }}>
@@ -361,14 +362,14 @@ export default function Dashboard() {
             </div>
           ) : (
             <div>
-              <div style={{ borderLeft: '3px solid #8b4f2c', paddingLeft: 12, marginBottom: '1rem' }}>
+              <div style={{ borderLeft: '3px solid var(--copper)', paddingLeft: 12, marginBottom: '1rem' }}>
                 <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>{activeMilestone.title ?? 'Current Milestone'}</p>
                 <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', marginTop: 3 }}>
                   {activeDone} / {activeMilestoneTasks.length} tasks done
                 </p>
               </div>
               <div style={{ height: 5, background: 'var(--surface-container)', borderRadius: 999, overflow: 'hidden', marginBottom: '0.75rem' }}>
-                <div style={{ height: '100%', width: mounted ? `${activeMilestoneTasks.length > 0 ? (activeDone/activeMilestoneTasks.length)*100 : 0}%` : '0%', background: '#8b4f2c', borderRadius: 999, transition: 'width 0.9s ease' }} />
+                <div style={{ height: '100%', width: mounted ? `${activeMilestoneTasks.length > 0 ? (activeDone/activeMilestoneTasks.length)*100 : 0}%` : '0%', background: 'var(--copper)', borderRadius: 999, transition: 'width 0.9s ease' }} />
               </div>
               <Link to="/app/roadmap" className="panel-link">Go to Roadmap <ArrowRight size={13} /></Link>
             </div>
@@ -395,11 +396,11 @@ export default function Dashboard() {
                   <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                      border: `2px solid ${t.status === 'done' ? '#8b4f2c' : isOverdue ? '#ef4444' : 'var(--surface-container-high)'}`,
+                      border: `2px solid ${t.status === 'done' ? 'var(--copper)' : isOverdue ? '#ef4444' : 'var(--surface-container-high)'}`,
                       background: t.status === 'done' ? 'rgba(139,79,44,0.15)' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      {t.status === 'done' && <CheckCircle2 size={10} color="#8b4f2c" />}
+                      {t.status === 'done' && <CheckCircle2 size={10} color="var(--copper)" />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span style={{

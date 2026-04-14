@@ -1,0 +1,21 @@
+/* Progress page styles */
+
+.progress-action-card {
+  transition: box-shadow 0.2s;
+}
+.progress-action-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .charts-grid { grid-template-columns: 1fr !important; }
+  .actions-grid { grid-template-columns: 1fr !important; }
+}

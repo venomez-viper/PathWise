@@ -18,7 +18,7 @@ const BADGE_CONFIG: Record<string, { icon: JSX.Element; color: string; ringColor
         <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none" />
       </svg>
     ),
-    color: '#006a62',
+    color: 'var(--secondary)',
     ringColor: 'rgba(0, 106, 98, 0.15)',
   },
   roadmap_starter: {
@@ -54,7 +54,7 @@ const BADGE_CONFIG: Record<string, { icon: JSX.Element; color: string; ringColor
         <path d="M9 12l2 2 4-4" strokeWidth="2.5" />
       </svg>
     ),
-    color: '#6245a4',
+    color: 'var(--primary)',
     ringColor: 'rgba(98, 69, 164, 0.15)',
   },
   networker: {
@@ -69,7 +69,7 @@ const BADGE_CONFIG: Record<string, { icon: JSX.Element; color: string; ringColor
         <line x1="7.5" y1="17" x2="16.5" y2="17" />
       </svg>
     ),
-    color: '#8b4f2c',
+    color: 'var(--copper)',
     ringColor: 'rgba(139, 79, 44, 0.15)',
   },
   interview_ready: {
@@ -115,7 +115,7 @@ const BADGE_CONFIG: Record<string, { icon: JSX.Element; color: string; ringColor
         <line x1="3" y1="15" x2="5" y2="15" strokeWidth="1.5" />
       </svg>
     ),
-    color: '#006a62',
+    color: 'var(--secondary)',
     ringColor: 'rgba(0, 106, 98, 0.15)',
   },
   task_10: {
@@ -139,7 +139,7 @@ const BADGE_CONFIG: Record<string, { icon: JSX.Element; color: string; ringColor
         <path d="M17 20l2 2" />
       </svg>
     ),
-    color: '#6245a4',
+    color: 'var(--primary)',
     ringColor: 'rgba(98, 69, 164, 0.15)',
   },
   early_bird: {
@@ -168,7 +168,7 @@ const BADGE_CONFIG: Record<string, { icon: JSX.Element; color: string; ringColor
         <path d="M17 4l4 2-4 2" />
       </svg>
     ),
-    color: '#006a62',
+    color: 'var(--secondary)',
     ringColor: 'rgba(0, 106, 98, 0.15)',
   },
 };
@@ -218,7 +218,7 @@ export default function Achievements() {
     return (
       <div className="page achievements__loading" style={{ flexDirection: 'column', gap: 12 }}>
         <PandaSpot context="loading" position="inline" size={90} animate />
-        <Loader2 size={22} color="#006a62" className="achievements__spinner" />
+        <Loader2 size={22} color="var(--secondary)" className="achievements__spinner" />
       </div>
     );
   }

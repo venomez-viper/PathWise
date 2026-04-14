@@ -215,7 +215,7 @@ export default function SettingsPage() {
             </div>
             <div style={{
               position: 'absolute', bottom: -2, left: '50%', transform: 'translateX(-50%)',
-              background: '#8b4f2c', color: '#fff', fontSize: '0.55rem', fontWeight: 700,
+              background: 'var(--copper)', color: '#fff', fontSize: '0.55rem', fontWeight: 700,
               padding: '2px 8px', borderRadius: 'var(--radius-full)', textTransform: 'uppercase', letterSpacing: '0.06em',
               whiteSpace: 'nowrap', pointerEvents: 'none',
             }}>
@@ -241,11 +241,11 @@ export default function SettingsPage() {
           {/* Edit profile button */}
           <div>
             {!editingProfile ? (
-              <button className="btn-page-action" style={{ background: '#8b4f2c' }} onClick={() => { setProfileForm({ name: user?.name ?? '' }); setEditingProfile(true); }}>
+              <button className="btn-page-action" style={{ background: 'var(--copper)', cursor: 'pointer' }} onClick={() => { setProfileForm({ name: user?.name ?? '' }); setEditingProfile(true); }}>
                 Edit Profile
               </button>
             ) : (
-              <button className="btn-page-secondary" onClick={() => setEditingProfile(false)}>Cancel</button>
+              <button className="btn-page-secondary" style={{ cursor: 'pointer' }} onClick={() => setEditingProfile(false)}>Cancel</button>
             )}
           </div>
         </div>
@@ -255,7 +255,7 @@ export default function SettingsPage() {
           <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <input className="settings-input" value={profileForm.name} onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))} placeholder="Display name" />
             {profileError && <p style={{ fontSize: '0.8rem', color: '#ef4444' }}>{profileError}</p>}
-            <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: '#8b4f2c' }} disabled={profileSaving || !profileForm.name.trim()} onClick={saveProfile}>
+            <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: 'var(--copper)', cursor: 'pointer' }} disabled={profileSaving || !profileForm.name.trim()} onClick={saveProfile}>
               {profileSaving ? 'Saving…' : <><Check size={14} /> Save Changes</>}
             </button>
           </div>
@@ -353,7 +353,7 @@ export default function SettingsPage() {
                       value={pwForm[f as keyof typeof pwForm]} onChange={e => setPwForm(p => ({ ...p, [f]: e.target.value }))} />
                   ))}
                   {pwError && <p style={{ fontSize: '0.78rem', color: '#ef4444' }}>{pwError}</p>}
-                  <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: '#8b4f2c' }} disabled={pwSaving} onClick={savePassword}>
+                  <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: 'var(--copper)', cursor: 'pointer' }} disabled={pwSaving} onClick={savePassword}>
                     {pwSaving ? 'Saving…' : 'Update Password'}
                   </button>
                 </>
@@ -480,7 +480,7 @@ export default function SettingsPage() {
                 style={{
                   width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
                   background: profileSettings.profilePublic ? 'var(--primary)' : 'color-mix(in srgb, var(--on-surface) 15%, transparent)',
-                  position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                  position: 'relative', transition: 'background 0.2s, outline-color 0.15s', flexShrink: 0,
                 }}
               >
                 <div style={{
@@ -495,7 +495,7 @@ export default function SettingsPage() {
               </span>
               <button
                 className="btn-page-action"
-                style={{ background: '#8b4f2c', padding: '6px 14px', fontSize: '0.78rem' }}
+                style={{ background: 'var(--copper)', padding: '6px 14px', fontSize: '0.78rem', cursor: 'pointer' }}
                 disabled={profileSettingsSaving}
                 onClick={saveProfileSettings}
               >

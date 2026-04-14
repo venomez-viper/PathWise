@@ -443,6 +443,7 @@
   box-shadow: var(--shadow-sm);
 }
 .btn-page-action:hover { opacity: 0.90; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-page-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .btn-page-secondary {
   display: inline-flex;

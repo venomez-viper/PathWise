@@ -1,8 +1,15 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Mail, Globe, Send, ArrowLeft } from 'lucide-react';
+import { Mail, Globe, Clock, Send, CheckCircle } from 'lucide-react';
 import Footer from '../../components/Footer';
 import { tickets as ticketsApi } from '../../lib/api';
+
+const CONTACT_INFO = [
+  { icon: Mail, title: 'Email', detail: 'support@pathwise.fit', href: 'mailto:support@pathwise.fit' },
+  { icon: Globe, title: 'Website', detail: 'pathwise.fit', href: 'https://pathwise.fit' },
+  { icon: Clock, title: 'Response Time', detail: 'Within 24 hours', href: '' },
+];
 
 export default function ContactPage() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
@@ -17,6 +24,7 @@ export default function ContactPage() {
     e.preventDefault();
     if (!form.email || !form.message) return;
     setSending(true);
+    setError('');
     try {
       await ticketsApi.submit({
         name: `${form.firstName} ${form.lastName}`.trim(),
@@ -34,182 +42,258 @@ export default function ContactPage() {
 
   return (
     <>
-      <section style={{ padding: '0', background: 'var(--surface)' }}>
-        <div className="container" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', paddingTop: 'calc(72px + 2rem)', paddingBottom: '4rem' }}>
+      <section className="bg-[var(--surface)] min-h-screen">
+        <div className="max-w-6xl mx-auto px-6 pt-[calc(72px+3rem)] pb-20">
 
-          {/* Back link */}
-          <Link
-            to="/"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              fontSize: '0.82rem', fontWeight: 600, color: 'var(--primary)',
-              textDecoration: 'none', marginBottom: '2rem',
-            }}
-          >
-            <ArrowLeft size={14} />
-            Back to Home
-          </Link>
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-start">
 
-          <div style={{ display: 'flex', gap: '4rem', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-
-            {/* Left — Info */}
-            <div style={{ flex: '1 1 320px', maxWidth: 420 }}>
-              <div style={{
-                display: 'inline-block', fontSize: '0.72rem', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--primary)',
-                background: 'var(--primary-fixed)', padding: '4px 14px',
-                borderRadius: 'var(--radius-full)', marginBottom: 'var(--spacing-4)',
-              }}>
+            {/* Left: Info */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="pt-2"
+            >
+              <motion.span
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="inline-block text-xs font-semibold uppercase tracking-[0.15em] text-[#6245a4] bg-[#6245a4]/8 px-4 py-1.5 rounded-full mb-5 border border-[#6245a4]/10"
+              >
                 Get in Touch
-              </div>
-              <h1 style={{
-                fontFamily: 'var(--font-display)', fontSize: 'clamp(2.25rem, 5vw, 3rem)',
-                fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.03em',
-                lineHeight: 1.1, marginBottom: '1rem',
-              }}>
+              </motion.span>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+                className="font-[var(--font-display)] text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight leading-tight mb-4"
+              >
                 Contact Us
-              </h1>
-              <p style={{ fontSize: '1rem', color: 'var(--on-surface-variant)', lineHeight: 1.7, marginBottom: '2.5rem' }}>
-                Have a question, feedback, or partnership opportunity? We'd love to hear from you.
-              </p>
+              </motion.h1>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <ContactDetail icon={Mail} label="Email" value="support@pathwise.fit" href="mailto:support@pathwise.fit" />
-                <ContactDetail icon={Globe} label="Website" value="pathwise.fit" href="https://pathwise.fit" />
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-base text-gray-500 leading-relaxed mb-10 max-w-[440px]"
+              >
+                Have a question, feedback, or partnership opportunity? We'd love to hear from you. Reach out and we'll respond promptly.
+              </motion.p>
+
+              {/* Contact details */}
+              <div className="space-y-4">
+                {CONTACT_INFO.map((info, i) => {
+                  const Icon = info.icon;
+                  const content = (
+                    <motion.div
+                      key={info.title}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+                      className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:border-[#6245a4]/20 transition-all duration-200 group"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-[#6245a4]/8 border border-[#6245a4]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#6245a4] group-hover:text-white transition-colors duration-200">
+                        <Icon size={18} className="text-[#6245a4] group-hover:text-white" />
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.12em] mb-0.5">
+                          {info.title}
+                        </div>
+                        <div className="text-sm font-medium text-gray-800 group-hover:text-[#6245a4] transition-colors duration-200">
+                          {info.detail}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+
+                  return info.href ? (
+                    <a key={info.title} href={info.href} className="block no-underline">
+                      {content}
+                    </a>
+                  ) : (
+                    <div key={info.title}>{content}</div>
+                  );
+                })}
               </div>
 
-              {/* Response time badge */}
-              <div style={{
-                marginTop: '2rem', padding: '1rem 1.25rem',
-                background: 'linear-gradient(135deg, rgba(98, 69, 164, 0.04) 0%, rgba(0, 106, 98, 0.03) 100%)',
-                borderRadius: 'var(--radius-lg)', fontSize: '0.85rem',
-                color: 'var(--on-surface-variant)', lineHeight: 1.6,
-              }}>
-                We typically respond within <strong style={{ color: 'var(--on-surface)' }}>24 hours</strong>. For urgent matters, include "Urgent" in your subject line.
-              </div>
-            </div>
+              {/* Decorative accent */}
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.6, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="origin-left h-px w-full max-w-[200px] bg-gradient-to-r from-[#6245a4]/20 to-transparent mt-10"
+              />
+            </motion.div>
 
-            {/* Right — Form */}
-            <div style={{
-              flex: '1 1 440px', maxWidth: 560,
-              background: 'var(--surface-container-lowest)',
-              borderRadius: 'var(--radius-2xl)', padding: '2.5rem',
-              boxShadow: 'var(--shadow-md)',
-            }}>
-              {submitted ? (
-                <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                  <div style={{
-                    width: 56, height: 56, borderRadius: '50%',
-                    background: 'var(--primary-fixed)', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem',
-                  }}>
-                    <Send size={24} color="var(--primary)" />
-                  </div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--on-surface)' }}>
-                    Message Sent
-                  </h2>
-                  <p style={{ color: 'var(--on-surface-variant)', marginTop: '0.5rem', lineHeight: 1.6 }}>
-                    Thanks for reaching out. We'll get back to you soon.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    <FormField label="First Name" value={form.firstName} onChange={set('firstName')} placeholder="John" />
-                    <FormField label="Last Name" value={form.lastName} onChange={set('lastName')} placeholder="Doe" />
-                  </div>
-                  <FormField label="Email" value={form.email} onChange={set('email')} placeholder="john@example.com" type="email" required />
-                  <FormField label="Subject" value={form.subject} onChange={set('subject')} placeholder="How can we help?" />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={labelStyle}>Message</label>
-                    <textarea
-                      value={form.message}
-                      onChange={set('message')}
-                      placeholder="Tell us more..."
-                      required
-                      rows={5}
-                      style={{
-                        ...inputStyle,
-                        resize: 'vertical',
-                        minHeight: 120,
-                        fontFamily: 'var(--font-body)',
-                      }}
-                    />
-                  </div>
-                  {error && (
-                    <div style={{
-                      padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)',
-                      background: '#fee2e2', color: '#dc2626', fontSize: '0.85rem', fontWeight: 600,
-                    }}>
-                      {error}
-                    </div>
-                  )}
-                  <button type="submit" disabled={sending} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    width: '100%', padding: '0.9rem',
-                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
-                    color: '#fff', border: 'none', borderRadius: 'var(--radius-full)',
-                    fontSize: '0.95rem', fontWeight: 700, cursor: sending ? 'not-allowed' : 'pointer',
-                    transition: 'opacity 0.15s, transform 0.15s, box-shadow 0.15s',
-                    opacity: sending ? 0.7 : 1,
-                    boxShadow: 'var(--shadow-sm)',
-                  }}>
-                    {sending ? 'Sending...' : <><Send size={16} /> Send Message</>}
-                  </button>
-                </form>
-              )}
-            </div>
+            {/* Right: Form card */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-white border border-gray-200 rounded-2xl p-8 sm:p-10 shadow-lg shadow-gray-900/5"
+            >
+              <AnimatePresence mode="wait">
+                {submitted ? (
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-center py-14"
+                  >
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.15 }}
+                      className="w-18 h-18 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-6"
+                    >
+                      <CheckCircle size={36} className="text-emerald-500" />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35, duration: 0.4 }}
+                    >
+                      <h2 className="font-[var(--font-display)] text-2xl font-bold text-gray-900 mb-2">
+                        Message Sent!
+                      </h2>
+                      <p className="text-sm text-gray-500 mb-6 max-w-[280px] mx-auto leading-relaxed">
+                        Thanks for reaching out. We'll get back to you within 24 hours.
+                      </p>
+                      <Link
+                        to="/"
+                        className="inline-flex items-center gap-1.5 text-sm text-[#6245a4] font-semibold no-underline hover:underline transition-all"
+                      >
+                        Back to Home
+                      </Link>
+                    </motion.div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <h2 className="font-[var(--font-display)] text-xl font-bold text-gray-900 mb-1">
+                      Send Us a Message
+                    </h2>
+                    <p className="text-sm text-gray-400 mb-8">
+                      Fill out the form and we'll get back to you within 24 hours.
+                    </p>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">First Name</label>
+                          <input
+                            type="text"
+                            value={form.firstName}
+                            onChange={set('firstName')}
+                            placeholder="John"
+                            className="w-full px-4 py-2.5 bg-gray-50/80 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-[#6245a4] focus:ring-2 focus:ring-[#6245a4]/10 focus:bg-white transition-all duration-200 placeholder:text-gray-300"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Last Name</label>
+                          <input
+                            type="text"
+                            value={form.lastName}
+                            onChange={set('lastName')}
+                            placeholder="Doe"
+                            className="w-full px-4 py-2.5 bg-gray-50/80 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-[#6245a4] focus:ring-2 focus:ring-[#6245a4]/10 focus:bg-white transition-all duration-200 placeholder:text-gray-300"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-gray-700">
+                          Email <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          value={form.email}
+                          onChange={set('email')}
+                          placeholder="john@example.com"
+                          required
+                          className="w-full px-4 py-2.5 bg-gray-50/80 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-[#6245a4] focus:ring-2 focus:ring-[#6245a4]/10 focus:bg-white transition-all duration-200 placeholder:text-gray-300"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-gray-700">Subject</label>
+                        <input
+                          type="text"
+                          value={form.subject}
+                          onChange={set('subject')}
+                          placeholder="How can we help?"
+                          className="w-full px-4 py-2.5 bg-gray-50/80 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-[#6245a4] focus:ring-2 focus:ring-[#6245a4]/10 focus:bg-white transition-all duration-200 placeholder:text-gray-300"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-gray-700">
+                          Message <span className="text-red-400">*</span>
+                        </label>
+                        <textarea
+                          value={form.message}
+                          onChange={set('message')}
+                          placeholder="Tell us more about your question or feedback..."
+                          required
+                          rows={5}
+                          className="w-full px-4 py-2.5 bg-gray-50/80 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-[#6245a4] focus:ring-2 focus:ring-[#6245a4]/10 focus:bg-white transition-all duration-200 resize-y min-h-[120px] placeholder:text-gray-300"
+                        />
+                      </div>
+
+                      <AnimatePresence>
+                        {error && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: -8, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="px-4 py-3 bg-red-50 border border-red-200/80 rounded-xl text-sm text-red-600 font-medium"
+                          >
+                            {error}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <motion.button
+                        type="submit"
+                        disabled={sending}
+                        whileHover={{ scale: sending ? 1 : 1.01 }}
+                        whileTap={{ scale: sending ? 1 : 0.98 }}
+                        className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        {sending ? (
+                          <span className="flex items-center gap-2">
+                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            Sending...
+                          </span>
+                        ) : (
+                          <>
+                            <Send size={15} />
+                            Send Message
+                          </>
+                        )}
+                      </motion.button>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </div>
         </div>
       </section>
       <Footer />
     </>
-  );
-}
-
-const labelStyle: React.CSSProperties = {
-  fontSize: '0.72rem', fontWeight: 700, color: 'var(--on-surface-variant)',
-  letterSpacing: '0.04em', textTransform: 'uppercase',
-};
-
-const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '0.75rem 1rem',
-  background: 'var(--surface-container-low)',
-  border: '1px solid var(--surface-container-high)',
-  borderRadius: 'var(--radius-md)',
-  fontSize: '0.9rem', color: 'var(--on-surface)',
-  outline: 'none', fontFamily: 'var(--font-body)',
-};
-
-function FormField({ label, value, onChange, placeholder, type = 'text', required = false }: {
-  label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder: string; type?: string; required?: boolean;
-}) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
-      <label style={labelStyle}>{label}</label>
-      <input type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} style={inputStyle} />
-    </div>
-  );
-}
-
-function ContactDetail({ icon: Icon, label, value, href }: {
-  icon: typeof Mail; label: string; value: string; href: string;
-}) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: 44, height: 44, borderRadius: '50%',
-        background: 'var(--primary-fixed)',
-        color: 'var(--primary)',
-      }}>
-        <Icon size={20} />
-      </div>
-      <div>
-        <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-muted)' }}>{label}</div>
-        <a href={href} style={{ fontSize: '0.95rem', color: 'var(--on-surface)', fontWeight: 600, textDecoration: 'none' }}>{value}</a>
-      </div>
-    </div>
   );
 }
