@@ -142,6 +142,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--on-surface-variant);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .kanban-col--todo .kanban-col__count {
@@ -183,7 +184,7 @@
 .kanban-card {
   background: var(--surface-container-lowest);
   border: 1px solid var(--outline-variant);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 14px;
   cursor: default;
   transition: box-shadow 0.15s, transform 0.15s;
@@ -192,6 +193,9 @@
 .kanban-card:hover {
   box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
+}
+.kanban-card:active {
+  transform: translateY(0);
 }
 
 .kanban-card__title {
@@ -300,7 +304,7 @@
 .kanban-add-form {
   background: var(--surface-container-lowest);
   border: 1.5px dashed var(--outline-variant);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -475,7 +479,7 @@
 
 .kanban-skeleton__card {
   height: 80px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--surface-container);
   animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
