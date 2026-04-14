@@ -64,6 +64,10 @@ async function request<T>(path: string, options?: RequestInit, retries = 2): Pro
       });
 
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = '/signin';
+          throw new Error('Session expired');
+        }
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.message ?? body?.code ?? `API error ${res.status}: ${res.statusText}`);
       }

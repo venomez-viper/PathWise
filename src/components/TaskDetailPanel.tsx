@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Trash2, Save, Calendar, Tag, Flag, Layers } from 'lucide-react';
 
 /* ── Types ── */
@@ -54,6 +54,7 @@ export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: Tas
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
 
   // Initialize form from task prop
   useEffect(() => {
@@ -64,6 +65,15 @@ export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: Tas
       setCategory(task.category ?? '');
       setDueDate(task.dueDate ? task.dueDate.slice(0, 10) : '');
       setDescription(task.description ?? '');
+    }
+  }, [task]);
+
+  // Auto-focus title input when panel opens
+  useEffect(() => {
+    if (task) {
+      // Delay slightly to allow slide-in animation to start
+      const timer = setTimeout(() => titleRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
     }
   }, [task]);
 
@@ -206,6 +216,7 @@ export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: Tas
         {/* Header */}
         <div style={headerStyle}>
           <input
+            ref={titleRef}
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}

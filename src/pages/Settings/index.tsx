@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Check, ChevronRight, Download, Trash2, RotateCcw, Target, Camera, Lock, Shield, Copy, ExternalLink, Bell, Navigation, LayoutGrid } from 'lucide-react';
 import { Panda } from '../../components/panda';
 import { Link, useNavigate } from 'react-router-dom';
@@ -23,6 +23,11 @@ const AVATAR_OPTIONS = [
 export default function SettingsPage() {
   const { user, refresh } = useAuth();
   const navigate = useNavigate();
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    return () => timersRef.current.forEach(clearTimeout);
+  }, []);
 
   const [targetRole, setTargetRole] = useState('—');
   useEffect(() => {
@@ -77,7 +82,8 @@ export default function SettingsPage() {
         bio: profileSettings.bio || undefined,
       });
       setProfileSettingsSuccess(true);
-      setTimeout(() => setProfileSettingsSuccess(false), 3000);
+      const t = setTimeout(() => setProfileSettingsSuccess(false), 3000);
+      timersRef.current.push(t);
     } catch (err) { alert(err instanceof Error ? err.message : 'Failed to save'); }
     finally { setProfileSettingsSaving(false); }
   };
@@ -90,7 +96,8 @@ export default function SettingsPage() {
     if (!profileUrl) return;
     navigator.clipboard.writeText(profileUrl);
     setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+    const t = setTimeout(() => setCopiedLink(false), 2000);
+    timersRef.current.push(t);
   };
 
   const handleLogout = () => { tokenStore.clear(); window.location.href = '/logout'; };
@@ -102,7 +109,8 @@ export default function SettingsPage() {
     try {
       await authApi.updateProfile({ name: profileForm.name.trim() });
       await refresh(); setEditingProfile(false); setProfileSuccess(true);
-      setTimeout(() => setProfileSuccess(false), 3000);
+      const t = setTimeout(() => setProfileSuccess(false), 3000);
+      timersRef.current.push(t);
     } catch (err: unknown) { setProfileError(err instanceof Error ? err.message : 'Failed to save profile.'); }
     finally { setProfileSaving(false); }
   };
@@ -124,7 +132,8 @@ export default function SettingsPage() {
     try {
       await authApi.changePassword({ currentPassword: pwForm.current, newPassword: pwForm.newPw });
       setPwSuccess(true); setPwForm({ current: '', newPw: '', confirm: '' });
-      setTimeout(() => { setPwSuccess(false); setShowPasswordForm(false); }, 2500);
+      const t = setTimeout(() => { setPwSuccess(false); setShowPasswordForm(false); }, 2500);
+      timersRef.current.push(t);
     } catch (err: unknown) { setPwError(err instanceof Error ? err.message : 'Failed to change password.'); }
     finally { setPwSaving(false); }
   };
@@ -253,7 +262,7 @@ export default function SettingsPage() {
         {/* Edit name form */}
         {editingProfile && (
           <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <input className="settings-input" value={profileForm.name} onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))} placeholder="Display name" />
+            <input className="settings-input" value={profileForm.name} onChange={e => { setProfileForm(f => ({ ...f, name: e.target.value })); setProfileError(''); setProfileSuccess(false); }} placeholder="Display name" />
             {profileError && <p style={{ fontSize: '0.8rem', color: '#ef4444' }}>{profileError}</p>}
             <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: 'var(--copper)', cursor: 'pointer' }} disabled={profileSaving || !profileForm.name.trim()} onClick={saveProfile}>
               {profileSaving ? 'Saving…' : <><Check size={14} /> Save Changes</>}
@@ -350,7 +359,7 @@ export default function SettingsPage() {
                 <>
                   {['current', 'newPw', 'confirm'].map(f => (
                     <input key={f} type="password" className="settings-input" placeholder={f === 'current' ? 'Current password' : f === 'newPw' ? 'New password' : 'Confirm new password'}
-                      value={pwForm[f as keyof typeof pwForm]} onChange={e => setPwForm(p => ({ ...p, [f]: e.target.value }))} />
+                      value={pwForm[f as keyof typeof pwForm]} onChange={e => { setPwForm(p => ({ ...p, [f]: e.target.value })); setPwError(''); }} />
                   ))}
                   {pwError && <p style={{ fontSize: '0.78rem', color: '#ef4444' }}>{pwError}</p>}
                   <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: 'var(--copper)', cursor: 'pointer' }} disabled={pwSaving} onClick={savePassword}>
@@ -419,7 +428,7 @@ export default function SettingsPage() {
                 <input
                   className="settings-input"
                   value={profileSettings.profileSlug}
-                  onChange={e => setProfileSettings(s => ({ ...s, profileSlug: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '') }))}
+                  onChange={e => { setProfileSettings(s => ({ ...s, profileSlug: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '') })); setProfileSettingsSuccess(false); }}
                   placeholder="your-slug"
                   style={{ flex: 1 }}
                 />
@@ -452,7 +461,7 @@ export default function SettingsPage() {
               <input
                 className="settings-input"
                 value={profileSettings.headline}
-                onChange={e => setProfileSettings(s => ({ ...s, headline: e.target.value }))}
+                onChange={e => { setProfileSettings(s => ({ ...s, headline: e.target.value })); setProfileSettingsSuccess(false); }}
                 placeholder="e.g., Aspiring Full-Stack Developer"
                 maxLength={120}
               />
@@ -464,7 +473,7 @@ export default function SettingsPage() {
               <textarea
                 className="settings-input"
                 value={profileSettings.bio}
-                onChange={e => setProfileSettings(s => ({ ...s, bio: e.target.value }))}
+                onChange={e => { setProfileSettings(s => ({ ...s, bio: e.target.value })); setProfileSettingsSuccess(false); }}
                 placeholder="A short paragraph about yourself..."
                 maxLength={500}
                 rows={2}

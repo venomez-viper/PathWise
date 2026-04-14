@@ -49,6 +49,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
+    let mountTimer: ReturnType<typeof setTimeout>;
     async function load() {
       try {
         const [assessRes, roadmapRes, tasksRes, progressRes] = await Promise.allSettled([
@@ -81,10 +82,10 @@ export default function Dashboard() {
           stats: { tasksFinished: statsData?.tasksFinished ?? doneCount, tasksTotal: taskList.length, jobReadinessScore: statsData?.jobReadinessScore ?? 0 },
           milestones, activeMilestone, activeMilestoneTasks, activeDone, doneCount,
         });
-      } finally { if (!cancelled) { setLoading(false); setTimeout(() => setMounted(true), 100); } }
+      } finally { if (!cancelled) { setLoading(false); const t = setTimeout(() => setMounted(true), 100); mountTimer = t; } }
     }
     load();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; clearTimeout(mountTimer); };
   }, [user, loadKey]);
 
   const [showTour, setShowTour] = useState(false);
@@ -382,8 +383,14 @@ export default function Dashboard() {
             Recent Tasks
           </p>
           {recentTasks.length === 0 ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>No tasks yet — your roadmap will generate them.</p>
+            <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', marginBottom: '0.75rem' }}>No tasks yet — your roadmap will generate them.</p>
+              <Link to="/app/roadmap" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '0.5rem 1.15rem', borderRadius: 'var(--radius-full)',
+                background: 'var(--copper)', color: '#fff', fontWeight: 700,
+                fontSize: '0.78rem', textDecoration: 'none',
+              }}>Generate your roadmap <ArrowRight size={13} /></Link>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

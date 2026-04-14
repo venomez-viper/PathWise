@@ -523,7 +523,7 @@ export default function SkillGapAssessment() {
               </button>
               <button
                 className="assessment__btn"
-                disabled={!canNext()}
+                disabled={!canNext() || loading}
                 onClick={handleSubmit}
               >
                 <Sparkles size={15} /> Analyse My Gaps

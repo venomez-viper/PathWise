@@ -42,12 +42,13 @@ function getPandaMood(streak: number) {
 export default function Streaks() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
-    streaksApi.get(user.id).then((res: any) => { setData(res.streak); setLoading(false); })
-      .catch(() => { setData({ currentStreak: 0, bestStreak: 0, consistencyScore: 0, totalXp: 0, weeklyProgress: [false,false,false,false,false,false,false] }); setLoading(false); });
+    streaksApi.get(user.id).then((res: any) => { setData(res.streak); setLoading(false); setTimeout(() => setMounted(true), 100); })
+      .catch(() => { setData({ currentStreak: 0, bestStreak: 0, consistencyScore: 0, totalXp: 0, weeklyProgress: [false,false,false,false,false,false,false] }); setLoading(false); setTimeout(() => setMounted(true), 100); });
   }, [user]);
 
   // Refresh on focus
@@ -134,7 +135,7 @@ export default function Streaks() {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <p className="streaks__count">{currentStreak}-day streak</p>
+            <p className="streaks__count"><span className="streaks__count-number">{currentStreak}</span>-day streak</p>
             <p className="streaks__best">Personal best: {bestStreak} days</p>
             {nextMilestone && (
               <p style={{ fontSize: '0.78rem', color: 'var(--secondary)', fontWeight: 600, marginTop: '0.3rem' }}>
@@ -190,7 +191,7 @@ export default function Streaks() {
               </div>
               <div style={{ marginTop: '1rem' }}>
                 <div className="streaks__bar-track">
-                  <div className="streaks__bar-fill" style={{ width: `${(weeklyDone / 7) * 100}%` }} />
+                  <div className="streaks__bar-fill" style={{ width: mounted ? `${(weeklyDone / 7) * 100}%` : '0%' }} />
                 </div>
               </div>
             </>
@@ -303,7 +304,7 @@ export default function Streaks() {
         </div>
         <div className="streaks__bar-track" style={{ height: 8 }}>
           <div className="streaks__bar-fill" style={{
-            width: `${data?.consistencyScore ?? 0}%`,
+            width: mounted ? `${data?.consistencyScore ?? 0}%` : '0%',
             background: (data?.consistencyScore ?? 0) >= 70 ? 'var(--secondary)' : (data?.consistencyScore ?? 0) >= 40 ? 'var(--copper)' : 'var(--on-surface-variant)',
           }} />
         </div>
@@ -351,7 +352,7 @@ export default function Streaks() {
                   {isCurrent && (
                     <div style={{ marginTop: '0.35rem' }}>
                       <div className="streaks__bar-track" style={{ height: 4 }}>
-                        <div className="streaks__bar-fill" style={{ width: `${progress}%` }} />
+                        <div className="streaks__bar-fill" style={{ width: mounted ? `${progress}%` : '0%' }} />
                       </div>
                     </div>
                   )}
