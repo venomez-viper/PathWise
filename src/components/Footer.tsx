@@ -20,7 +20,7 @@ const ROUTE_MAP: Record<string, string> = {
 };
 
 const LINKS = {
-  Product: ['How It Works', 'Features', 'Compare', 'Pricing', "What's New"],
+  Product: ['How It Works', 'Solution', 'Features', 'Pricing', "What's New"],
   Company: ['About Us', 'Blog', 'FAQ', 'Contact'],
   Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
 };
