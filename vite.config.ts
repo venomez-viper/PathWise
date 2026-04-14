@@ -14,12 +14,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-three': ['three'],
-          'vendor-motion': ['framer-motion', 'motion'],
-          'vendor-analytics': ['@sentry/react', 'posthog-js'],
-          'vendor-icons': ['lucide-react'],
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/react-router')) return 'vendor-react';
+          if (id.includes('node_modules/three')) return 'vendor-three';
+          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/motion')) return 'vendor-motion';
+          if (id.includes('node_modules/@sentry') || id.includes('node_modules/posthog')) return 'vendor-analytics';
+          if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
         },
       },
     },
