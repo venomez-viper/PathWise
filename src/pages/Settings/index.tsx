@@ -203,7 +203,7 @@ export default function SettingsPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: '1.5rem', fontWeight: 800, overflow: 'hidden',
             }}>
-              {user?.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+              {user?.avatarUrl?.trim() ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : initials}
             </div>
             <div style={{
               position: 'absolute', bottom: -2, right: -2,
@@ -291,6 +291,17 @@ export default function SettingsPage() {
                       src={opt.url}
                       alt={opt.id}
                       style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', background: 'color-mix(in srgb, var(--primary) 6%, var(--surface))' }}
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        img.style.display = 'none';
+                        const parent = img.parentElement;
+                        if (parent && !parent.querySelector('span')) {
+                          const span = document.createElement('span');
+                          span.textContent = opt.id.slice(0, 2).toUpperCase();
+                          span.style.cssText = 'font-weight:700;font-size:0.7rem;color:var(--on-surface-variant)';
+                          parent.appendChild(span);
+                        }
+                      }}
                     />
                   </button>
                 );

@@ -191,6 +191,7 @@ export default function Assessment() {
   const [result, setResult] = useState<any>(null);
   const [isPartial, setIsPartial] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleAnswer = (id: string, value: string, max = 3) => {
     setAnswers(prev => {
@@ -224,7 +225,9 @@ export default function Assessment() {
   const stepLabels = ['Interests', 'Work Style', 'Values', 'Environment', 'Career Goals', 'Skills & Experience'];
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     if (!user) { setError('You must be signed in.'); return; }
+    setIsSubmitting(true);
     setStep(6); setError(''); setIsPartial(false);
 
     const workStyle = (answers.ws3 ?? [])[0] || 'mixed';
@@ -266,6 +269,7 @@ export default function Assessment() {
       setIsPartial(!!res.partial);
       setStep(7);
     } catch (err: unknown) {
+      setIsSubmitting(false);
       setStep(5);
       if (err instanceof TypeError) {
         // TypeError: Failed to fetch — actual network failure / cold start
@@ -387,8 +391,8 @@ export default function Assessment() {
               <button className="assessment__btn assessment__btn--back" onClick={() => { setError(''); setStep(4); }}>
                 <ArrowLeft size={15} /> Back
               </button>
-              <button className="assessment__btn" disabled={!canNext()} onClick={handleSubmit}>
-                <Sparkles size={15} /> Analyse My Profile
+              <button className="assessment__btn" disabled={!canNext() || isSubmitting} onClick={handleSubmit}>
+                <Sparkles size={15} /> {isSubmitting ? 'Submitting…' : 'Analyse My Profile'}
               </button>
             </div>
           </div>
@@ -448,8 +452,9 @@ export default function Assessment() {
             <div className="assessment__nav" style={{ flexDirection: 'column', gap: 8 }}>
               <button className="assessment__btn" style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => {
-                  const chosen = result.careerMatches[selectedMatch];
-                  navigate('/app/onboarding', { state: { targetRole: chosen?.title, pathwayTime: chosen?.pathwayTime } });
+                  const chosen = result.careerMatches?.[selectedMatch];
+                  if (!chosen) return;
+                  navigate('/app/onboarding', { state: { targetRole: chosen.title, pathwayTime: chosen.pathwayTime } });
                 }}>
                 Build Roadmap for {result.careerMatches?.[selectedMatch]?.title ?? 'this role'} <ArrowRight size={15} />
               </button>

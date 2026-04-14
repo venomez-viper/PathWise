@@ -28,7 +28,7 @@ export default function WhatsNewPage() {
         }}>Changelog</p>
         <h1 style={{
           fontFamily: 'var(--font-display)',
-          fontSize: 'clamp(2rem, 5vw, 3rem)',
+          fontSize: 'clamp(1.6rem, 4vw, 2.25rem)',
           fontWeight: 900,
           color: 'var(--on-surface)',
           margin: '0 0 0.75rem',
@@ -36,7 +36,7 @@ export default function WhatsNewPage() {
         }}>What's New</h1>
         <p style={{
           color: 'var(--on-surface-variant)',
-          fontSize: '1.1rem',
+          fontSize: '0.95rem',
           maxWidth: 520,
           margin: '0 auto',
           lineHeight: 1.6,
@@ -107,19 +107,19 @@ export default function WhatsNewPage() {
                 {/* Title */}
                 <h2 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '1.35rem',
+                  fontSize: '1.1rem',
                   fontWeight: 800,
                   color: 'var(--on-surface)',
-                  margin: '0 0 0.5rem',
+                  margin: '0 0 0.4rem',
                   lineHeight: 1.25,
                 }}>{entry.title}</h2>
 
                 {/* Description */}
                 <p style={{
                   color: 'var(--on-surface-variant)',
-                  fontSize: '0.95rem',
+                  fontSize: '0.88rem',
                   lineHeight: 1.6,
-                  margin: '0 0 1rem',
+                  margin: '0 0 0.75rem',
                 }}>{entry.description}</p>
 
                 {/* Highlights */}
@@ -136,7 +136,7 @@ export default function WhatsNewPage() {
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: '0.5rem',
-                      fontSize: '0.88rem',
+                      fontSize: '0.82rem',
                       color: 'var(--on-surface)',
                       lineHeight: 1.5,
                     }}>

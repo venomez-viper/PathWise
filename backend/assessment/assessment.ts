@@ -152,7 +152,7 @@ export const submitAssessment = api(
     `;
 
     // Award "First Steps" achievement for completing the assessment
-    try { await awardAchievement({ userId: params.userId, badgeKey: "first_steps" }); } catch {}
+    try { await awardAchievement({ userId: params.userId, badgeKey: "first_steps" }); } catch (e) { console.error("[assessment] failed to award achievement:", e); }
 
     // Notify user that their assessment is complete
     try {
@@ -163,7 +163,7 @@ export const submitAssessment = api(
         title: "Assessment Complete",
         body: "Check your career matches and start your roadmap.",
       });
-    } catch {}
+    } catch (e) { console.error("[assessment] failed to create notification:", e); }
 
     return {
       result: {
@@ -383,7 +383,9 @@ interface AssessmentV2Response {
 export const submitAssessmentV2 = api(
   { expose: true, method: "POST", path: "/assessment-v2", auth: true },
   async (params: SubmitAssessmentV2Params): Promise<AssessmentV2Response> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     RateLimits.assessment("assess:" + userID);
 
@@ -443,11 +445,11 @@ export const submitAssessmentV2 = api(
     `;
 
     // Award achievement
-    try { await awardAchievement({ userId: params.userId, badgeKey: "first_steps" }); } catch {}
+    try { await awardAchievement({ userId: params.userId, badgeKey: "first_steps" }); } catch (e) { console.error("[assessment-v2] failed to award achievement:", e); }
     try {
       const { createNotification } = await import("../streaks/streaks");
       await createNotification({ userId: params.userId, type: "info", title: "Assessment Complete", body: "Check your career matches and start your roadmap." });
-    } catch {}
+    } catch (e) { console.error("[assessment-v2] failed to create notification:", e); }
 
     return {
       result: {
@@ -473,7 +475,9 @@ export interface AdminAssessmentStatsResponse {
 export const adminAssessmentStats = api(
   { expose: true, method: "GET", path: "/admin/assessment-stats", auth: true },
   async (): Promise<AdminAssessmentStatsResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     const { isAdmin } = await checkAdmin({ userID });
     if (!isAdmin) throw APIError.permissionDenied("admin access required");
 
@@ -483,7 +487,7 @@ export const adminAssessmentStats = api(
       for await (const row of rows) {
         userIds.push(row.user_id);
       }
-    } catch {}
+    } catch (e) { console.error("[admin] failed to query assessment user IDs:", e); }
 
     return { userIdsWithAssessment: userIds, totalAssessments: userIds.length };
   }
@@ -492,7 +496,9 @@ export const adminAssessmentStats = api(
 export const adminDeleteUserAssessment = api(
   { expose: true, method: "DELETE", path: "/admin/user-assessment/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<{ success: boolean }> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     const { isAdmin } = await checkAdmin({ userID });
     if (!isAdmin) throw APIError.permissionDenied("admin access required");
 
@@ -517,7 +523,9 @@ interface AdminGetAssessmentResponse {
 export const adminGetAssessment = api(
   { expose: true, method: "GET", path: "/admin/assessment/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<AdminGetAssessmentResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     const { isAdmin } = await checkAdmin({ userID });
     if (!isAdmin) throw APIError.permissionDenied("admin access required");
     // Same logic as getAssessment but for any user
@@ -546,7 +554,9 @@ interface AdminAnalyticsResponse {
 export const adminAnalytics = api(
   { expose: true, method: "GET", path: "/admin/analytics", auth: true },
   async (): Promise<AdminAnalyticsResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
     const { isAdmin } = await checkAdmin({ userID });
     if (!isAdmin) throw APIError.permissionDenied("admin access required");
 
@@ -561,7 +571,7 @@ export const adminAnalytics = api(
         for (const m of matches) {
           if (m.title) careerCounts[m.title] = (careerCounts[m.title] || 0) + 1;
         }
-      } catch {}
+      } catch (e) { console.error("[admin] failed to parse career_matches JSON:", e); }
     }
 
     const topCareers = Object.entries(careerCounts)

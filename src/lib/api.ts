@@ -20,11 +20,28 @@ function getBaseUrl(): string {
 const BASE_URL = getBaseUrl();
 
 const TOKEN_KEY = 'pathwise_token';
+const REMEMBER_KEY = 'pathwise_remember';
 
 export const tokenStore = {
-  get: ()              => localStorage.getItem(TOKEN_KEY),
-  set: (t: string)     => localStorage.setItem(TOKEN_KEY, t),
-  clear: ()            => localStorage.removeItem(TOKEN_KEY),
+  get: () =>
+    localStorage.getItem(TOKEN_KEY) ?? sessionStorage.getItem(TOKEN_KEY),
+  set: (t: string, remember = true) => {
+    if (remember) {
+      localStorage.setItem(TOKEN_KEY, t);
+      localStorage.setItem(REMEMBER_KEY, '1');
+      sessionStorage.removeItem(TOKEN_KEY);
+    } else {
+      sessionStorage.setItem(TOKEN_KEY, t);
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REMEMBER_KEY);
+    }
+  },
+  clear: () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REMEMBER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+  },
+  isRemembered: () => localStorage.getItem(REMEMBER_KEY) === '1',
 };
 
 /** Wake up the backend (Encore cold starts can take 5-15s) */

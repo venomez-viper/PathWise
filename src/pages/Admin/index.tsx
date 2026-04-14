@@ -170,8 +170,23 @@ function UserDetailPanel({
         <div style={{ padding: '1.5rem' }}>
           {/* Avatar + name */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '1.5rem' }}>
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }} />
+            {user.avatarUrl?.trim() ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  const fallback = document.createElement('div');
+                  Object.assign(fallback.style, {
+                    width: '56px', height: '56px', borderRadius: '50%', background: 'var(--primary)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#fff', fontWeight: '700', fontSize: '1.1rem', fontFamily: 'var(--font-display)',
+                  });
+                  fallback.textContent = initials;
+                  img.replaceWith(fallback);
+                }}
+              />
             ) : (
               <div style={{
                 width: 56, height: 56, borderRadius: '50%', background: 'var(--primary)',

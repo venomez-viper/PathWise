@@ -322,6 +322,7 @@ export default function AssessmentV2() {
   const [slideKey, setSlideKey] = useState(0);
   const [hasSavedState, setHasSavedState] = useState(false);
   const [analyzingIdx, setAnalyzingIdx] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -405,13 +406,6 @@ export default function AssessmentV2() {
     });
   }, [saveState]);
 
-  const selectSingle = useCallback((qId: string, value: string) => {
-    setAnswer(qId, value);
-    // auto-advance after short delay
-    if (advanceTimer.current) clearTimeout(advanceTimer.current);
-    advanceTimer.current = setTimeout(() => goNext(), AUTO_ADVANCE_MS);
-  }, []);
-
   const toggleChip = useCallback((qId: string, value: string, max: number) => {
     setState(prev => {
       const current = (prev.answers[qId] as string[]) || [];
@@ -461,6 +455,13 @@ export default function AssessmentV2() {
       return next;
     });
   }, [phases, saveState]);
+
+  const selectSingle = useCallback((qId: string, value: string) => {
+    setAnswer(qId, value);
+    // auto-advance after short delay
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    advanceTimer.current = setTimeout(() => goNext(), AUTO_ADVANCE_MS);
+  }, [setAnswer, goNext]);
 
   const goBack = useCallback(() => {
     if (advanceTimer.current) clearTimeout(advanceTimer.current);
@@ -549,26 +550,11 @@ export default function AssessmentV2() {
     }
   }, [showTransition, currentPhase, workDnaPhaseIdx, advancePhase]);
 
-  /* ── Analyzing sequence ── */
-  useEffect(() => {
-    if (!showAnalyzing) return;
-    setAnalyzingIdx(0);
-    const interval = setInterval(() => {
-      setAnalyzingIdx(prev => {
-        if (prev >= ANALYZING_MESSAGES.length - 1) {
-          clearInterval(interval);
-          handleSubmit();
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [showAnalyzing]);
-
   /* ── Submit ── */
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
     if (!user) { navigate('/login'); return; }
+    setIsSubmitting(true);
     try {
       // Extract fields the backend expects from raw answers
       const skills = Array.isArray(answers['lc_skills']) ? answers['lc_skills'] as string[] : [];
@@ -598,6 +584,7 @@ export default function AssessmentV2() {
       navigate('/app/assessment-v2/results', { state: { result: res.result, completedTier: tierCompleted } });
     } catch (err) {
       console.error('Assessment submit failed:', err);
+      setIsSubmitting(false);
       alert('Something went wrong submitting your assessment. Please try again.');
       // On error go back to last answered phase so user can retry
       const lastPhaseIdx = Math.min(state.currentPhase, phases.length - 1);
@@ -610,7 +597,24 @@ export default function AssessmentV2() {
         currentQuestion: phases[lastPhaseIdx].questions.length - 1,
       }));
     }
-  };
+  }, [isSubmitting, user, navigate, answers, state, saveState, phases]);
+
+  /* ── Analyzing sequence ── */
+  useEffect(() => {
+    if (!showAnalyzing) return;
+    setAnalyzingIdx(0);
+    const interval = setInterval(() => {
+      setAnalyzingIdx(prev => {
+        if (prev >= ANALYZING_MESSAGES.length - 1) {
+          clearInterval(interval);
+          handleSubmit();
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [showAnalyzing, handleSubmit]);
 
   /* ── Keyboard shortcuts ── */
   useEffect(() => {

@@ -94,8 +94,8 @@ export default function PublicProfile() {
                 overflow: 'hidden',
                 border: '4px solid #eefcfe',
               }}>
-                {profile.avatarUrl
-                  ? <img src={profile.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {profile.avatarUrl?.trim()
+                  ? <img src={profile.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   : initials
                 }
               </div>

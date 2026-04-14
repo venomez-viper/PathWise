@@ -2,6 +2,21 @@
    SOLUTION PAGE — Premium Scroll-Driven Cube Animation
    ══════════════════════════════════════════════════════════ */
 
+/* ── Floating shape CSS animation (replaces framer-motion infinite loop) ── */
+@keyframes solution-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(15px); }
+}
+
+.solution-float-shape {
+  animation: solution-float 12s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .solution-float-shape { animation: none; }
+}
+
 /* ── Hero Intro (above scroll section) ── */
 .solution-hero {
   position: relative;

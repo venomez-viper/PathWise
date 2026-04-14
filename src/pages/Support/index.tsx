@@ -38,7 +38,7 @@ export default function SupportPage() {
   return (
     <div className="page">
       <div style={{ marginBottom: '1.5rem' }}>
-        <Link to="/app/help" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', color: 'var(--on-surface-variant)', textDecoration: 'none', fontWeight: 600, marginBottom: '0.75rem' }}>
+        <Link to="/app/help" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, marginBottom: '0.75rem' }}>
           <ArrowLeft size={14} /> Back to Help
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -48,12 +48,18 @@ export default function SupportPage() {
         <p className="page-subtitle">We typically respond within 24 hours.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div className="support-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         {/* Form */}
         <div className="panel" style={{ borderRadius: '2rem', padding: '2rem' }}>
           {sent ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-              <Send size={36} color="var(--primary)" style={{ marginBottom: '1rem' }} />
+              <div style={{
+                width: 52, height: 52, borderRadius: '50%',
+                background: 'var(--primary-fixed)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem',
+              }}>
+                <Send size={24} color="var(--primary)" />
+              </div>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--on-surface)' }}>
                 Message sent
               </h2>
@@ -119,7 +125,7 @@ export default function SupportPage() {
                 type="submit"
                 disabled={sending}
                 className="btn-page-action"
-                style={{ alignSelf: 'flex-start', background: '#8b4f2c', display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6 }}
               >
                 {sending ? 'Sending...' : <><Send size={14} /> Send Message</>}
               </button>
@@ -131,21 +137,21 @@ export default function SupportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div className="panel" style={{ borderRadius: '2rem', padding: '1.5rem 2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(98,69,164,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-fixed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Mail size={16} color="var(--primary)" />
               </div>
               <div>
-                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)' }}>Email</p>
-                <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>support@pathwise.fit</p>
+                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 }}>Email</p>
+                <a href="mailto:support@pathwise.fit" style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>support@pathwise.fit</a>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(98,69,164,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-fixed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <MessageSquare size={16} color="var(--primary)" />
               </div>
               <div>
-                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)' }}>Response Time</p>
-                <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>Within 24 hours</p>
+                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 }}>Response Time</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', margin: 0 }}>Within 24 hours</p>
               </div>
             </div>
           </div>
@@ -164,6 +170,15 @@ export default function SupportPage() {
           </div>
         </div>
       </div>
+
+      {/* Responsive styles */}
+      <style>{`
+        @media (max-width: 768px) {
+          .support-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

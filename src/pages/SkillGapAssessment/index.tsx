@@ -55,9 +55,9 @@ const segBtnBase: React.CSSProperties = {
   fontSize: '0.72rem',
   fontWeight: 600,
   borderRadius: 999,
-  border: '1px solid rgba(255,255,255,0.15)',
+  border: '1px solid var(--outline-variant)',
   background: 'transparent',
-  color: 'rgba(255,255,255,0.5)',
+  color: 'var(--on-surface-variant)',
   cursor: 'pointer',
   transition: 'all 0.15s',
   whiteSpace: 'nowrap',
@@ -65,9 +65,9 @@ const segBtnBase: React.CSSProperties = {
 
 const segBtnSelected: React.CSSProperties = {
   ...segBtnBase,
-  background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
-  color: '#fff',
-  borderColor: '#a78bfa',
+  background: 'var(--primary)',
+  color: 'var(--on-primary, #fff)',
+  borderColor: 'var(--primary)',
 };
 
 /* ── Skill gap result type ── */
@@ -230,7 +230,7 @@ export default function SkillGapAssessment() {
             style={{
               minWidth: 140,
               fontSize: '0.85rem',
-              color: 'rgba(255,255,255,0.75)',
+              color: 'var(--on-surface)',
               fontWeight: 500,
             }}
           >
@@ -385,7 +385,7 @@ export default function SkillGapAssessment() {
                   style={{
                     fontSize: '0.75rem',
                     fontWeight: 700,
-                    color: 'rgba(255,255,255,0.4)',
+                    color: 'var(--on-surface-variant)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',
                     marginBottom: '0.5rem',
@@ -441,7 +441,7 @@ export default function SkillGapAssessment() {
               style={{
                 fontSize: '0.85rem',
                 fontWeight: 600,
-                color: 'rgba(255,255,255,0.7)',
+                color: 'var(--on-surface)',
                 marginBottom: '0.5rem',
               }}
             >
@@ -466,7 +466,7 @@ export default function SkillGapAssessment() {
               style={{
                 fontSize: '0.85rem',
                 fontWeight: 600,
-                color: 'rgba(255,255,255,0.7)',
+                color: 'var(--on-surface)',
                 marginBottom: '0.5rem',
               }}
             >
@@ -490,7 +490,7 @@ export default function SkillGapAssessment() {
               style={{
                 fontSize: '0.85rem',
                 fontWeight: 600,
-                color: 'rgba(255,255,255,0.7)',
+                color: 'var(--on-surface)',
                 marginBottom: '0.5rem',
               }}
             >
@@ -539,7 +539,7 @@ export default function SkillGapAssessment() {
               <div className="assessment__generating-spinner">
                 <Loader2
                   size={30}
-                  color="#a78bfa"
+                  color="var(--primary)"
                   style={{ animation: 'spin 0.8s linear infinite' }}
                 />
               </div>
@@ -571,18 +571,18 @@ export default function SkillGapAssessment() {
                   gap: 10,
                   padding: '0.85rem 1rem',
                   borderRadius: 12,
-                  background: 'rgba(167,139,250,0.08)',
-                  border: '1px solid rgba(167,139,250,0.2)',
+                  background: 'var(--primary-container)',
+                  border: '1px solid var(--outline-variant)',
                   marginBottom: '1.25rem',
                 }}
               >
-                <Target size={18} color="#a78bfa" style={{ flexShrink: 0, marginTop: 2 }} />
+                <Target size={18} color="var(--primary)" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div>
                   <p
                     style={{
                       fontSize: '0.72rem',
                       fontWeight: 700,
-                      color: '#a78bfa',
+                      color: 'var(--primary)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                       marginBottom: 2,
@@ -590,7 +590,7 @@ export default function SkillGapAssessment() {
                   >
                     Top Priority
                   </p>
-                  <p style={{ fontSize: '0.88rem', color: '#fff', fontWeight: 600 }}>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--on-surface)', fontWeight: 600 }}>
                     {result.topPriority}
                   </p>
                 </div>
@@ -619,7 +619,7 @@ export default function SkillGapAssessment() {
                   <p
                     style={{
                       fontSize: '0.78rem',
-                      color: 'rgba(255,255,255,0.45)',
+                      color: 'var(--on-surface-variant)',
                       margin: 0,
                     }}
                   >

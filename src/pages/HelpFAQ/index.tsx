@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Search, ChevronDown, Compass, Map, CreditCard, MessageSquare } from 'lucide-react';
+import { Search, ChevronDown, Compass, Map, CreditCard, MessageSquare, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Panda } from '../../components/panda';
 
@@ -116,7 +116,7 @@ export default function HelpFAQ() {
 
       {/* Category Cards */}
       {!search && (
-        <div style={{
+        <div className="help-categories-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '1rem',
@@ -333,18 +333,61 @@ export default function HelpFAQ() {
               gap: 8,
               padding: '0.65rem 1.5rem',
               borderRadius: 'var(--radius-full)',
-              background: 'var(--primary)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
               color: '#fff',
               fontWeight: 700,
               fontSize: '0.85rem',
               textDecoration: 'none',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
             <MessageSquare size={16} />
             Contact Support
           </Link>
         </div>
+
+        {/* Email contact info */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.75rem',
+          marginTop: '1.25rem',
+          padding: '0.75rem 1.25rem',
+          background: 'var(--surface-container-low)',
+          borderRadius: 'var(--radius-full)',
+          width: 'fit-content',
+          margin: '1.25rem auto 0',
+        }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: '50%',
+            background: 'var(--primary-fixed)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Mail size={14} color="var(--primary)" />
+          </div>
+          <a
+            href="mailto:support@pathwise.fit"
+            style={{
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              color: 'var(--primary)',
+              textDecoration: 'none',
+            }}
+          >
+            support@pathwise.fit
+          </a>
+        </div>
       </div>
+
+      {/* Responsive styles */}
+      <style>{`
+        @media (max-width: 640px) {
+          .help-categories-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

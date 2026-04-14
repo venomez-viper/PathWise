@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import posthog from 'posthog-js';
 import { tokenStore } from '../../lib/api';
@@ -8,6 +8,7 @@ import { Panda } from '../../components/panda';
 
 export default function LogoutPage() {
   const [done, setDone] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     tokenStore.clear();
@@ -52,7 +53,9 @@ export default function LogoutPage() {
           </div>
         ) : (
           <>
-            <Panda mood="sad" size={120} animate />
+            <div className="flex justify-center">
+              <Panda mood="sad" size={120} animate />
+            </div>
 
             <h1 className="font-['Manrope'] text-2xl font-bold tracking-tight mt-4 mb-2" style={{ color: 'var(--on-surface)' }}>
               You've been signed out
@@ -75,12 +78,12 @@ export default function LogoutPage() {
                 </Link>
               </Button>
               <Button
-                asChild
                 variant="outline"
                 className="h-11 rounded-xl bg-white/80 border-black/8 hover:bg-white font-medium"
                 style={{ color: 'var(--on-surface)' }}
+                onClick={() => navigate('/', { replace: true })}
               >
-                <Link to="/">Go Home</Link>
+                Go Home
               </Button>
             </div>
           </>

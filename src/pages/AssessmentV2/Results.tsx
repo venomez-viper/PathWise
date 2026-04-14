@@ -444,17 +444,11 @@ export default function AssessmentResults() {
 
   const result = stateResult ?? apiResult;
 
-  const completedTier: number = (location.state as any)?.completedTier ?? 3;
-  const archetype = result?.archetype ?? MOCK_ARCHETYPE;
-  const riasec = result?.riasec ?? MOCK_RIASEC;
-  const bigFive = result?.bigFive ?? MOCK_BIGFIVE;
-  const matches = result?.careerMatches ?? MOCK_MATCHES;
-  const narrative = result?.narrative ?? null;
-
   const [phase, setPhase] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
+    if (!result) return;
     // Stagger reveals: 0ms archetype, 300ms tagline (handled within archetype),
     // 600ms charts animate, 900ms big five, 1200ms+ career matches
     const delays = [0, 600, 1200, 1500, 1800];
@@ -462,13 +456,61 @@ export default function AssessmentResults() {
       timerRef.current.push(setTimeout(() => setPhase(i + 1), d));
     });
     return () => timerRef.current.forEach(clearTimeout);
-  }, []);
+  }, [result]);
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
       <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Loading your results...</p>
     </div>
   );
+
+  if (!result) return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: '50vh', padding: '2rem', textAlign: 'center',
+      fontFamily: 'var(--font-body, system-ui, sans-serif)',
+    }}>
+      <div style={{
+        background: 'var(--surface-container-lowest, #f7fafa)',
+        borderRadius: '1.5rem', padding: '3rem 2.5rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        maxWidth: 440, width: '100%',
+      }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>&#x1F4CB;</div>
+        <h2 style={{
+          fontFamily: 'var(--font-display, Georgia, serif)',
+          fontSize: '1.4rem', color: 'var(--on-surface, #222)',
+          margin: '0 0 0.75rem',
+        }}>
+          No results yet
+        </h2>
+        <p style={{
+          fontSize: '0.95rem', color: 'var(--on-surface-variant, #666)',
+          lineHeight: 1.6, margin: '0 0 1.5rem',
+        }}>
+          Take the career assessment to discover your archetype, personality profile, and top career matches.
+        </p>
+        <Link to="/app/assessment-v2" style={{
+          display: 'inline-block',
+          padding: '0.75rem 2rem', borderRadius: '2rem',
+          background: TEAL, color: '#fff', fontWeight: 700, fontSize: '0.95rem',
+          textDecoration: 'none', transition: 'background 0.2s',
+        }}
+          onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL_LIGHT)}
+          onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.background = TEAL)}
+        >
+          Take the Assessment
+        </Link>
+      </div>
+    </div>
+  );
+
+  const completedTier: number = (location.state as any)?.completedTier ?? 3;
+  const archetype = result.archetype ?? MOCK_ARCHETYPE;
+  const riasec = result.riasec ?? MOCK_RIASEC;
+  const bigFive = result.bigFive ?? MOCK_BIGFIVE;
+  const matches = result.careerMatches ?? MOCK_MATCHES;
+  const narrative = result.narrative ?? null;
 
   const showArchetype = phase >= 1;
   const showCharts = phase >= 2;
@@ -571,7 +613,22 @@ export default function AssessmentResults() {
         <p style={{ fontSize: 14, color: 'var(--on-surface-variant, #666)', margin: '0 0 1.25rem' }}>
           Pick a role and build your personalised roadmap.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+        <div className="results-career-grid" style={{ display: 'grid', gap: '1.5rem' }}>
+          <style>{`
+            .results-career-grid {
+              grid-template-columns: repeat(3, 1fr);
+            }
+            @media (max-width: 1024px) {
+              .results-career-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+              }
+            }
+            @media (max-width: 640px) {
+              .results-career-grid {
+                grid-template-columns: 1fr !important;
+              }
+            }
+          `}</style>
           {matches.slice(0, 3).map((m: any, i: number) => (
             <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} />
           ))}

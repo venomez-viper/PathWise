@@ -97,8 +97,19 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
 
       <div className="sidebar__footer">
         <Link to="/app/settings" className="sidebar__user-link" onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}>
-          {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt={user.name} className="sidebar__avatar" />
+          {user.avatarUrl?.trim() ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              className="sidebar__avatar"
+              onError={(e) => {
+                const img = e.currentTarget;
+                const fallback = document.createElement('div');
+                fallback.className = 'sidebar__avatar sidebar__avatar--initials';
+                fallback.textContent = initials;
+                img.replaceWith(fallback);
+              }}
+            />
           ) : (
             <div className="sidebar__avatar sidebar__avatar--initials">{initials}</div>
           )}

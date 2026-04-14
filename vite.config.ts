@@ -11,5 +11,18 @@ export default defineConfig({
     },
     dedupe: ['react', 'react-dom'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-three': ['three'],
+          'vendor-motion': ['framer-motion', 'motion'],
+          'vendor-analytics': ['@sentry/react', 'posthog-js'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
 })
 

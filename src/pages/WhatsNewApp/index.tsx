@@ -139,7 +139,7 @@ export default function WhatsNewAppPage() {
                 </div>
                 <h3 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   fontWeight: 700,
                   color: 'var(--on-surface)',
                   margin: 0,
@@ -180,14 +180,14 @@ export default function WhatsNewAppPage() {
             {isExpanded && (
               <div style={{
                 padding: '1rem 1.5rem 1.5rem',
-                borderTop: '1px solid color-mix(in srgb, var(--on-surface) 6%, transparent)',
-                background: 'color-mix(in srgb, var(--surface-container) 60%, transparent)',
+                borderTop: '1px solid var(--outline-variant)',
+                background: 'var(--surface-container-low)',
               }}>
                 <p style={{
                   color: 'var(--on-surface-variant)',
-                  fontSize: '0.88rem',
+                  fontSize: '0.82rem',
                   lineHeight: 1.6,
-                  margin: '0 0 1rem',
+                  margin: '0 0 0.75rem',
                 }}>
                   {entry.description}
                 </p>
@@ -197,7 +197,7 @@ export default function WhatsNewAppPage() {
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: 8,
-                      fontSize: '0.85rem',
+                      fontSize: '0.8rem',
                       color: 'var(--on-surface)',
                       lineHeight: 1.5,
                     }}>

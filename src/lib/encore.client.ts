@@ -237,6 +237,7 @@ export namespace roadmap {
     export interface GenerateRoadmapParams {
         userId: string
         targetRole: string
+        timeline?: string
     }
 
     export interface GetRoadmapResponse {

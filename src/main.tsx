@@ -1,19 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
-import posthog from 'posthog-js'
 import './index.css'
 import App from './App.tsx'
 
-// Initialize PostHog analytics
-posthog.init('phc_tQX3SgebpgusQh8PYFc2sskvgr9mwhy4hrwKUmEdyc56', {
-  api_host: 'https://us.i.posthog.com',
-  person_profiles: 'identified_only',
-  capture_pageview: true,
-  capture_pageleave: true,
-})
-
-// Initialize Sentry error tracking
+// Initialize Sentry error tracking (needs to be early to catch errors)
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN || '',
   environment: import.meta.env.MODE,
@@ -37,3 +28,21 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Defer PostHog initialization until after first paint
+const initPostHog = () => {
+  import('posthog-js').then(({ default: posthog }) => {
+    posthog.init('phc_tQX3SgebpgusQh8PYFc2sskvgr9mwhy4hrwKUmEdyc56', {
+      api_host: 'https://us.i.posthog.com',
+      person_profiles: 'identified_only',
+      capture_pageview: true,
+      capture_pageleave: true,
+    })
+  })
+}
+
+if (typeof requestIdleCallback === 'function') {
+  requestIdleCallback(initPostHog)
+} else {
+  setTimeout(initPostHog, 1)
+}

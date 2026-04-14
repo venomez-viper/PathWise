@@ -21,6 +21,7 @@ export default function SignIn() {
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +34,7 @@ export default function SignIn() {
     setLoading(true);
     try {
       const res = await auth.signin({ email: form.email, password: form.password });
-      tokenStore.set(res.token);
+      tokenStore.set(res.token, remember);
       login(res.user as AuthUser);
       navigate('/app');
     } catch (err: unknown) {
@@ -149,7 +150,7 @@ export default function SignIn() {
 
           {/* Remember me */}
           <div className="flex items-center space-x-2">
-            <Checkbox id="remember" />
+            <Checkbox id="remember" checked={remember} onCheckedChange={(v) => setRemember(!!v)} />
             <Label htmlFor="remember" className="text-sm font-normal cursor-pointer" style={{ color: 'var(--on-surface-variant)' }}>
               Remember me
             </Label>

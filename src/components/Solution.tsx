@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import { motion } from 'motion/react';
 import { TextScramble } from '@/components/ui/text-scramble';
 import {
@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 import './Solution.css';
 
 const TOTAL_FRAMES = 60;
+/** How many frames to preload initially (first + last + evenly spaced keyframes) */
+const INITIAL_PRELOAD = 8;
 
 const SECTIONS = [
   {
@@ -69,8 +71,8 @@ const SECTIONS = [
   },
 ];
 
-/* ── Elegant floating shape ── */
-function ElegantShape({
+/* ── Elegant floating shape — uses CSS animation instead of framer-motion infinite loop ── */
+const ElegantShape = memo(function ElegantShape({
   className, delay = 0, width = 400, height = 100, rotate = 0, gradient = 'from-white/[0.08]',
 }: { className?: string; delay?: number; width?: number; height?: number; rotate?: number; gradient?: string }) {
   return (
@@ -80,11 +82,10 @@ function ElegantShape({
       transition={{ duration: 2.4, delay, ease: [0.23, 0.86, 0.39, 0.96] as [number, number, number, number], opacity: { duration: 1.2 } }}
       className={cn('absolute', className)}
     >
-      <motion.div
-        animate={{ y: [0, 15, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ width, height }}
-        className="relative"
+      {/* CSS animation replaces framer-motion infinite keyframe — GPU-composited, no JS per frame */}
+      <div
+        style={{ width, height, animationDelay: `${delay}s` }}
+        className="relative solution-float-shape"
       >
         <div className={cn(
           'absolute inset-0 rounded-full bg-gradient-to-r to-transparent',
@@ -92,29 +93,123 @@ function ElegantShape({
           'backdrop-blur-[2px] border-2 border-white/[0.15]',
           'shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]',
         )} />
-      </motion.div>
+      </div>
     </motion.div>
   );
-}
+});
 
-function preloadImages(count: number): Promise<HTMLImageElement[]> {
-  return Promise.all(
-    Array.from({ length: count }, (_, i) => {
-      return new Promise<HTMLImageElement>((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(img);
-        img.src = `/cube/frame-${String(i).padStart(3, '0')}.jpg`;
+/**
+ * Progressive image loader — loads a small set of keyframes first for instant
+ * interactivity, then lazily fills in the rest in the background.
+ */
+class FrameLoader {
+  private images: (HTMLImageElement | null)[];
+  private loading: Set<number> = new Set();
+  private loaded: Set<number> = new Set();
+  private totalFrames: number;
+
+  constructor(totalFrames: number) {
+    this.totalFrames = totalFrames;
+    this.images = new Array(totalFrames).fill(null);
+  }
+
+  private loadFrame(index: number): Promise<HTMLImageElement> {
+    if (this.images[index] && this.loaded.has(index)) {
+      return Promise.resolve(this.images[index]!);
+    }
+    if (this.loading.has(index)) {
+      // Already in flight — return a promise that resolves when it finishes
+      return new Promise((resolve) => {
+        const check = () => {
+          if (this.loaded.has(index)) resolve(this.images[index]!);
+          else setTimeout(check, 16);
+        };
+        check();
       });
-    })
-  );
+    }
+    this.loading.add(index);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        this.images[index] = img;
+        this.loaded.add(index);
+        this.loading.delete(index);
+        resolve(img);
+      };
+      img.onerror = () => {
+        this.loaded.add(index);
+        this.loading.delete(index);
+        resolve(img);
+      };
+      img.src = `/cube/frame-${String(index).padStart(3, '0')}.jpg`;
+    });
+  }
+
+  /** Load a small set of evenly-spaced keyframes so the first paint is fast */
+  async preloadKeyframes(count: number): Promise<HTMLImageElement | null> {
+    const step = Math.max(1, Math.floor(this.totalFrames / count));
+    const indices: number[] = [0]; // always load frame 0 first
+    for (let i = step; i < this.totalFrames; i += step) indices.push(i);
+    if (!indices.includes(this.totalFrames - 1)) indices.push(this.totalFrames - 1);
+
+    const results = await Promise.all(indices.map((i) => this.loadFrame(i)));
+    return results[0]; // return first frame for initial draw
+  }
+
+  /** Lazily load remaining frames in the background with idle callbacks */
+  loadRemaining(): void {
+    const loadNext = (i: number) => {
+      if (i >= this.totalFrames) return;
+      if (this.loaded.has(i)) {
+        // Already loaded (was a keyframe) — skip immediately
+        loadNext(i + 1);
+        return;
+      }
+      // Use requestIdleCallback where available, otherwise rAF
+      const schedule = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : requestAnimationFrame;
+      schedule(() => {
+        this.loadFrame(i).then(() => loadNext(i + 1));
+      });
+    };
+    loadNext(0);
+  }
+
+  /** Get the best available frame for a given index — returns exact or nearest loaded */
+  getFrame(index: number): HTMLImageElement | null {
+    if (this.images[index] && this.loaded.has(index)) return this.images[index];
+    // Find nearest loaded frame
+    let best: HTMLImageElement | null = null;
+    let bestDist = Infinity;
+    for (const loadedIdx of this.loaded) {
+      const dist = Math.abs(loadedIdx - index);
+      if (dist < bestDist && this.images[loadedIdx]) {
+        bestDist = dist;
+        best = this.images[loadedIdx];
+      }
+    }
+    return best;
+  }
+
+  /** Request a specific frame — triggers load if not yet started */
+  ensureFrame(index: number): void {
+    if (!this.loaded.has(index) && !this.loading.has(index)) {
+      this.loadFrame(index);
+    }
+    // Also preload neighbors for smooth scrubbing
+    const neighbors = [index - 1, index + 1, index - 2, index + 2];
+    for (const n of neighbors) {
+      if (n >= 0 && n < this.totalFrames && !this.loaded.has(n) && !this.loading.has(n)) {
+        this.loadFrame(n);
+      }
+    }
+  }
 }
 
 export default function Solution() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cubeSideRef = useRef<HTMLDivElement>(null);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const loaderRef = useRef<FrameLoader | null>(null);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dotRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const ctaRef = useRef<HTMLDivElement>(null);
@@ -124,23 +219,31 @@ export default function Solution() {
   const frameRef = useRef(0);
   const canvasSized = useRef(false);
   const rafId = useRef(0);
-
-  // Preload all frames
+  // Progressive image loading: keyframes first, rest in background
   useEffect(() => {
-    preloadImages(TOTAL_FRAMES).then(imgs => {
-      imagesRef.current = imgs;
+    const loader = new FrameLoader(TOTAL_FRAMES);
+    loaderRef.current = loader;
+
+    loader.preloadKeyframes(INITIAL_PRELOAD).then((firstFrame) => {
       setImagesLoaded(true);
-      drawFrame(0);
+      if (firstFrame) drawFrame(0);
+      // Load remaining frames in background during idle time
+      loader.loadRemaining();
     });
   }, []);
 
   const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const loader = loaderRef.current;
+    if (!canvas || !loader) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const img = imagesRef.current[frameIdx];
+
+    // Request this frame + neighbors to be loaded
+    loader.ensureFrame(frameIdx);
+    const img = loader.getFrame(frameIdx);
     if (!img || !img.complete || !img.naturalWidth) return;
+
     // Only set canvas size once
     if (!canvasSized.current) {
       canvas.width = img.naturalWidth;
@@ -150,15 +253,16 @@ export default function Solution() {
     ctx.drawImage(img, 0, 0);
   }, []);
 
-  // Scroll handler — lerp-smoothed animation loop for buttery transitions
+  // Scroll handler — only runs rAF loop when section is in viewport
   useEffect(() => {
-    // Smoothed value that lerps toward target scroll percentage
     const smooth = { pct: 0 };
     let targetPct = 0;
     let running = true;
+    let isScrolling = false;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-    const EASE = 0.08; // lower = smoother/slower, higher = snappier
+    const EASE = 0.08;
 
     const tick = () => {
       if (!running) return;
@@ -176,8 +280,8 @@ export default function Solution() {
 
       // Lerp toward target
       smooth.pct = lerp(smooth.pct, targetPct, EASE);
-      // Snap when close enough to avoid infinite micro-updates
-      if (Math.abs(smooth.pct - targetPct) < 0.0001) smooth.pct = targetPct;
+      const settled = Math.abs(smooth.pct - targetPct) < 0.0001;
+      if (settled) smooth.pct = targetPct;
 
       const pct = smooth.pct;
 
@@ -188,7 +292,7 @@ export default function Solution() {
         drawFrame(frameIdx);
       }
 
-      // Apple-style cube transforms: scale up from 0.85 to 1.15, subtle perspective tilt
+      // Apple-style cube transforms
       if (cubeSideRef.current) {
         const scale = 0.85 + pct * 0.3;
         const rotateY = (pct - 0.5) * -8;
@@ -229,13 +333,38 @@ export default function Solution() {
         ctaRef.current.style.transform = `translateY(${pct > 0.85 ? 0 : 20}px)`;
       }
 
+      // Stop the rAF loop when animation has settled and user stopped scrolling
+      if (settled && !isScrolling) {
+        rafId.current = 0;
+        return;
+      }
+
       rafId.current = requestAnimationFrame(tick);
     };
 
-    rafId.current = requestAnimationFrame(tick);
+    const startLoop = () => {
+      if (!rafId.current && running) {
+        rafId.current = requestAnimationFrame(tick);
+      }
+    };
+
+    const onScroll = () => {
+      isScrolling = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isScrolling = false; }, 150);
+      startLoop();
+    };
+
+    // Use passive scroll listener for performance
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Initial tick to set up correct state
+    startLoop();
+
     return () => {
       running = false;
       cancelAnimationFrame(rafId.current);
+      window.removeEventListener('scroll', onScroll);
+      clearTimeout(scrollTimeout);
     };
   }, [drawFrame, imagesLoaded]);
 
