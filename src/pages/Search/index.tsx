@@ -42,7 +42,7 @@ export default function SearchPage() {
   }, [query, allData]);
 
   return (
-    <div className="page" style={{ maxWidth: 640 }}>
+    <div className="page" style={{ maxWidth: '100%' }}>
       <h1 className="page-title">Search</h1>
 
       {/* Search input */}

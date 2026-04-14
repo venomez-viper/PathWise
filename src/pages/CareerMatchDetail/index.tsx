@@ -34,7 +34,7 @@ export default function CareerMatchDetail() {
   );
 
   if (!match) return (
-    <div className="page" style={{ maxWidth: 640 }}>
+    <div className="page" style={{ maxWidth: '100%' }}>
       <h1 className="page-title">Career Match</h1>
       <div className="panel" style={{ borderRadius: '2rem', textAlign: 'center', padding: '3rem' }}>
         <p style={{ color: 'var(--on-surface-variant)' }}>No assessment results yet.</p>
@@ -78,7 +78,7 @@ export default function CareerMatchDetail() {
     }));
 
   return (
-    <div className="page" style={{ maxWidth: 640 }}>
+    <div className="page" style={{ maxWidth: '100%' }}>
       {/* Back */}
       <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--on-surface-variant)', fontSize: '0.85rem', marginBottom: '1rem' }}>
         <ArrowLeft size={16} /> Back

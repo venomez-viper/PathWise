@@ -88,7 +88,7 @@ export default function HelpFAQ() {
         position: 'relative',
         marginTop: '1.5rem',
         marginBottom: '2rem',
-        maxWidth: 640,
+        maxWidth: '100%',
         marginLeft: 'auto',
         marginRight: 'auto',
       }}>
