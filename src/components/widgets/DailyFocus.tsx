@@ -23,7 +23,7 @@ export default function DailyFocus({ tasks, onMoveTask }: DailyFocusProps) {
   return (
     <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
       <h4 style={widgetTitleStyle}>
-        <Zap size={15} color="#8b4f2c" /> Daily Focus
+        <Zap size={15} color="var(--copper)" /> Daily Focus
       </h4>
       <div style={{ marginTop: 10 }}>
         {tasks.length > 0 && tasks.every(t => t.status === 'done') ? (
@@ -53,7 +53,7 @@ export default function DailyFocus({ tasks, onMoveTask }: DailyFocusProps) {
                 width: '100%', padding: '8px 12px', marginTop: 6,
                 border: 'none', borderRadius: '0.75rem',
                 background: dailyFocusTask.type === 'todo' ? 'rgba(139,79,44,0.1)' : 'rgba(52,211,153,0.12)',
-                color: dailyFocusTask.type === 'todo' ? '#8b4f2c' : '#059669',
+                color: dailyFocusTask.type === 'todo' ? 'var(--copper)' : '#059669',
                 fontSize: '0.78rem', fontWeight: 700, fontFamily: 'var(--font-body)',
                 cursor: 'pointer', transition: 'background 0.15s',
                 justifyContent: 'center',

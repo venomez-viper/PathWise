@@ -34,7 +34,7 @@ export default function WeeklyOverview({ tasks }: WeeklyOverviewProps) {
   return (
     <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
       <h4 style={widgetTitleStyle}>
-        <BarChart3 size={15} color="#8b4f2c" /> Weekly Overview
+        <BarChart3 size={15} color="var(--copper)" /> Weekly Overview
       </h4>
       <div style={{ marginTop: 10 }}>
         {hasWeeklyActivity ? (
@@ -43,7 +43,7 @@ export default function WeeklyOverview({ tasks }: WeeklyOverviewProps) {
               <div key={d.day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <div style={{
                   width: '100%', maxWidth: 24, borderRadius: 3,
-                  background: d.count > 0 ? '#8b4f2c' : 'var(--surface-container)',
+                  background: d.count > 0 ? 'var(--copper)' : 'var(--surface-container)',
                   height: `${Math.max(d.pct, d.count > 0 ? 15 : 4)}%`,
                   minHeight: 3,
                   transition: 'height 0.4s ease',

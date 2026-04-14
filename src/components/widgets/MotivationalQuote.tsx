@@ -27,7 +27,7 @@ export default function MotivationalQuote() {
   return (
     <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
       <h4 style={widgetTitleStyle}>
-        <MessageCircle size={15} color="#8b4f2c" /> Motivation
+        <MessageCircle size={15} color="var(--copper)" /> Motivation
       </h4>
       <div style={{ marginTop: 10 }}>
         <div style={{ position: 'relative', padding: '0 4px' }}>

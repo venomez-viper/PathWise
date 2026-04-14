@@ -46,14 +46,14 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#8b4f2c', fontFamily: 'var(--font-display)' }}>
+                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--copper)', fontFamily: 'var(--font-display)' }}>
                   {currentStreak}
                 </span>
                 <p style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', margin: '2px 0 0', fontWeight: 600 }}>CURRENT</p>
               </div>
               <div style={{ width: 1, height: 32, background: 'var(--outline-variant)' }} />
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#006a62', fontFamily: 'var(--font-display)' }}>
+                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--secondary)', fontFamily: 'var(--font-display)' }}>
                   {bestStreak}
                 </span>
                 <p style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', margin: '2px 0 0', fontWeight: 600 }}>BEST</p>

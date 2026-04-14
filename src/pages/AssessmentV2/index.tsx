@@ -583,7 +583,7 @@ export default function AssessmentV2() {
       }
       navigate('/app/assessment-v2/results', { state: { result: res.result, completedTier: tierCompleted } });
     } catch (err) {
-      console.error('Assessment submit failed:', err);
+
       setIsSubmitting(false);
       alert('Something went wrong submitting your assessment. Please try again.');
       // On error go back to last answered phase so user can retry

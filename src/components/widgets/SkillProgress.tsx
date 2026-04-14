@@ -34,7 +34,7 @@ export default function SkillProgress({ tasks, milestones = [] }: SkillProgressP
   return (
     <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
       <h4 style={widgetTitleStyle}>
-        <Target size={15} color="#8b4f2c" /> Skill Progress
+        <Target size={15} color="var(--copper)" /> Skill Progress
       </h4>
 
       {/* Milestone progress bar */}
@@ -53,7 +53,7 @@ export default function SkillProgress({ tasks, milestones = [] }: SkillProgressP
             overflow: 'hidden',
           }}>
             <div style={{
-              height: '100%', borderRadius: 3, background: '#8b4f2c',
+              height: '100%', borderRadius: 3, background: 'var(--copper)',
               width: `${milestoneProgress.total > 0 ? Math.round((milestoneProgress.done / milestoneProgress.total) * 100) : 0}%`,
               transition: 'width 0.5s ease',
             }} />
@@ -66,7 +66,7 @@ export default function SkillProgress({ tasks, milestones = [] }: SkillProgressP
         <div style={{ marginTop: milestoneProgress ? 8 : 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {skillProgress.map(({ category, done: catDone, total: catTotal }) => {
             const catPct = catTotal > 0 ? Math.round((catDone / catTotal) * 100) : 0;
-            const color = CATEGORY_COLORS[category] || '#8b4f2c';
+            const color = CATEGORY_COLORS[category] || 'var(--copper)';
             return (
               <div key={category}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3, gap: 8 }}>

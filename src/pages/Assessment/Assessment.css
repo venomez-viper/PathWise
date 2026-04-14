@@ -32,7 +32,7 @@
 
 .assessment__progress-fill {
   height: 100%;
-  background: #334042;
+  background: var(--surface-container-highest);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
@@ -62,7 +62,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #8b4f2c;
+  color: var(--copper);
   margin-bottom: 1.25rem;
   text-align: center;
 }
@@ -119,7 +119,7 @@
 
 /* SELECTED — copper background, white text */
 .assessment__option.selected {
-  background: #8b4f2c;
+  background: var(--copper);
   color: #fff;
   box-shadow: 0 4px 20px rgba(139, 79, 44, 0.2);
 }
@@ -150,7 +150,7 @@
 }
 
 .assessment__chip.selected {
-  background: #8b4f2c;
+  background: var(--copper);
   color: #fff;
 }
 
@@ -211,7 +211,7 @@
   padding: 0.8rem 2rem;
   border-radius: var(--radius-full);
   border: none;
-  background: linear-gradient(135deg, #334042, #4a5759);
+  background: linear-gradient(135deg, var(--surface-container-highest), #4a5759);
   color: #fff;
   font-size: 0.9rem;
   font-weight: 700;
@@ -275,7 +275,7 @@
 .assessment__match-score {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #8b4f2c;
+  color: var(--copper);
   font-family: var(--font-display);
   line-height: 1;
   min-width: 48px;

@@ -36,7 +36,7 @@ export default function ResourceTip({ taskCategories }: ResourceTipProps) {
   return (
     <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
       <h4 style={widgetTitleStyle}>
-        <BookOpen size={15} color="#006a62" /> Resource Tip
+        <BookOpen size={15} color="var(--secondary)" /> Resource Tip
       </h4>
       <div style={{ marginTop: 10 }}>
         {availableTips.length > 0 ? (
