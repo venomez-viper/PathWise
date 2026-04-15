@@ -32,6 +32,9 @@ dist-ssr
 .claude/
 .superpowers/
 skills/
+skills-lock.json
+scripts/
+extract_pdf.cjs
 Rubick cube/
 
 # Local env overrides (never commit real secrets)
