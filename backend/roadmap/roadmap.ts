@@ -112,7 +112,93 @@ function generateFromBrain(params: {
     };
   });
 
-  return { milestones };
+  // Adapt milestones based on user's assessment data
+  const adapted = adaptMilestones(milestones, params.currentSkills, params.skillGaps);
+
+  return { milestones: adapted };
+}
+
+// -- Adaptive milestone logic ------------------------------------------------
+
+function skillMatches(skill: string, text: string): boolean {
+  return text.toLowerCase().includes(skill.toLowerCase());
+}
+
+function calcSkillOverlap(milestone: AIMilestone, currentSkills: string[]): number {
+  if (currentSkills.length === 0) return 0;
+  const textsToCheck = [milestone.title, ...milestone.tasks.map(t => t.title)];
+  let matched = 0;
+  for (const text of textsToCheck) {
+    if (currentSkills.some(skill => skillMatches(skill, text))) {
+      matched++;
+    }
+  }
+  return textsToCheck.length > 0 ? matched / textsToCheck.length : 0;
+}
+
+function milestoneRelatesTo(milestone: AIMilestone, skill: string): boolean {
+  return skillMatches(skill, milestone.title) || skillMatches(skill, milestone.description);
+}
+
+function adaptMilestones(
+  milestones: AIMilestone[],
+  currentSkills: string[],
+  skillGaps: string[],
+): AIMilestone[] {
+  if (currentSkills.length === 0 && skillGaps.length === 0) return milestones;
+
+  const adapted = milestones.map(m => {
+    const overlap = calcSkillOverlap(m, currentSkills);
+    const isGapRelated = skillGaps.some(gap => milestoneRelatesTo(m, gap));
+
+    // Accelerate milestones where user already has >60% of the skills
+    if (overlap > 0.6 && !isGapRelated) {
+      return {
+        ...m,
+        title: `Advanced: ${m.title}`,
+        description: `Accelerated - you already have experience here. ${m.description}`,
+        durationWeeks: Math.max(1, Math.round(m.durationWeeks / 2)),
+      };
+    }
+
+    // Extend milestones that target known skill gaps
+    if (isGapRelated) {
+      return {
+        ...m,
+        description: `Key skill gap focus. ${m.description}`,
+        durationWeeks: m.durationWeeks + 1,
+      };
+    }
+
+    return { ...m };
+  });
+
+  // Add new milestones for skill gaps not covered by any existing milestone
+  const uncoveredGaps = skillGaps.filter(
+    gap => !milestones.some(m => milestoneRelatesTo(m, gap)),
+  );
+
+  if (uncoveredGaps.length > 0) {
+    for (let i = 0; i < uncoveredGaps.length; i += 3) {
+      const batch = uncoveredGaps.slice(i, i + 3);
+      const newMilestone: AIMilestone = {
+        title: `Skill Gap: ${batch.join(", ")}`,
+        description: `Focused study on identified skill gaps: ${batch.join(", ")}.`,
+        durationWeeks: 3,
+        tasks: batch.map((gap, j) => ({
+          title: `Learn ${gap} fundamentals`,
+          description: `Study and practice ${gap} to close this skill gap.`,
+          priority: (j === 0 ? "high" : j === 1 ? "medium" : "low") as "high" | "medium" | "low",
+          category: "learning",
+        })),
+      };
+      // Insert before the final milestone (usually Job Search)
+      const insertPos = Math.max(0, adapted.length - 1);
+      adapted.splice(insertPos, 0, newMilestone);
+    }
+  }
+
+  return adapted;
 }
 
 // POST /roadmap/milestones/:milestoneId/complete — mark a milestone complete, unlock next

@@ -297,7 +297,7 @@ function UserDetailPanel({
                 style={{
                   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   padding: '0.6rem', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 600,
-                  background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer',
+                  background: 'var(--copper)', color: '#fff', border: 'none', cursor: 'pointer',
                   opacity: impersonating ? 0.6 : 1,
                 }}
               >
@@ -671,7 +671,7 @@ export default function AdminPage() {
     fontWeight: 600,
     border: 'none',
     cursor: 'pointer',
-    background: active ? 'var(--primary)' : 'var(--surface-container)',
+    background: active ? 'var(--copper)' : 'var(--surface-container)',
     color: active ? '#fff' : 'var(--on-surface-variant)',
     transition: 'all 0.15s',
   });

@@ -287,8 +287,8 @@ export default function SettingsPage() {
                     style={{
                       width: '100%', aspectRatio: '1', borderRadius: '50%', border: 'none',
                       padding: 3, cursor: avatarSaving ? 'wait' : 'pointer',
-                      background: isSelected ? 'var(--primary)' : 'transparent',
-                      outline: isSelected ? '3px solid var(--primary)' : '2px solid color-mix(in srgb, var(--on-surface) 8%, transparent)',
+                      background: isSelected ? 'var(--copper)' : 'transparent',
+                      outline: isSelected ? '3px solid var(--copper)' : '2px solid color-mix(in srgb, var(--on-surface) 8%, transparent)',
                       outlineOffset: 2,
                       opacity: isSaving ? 0.5 : 1,
                       transition: 'outline 0.15s, background 0.15s',
@@ -346,7 +346,7 @@ export default function SettingsPage() {
             'Password',
             <button
               onClick={() => { setShowPasswordForm(v => !v); setPwError(''); setPwSuccess(false); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--copper)', fontSize: '0.8rem', fontWeight: 600 }}
             >
               Change <ChevronRight size={14} />
             </button>,
@@ -379,7 +379,7 @@ export default function SettingsPage() {
         {settingRow(
           <Target size={16} color="var(--primary)" />,
           'Target Role',
-          <Link to="/app/onboarding" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/app/onboarding" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--copper)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
             Change <ChevronRight size={14} />
           </Link>,
           targetRole !== '—' ? targetRole : 'Not set',
@@ -388,7 +388,7 @@ export default function SettingsPage() {
         {settingRow(
           <RotateCcw size={16} color="var(--primary)" />,
           'Retake Assessment',
-          <Link to="/app/assessment-v2" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/app/assessment-v2" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--copper)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
             Start <ChevronRight size={14} />
           </Link>,
           'Retake your career assessment to update your matches',
@@ -399,7 +399,7 @@ export default function SettingsPage() {
           'Reset Roadmap',
           <button
             onClick={handleResetRoadmap}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--copper)', fontSize: '0.8rem', fontWeight: 600 }}
           >
             Reset <ChevronRight size={14} />
           </button>,
@@ -446,7 +446,7 @@ export default function SettingsPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       title="View profile"
-                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '5px 7px', display: 'flex', alignItems: 'center', color: 'var(--primary)', flexShrink: 0 }}
+                      style={{ background: 'none', border: '1px solid color-mix(in srgb, var(--on-surface) 12%, transparent)', borderRadius: 8, padding: '5px 7px', display: 'flex', alignItems: 'center', color: 'var(--copper)', flexShrink: 0 }}
                     >
                       <ExternalLink size={13} />
                     </a>
@@ -488,7 +488,7 @@ export default function SettingsPage() {
                 title={profileSettings.profilePublic ? 'Profile is public' : 'Profile is private'}
                 style={{
                   width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
-                  background: profileSettings.profilePublic ? 'var(--primary)' : 'color-mix(in srgb, var(--on-surface) 15%, transparent)',
+                  background: profileSettings.profilePublic ? 'var(--copper)' : 'color-mix(in srgb, var(--on-surface) 15%, transparent)',
                   position: 'relative', transition: 'background 0.2s, outline-color 0.15s', flexShrink: 0,
                 }}
               >
@@ -525,7 +525,7 @@ export default function SettingsPage() {
           'Export My Data',
           <button
             onClick={handleExport}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--copper)', fontSize: '0.8rem', fontWeight: 600 }}
           >
             Download <ChevronRight size={14} />
           </button>,
@@ -559,7 +559,7 @@ export default function SettingsPage() {
               localStorage.removeItem('pathwise_tour_done');
               alert('Tour will show on your next Dashboard visit.');
             }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--copper)', fontSize: '0.8rem', fontWeight: 600 }}
           >
             Restart <ChevronRight size={14} />
           </button>,
@@ -575,7 +575,7 @@ export default function SettingsPage() {
               localStorage.setItem('pathwise_notif_off', current ? '0' : '1');
               window.location.reload();
             }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--copper)', fontSize: '0.8rem', fontWeight: 600 }}
           >
             {localStorage.getItem('pathwise_notif_off') === '1' ? 'Turn On' : 'Turn Off'} <ChevronRight size={14} />
           </button>,

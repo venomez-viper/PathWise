@@ -28,18 +28,18 @@ const CATEGORY_LABEL: Record<string, string> = {
 };
 
 const CATEGORY_BORDER: Record<string, string> = {
-  learning: '#6245a4',
-  portfolio: '#006a62',
-  networking: '#8b4f2c',
-  interview_prep: '#6245a4',
-  certification: '#006a62',
+  learning: 'var(--primary)',
+  portfolio: 'var(--secondary)',
+  networking: 'var(--copper)',
+  interview_prep: 'var(--primary)',
+  certification: 'var(--secondary)',
   research: '#334042',
 };
 
 const PRIORITY_COLORS: Record<string, { bg: string; color: string }> = {
   high: { bg: 'rgba(239,68,68,0.08)', color: '#ef4444' },
-  medium: { bg: 'rgba(139,79,44,0.08)', color: '#8b4f2c' },
-  low: { bg: 'rgba(0,106,98,0.08)', color: '#006a62' },
+  medium: { bg: 'rgba(139,79,44,0.08)', color: 'var(--copper)' },
+  low: { bg: 'rgba(0,106,98,0.08)', color: 'var(--secondary)' },
 };
 
 export default function Roadmap() {
@@ -188,7 +188,7 @@ export default function Roadmap() {
   if (loading) return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
       <PandaSpot context="loading" position="inline" size={90} animate />
-      <Loader2 size={22} color="#8b4f2c" style={{ animation: 'spin 0.8s linear infinite' }} />
+      <Loader2 size={22} color="var(--copper)" style={{ animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 
@@ -199,7 +199,7 @@ export default function Roadmap() {
         <PandaSpot context="empty-state" position="inline" message="Complete onboarding to start your journey!" animate />
         <p style={{ fontWeight: 600, color: 'var(--on-surface)', marginBottom: 8, marginTop: 12 }}>No roadmap yet</p>
         <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', marginBottom: 16 }}>Complete onboarding to generate your career roadmap.</p>
-        <Link to="/app/onboarding" className="btn-page-action" style={{ background: '#8b4f2c' }}>Start Onboarding</Link>
+        <Link to="/app/onboarding" className="btn-page-action" style={{ background: 'var(--copper)' }}>Start Onboarding</Link>
       </div>
     </div>
   );
@@ -245,7 +245,7 @@ export default function Roadmap() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)' }}>Current Target</p>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#8b4f2c', letterSpacing: '-0.03em', marginTop: 4 }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--copper)', letterSpacing: '-0.03em', marginTop: 4 }}>
               {data.targetRole}
             </h2>
             <div style={{ display: 'flex', gap: 8, marginTop: '0.75rem', flexWrap: 'wrap' }}>
@@ -257,7 +257,7 @@ export default function Roadmap() {
               </span>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: '0.75rem', position: 'relative' }}>
-              <button onClick={openTimelinePicker} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: '#8b4f2c', color: '#fff', fontSize: '0.78rem', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
+              <button onClick={openTimelinePicker} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', background: 'var(--copper)', color: '#fff', fontSize: '0.78rem', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
                 <Clock size={13} /> Adjust Timeline
               </button>
               {/* Timeline Picker Popover */}
@@ -282,9 +282,9 @@ export default function Roadmap() {
                         <button key={opt.value} onClick={() => setSelectedTimeline(opt.value)}
                           style={{
                             flex: 1, padding: '0.6rem 0.5rem', borderRadius: 'var(--radius-full)',
-                            background: isSelected ? '#8b4f2c' : 'var(--surface-container-low)',
+                            background: isSelected ? 'var(--copper)' : 'var(--surface-container-low)',
                             color: isSelected ? '#fff' : 'var(--on-surface)',
-                            border: isSelected ? '2px solid #8b4f2c' : '2px solid transparent',
+                            border: isSelected ? '2px solid var(--copper)' : '2px solid transparent',
                             cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s ease',
                           }}>
                           <p style={{ fontSize: '0.82rem', fontWeight: 700, lineHeight: 1.2 }}>{opt.label}</p>
@@ -297,7 +297,7 @@ export default function Roadmap() {
                     <button onClick={handleTimelineChange} disabled={savingTimeline || selectedTimeline === getCurrentTimeline(data)}
                       style={{
                         flex: 1, padding: '0.55rem', borderRadius: 'var(--radius-full)',
-                        background: '#8b4f2c', color: '#fff', border: 'none',
+                        background: 'var(--copper)', color: '#fff', border: 'none',
                         fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
                         opacity: savingTimeline || selectedTimeline === getCurrentTimeline(data) ? 0.5 : 1,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -330,7 +330,7 @@ export default function Roadmap() {
             <div style={{ position: 'relative', width: RS, height: RS }}>
               <svg width={RS} height={RS} viewBox={`0 0 ${RS} ${RS}`}>
                 <circle cx={RS/2} cy={RS/2} r={RR} fill="none" stroke="var(--surface-container)" strokeWidth={5} />
-                <circle cx={RS/2} cy={RS/2} r={RR} fill="none" stroke="#8b4f2c" strokeWidth={5}
+                <circle cx={RS/2} cy={RS/2} r={RR} fill="none" stroke="var(--copper)" strokeWidth={5}
                   strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={mounted ? RC*(1-completionPct/100) : RC}
                   style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 1s ease' }} />
               </svg>
@@ -354,7 +354,7 @@ export default function Roadmap() {
             return (
               <div key={m.id} style={{
                 minWidth: 200, maxWidth: 240, flexShrink: 0,
-                background: isActive ? '#8b4f2c' : 'var(--surface-container-low)',
+                background: isActive ? 'var(--copper)' : 'var(--surface-container-low)',
                 borderRadius: '1.5rem', padding: '1.25rem',
                 opacity: isLocked ? 0.45 : 1,
                 color: isActive ? '#fff' : 'var(--on-surface)',
@@ -390,7 +390,7 @@ export default function Roadmap() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <Link to={`/app/tasks?milestone=${m.id}`} style={{
                       padding: '0.45rem', borderRadius: 'var(--radius-full)',
-                      background: '#fff', color: '#8b4f2c', border: 'none',
+                      background: '#fff', color: 'var(--copper)', border: 'none',
                       fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                     }}>
@@ -452,7 +452,7 @@ export default function Roadmap() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {Object.entries(tasksByCategory).map(([cat, catTasks]) => {
             const CatIcon = CATEGORY_ICON[cat] || BookOpen;
-            const borderColor = CATEGORY_BORDER[cat] || '#334042';
+            const borderColor = CATEGORY_BORDER[cat] || 'var(--surface-container-highest)';
             return (
               <div key={cat}>
                 {/* Category header */}
@@ -627,7 +627,7 @@ export default function Roadmap() {
                   disabled={savingTask || !newTask.title.trim()}
                   style={{
                     flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-sm)',
-                    background: 'var(--secondary)', color: '#fff', border: 'none',
+                    background: 'var(--copper)', color: '#fff', border: 'none',
                     fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.88rem',
                     cursor: 'pointer', opacity: savingTask || !newTask.title.trim() ? 0.4 : 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,

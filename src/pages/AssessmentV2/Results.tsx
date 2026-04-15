@@ -26,6 +26,7 @@ interface CareerMatch {
   title: string; matchScore: number; careerFamily?: string;
   whyThisFits?: string[]; salaryRange?: { min: number; max: number };
   growthOutlook?: string; description: string;
+  requiredSkills?: string[]; pathwayTime?: string; domain?: string;
 }
 
 type MatchTier = 'excellent' | 'strong' | 'good' | 'developing';
@@ -42,11 +43,29 @@ const TIER_CONFIG: Record<MatchTier, { label: string; color: string }> = {
   developing: { label: 'Developing',      color: COPPER },
 };
 
+const DOMAIN_COLORS: Record<string, string> = {
+  Technology:  '#006a62',
+  Healthcare:  '#0e7490',
+  Finance:     '#8b4f2c',
+  Design:      '#d97706',
+  Marketing:   '#9333ea',
+  Education:   '#0369a1',
+  Research:    '#0f766e',
+  Engineering: '#1d4ed8',
+  Legal:       '#7c3aed',
+  Other:       '#64748b',
+};
+
 function getMatchTier(score: number): MatchTier {
   if (score >= 85) return 'excellent';
   if (score >= 70) return 'strong';
   if (score >= 55) return 'good';
   return 'developing';
+}
+
+function getDomainColor(domain?: string): string {
+  if (!domain) return DOMAIN_COLORS.Other;
+  return DOMAIN_COLORS[domain] ?? DOMAIN_COLORS.Other;
 }
 
 /* ─── Mock Data ─────────────────────────────────────────────────── */
@@ -73,6 +92,9 @@ const MOCK_BIGFIVE: BigFiveScores = {
 const MOCK_MATCHES: CareerMatch[] = [
   {
     title: 'Data Scientist', matchScore: 92, careerFamily: 'Analytics & AI',
+    domain: 'Technology',
+    requiredSkills: ['Python', 'Machine Learning', 'Statistics', 'SQL', 'Data Visualization', 'TensorFlow', 'R'],
+    pathwayTime: '6-12 months',
     whyThisFits: [
       'Your investigative score is in the top tier',
       'High conscientiousness drives rigorous analysis',
@@ -83,6 +105,9 @@ const MOCK_MATCHES: CareerMatch[] = [
   },
   {
     title: 'Software Architect', matchScore: 87, careerFamily: 'Engineering',
+    domain: 'Engineering',
+    requiredSkills: ['System Design', 'Cloud Architecture', 'Java', 'Microservices', 'DevOps', 'API Design', 'Security', 'Leadership'],
+    pathwayTime: '12-24 months',
     whyThisFits: [
       'Systems thinking aligns with your profile',
       'Conventional + Investigative is the architect combo',
@@ -93,6 +118,9 @@ const MOCK_MATCHES: CareerMatch[] = [
   },
   {
     title: 'Research Scientist', matchScore: 83, careerFamily: 'Research',
+    domain: 'Research',
+    requiredSkills: ['Research Methods', 'Statistical Analysis', 'Python', 'Academic Writing', 'Data Analysis'],
+    pathwayTime: '12-36 months',
     whyThisFits: [
       'Deep investigative drive fuels curiosity',
       'High openness supports novel exploration',
@@ -329,9 +357,63 @@ function ArchetypeCard({ archetype, riasec, bigFive, visible }: {
   );
 }
 
+/* ─── Skill Bubbles ────────────────────────────────────────────── */
+
+function SkillBubbles({ requiredSkills, currentSkills }: { requiredSkills: string[]; currentSkills: string[] }) {
+  const MAX_VISIBLE = 6;
+  const currentLower = new Set(currentSkills.map(s => s.toLowerCase()));
+  const visible = requiredSkills.slice(0, MAX_VISIBLE);
+  const remaining = requiredSkills.length - MAX_VISIBLE;
+
+  return (
+    <div style={{ marginTop: '0.75rem' }}>
+      <span style={{ fontSize: 12, fontWeight: 600, color: TEAL, textTransform: 'uppercase' as const, letterSpacing: 0.5, display: 'block', marginBottom: '0.35rem' }}>
+        Key Skills
+      </span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+        {visible.map((skill) => {
+          const isMatch = currentLower.has(skill.toLowerCase());
+          return (
+            <span
+              key={skill}
+              title={isMatch ? 'You have this skill' : undefined}
+              style={{
+                fontSize: '0.75rem',
+                fontWeight: isMatch ? 600 : 500,
+                padding: '4px 10px',
+                borderRadius: '9999px',
+                background: isMatch ? 'var(--copper, #8b4f2c)' : 'var(--surface-container, #e8e8e8)',
+                color: isMatch ? '#fff' : 'var(--on-surface, #333)',
+                lineHeight: 1.3,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {skill}
+            </span>
+          );
+        })}
+        {remaining > 0 && (
+          <span style={{
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            padding: '4px 10px',
+            borderRadius: '9999px',
+            background: 'var(--surface-container, #e8e8e8)',
+            color: 'var(--on-surface-variant, #666)',
+            lineHeight: 1.3,
+            whiteSpace: 'nowrap',
+          }}>
+            +{remaining} more
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Career Match Card ─────────────────────────────────────────── */
 
-function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: number; visible: boolean }) {
+function CareerMatchCard({ match, rank, visible, currentSkills }: { match: CareerMatch; rank: number; visible: boolean; currentSkills: string[] }) {
   const tier = getMatchTier(match.matchScore);
   const tierCfg = TIER_CONFIG[tier];
   const [showWhatIf, setShowWhatIf] = useState(false);
@@ -358,6 +440,36 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
               {match.title}
             </h3>
           </div>
+          {/* Domain tag and pathway time */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+            {match.domain && (
+              <span style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                padding: '3px 10px',
+                borderRadius: '9999px',
+                background: getDomainColor(match.domain),
+                color: '#fff',
+                letterSpacing: 0.3,
+                lineHeight: 1.3,
+              }}>
+                {match.domain}
+              </span>
+            )}
+            {match.pathwayTime && (
+              <span style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                padding: '3px 10px',
+                borderRadius: '9999px',
+                background: 'var(--surface-container, #e8e8e8)',
+                color: 'var(--on-surface-variant, #555)',
+                lineHeight: 1.3,
+              }}>
+                {match.pathwayTime}
+              </span>
+            )}
+          </div>
           {match.careerFamily && (
             <span style={{ fontSize: 12, color: 'var(--on-surface, #777)', marginBottom: '0.75rem', display: 'block' }}>
               {match.careerFamily}
@@ -373,9 +485,13 @@ function CareerMatchCard({ match, rank, visible }: { match: CareerMatch; rank: n
               </ul>
             </div>
           )}
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: 13, color: 'var(--on-surface, #555)' }}>
+          {/* Required skills bubbles */}
+          {match.requiredSkills && match.requiredSkills.length > 0 && (
+            <SkillBubbles requiredSkills={match.requiredSkills} currentSkills={currentSkills} />
+          )}
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: 13, color: 'var(--on-surface, #555)', marginTop: '0.75rem' }}>
             {match.salaryRange && (
-              <span>${(match.salaryRange.min / 1000).toFixed(0)}k – ${(match.salaryRange.max / 1000).toFixed(0)}k</span>
+              <span>${(match.salaryRange.min / 1000).toFixed(0)}k - ${(match.salaryRange.max / 1000).toFixed(0)}k</span>
             )}
             {match.growthOutlook && <span>Growth: {match.growthOutlook}</span>}
           </div>
@@ -511,6 +627,7 @@ export default function AssessmentResults() {
   const bigFive = result.bigFive ?? MOCK_BIGFIVE;
   const matches = result.careerMatches ?? MOCK_MATCHES;
   const narrative = result.narrative ?? null;
+  const currentSkills: string[] = result.currentSkills ?? [];
 
   const showArchetype = phase >= 1;
   const showCharts = phase >= 2;
@@ -630,7 +747,7 @@ export default function AssessmentResults() {
             }
           `}</style>
           {matches.slice(0, 3).map((m: any, i: number) => (
-            <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} />
+            <CareerMatchCard key={m.title} match={m} rank={i + 1} visible={showMatchIndex(i)} currentSkills={currentSkills} />
           ))}
         </div>
       </section>

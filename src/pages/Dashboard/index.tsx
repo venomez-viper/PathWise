@@ -172,7 +172,7 @@ export default function Dashboard() {
 
           <Link to="/app/assessment-v2" style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: 'var(--primary)', width: '100%', maxWidth: 320,
+            background: 'var(--copper)', width: '100%', maxWidth: 320,
             color: '#fff', padding: '0.9rem 2rem', borderRadius: 'var(--radius-full)',
             fontWeight: 700, fontSize: '1rem', textDecoration: 'none', cursor: 'pointer',
             boxShadow: '0 4px 16px rgba(98,69,164,0.25)', transition: 'transform 0.15s, box-shadow 0.15s',

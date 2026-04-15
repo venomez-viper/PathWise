@@ -319,7 +319,7 @@ export default function HelpFAQ() {
               gap: 8,
               padding: '0.65rem 1.5rem',
               borderRadius: 'var(--radius-full)',
-              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
+              background: 'var(--copper)',
               color: '#fff',
               fontWeight: 700,
               fontSize: '0.85rem',

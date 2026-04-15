@@ -65,9 +65,9 @@ const segBtnBase: React.CSSProperties = {
 
 const segBtnSelected: React.CSSProperties = {
   ...segBtnBase,
-  background: 'var(--primary)',
-  color: 'var(--on-primary, #fff)',
-  borderColor: 'var(--primary)',
+  background: 'var(--copper)',
+  color: '#fff',
+  borderColor: 'var(--copper)',
 };
 
 /* ── Skill gap result type ── */

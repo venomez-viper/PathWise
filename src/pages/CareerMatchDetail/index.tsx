@@ -158,7 +158,7 @@ export default function CareerMatchDetail() {
       <Link to="/app/onboarding" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         width: '100%', padding: '0.85rem', borderRadius: 'var(--radius-full)',
-        background: 'linear-gradient(135deg, var(--primary), var(--primary-container))',
+        background: 'var(--copper)',
         color: '#fff', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', marginBottom: '0.75rem',
       }}>
         Set as My Target Role
@@ -168,7 +168,7 @@ export default function CareerMatchDetail() {
           const nextIdx = (allMatches.indexOf(match) + 1) % allMatches.length;
           setMatch(allMatches[nextIdx]);
           window.scrollTo(0, 0);
-        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '0.85rem', width: '100%', textAlign: 'center' }}>
+        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--copper)', fontWeight: 600, fontSize: '0.85rem', width: '100%', textAlign: 'center' }}>
           Compare with another role
         </button>
       )}
