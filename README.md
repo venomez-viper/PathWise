@@ -1,164 +1,101 @@
-# 🚀 PathWise: The Guided Path
+# PathWise
 
-Welcome to the **PathWise** repository! 
+AI-powered career guidance platform that helps users assess strengths, discover career matches, generate personalized roadmaps, and track progress through actionable tasks.
 
-**[🔗 Live Demo](https://pathwise.fit)**
+[Live Demo](https://pathwise.fit) | Built with React + TypeScript + Encore.dev
 
-PathWise is a modern SaaS platform designed to be a "Digital Atelier" for one's career. It transcends the traditional "utility app" aesthetic by acting as an Ethereal Mentor—providing aspirational career guidance, tracking roadmap progress, and recommending top career matches based on skills and personality assessments.
+## Key Features
 
-## 📋 Business Concept
+- **AI career assessment** - 83 questions across 6 dimensions, producing 30 archetypes mapped to 91 career profiles
+- **Career match scoring** - transparent score breakdowns with cross-dimensional synergy detection and anti-pattern penalties
+- **Personalized roadmap generation** - adaptive milestones scaled to 3/6/12-month timelines based on experience level
+- **Skill gap analysis** - ROI-ranked learning recommendations with resources matched to preferred learning style
+- **Task management** - kanban board with drag-and-drop, AI-generated tasks, and a slide-over detail panel
+- **Focus Mode** - pomodoro timer with ambient sounds for deep work sessions
+- **Streak tracking** - daily progress tracking with celebration animations and achievement badges
+- **OAuth login** - Google and Apple social login with PKCE and nonce verification
+- **Admin dashboard** - user management, analytics, support tickets, and CSV export
+- **Server-side progress saving** - assessment state persisted across devices and sessions
+- **GDPR-compliant** - full data export (JSON), account deletion with cascade, cookie policy
 
-PathWise is built on a validated business concept from our founding pitch deck. The full foundation — problem statement, product framework, pricing model, competitive positioning, and operating model — is documented in **[CONCEPT.md](./CONCEPT.md)**.
+## Screenshots
 
-> *"Your career is too important to leave to chance."*
-> PathWise is an AI-powered career orientation platform that maps your identity, predicts high-fit career paths, builds a step-by-step roadmap, and tracks your progress toward your target role.
+*Screenshots coming soon*
 
----
+## Tech Stack
 
-## 🛠 Tech Stack
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, Framer Motion |
+| Backend | Encore.dev (TypeScript), PostgreSQL (per-service DBs) |
+| AI | Claude API (Anthropic) for assessments and roadmaps |
+| Auth | JWT + OAuth (Google, Apple), bcrypt |
+| Deployment | Vercel (frontend), Encore Cloud (backend) |
+| Analytics | PostHog, Microsoft Clarity |
 
-- **Frontend Framework**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Vanilla CSS (CSS Variables based on a custom Design System)
-- **Icons**: `lucide-react`
-- **Backend**: Encore.dev (TypeScript), PostgreSQL (one DB per microservice)
-- **Auth**: JWT + Google/Apple OAuth social login (`jose` library for JWKS verification)
+## Architecture
 
-## 🎨 Design System: "The Ethereal Mentor"
+The backend is split into independent microservices, each with its own PostgreSQL database:
 
-Our UI is built around fluid, illuminated layers, rejecting standard flat design for **Organic Asymmetry** and **Tonal Depth**.
-- **The "No-Line" Rule**: We avoid harsh 1px solid borders. Structure is built with spacing, tonal layering of backgrounds (`surface-container-low`, `surface-container-highest`), and soft gradients.
-- **Glassmorphism**: Modals and overlays use a frosted glass effect with deep blur.
-- **Typography**: `Manrope` for display and headlines, `Inter` for highly readable body text.
+| Service | Responsibility |
+|---------|---------------|
+| **Auth** | JWT authentication, OAuth (Google/Apple), profile management, avatar system |
+| **Assessment** | Career assessment engine, scoring with 4-layer expert system, skill gap analysis |
+| **Roadmap** | Milestone generation, adaptive planning, timeline scaling |
+| **Tasks** | CRUD operations, completion tracking, AI task generation |
+| **Progress** | Career readiness score computation, dashboard analytics |
+| **Streaks** | Daily tracking, achievements, XP system, notification triggers |
 
-## 🏗 Getting Started
+The expert system uses a 4-layer modifier architecture: experience tiers, gap pattern matching, career stage modifiers, and a combination rules engine that detects persona patterns (Career Changer, Ambitious Student, Technical Leader, etc.).
 
-To get the project running locally:
+## Getting Started
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/venomez-viper/PathWise.git
-   cd PathWise
-   ```
+### Prerequisites
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+- Node.js 18+
+- [Encore CLI](https://encore.dev/docs/install)
+- PostgreSQL (managed automatically by Encore locally)
 
-3. **Configure Environments**:
-   The app uses `.env.development` and `.env.production` files. Ensure you have the required variables configured.
-   ```env
-   VITE_APP_ENV=development
-   VITE_API_BASE_URL=http://localhost:3000/api
-   ```
+### Setup
 
-4. **Start the Development Server**:
-   ```bash
-   npm run dev
-   ```
-   Open your browser to `http://localhost:5173`.
+```bash
+# Clone the repository
+git clone https://github.com/venomez-viper/PathWise.git
+cd PathWise
 
----
+# Install frontend dependencies
+npm install
 
-## 🚨 MANDATORY PUSH RULE: Version History 🚨
+# Start the Encore backend (runs migrations automatically)
+cd backend
+encore run
 
-**CRITICAL:** It is a **strict mandatory rule** for all developers that **every push MUST be accompanied by an update to the Version History** below. If you are adding a new feature, fixing a bug, or making architectural changes, you must log it in the Version History section with the version number, date, and a description of the changes before pushing your branch or merging a Pull Request.
+# In a separate terminal, start the frontend dev server
+cd PathWise
+npm run dev
+```
 
----
+### Environment Variables
 
-## 📅 Version History
+Create a `.env.development` file in the project root:
 
-### **v0.1.0** — Initial Project Scaffold & UI Framework
-*Date: March 26, 2026*
-- **Framework Initialization**: Initialized the repository as a Vite + React + TypeScript project.
-- **Environment Setup**: Added `.env.development` and `.env.production` definitions.
-- **Design Tokens**: Configured global CSS variables in `index.css` to match the "Ethereal Mentor" design specification (Color palette, Topography, Spacing, and Glassmorphism).
-- **Home Dashboard Implementation**: Built the primary dashboard screen (`App.tsx`) with the user hero section, progress metrics (Roadmap Completion, Tasks Finished, Job Readiness), circular progress indicators for Top Career Matches, and integrated the custom PathWise logo.
-- **Dependencies**: Added `lucide-react` for SVG iconography.
+```env
+VITE_APP_ENV=development
+VITE_API_BASE_URL=http://localhost:3000/api
+```
 
-### **v0.2.0** — Business Concept Documentation
-*Date: March 26, 2026*
-- **CONCEPT.md Added**: Extracted and structured the full business concept from the founding pitch deck (Zafuture Group 5) into `CONCEPT.md`. Covers the core problem statement, Zafuture Product Experience Framework (Discovery → Planning → Execution → Intelligence layers), customer segments, pricing model ($0 free tier / $12.99 premium / $9.99 annual), revenue streams (subscriptions, university licensing, coaching add-ons), operating model (in-house vs. partner capabilities), and competitive positioning.
-- **README Updated**: Added a `Business Concept` section linking to `CONCEPT.md` with the product's founding tagline and mission summary.
+The frontend runs at `http://localhost:5173` by default.
 
-### **v0.4.0** — Brand Identity & Webapp Integration
-*Date: March 26, 2026*
-- **High-Fidelity Branding**: Recreated the official PathWise logo as a scalable SVG component. Integrated the new branding (zigzag arrow icon + lowercase wordmark) across the Navbar, Footer, and Favicon.
-- **Webapp Framework**: Integrated the core webapp dashboard logic into the main repository. Established a dual-layout architecture in `App.tsx` separating the Marketing Site (`/`) from the Authenticated App (`/app`).
-- **Improved Build Pipeline**: Migrated to `@tailwindcss/postcss` for better build performance and compatibility.
-- **Updated Live Url**: [https://pathwise-mu.vercel.app/](https://pathwise-mu.vercel.app/)
+## Why This Project
 
-### **v0.5.0** — Custom Domain & Live Backend
-*Date: March 27, 2026*
-- **Custom Domain**: Launched on **[pathwise.fit](https://pathwise.fit)** via Porkbun + Vercel DNS configuration.
-- **Live Backend**: Connected Encore backend API to the React frontend via `encore.client.ts`.
-- **Skill Gap Assessment**: New dedicated page with full AI-driven assessment flow.
-- **AI Task Generation**: Custom task creation using free-text prompts on the Tasks page.
-- **Tailwind v4**: Upgraded to the latest Tailwind CSS import syntax for better build performance.
+Career planning tools today fall into two camps: shallow quizzes that produce generic results, or expensive coaching that most people cannot access. PathWise sits in between. It combines structured psychometric assessment with AI-generated guidance to give users a concrete, actionable plan for reaching their target role. The platform is designed for students, career changers, and early-career professionals who need more than a job board but less than a career coach.
 
-### **v0.6.0** — UI Retheme & Achievements System
-*Date: April 2-5, 2026*
-- **Theme Overhaul**: Rethemed Onboarding, Streaks, Certificates pages from dark purple to the Zen Stone light theme with copper/teal accents.
-- **Achievements Page**: Premium Apple Fitness-inspired badge design with SVG ring progress, earned/locked states, XP system, and season progress.
-- **Auto-Award System**: Backend automatically awards achievements on assessment completion, roadmap generation, and task milestones.
-- **iOS App Spec**: Complete design spec and implementation plan for native Swift/SwiftUI iOS app (22 tasks, 86 files).
+## Version History
 
-### **v0.7.0** — Expert System Career Brain
-*Date: April 6, 2026*
-- **4-Layer Modifier System**: Replaced static one-size-fits-all career profile responses with a pre-computed expert system:
-  1. **Experience Modifiers** — 5 tiers (student→expert) with tier-specific advice, timeline scaling, and focus areas
-  2. **Gap Pattern Database** — 30 keyword-matched patterns detecting common career challenges from free-text `biggestGap` input
-  3. **Career Stage Modifiers** — 12 stage×risk combinations with framing, summary templates, and priority shifts
-  4. **Combination Rules Engine** — 25 persona rules (Career Changer, Ambitious Student, Technical Leader, etc.) detecting high-signal answer combinations
-  5. **Learning Style Router** — 24 skills × 3-5 resources each across video/book/project/bootcamp/mentorship formats
-- **biggestGap Integration**: Assessment free-text field now feeds into the career brain analysis, reordering skill gaps and personalizing summaries.
-- **Custom Task Modal Fix**: Milestone picker dropdown, in-modal error display, works regardless of milestone status.
+PathWise is actively developed. See the [What's New](https://pathwise.fit/whats-new) page for the full changelog.
 
-### **v0.8.0** — Interactive Widget System & Panda Mascots
-*Date: April 6, 2026*
-- **8 Interactive Widgets**: Daily Focus, Quick Start, Skill Progress, Streak, Milestone Mini-Map, Motivational Quotes, Resource of the Day, Weekly Overview bar chart.
-- **Reusable Widget Components**: Extracted into `src/components/widgets/` with configurable `WidgetSidebar` — each page picks which widgets to display.
-- **App-Level Widget Panel**: Fixed-position right gutter sidebar that self-fetches data. Shows on Roadmap, Tasks, Progress, Streaks, Achievements, Certificates, Search, Help. Hidden on Dashboard, Assessment, Settings, Onboarding.
-- **Panda Mascot System**: 12 cute panda characters (Gemini-generated art) placed contextually across the app — empty states, loading screens, success moments, help sections. CSS sprite sheet technique with mood-based selection (happy, thinking, sleepy, curious, celebrating, confused, waving, reading, working).
-- **Zen Stone Colors Restored**: Surface hierarchy matches Stitch desktop mockups (`#eefcfe` teal-tinted background).
+Current version: **v0.19.0**
 
-### **v0.10.1** — Settings Page Revamp
-*Date: April 7, 2026*
-- **Avatar Picker**: 12 DiceBear preset avatars (4 styles), click to select, saves instantly.
-- **Career Controls**: Retake Assessment, Change Target Role, Reset Roadmap with confirmation.
-- **Data & Privacy**: Export My Data (JSON download), Delete Account (double confirmation, cascade delete across all services).
-- **Self-Delete Endpoint**: `DELETE /auth/account` with admin protection.
-- **Data Export Endpoint**: `GET /auth/export` for GDPR-compliant data portability.
-- **Removed Fake Toggles**: Haptic Feedback, Zen Mode, Blue Light Reduction, Notification toggles that did nothing.
+## License
 
-### **v0.10.0** — Admin Dashboard, Security Hardening & Marketing Polish
-*Date: April 7, 2026*
-- **Admin Dashboard**: Full user management UI with analytics, system info, user impersonation, bulk actions, and CSV export.
-- **Admin Tickets System**: Internal support desk with status management (open / in_progress / closed).
-- **Contact Us Page**: Form at `/contact` that saves submissions directly to the tickets DB.
-- **Logout Page**: Friendly goodbye screen featuring the sad Panda mascot.
-- **Microsoft Clarity**: Session recording and heatmap analytics integrated (ID: `w8529y3h0y`).
-- **Hero Redesign**: Premium SaaS-style hero with interactive particle canvas background.
-- **Marketing Icons**: Replaced all emojis on the Problem and Solution sections with `lucide-react` icons; Solution cards now have a colored card layout.
-- **Navbar**: Login and Sign Up buttons added (were missing from the marketing nav).
-- **Footer**: Removed dead social links; added Contact link.
-- **SignIn Page**: Fixed label consistency, autofill yellow highlight, support mailto, and button alignment.
-- **Legal Pages**: Full GDPR-compliant Privacy Policy, Terms of Service, and Cookie Policy replacing placeholder content.
-- **Blog Newsletter**: Input validation and success state now functional.
-- **Rate Limiting**: Sliding window rate limiting on all backend endpoints (per-user and per-email).
-- **IDOR Fix**: `awardAchievement` validates user ownership before awarding.
-- **OAuth Security**: Nonce verification, no auto-link to password-only accounts, `ON CONFLICT` race condition handling.
-- **Em Dash Cleanup**: Removed em dashes from all assessment questions and CTA labels.
-
-### **v0.9.0** — OAuth Social Login, Assessment Overhaul & Career Brain v2
-*Date: April 7, 2026*
-- **Google & Apple OAuth**: `POST /auth/oauth` endpoint with web authorization code flow (PKCE, nonce) and iOS direct ID token verification via JWKS. Auto-links OAuth accounts by verified email. Branded social buttons on SignIn/SignUp. "Set Password" for OAuth-only users in Settings. New `user_oauth_providers` DB table.
-- **Assessment Multi-Select**: Steps 0-4 allow up to 3 options per question (was single-select). All questions now have 4 choices. Removed em dashes from labels.
-- **Mandatory Assessment Onboarding**: New users see welcome hero card with Panda mascot on Dashboard before assessment.
-- **Task Detail Panel**: Slide-over panel to view/edit all task fields; delete with confirmation. Sort dropdown (Priority / Due Date / Newest / Title A-Z).
-- **90 Career Profiles**: 40 new profiles across law, trades, architecture, arts, science, hospitality, aviation, social services, government.
-- **Career Brain v2**: Cross-dimensional synergy scoring (10 patterns), anti-pattern penalties (8 conflict detectors), domain affinity boost, experience-career fit scoring, personality coherence multiplier (cosine-similarity, 18 trait dimensions). Rebalanced weights and honest normalization (floor 15).
-- **Due Date Fix**: Milestone durations scale to user's chosen timeline (3mo/6mo/12mo).
-- **Avatar Fix**: Replaced external `pravatar.cc` fallback with initials-based avatar.
-- **Branch Protection**: Enabled on `main` (no force push, PR reviews required).
+All rights reserved. This source code is provided for portfolio review and educational reference only. No permission is granted to use, copy, modify, or distribute this software for commercial purposes without explicit written consent.

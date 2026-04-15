@@ -25,6 +25,14 @@ dist-ssr
 
 # Design reference assets
 *.zip
+*.bak
+
+# Internal workflow tools
+.agents/
+.claude/
+.superpowers/
+skills/
+Rubick cube/
 
 # Local env overrides (never commit real secrets)
 .env
