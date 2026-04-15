@@ -1,7 +1,7 @@
 # PathWise — Business Concept & Core Idea
 
 > *"Your career is too important to leave to chance."*
-> **AI-Powered Career Orientation and Professional Direction**
+> **Career Orientation and Professional Direction**
 
 ---
 
@@ -41,15 +41,15 @@ Users need help with three dimensions:
 
 ## 🧩 Our Solution: The Zafuture Product Experience Framework
 
-A full end-to-end AI career guidance platform:
+A full end-to-end career guidance platform:
 
 ### Discovery Layer
-- **AI Career Discovery** — Uncover who you are professionally
+- **Career Discovery** — Uncover who you are professionally
 - **Career Identity Analysis** — Map strengths, values, and personality to careers
 - **Skill Gap Analysis** — Know exactly what's missing between you and your goal
 
 ### Planning Layer
-- **Personalized Career Path Recommendation** — AI-matched to your profile
+- **Personalized Career Path Recommendation** — matched to your profile
 - **Career Roadmap Generation** — Step-by-step plan from now to your target role
 - **Skill Development** — Curated learning to close the gap
 - **Networking Opportunities & Guidance** — Build the right connections
@@ -77,7 +77,7 @@ A full end-to-end AI career guidance platform:
 ## 💰 Business Model & Pricing
 
 ### Free Tier — $0/month (Ad-Supported)
-- AI Career Discovery
+- Career Discovery
 - Skill Gap Analysis
 - Career Path Recommendation
 - Limited Career Insights
@@ -87,7 +87,7 @@ A full end-to-end AI career guidance platform:
 - Daily Career Task Planner
 - Progress Tracking Dashboard
 - Career Opportunity Insights
-- Unlimited AI Career Coach
+- Unlimited Career Coach
 
 ### Discount Plans
 - **Annual Plan:** $9.99/month (billed annually)
@@ -108,10 +108,10 @@ These are never outsourced because they define PathWise's competitive moat:
 | Activity | Rationale |
 |---|---|
 | Product Development & Innovation | Core intellectual property |
-| AI Model Customization & Data Strategy | Defines the unique value proposition |
+| Scoring Engine & Data Strategy | Defines the unique value proposition |
 | Brand, Marketing Strategy & Positioning | Community trust is critical |
 | User Experience & Platform Design | Drives engagement and retention |
-| Data Governance & Ethical AI Oversight | Trust is essential when influencing careers |
+| Data Governance & Ethical Oversight | Trust is essential when influencing careers |
 
 ### Modular (Outsourced) — Partner-Based Capabilities
 
@@ -120,14 +120,14 @@ These are never outsourced because they define PathWise's competitive moat:
 | **Universities & Career Centers** | Student access, career data, institutional credibility |
 | **Online Learning & Certification Platforms** | PathWise tells users what to learn; partners deliver it |
 | **Certified Career Coaches** | Integrated as premium 1:1 coaching services |
-| **Cloud & AI Infrastructure Providers** | Scalable compute, storage, and AI backbone |
+| **Cloud Infrastructure Providers** | Scalable compute, storage, and platform backbone |
 | **Cybersecurity** | Critical for protecting psychometric data |
 
 ---
 
 ## 📈 Competitive Positioning
 
-PathWise competes in the **AI + personalized coaching** market — a distinct space from existing job search engines.
+PathWise competes in the **personalized coaching** market — a distinct space from existing job search engines.
 
 - **OE** = Operational Efficiency focus (low price, commodity)
 - **CI** = Customer Intimacy focus (personalized, high-value)
@@ -139,7 +139,7 @@ PathWise's position: **high performance, personalized career intelligence** — 
 
 ## 🔮 Future Roadmap
 
-*(Expansion plans for institutional partnerships, advanced AI coaching, and enterprise offerings.)*
+*(Expansion plans for institutional partnerships, advanced coaching, and enterprise offerings.)*
 
 ---
 

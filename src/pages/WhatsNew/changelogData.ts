@@ -234,10 +234,10 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: 'March 27, 2026',
     title: 'We\'re Live!',
     tag: 'feature',
-    description: 'PathWise launched on pathwise.fit with AI-powered career guidance.',
+    description: 'PathWise launched on pathwise.fit with career guidance.',
     highlights: [
       'Take the career assessment and get personalised matches',
-      'AI-generated roadmap with milestones and daily tasks',
+      'Personalized roadmap with milestones and daily tasks',
       'Skill Gap Assessment to identify what to learn next',
     ],
   },

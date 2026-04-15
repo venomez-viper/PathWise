@@ -34,7 +34,7 @@ export default function CTA() {
         </h2>
         <p className="cta-section__sub fade-up">
           Join thousands of early professionals, career switchers, and students
-          who are replacing uncertainty with a clear, AI-powered direction.
+          who are replacing uncertainty with clear, data-driven direction.
         </p>
 
         <div className="cta-section__form fade-up">

@@ -115,7 +115,7 @@ export default function BlogPage() {
             <span className="blog-newsletter__eyebrow">Weekly brief</span>
             <h3 className="blog-newsletter__title">Get career insights in your inbox</h3>
             <p>
-              Thoughtful reads on career planning, AI tools, and how to move with more confidence.
+              Thoughtful reads on career planning, professional tools, and how to move with more confidence.
             </p>
             {newsletterSubmitted ? (
               <p style={{ color: 'var(--secondary)', fontWeight: 600, marginTop: '1rem' }}>

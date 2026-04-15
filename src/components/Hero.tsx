@@ -121,7 +121,7 @@ export default function Hero() {
         </h1>
 
         <p className="hero__sub">
-          The AI-powered platform that matches you to your ideal career,
+          The platform that matches you to your ideal career,
           identifies your skill gaps, and gives you a step-by-step plan to get there.
         </p>
 

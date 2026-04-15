@@ -411,7 +411,7 @@ export default function Assessment() {
               </div>
               <div>
                 <h1 className="assessment__title">Analysing your profile…</h1>
-                <p className="assessment__sub">Our AI is matching your strengths, values, and cognitive style to career paths using RIASEC mapping and industry data.</p>
+                <p className="assessment__sub">Matching your strengths, values, and cognitive style to career paths using RIASEC mapping and industry data.</p>
               </div>
             </div>
           </div>
@@ -424,7 +424,7 @@ export default function Assessment() {
             <h1 className="assessment__title">Your top career matches</h1>
             {isPartial && (
               <p className="assessment__error" style={{ marginBottom: '1rem' }}>
-                AI analysis was temporarily unavailable. These are placeholder results — please retake the assessment later for personalized matches.
+                Analysis was temporarily unavailable. These are placeholder results — please retake the assessment later for personalized matches.
               </p>
             )}
             <p className="assessment__sub" style={{ marginBottom: '1.25rem' }}>

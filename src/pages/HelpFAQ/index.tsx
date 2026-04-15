@@ -13,22 +13,22 @@ const FAQ_SECTIONS = [
   {
     category: 'Getting Started',
     items: [
-      { q: 'How do I create my first Career Roadmap?', a: 'Head to the Dashboard and click "Start Assessment." After completing the 5-step questionnaire, our AI will generate personalized career matches. Pick your target role and we\'ll build your roadmap automatically with milestones and tasks.' },
-      { q: 'Synchronizing your LinkedIn profile', a: 'Go to Settings > Connect Profiles. PathWise can import your skills and experience from LinkedIn to personalize your roadmap. Your data stays private and is only used for AI matching.' },
+      { q: 'How do I create my first Career Roadmap?', a: 'Head to the Dashboard and click "Start Assessment." After completing the 5-step questionnaire, our engine will generate personalized career matches. Pick your target role and we\'ll build your roadmap automatically with milestones and tasks.' },
+      { q: 'Synchronizing your LinkedIn profile', a: 'Go to Settings > Connect Profiles. PathWise can import your skills and experience from LinkedIn to personalize your roadmap. Your data stays private and is only used for career matching.' },
     ],
   },
   {
     category: 'Roadmap & Tasks',
     items: [
       { q: 'Can I customize my skill milestones?', a: 'Yes! Every PathWise roadmap is fully editable. Simply click the "Edit" icon on any milestone to adjust the target date, add specific sub-tasks, or link personal portfolio projects.' },
-      { q: 'How does AI task generation work?', a: 'Click "Generate AI Tasks" on any milestone card. Our AI analyzes your target role, current skills, and milestone goals to create 4 actionable tasks. You can also use the free-text prompt to generate custom tasks.' },
+      { q: 'How does task generation work?', a: 'Click "Generate Tasks" on any milestone card. Our engine analyzes your target role, current skills, and milestone goals to create 4 actionable tasks. You can also use the free-text prompt to generate custom tasks.' },
       { q: 'Tracking daily task streaks', a: 'Your streak counter updates automatically when you complete at least one task per day. Visit the Streaks page to see your weekly progress, consistency score, and power hour insights.' },
     ],
   },
   {
     category: 'Billing & Plans',
     items: [
-      { q: 'Changing your subscription plan', a: 'Go to Settings and click "Upgrade Plan" to view available tiers. You can upgrade to Pro anytime for advanced roadmaps, AI coaching, and priority support.' },
+      { q: 'Changing your subscription plan', a: 'Go to Settings and click "Upgrade Plan" to view available tiers. You can upgrade to Pro anytime for advanced roadmaps, personalized coaching, and priority support.' },
       { q: 'Refund policy for PathWise Premium', a: 'We offer a 14-day money-back guarantee on all premium subscriptions. Contact support within 14 days of purchase for a full refund, no questions asked.' },
     ],
   },

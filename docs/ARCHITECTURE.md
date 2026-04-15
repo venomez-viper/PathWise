@@ -7,13 +7,13 @@
 
 ## 1. What PathWise Is
 
-An AI-powered career coaching SaaS. Not a job board. It uses:
+A career coaching SaaS. Not a job board. It uses:
 - **Behavioral assessment** → understand who the user is
-- **Claude AI** → analyse their profile, generate career matches, build a personalised roadmap
+- **Scoring engine** → analyse their profile, generate career matches, build a personalised roadmap
 - **Task system** → break the roadmap into daily/weekly actions
 - **Progress tracking** → career readiness score based on task balance, momentum, and milestones
 
-**Plans:** Free (basic roadmap) / Pro at $12.99/mo (AI coaching, unlimited roadmaps, priority support)
+**Plans:** Free (basic roadmap) / Pro at $12.99/mo (advanced coaching, unlimited roadmaps, priority support)
 
 ---
 
@@ -26,7 +26,7 @@ An AI-powered career coaching SaaS. Not a job board. It uses:
 | Auth state | React Context (`AuthProvider`) | JWT stored in localStorage |
 | Backend | Encore.dev (TypeScript) | Services auto-discover each other |
 | Database | PostgreSQL (via Encore SQLDatabase) | One DB per service |
-| AI | Anthropic Claude (`claude-opus-4-6`) | Assessment + roadmap generation |
+| Engine | Custom scoring engine | Assessment + roadmap generation |
 | Hosting — Frontend | Vercel (`pathwise-mu.vercel.app`) | Auto-deploys on push to `main` |
 | Hosting — Backend | Encore Staging (`staging-pathwise-4mxi.encr.app`) | Auto-deploys on push to `main` |
 | Secrets | Encore secret store | `JWTSecret`, `AnthropicAPIKey` |
@@ -39,8 +39,8 @@ An AI-powered career coaching SaaS. Not a job board. It uses:
 PathWise/
 ├── backend/                   # Encore.dev monorepo
 │   ├── auth/                  # User accounts, JWT, profile
-│   ├── assessment/            # Career questionnaire + Claude analysis
-│   ├── roadmap/               # Milestones + Claude roadmap generation
+│   ├── assessment/            # Career questionnaire + scoring engine analysis
+│   ├── roadmap/               # Milestones + roadmap generation
 │   ├── tasks/                 # Task CRUD, completion tracking
 │   ├── progress/              # Readiness score computation
 │   └── encore.app             # App config + CORS
@@ -93,9 +93,9 @@ PathWise/
 | Endpoint | Method | Auth | Purpose |
 |---|---|---|---|
 | `/assessment/:userId` | GET | No | Fetch existing assessment result |
-| `/assessment` | POST | No | Submit questionnaire → Claude → career matches |
+| `/assessment` | POST | No | Submit questionnaire → scoring engine → career matches |
 
-**Claude prompt:** receives work style, strengths, values, current skills, experience level, interests → returns 3 career matches (title, matchScore, description, requiredSkills, pathwayTime) + 5 skill gaps (skill, importance, learningResource)
+**Scoring engine input:** receives work style, strengths, values, current skills, experience level, interests → returns 3 career matches (title, matchScore, description, requiredSkills, pathwayTime) + 5 skill gaps (skill, importance, learningResource)
 
 **Assessments table:** `user_id, completed_at, strengths, values, personality_type, career_matches, raw_answers, skill_gaps, current_skills`
 
@@ -108,16 +108,16 @@ PathWise/
 | Endpoint | Method | Auth | Purpose |
 |---|---|---|---|
 | `/roadmap/:userId` | GET | No | Fetch roadmap + milestones |
-| `/roadmap` | POST | No | Generate AI roadmap → auto-create tasks |
+| `/roadmap` | POST | No | Generate roadmap → auto-create tasks |
 
-**Claude prompt:** receives targetRole, timeline, currentSkills, skillGaps → returns 6 milestones each with 3–5 tasks (title, description, priority, category, durationWeeks)
+**Engine input:** receives targetRole, timeline, currentSkills, skillGaps → returns 6 milestones each with 3–5 tasks (title, description, priority, category, durationWeeks)
 
 **On generate:**
 1. Fetches assessment data for the user (for personalization)
-2. Calls Claude → AI milestones + tasks
+2. Runs the scoring engine → milestones + tasks
 3. Inserts roadmap row
 4. Inserts milestone rows with due dates
-5. Calls `tasks.createTask()` for each AI-generated task
+5. Calls `tasks.createTask()` for each generated task
 
 **Roadmaps table:** `id, user_id, target_role, completion_percent, skill_gap_current, skill_gap_required, skill_gap_gaps, estimated_weeks, created_at`
 
@@ -224,7 +224,7 @@ tokenStore.clear() → window.location.href = '/'
 ```
 Sign Up
   └── /app/onboarding         (set target role + timeline)
-        └── POST /roadmap      (Claude generates 6 milestones + tasks)
+        └── POST /roadmap      (engine generates 6 milestones + tasks)
               └── /app          (Dashboard — sees roadmap%, tasks, career matches)
 ```
 
@@ -233,21 +233,20 @@ Sign Up
 Sign Up → Onboarding (role) → Assessment (questionnaire) → Roadmap → Tasks → Progress
 ```
 
-Assessment is optional but improves roadmap personalisation (skill gaps, current skills fed into Claude prompt).
+Assessment is optional but improves roadmap personalisation (skill gaps, current skills fed into the scoring engine).
 
 ---
 
-## 8. AI Integration Points
+## 8. Scoring Engine Integration Points
 
-| Feature | Trigger | Claude Input | Claude Output |
+| Feature | Trigger | Engine Input | Engine Output |
 |---|---|---|---|
 | Career matches | POST /assessment | workStyle, strengths, values, currentSkills, experienceLevel, interests | 3 career matches + 5 skill gaps |
-| Roadmap generation | POST /roadmap | targetRole, timeline, currentSkills, skillGaps (from assessment) | 6 milestones × 3–5 tasks each |
+| Roadmap generation | POST /roadmap | targetRole, timeline, currentSkills, skillGaps (from assessment) | 6 milestones × 3-5 tasks each |
 
-**Model:** `claude-opus-4-6`
 **Secret:** `AnthropicAPIKey` (set in Encore staging via `encore secret set`)
 
-**Error handling:** Both endpoints have try/catch. If Claude fails, the user sees an error message and can retry.
+**Error handling:** Both endpoints have try/catch. If the engine fails, the user sees an error message and can retry.
 
 ---
 
@@ -265,8 +264,8 @@ Assessment is optional but improves roadmap personalisation (skill gaps, current
 [Encore staging backend]
     │
     ├── /auth/*          → auth service    → users DB
-    ├── /assessment/*    → assessment svc  → assessments DB + Claude API
-    ├── /roadmap/*       → roadmap svc     → roadmaps DB + Claude API
+    ├── /assessment/*    → assessment svc  → assessments DB + scoring engine
+    ├── /roadmap/*       → roadmap svc     → roadmaps DB + scoring engine
     │                                         + calls tasks svc (auto-create tasks)
     ├── /tasks/*         → tasks service   → tasks DB
     └── /progress/*      → progress svc    → (reads roadmap svc + tasks svc)
@@ -283,9 +282,9 @@ Assessment is optional but improves roadmap personalisation (skill gaps, current
 - [ ] Re-take assessment — currently overwrites silently, should confirm first
 
 ### Important
-- [ ] Labor market data — salary ranges, job demand per role (feed into Claude prompts)
-- [ ] Networking task detail — tasks link to no resources; Claude generates `resourceUrl` but it's not stored or displayed
-- [ ] Rate limiting on AI endpoints — prevent cost runaway (3 assessments/day, 5 roadmaps/day per user)
+- [ ] Labor market data — salary ranges, job demand per role (feed into scoring engine)
+- [ ] Networking task detail — tasks link to no resources; the engine generates `resourceUrl` but it's not stored or displayed
+- [ ] Rate limiting on scoring endpoints — prevent cost runaway (3 assessments/day, 5 roadmaps/day per user)
 - [ ] Email verification on signup
 - [ ] Forgot password flow
 

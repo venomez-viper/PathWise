@@ -271,7 +271,7 @@ export default function Dashboard() {
           }}>Update Goals</Link>
           <ShareButton
             url="https://pathwise.fit"
-            title="PathWise - AI Career Guidance"
+            title="PathWise - Career Guidance"
             text="I'm using PathWise to map my career path and build a personalized roadmap. Try it free!"
           />
         </div>
@@ -485,7 +485,7 @@ export default function Dashboard() {
         <div className="panel panel--accent" style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', borderRadius: '2rem' }}>
           <div>
             <p style={{ fontWeight: 700, color: 'var(--on-surface)', marginBottom: 4 }}>Take the Career Assessment</p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>AI-analyse your strengths and get career matches.</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>Analyse your strengths and get career matches.</p>
           </div>
           <Link to="/app/assessment-v2" className="btn-page-action">Start <ArrowRight size={14} /></Link>
         </div>

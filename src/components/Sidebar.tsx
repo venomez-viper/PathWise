@@ -87,7 +87,7 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
           <Sparkles size={14} />
           <div>
             <p className="sidebar__upgrade-title">Upgrade to Pro</p>
-            <p className="sidebar__upgrade-sub">Unlock AI coaching & more</p>
+            <p className="sidebar__upgrade-sub">Unlock advanced coaching & more</p>
           </div>
         </Link>
       )}

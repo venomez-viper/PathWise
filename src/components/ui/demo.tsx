@@ -12,7 +12,7 @@ const pathwiseTiers: PricingTier[] = [
     cta: "Start for Free",
     ctaHref: "/signup",
     features: [
-      "1 AI career roadmap",
+      "1 career roadmap",
       "3 career match suggestions",
       "5-step career assessment",
       "Basic task planner",
@@ -29,8 +29,8 @@ const pathwiseTiers: PricingTier[] = [
     cta: "Upgrade to Pro",
     ctaHref: "/signup",
     features: [
-      "Unlimited AI roadmaps",
-      "Advanced Claude AI coaching",
+      "Unlimited roadmaps",
+      "Advanced career coaching",
       "Skill gap analysis",
       "Salary & market insights",
       "Shareable roadmap link",

@@ -16,7 +16,7 @@ const FAQS: FAQItem[] = [
   {
     category: 'Getting Started',
     question: 'What is PathWise?',
-    answer: 'PathWise is a Career Intelligence Platform that combines validated psychological frameworks with AI to create personalized career roadmaps. Unlike personality quizzes that give you a label and stop, PathWise turns your assessment into daily tasks, milestone tracking, and certificates.',
+    answer: 'PathWise is a Career Intelligence Platform that combines validated psychological frameworks with data-driven scoring to create personalized career roadmaps. Unlike personality quizzes that give you a label and stop, PathWise turns your assessment into daily tasks, milestone tracking, and certificates.',
   },
   {
     category: 'Getting Started',

@@ -32,10 +32,10 @@ const SECTIONS = [
   },
   {
     id: 'brain',
-    label: 'AI Career Brain',
+    label: 'Career Brain',
     stat: '12 dimensions',
     title: 'Precise matching. Zero surveillance.',
-    desc: 'Most AI career tools need your entire digital footprint to make a recommendation. Ours needs five minutes. Our scoring engine evaluates you across 12 independent dimensions simultaneously, using a blend of cosine similarity and Jaccard overlap scoring that penalises vague matches and rewards genuine alignment.',
+    desc: 'Most career tools need your entire digital footprint to make a recommendation. Ours needs five minutes. Our scoring engine evaluates you across 12 independent dimensions simultaneously, using a blend of cosine similarity and Jaccard overlap scoring that penalises vague matches and rewards genuine alignment.',
     features: [
       { icon: Brain, text: 'Vector-space scoring engine: each career profile is a point in 12-dimensional space, and we find the closest ones to you' },
       { icon: FlaskConical, text: '30 distinct career archetypes: not generic labels, but real personality-interest combinations like "The Digital Storyteller" or "The Analytical Architect"' },
@@ -63,7 +63,7 @@ const SECTIONS = [
     title: 'Your plan. Your pace. Your progress.',
     desc: 'Knowing where to go means nothing without knowing how to get there. Every career match becomes a living, breathing roadmap: milestones with real deadlines, tasks you can act on today, and a progress system that makes career growth feel like a game you are winning. Change your timeline whenever you want. Your completed work stays completed.',
     features: [
-      { icon: Map, text: 'AI-generated milestones with due dates that scale proportionally when you adjust your timeline' },
+      { icon: Map, text: 'Auto-generated milestones with due dates that scale proportionally when you adjust your timeline' },
       { icon: CalendarDays, text: 'Daily task planner with priority levels, streak tracking, and smart notifications when you hit milestones' },
       { icon: Trophy, text: 'Achievement badges, completion certificates, and a career readiness percentage that climbs as you work' },
     ],

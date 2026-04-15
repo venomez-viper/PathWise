@@ -294,7 +294,7 @@ export default function CompletionCertificate({
                 </svg>
                 <div style={{ borderTop: '1px solid #c9b8e8', paddingTop: 6 }}>
                   <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1a1a2e' }}>PathWise</p>
-                  <p style={{ fontSize: '0.7rem', color: '#9b9bae' }}>AI Career Platform</p>
+                  <p style={{ fontSize: '0.7rem', color: '#9b9bae' }}>Career Guidance Platform</p>
                 </div>
               </div>
 

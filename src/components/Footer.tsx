@@ -40,7 +40,7 @@ export default function Footer() {
           <p className="footer__tagline">
             "Your career is too important to leave to chance."
             <br />
-            AI-Powered Career Orientation &amp; Professional Direction.
+            Career Orientation &amp; Professional Direction.
           </p>
           <div className="footer__social">
             {SOCIAL_LINKS.map(({ label, href, shortLabel }) => (

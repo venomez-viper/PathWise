@@ -79,7 +79,7 @@ export default function GlassmorphismTrustHero() {
             <div className="animate-fade-in delay-100">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md transition-colors hover:bg-white/10">
                 <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-                  AI-Powered Career Guidance
+                  Career Guidance
                   <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                 </span>
               </div>
@@ -156,7 +156,7 @@ export default function GlassmorphismTrustHero() {
                 <div className="grid grid-cols-5 gap-0 text-center items-center">
                   <StatItem value="Free" label="To Start" />
                   <div className="w-px h-10 bg-white/10 mx-auto" />
-                  <StatItem value="AI" label="Powered" />
+                  <StatItem value="Smart" label="Engine" />
                   <div className="w-px h-10 bg-white/10 mx-auto" />
                   <StatItem value="24/7" label="Guidance" />
                 </div>

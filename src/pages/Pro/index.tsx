@@ -5,8 +5,8 @@ import { Panda } from '../../components/panda';
 const UPCOMING_FEATURES = [
   {
     icon: Brain,
-    title: 'AI Career Coach',
-    desc: 'Chat with a personal AI coach that knows your profile, goals, and progress.',
+    title: 'Career Coach',
+    desc: 'Chat with a personal coach that knows your profile, goals, and progress.',
   },
   {
     icon: MessageCircle,

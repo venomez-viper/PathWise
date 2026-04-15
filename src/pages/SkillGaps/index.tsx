@@ -650,13 +650,13 @@ export default function SkillGaps() {
           <div className="panel">
             <div className="panel__header">
               <h2 className="panel__title">Recommended Certificates</h2>
-              <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>AI-curated for your skill gaps</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>Curated for your skill gaps</span>
             </div>
 
             {certsLoading && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: 12 }}>
                 <Loader2 size={24} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
-                <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Claude is searching for the best certificates for your profile...</p>
+                <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Searching for the best certificates for your profile...</p>
               </div>
             )}
 
@@ -734,7 +734,7 @@ export default function SkillGaps() {
       {careerRecsVisible && careerRecsLoading && (
         <div className="panel" style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '3rem' }}>
           <Loader2 size={24} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
-          <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Claude is building your personalised career plan...</p>
+          <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>Building your personalised career plan...</p>
         </div>
       )}
       {careerRecsVisible && careerRecsError && (

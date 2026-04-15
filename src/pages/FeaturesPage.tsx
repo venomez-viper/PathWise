@@ -20,7 +20,7 @@ const FEATURES = [
   {
     icon: BrainCircuit,
     color: '#5ef6e6',
-    title: 'AI Career Brain',
+    title: 'Career Brain',
     desc: 'A scoring engine that evaluates you across 12 independent dimensions using cosine similarity and Jaccard overlap scoring.',
     bullets: [
       '30 distinct career archetypes - not generic labels, but real personality-interest combinations',

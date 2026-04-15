@@ -546,7 +546,7 @@ export default function SkillGapAssessment() {
               <div>
                 <h1 className="assessment__title">Analysing your skills…</h1>
                 <p className="assessment__sub">
-                  Our AI is comparing your profile against {targetRole} requirements.
+                  Comparing your profile against {targetRole} requirements.
                 </p>
               </div>
             </div>
