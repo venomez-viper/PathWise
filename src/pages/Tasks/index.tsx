@@ -12,6 +12,7 @@ import TaskDetailPanel from '../../components/TaskDetailPanel';
 import { Panda, PandaSpot } from '../../components/panda';
 import { useToast } from '../../lib/toast-context';
 import Skeleton from '../../components/Skeleton';
+import FirstVisitTooltip from '../../components/FirstVisitTooltip';
 import './Tasks.css';
 
 /* ── Types ── */
@@ -341,19 +342,21 @@ export default function Tasks() {
         </div>
         <div className="panel">
           <div className="tasks-empty">
-            <Panda mood="sleepy" size={140} animate />
-            <div className="tasks-empty__icon">
-              <ClipboardList size={28} />
-            </div>
-            <PandaSpot context="empty-state" position="inline" message="No tasks yet! Let's get started." animate />
+            <Panda mood="curious" size={120} animate />
             <h2 className="tasks-empty__title">No tasks yet</h2>
             <p className="tasks-empty__desc">
-              Complete onboarding to generate your personalized career roadmap and tasks.
+              Complete your assessment and generate a roadmap to get started. Tasks will appear here once your roadmap is built.
             </p>
-            <Link to="/app/onboarding" className="tasks-empty__cta">
-              <Sparkles size={14} />
-              Start Onboarding
-            </Link>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link to="/app/assessment-v2" className="tasks-empty__cta">
+                <Target size={14} />
+                Take Assessment
+              </Link>
+              <Link to="/app/onboarding" className="tasks-empty__cta" style={{ background: 'var(--surface-container-low)', color: 'var(--on-surface)' }}>
+                <Sparkles size={14} />
+                Set Up Roadmap
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -362,6 +365,15 @@ export default function Tasks() {
 
   return (
     <div className="page">
+      {/* First-visit tooltip */}
+      <FirstVisitTooltip
+        id="tasks-milestone-tip"
+        message="Complete tasks to progress through your milestones. Finishing all tasks in a milestone unlocks the next one."
+        targetSelector=".page-title"
+        position="bottom"
+        delay={1200}
+      />
+
       {/* ── Header ── */}
       <div className="page-header">
         <div>

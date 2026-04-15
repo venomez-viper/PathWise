@@ -3,6 +3,7 @@ import { Loader2, ArrowRight, TrendingUp, TrendingDown, Minus, BarChart3, Target
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { progress as progressApi, tasks as tasksApi, roadmap as roadmapApi } from '../../lib/api';
+import { Panda } from '../../components/panda';
 import './Progress.css';
 
 /* ─── helper: trend arrow ─── */
@@ -217,6 +218,34 @@ export default function Progress() {
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
           <Loader2 size={28} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
+        </div>
+      ) : tasksTotal === 0 ? (
+        <div className="panel" style={{ textAlign: 'center', padding: '3rem', borderRadius: '2rem' }}>
+          <Panda mood="thinking" size={110} animate />
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--on-surface)', marginTop: 16, marginBottom: 8 }}>
+            No progress data yet
+          </p>
+          <p style={{ fontSize: '0.88rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, maxWidth: 360, marginLeft: 'auto', marginRight: 'auto', marginBottom: 20 }}>
+            Your progress will appear here once you start completing tasks. Take the assessment and build your roadmap to get going.
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/app/assessment-v2" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
+              background: 'var(--copper)', color: '#fff', fontWeight: 700,
+              fontSize: '0.82rem', textDecoration: 'none',
+            }}>
+              Take Assessment <ArrowRight size={14} />
+            </Link>
+            <Link to="/app/tasks" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '0.6rem 1.4rem', borderRadius: 'var(--radius-full)',
+              background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontWeight: 600,
+              fontSize: '0.82rem', textDecoration: 'none', border: '1px solid var(--surface-container-high)',
+            }}>
+              View Tasks
+            </Link>
+          </div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

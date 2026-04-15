@@ -477,9 +477,11 @@ export default function Roadmap() {
       </h2>
 
       {Object.keys(tasksByCategory).length === 0 ? (
-        <div className="panel" style={{ borderRadius: '2rem', textAlign: 'center', padding: '2rem' }}>
-          <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.85rem' }}>
-            No tasks yet. Generate tasks from the milestones above, or add custom tasks.
+        <div className="panel" style={{ borderRadius: '2rem', textAlign: 'center', padding: '2.5rem' }}>
+          <Panda mood="thinking" size={80} animate />
+          <p style={{ fontWeight: 600, color: 'var(--on-surface)', marginTop: 12, marginBottom: 6 }}>No tasks yet</p>
+          <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.85rem', lineHeight: 1.6, maxWidth: 340, margin: '0 auto' }}>
+            Click "Generate Tasks" on any milestone above to create personalized tasks, or add your own custom tasks.
           </p>
         </div>
       ) : (
