@@ -400,6 +400,7 @@ export function scoreDimensional(
   userAnswers: Record<string, string[]>,
   profile: CareerProfile,
   weights?: CareerWeights,
+  currentSkills?: string[],
 ): DimensionalScore {
   const w = { ...(weights ?? DEFAULT_WEIGHTS) };
 
@@ -446,9 +447,20 @@ export function scoreDimensional(
   const environment = blendSim(ue, pe);
   const stage = blendSim(us, ps);
 
-  // Aptitude: skill overlap ratio (simple since we don't have per-skill vectors)
-  // handled separately; placeholder cosine = 0 until we have aptitude vectors
-  const aptitude = 0;
+  // Aptitude: skill overlap ratio based on user's currentSkills vs profile requiredSkills
+  // Uses case-insensitive substring matching for flexibility
+  const aptitude = (() => {
+    if (!currentSkills || currentSkills.length === 0 || profile.requiredSkills.length === 0) return 0;
+    const userSkillsLower = currentSkills.map(s => s.toLowerCase());
+    const requiredLower = profile.requiredSkills.map(s => s.toLowerCase());
+    let matchCount = 0;
+    for (const req of requiredLower) {
+      if (userSkillsLower.some(us => us.includes(req) || req.includes(us))) {
+        matchCount++;
+      }
+    }
+    return matchCount / Math.max(requiredLower.length, 1);
+  })();
 
   const total =
     interest * w.interest +
@@ -1232,40 +1244,78 @@ function maxDimensionScore(dims: DimensionalScore): number {
 function scoreProfileV2(
   profile: CareerProfile,
   input: AssessmentInput,
+  riasecScores?: RIASECScores,
 ): { rawScore: number; dimensions: DimensionalScore } {
   const a = extractAnswers(input);
-  const dims = scoreDimensional(a, profile, profile.scoringWeights ?? undefined);
+  const dims = scoreDimensional(a, profile, profile.scoringWeights ?? undefined, input.currentSkills);
 
-  // Base score from cosine similarity: scale to 0-70 point range
-  let score = dims.total * 70;
+  // ── Normalized scoring: bring all components to 0-100 scale, then blend ──
 
-  // Skill overlap: 0-10 points
+  // Base dimensional score: dims.total is 0-1, normalize to 0-100
+  const baseDimensional = dims.total * 100;
+
+  // Skill overlap: 0-100 scale
   const userSkillsLower = new Set(input.currentSkills.map(s => s.toLowerCase()));
   const profileSkillsLower = profile.requiredSkills.map(s => s.toLowerCase());
   const skillMatchCount = profileSkillsLower.filter(s => userSkillsLower.has(s)).length;
   const skillOverlap = profileSkillsLower.length > 0
-    ? (skillMatchCount / profileSkillsLower.length) * 10
+    ? (skillMatchCount / profileSkillsLower.length) * 100
     : 0;
-  score += skillOverlap;
 
-  // Domain affinity: 0-5 points
+  // Domain affinity: 0-5 raw, normalize to 0-100
   const profileDomainsLower = new Set(profile.domains.map(d => d.toLowerCase()));
-  let domainBoost = 0;
+  let domainBoostRaw = 0;
   for (let i = 0; i < input.interests.length; i++) {
     if (profileDomainsLower.has(input.interests[i].toLowerCase())) {
-      domainBoost += i < 2 ? 2 : 0.5;
+      domainBoostRaw += i < 2 ? 2 : 0.5;
     }
   }
-  score += Math.min(5, domainBoost);
+  const domainAffinity = Math.min(100, (Math.min(5, domainBoostRaw) / 5) * 100);
 
-  // Synergy bonus: 0-15 points
-  score += scoreSynergies(a, profile);
+  // Synergy: 0-15 raw, normalize to 0-100
+  const synergyRaw = scoreSynergies(a, profile);
+  const synergy = (synergyRaw / 15) * 100;
 
-  // Anti-pattern penalty: -12 to 0
-  score += scoreAntiPatterns(a, profile);
+  // Anti-pattern: -12 to 0 raw, normalize to 0-100 (0 = worst, 100 = no penalties)
+  const antiPatternRaw = scoreAntiPatterns(a, profile); // -12 to 0
+  const antiPattern = ((antiPatternRaw + 12) / 12) * 100;
 
-  // Experience fit: -2 to 5
-  score += scoreExperienceFit(input.experienceLevel, profile.experienceLevels);
+  // Experience fit: -10 to 5 raw, normalize to 0-100
+  const expFitRaw = scoreExperienceFit(input.experienceLevel, profile.experienceLevels);
+  const experienceFit = ((expFitRaw + 10) / 15) * 100;
+
+  // RIASEC alignment bonus: check if user's top 2 RIASEC codes match profile interests
+  let riasecBonus = 0;
+  if (riasecScores) {
+    const riasecEntries = Object.entries(riasecScores) as [keyof RIASECScores, number][];
+    riasecEntries.sort((a, b) => b[1] - a[1]);
+    const topCode = riasecEntries[0]?.[0];
+    const secondCode = riasecEntries[1]?.[0];
+
+    const profileInterestsLower = profile.interests.map(i => i.toLowerCase());
+
+    const topMatches = topCode && profileInterestsLower.includes(topCode);
+    const secondMatches = secondCode && profileInterestsLower.includes(secondCode);
+
+    if (topMatches && secondMatches) {
+      riasecBonus = 8;
+    } else if (topMatches) {
+      riasecBonus = 5;
+    }
+  }
+
+  // Blend normalized components:
+  // base dimensional (70%) + synergy (10%) + skills (10%) + domain/experience/anti-pattern (10%)
+  const blendedScore =
+    baseDimensional * 0.70 +
+    synergy * 0.10 +
+    skillOverlap * 0.10 +
+    domainAffinity * 0.03 +
+    experienceFit * 0.04 +
+    antiPattern * 0.03;
+
+  // Add RIASEC bonus on top (additive, not blended)
+  const score = blendedScore + riasecBonus;
 
   return { rawScore: Math.max(0, score), dimensions: dims };
 }
@@ -1496,9 +1546,17 @@ export function getTopCareerMatchesV2(
 } {
   const answers = extractAnswers(input);
 
+  // Compute RIASEC scores so they can influence career matching
+  const hasV2Keys = input.answers
+    ? Object.keys(input.answers).some(k => k.startsWith('ri_') || k.startsWith('bf_'))
+    : false;
+  const riasecScores = hasV2Keys
+    ? computeRIASECV2(input.answers ?? {})
+    : computeRIASEC(answers);
+
   // Score all profiles
   const scored = ALL_PROFILES.map(profile => {
-    const { rawScore, dimensions } = scoreProfileV2(profile, input);
+    const { rawScore, dimensions } = scoreProfileV2(profile, input, riasecScores);
     return { profile, rawScore, dimensions };
   });
 
