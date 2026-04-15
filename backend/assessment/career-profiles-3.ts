@@ -64,6 +64,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Westlaw/LexisNexis Research", "Case Management Software (Clio/MyCase)", "E-Discovery Platforms (Relativity)", "Legal Document Drafting", "Court Filing Procedures (ECF/PACER)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Law & Policy"],
     pathwayTime: "1-2 years",
+    careerPathway: {
+      entryFrom: ["Legal Secretary", "Law Student"],
+      progressTo: ["Senior Paralegal", "Compliance Officer", "Law School"],
+    },
     scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Legal Research", importance: "high", learningResource: "Paralegal Studies textbooks; free LexisNexis academic access" },
@@ -152,6 +156,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "leader"], requiredSkills: ["AutoCAD/Rhino", "Revit (BIM Level 2)", "IBC/IRC Building Codes", "SketchUp/Enscape Rendering", "LEED Certification Standards"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction", "Design & UX"],
     pathwayTime: "5-8 years (licensure required)",
+    careerPathway: {
+      entryFrom: ["Architecture Student", "Drafting Technician"],
+      progressTo: ["Senior Architect", "Principal", "Design Director"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.05 },
     skillGaps: [
       { skill: "Revit / BIM Modeling", importance: "high", learningResource: "Autodesk Revit official tutorials on Autodesk Learning" },
@@ -194,6 +202,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "leader"], requiredSkills: ["AutoCAD Civil 3D", "Structural Analysis (SAP2000/STAAD)", "HEC-RAS Hydrology Modeling", "Geotechnical Engineering (GeoStudio)", "Primavera P6 Scheduling"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Architecture & Construction"],
     pathwayTime: "4-6 years",
+    careerPathway: {
+      entryFrom: ["Engineering Graduate", "CAD Technician"],
+      progressTo: ["Senior Engineer", "Project Manager", "City Engineer"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "AutoCAD Civil 3D", importance: "high", learningResource: "Autodesk Civil 3D official learning path on Autodesk University" },
@@ -278,6 +290,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["AP Style Writing", "CMS Publishing (WordPress/Arc)", "FOIA Request Filing", "Audio/Video Editing (Audacity/Premiere)", "Fact-Checking Databases (LexisNexis)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Media & Journalism"],
     pathwayTime: "1-3 years",
+    careerPathway: {
+      entryFrom: ["Intern Reporter", "Blogger"],
+      progressTo: ["Senior Reporter", "Editor", "Bureau Chief"],
+    },
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.05 },
     skillGaps: [
       { skill: "Investigative Research & FOIA", importance: "high", learningResource: "IRE (Investigative Reporters and Editors) tipsheets and training" },
@@ -1198,6 +1214,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["DOE (Design of Experiments)", "Statistical Software (R/SPSS/SAS)", "LaTeX Scientific Writing", "Python Data Analysis (NumPy/Pandas)", "Reference Management (Zotero/EndNote)"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Science & Research"],
     pathwayTime: "5-8 years (PhD typically required)",
+    careerPathway: {
+      entryFrom: ["PhD Student", "Lab Technician"],
+      progressTo: ["Senior Scientist", "Principal Investigator", "Research Director"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Experimental Design & DOE", importance: "high", learningResource: "Design of Experiments by Douglas Montgomery; Coursera Research Methods Specialization" },
@@ -1239,6 +1259,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Pharmacy Dispensing Systems (QS/1/PioneerRx)", "Drug Interaction Databases (Lexicomp/Micromedex)", "USP Compounding Standards", "Controlled Substance Scheduling (DEA)", "Medication Therapy Management (MTM)"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Science & Research", "Healthcare"],
     pathwayTime: "6-8 years (PharmD required)",
+    careerPathway: {
+      entryFrom: ["Pharmacy Student", "Pharmacy Technician"],
+      progressTo: ["Clinical Pharmacist", "Pharmacy Director", "VP Pharmacy"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Clinical Pharmacology & Therapeutics", importance: "high", learningResource: "Pharmacotherapy: A Pathophysiologic Approach (DiPiro et al.) 12th edition" },
@@ -1280,6 +1304,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Veterinary Radiology (Digital X-ray/Ultrasound)", "Surgical Techniques (Spay/Neuter/Orthopedic)", "Veterinary Pharmacology (Drug Dosing)", "IDEXX Lab Diagnostics", "Veterinary Practice Management (Cornerstone/AVImark)"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Science & Research", "Healthcare"],
     pathwayTime: "8-10 years (DVM required)",
+    careerPathway: {
+      entryFrom: ["Vet Tech", "Veterinary Student"],
+      progressTo: ["Specialist Vet", "Practice Owner", "Research Veterinarian"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Clinical Diagnosis & Physical Exam", importance: "high", learningResource: "Small Animal Internal Medicine by Richard Nelson; NAVLE prep resources" },
@@ -1323,6 +1351,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["advocate", "doer"], requiredSkills: ["Case Management Software (Penelope/Apricot)", "Motivational Interviewing (MI)", "DSM-5 Assessment & Diagnosis", "Safety Planning Protocol", "NASW Code of Ethics"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Social Services", "Healthcare"],
     pathwayTime: "2-4 years",
+    careerPathway: {
+      entryFrom: ["Psychology Graduate", "Volunteer Coordinator"],
+      progressTo: ["Clinical Social Worker", "Program Director", "Policy Advocate"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Motivational Interviewing", importance: "high", learningResource: "MINT (Motivational Interviewing Network of Trainers) workshops; free MI training videos on YouTube" },

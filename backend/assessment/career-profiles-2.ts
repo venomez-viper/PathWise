@@ -110,6 +110,10 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["QuickBooks/Xero", "GAAP Standards", "Tax Preparation (1040/1120)", "Excel Pivot Tables", "Financial Statement Analysis"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Finance"],
     pathwayTime: "6-18 months",
+    careerPathway: {
+      entryFrom: ["Bookkeeper", "Accounting Graduate"],
+      progressTo: ["Senior Accountant", "Controller", "CFO"],
+    },
     scoringWeights: { interest: 0.15, personality: 0.15, values: 0.25, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "GAAP", importance: "high", learningResource: "Coursera Financial Accounting (UVA) - https://www.coursera.org/learn/uva-darden-financial-accounting" },
@@ -334,6 +338,10 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["facilitator", "leader"], requiredSkills: ["HRIS Systems (Workday/BambooHR)", "Employment Law (FMLA/ADA/FLSA)", "Compensation Benchmarking (Radford/Mercer)", "Performance Management Frameworks", "DEI Program Design"],
     experienceLevels: ["mid", "senior"], domains: ["Education", "Technology"],
     pathwayTime: "6-12 months",
+    careerPathway: {
+      entryFrom: ["HR Coordinator", "Recruiter"],
+      progressTo: ["HR Director", "VP People", "CHRO"],
+    },
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.25, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Employment Law", importance: "high", learningResource: "SHRM Learning System" },
@@ -510,6 +518,10 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "facilitator"], requiredSkills: ["Epic/Cerner EHR Systems", "HIPAA/Joint Commission Compliance", "Healthcare Billing (ICD-10/CPT)", "Lean Six Sigma for Healthcare", "Revenue Cycle Management"],
     experienceLevels: ["mid", "senior"], domains: ["Healthcare"],
     pathwayTime: "6-18 months",
+    careerPathway: {
+      entryFrom: ["Medical Office Manager", "Nursing"],
+      progressTo: ["Hospital Director", "VP Operations", "CEO Healthcare"],
+    },
     scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Healthcare Regulations", importance: "high", learningResource: "ACHE Healthcare Management courses" },
