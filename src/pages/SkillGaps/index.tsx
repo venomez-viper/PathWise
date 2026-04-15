@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, AlertTriangle, CheckCircle2, GraduationCap, ArrowRight, Loader2, Target, Sparkles, Code, Users, Briefcase } from 'lucide-react';
+import { BookOpen, AlertTriangle, CheckCircle2, GraduationCap, ArrowRight, Loader2, Target, Sparkles, Code, Users, Briefcase, TrendingUp, Clock } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, roadmap as roadmapApi } from '../../lib/api';
 
-type SkillGap = { skill: string; importance: 'high' | 'medium' | 'low'; learningResource: string };
+type SkillGap = { skill: string; importance: 'high' | 'medium' | 'low'; learningResource: string; scoreImpact?: number; learningHours?: number; roi?: number };
 type CareerMatch = { title: string; matchScore: number; description: string };
 type SkillStatus = 'not_started' | 'learning' | 'done';
 
@@ -142,7 +142,15 @@ export default function SkillGaps() {
     );
   }
 
-  // Group skill gaps by importance
+  // Sort skill gaps by ROI (descending), then importance as tiebreaker
+  const sortedGaps = [...skillGaps].sort((a, b) => {
+    const roiDiff = (b.roi ?? 0) - (a.roi ?? 0);
+    if (roiDiff !== 0) return roiDiff;
+    const order = { high: 0, medium: 1, low: 2 };
+    return order[a.importance] - order[b.importance];
+  });
+
+  // Group skill gaps by importance (for stat counts)
   const grouped = {
     high:   skillGaps.filter(g => g.importance === 'high'),
     medium: skillGaps.filter(g => g.importance === 'medium'),
@@ -267,200 +275,281 @@ export default function SkillGaps() {
             </span>
           </div>
 
-          {(['high', 'medium', 'low'] as const).map(level => {
-            const items = grouped[level];
-            if (items.length === 0) return null;
-            const config = IMPORTANCE_CONFIG[level];
+          {/* Ranked by ROI header */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 10px',
+              background: 'rgba(167,139,250,0.08)',
+              borderRadius: 8,
+              marginBottom: 10,
+            }}
+          >
+            <TrendingUp size={13} color="#a78bfa" />
+            <span
+              style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#a78bfa',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              Ranked by ROI
+            </span>
+          </div>
 
-            return (
-              <div key={level} style={{ marginBottom: 20 }}>
-                {/* Group header */}
+          {/* Skill cards sorted by ROI */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {sortedGaps.map((gap, idx) => {
+              const status = skillProgress[gap.skill] ?? 'not_started';
+              const isDone = status === 'done';
+              const isLearning = status === 'learning';
+              const config = IMPORTANCE_CONFIG[gap.importance];
+              const roiVal = gap.roi ?? 0;
+              const roiLabel = roiVal >= 20 ? 'High ROI' : roiVal >= 8 ? 'Medium ROI' : 'Low ROI';
+              const roiColor = roiVal >= 20 ? '#34d399' : roiVal >= 8 ? '#f59e0b' : '#94a3b8';
+              const roiBg = roiVal >= 20 ? 'rgba(52,211,153,0.1)' : roiVal >= 8 ? 'rgba(245,158,11,0.1)' : 'rgba(148,163,184,0.1)';
+
+              return (
                 <div
+                  key={gap.skill}
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '6px 10px',
-                    background: config.bg,
-                    borderRadius: 8,
-                    marginBottom: 10,
+                    alignItems: 'flex-start',
+                    gap: 12,
+                    padding: '12px',
+                    borderRadius: 10,
+                    background: 'var(--surface-container-low)',
+                    border: '1px solid var(--outline-variant)',
+                    transition: 'background 0.15s',
                   }}
                 >
+                  {/* Rank number */}
                   <div
                     style={{
-                      width: 8,
-                      height: 8,
+                      width: 24,
+                      height: 24,
                       borderRadius: '50%',
-                      background: config.color,
+                      background: idx < 3 ? 'rgba(167,139,250,0.15)' : 'var(--surface-container-high)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       flexShrink: 0,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      color: config.color,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
+                      marginTop: 2,
                     }}
                   >
-                    {config.label} ({items.length})
-                  </span>
-                </div>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: idx < 3 ? '#a78bfa' : 'var(--on-surface-variant)' }}>
+                      {idx + 1}
+                    </span>
+                  </div>
 
-                {/* Skill cards */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {items.map(gap => {
-                    const status = skillProgress[gap.skill] ?? 'not_started';
-                    const isDone = status === 'done';
-                    const isLearning = status === 'learning';
-
-                    return (
-                      <div
-                        key={gap.skill}
+                  {/* Content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                      <p
                         style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: 12,
-                          padding: '12px',
-                          borderRadius: 10,
-                          background: 'var(--surface-container-low)',
-                          border: '1px solid var(--outline-variant)',
-                          transition: 'background 0.15s',
+                          fontSize: '0.875rem',
+                          fontWeight: 650,
+                          color: 'var(--on-surface)',
+                          textDecoration: isDone ? 'line-through' : 'none',
+                          opacity: isDone ? 0.6 : 1,
+                          margin: 0,
                         }}
                       >
-                        {/* Importance dot */}
-                        <div
+                        {gap.skill}
+                      </p>
+                      {/* Importance dot */}
+                      <div
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: config.color,
+                          flexShrink: 0,
+                        }}
+                        title={config.label}
+                      />
+                    </div>
+
+                    {/* ROI badges row */}
+                    {gap.roi != null && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                        <span
                           style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: '50%',
-                            background: config.color,
-                            flexShrink: 0,
-                            marginTop: 4,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                            padding: '2px 8px',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            color: roiColor,
+                            background: roiBg,
+                            borderRadius: 999,
+                            letterSpacing: '0.02em',
                           }}
-                        />
-
-                        {/* Content */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p
-                            style={{
-                              fontSize: '0.875rem',
-                              fontWeight: 650,
-                              color: 'var(--on-surface)',
-                              textDecoration: isDone ? 'line-through' : 'none',
-                              opacity: isDone ? 0.6 : 1,
-                              marginBottom: 2,
-                            }}
-                          >
-                            {gap.skill}
-                          </p>
-                          <p
-                            style={{
-                              fontSize: '0.78rem',
-                              color: 'var(--on-surface-variant)',
-                              lineHeight: 1.4,
-                              marginBottom: 8,
-                            }}
-                          >
-                            {gap.learningResource}
-                          </p>
-
-                          {/* Status toggle buttons */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            {status === 'not_started' && (
-                              <button
-                                onClick={() => setSkillStatus(gap.skill, 'learning')}
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: 4,
-                                  padding: '4px 12px',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 600,
-                                  color: 'var(--primary)',
-                                  background: 'transparent',
-                                  border: '1.5px solid var(--primary)',
-                                  borderRadius: 999,
-                                  cursor: 'pointer',
-                                  transition: 'background 0.15s, color 0.15s',
-                                }}
-                                onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = 'rgba(167,139,250,0.1)'; }}
-                                onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'transparent'; }}
-                              >
-                                <ArrowRight size={12} /> Start Learning
-                              </button>
-                            )}
-
-                            {isLearning && (
-                              <>
-                                <span
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    padding: '3px 10px',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 700,
-                                    color: '#3b82f6',
-                                    background: 'rgba(59,130,246,0.1)',
-                                    borderRadius: 999,
-                                    letterSpacing: '0.02em',
-                                  }}
-                                >
-                                  <Loader2 size={11} /> In Progress
-                                </span>
-                                <button
-                                  onClick={() => setSkillStatus(gap.skill, 'done')}
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    padding: '4px 12px',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 600,
-                                    color: '#34d399',
-                                    background: 'transparent',
-                                    border: '1.5px solid #34d399',
-                                    borderRadius: 999,
-                                    cursor: 'pointer',
-                                    transition: 'background 0.15s',
-                                  }}
-                                  onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = 'rgba(52,211,153,0.1)'; }}
-                                  onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'transparent'; }}
-                                >
-                                  <CheckCircle2 size={12} /> Mark Done
-                                </button>
-                              </>
-                            )}
-
-                            {isDone && (
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: 4,
-                                  padding: '3px 10px',
-                                  fontSize: '0.72rem',
-                                  fontWeight: 700,
-                                  color: '#34d399',
-                                  background: 'rgba(52,211,153,0.1)',
-                                  borderRadius: 999,
-                                  letterSpacing: '0.02em',
-                                }}
-                              >
-                                <CheckCircle2 size={11} /> Completed
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        >
+                          <TrendingUp size={10} /> {roiLabel}
+                        </span>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                            padding: '2px 8px',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            color: '#a78bfa',
+                            background: 'rgba(167,139,250,0.1)',
+                            borderRadius: 999,
+                          }}
+                        >
+                          +{gap.scoreImpact} pts
+                        </span>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                            padding: '2px 8px',
+                            fontSize: '0.68rem',
+                            fontWeight: 600,
+                            color: 'var(--on-surface-variant)',
+                            background: 'var(--surface-container-high)',
+                            borderRadius: 999,
+                          }}
+                        >
+                          <Clock size={10} /> {gap.learningHours}h
+                        </span>
                       </div>
-                    );
-                  })}
+                    )}
+
+                    <p
+                      style={{
+                        fontSize: '0.78rem',
+                        color: 'var(--on-surface-variant)',
+                        lineHeight: 1.4,
+                        marginBottom: 8,
+                      }}
+                    >
+                      {gap.learningResource.includes(' - https://') ? (() => {
+                        const rIdx = gap.learningResource.lastIndexOf(' - https://');
+                        const label = gap.learningResource.slice(0, rIdx);
+                        const url = gap.learningResource.slice(rIdx + 3);
+                        return (
+                          <>
+                            {label}{' - '}
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: 'var(--primary)',
+                                textDecoration: 'underline',
+                                fontWeight: 600,
+                              }}
+                            >
+                              View Resource
+                            </a>
+                          </>
+                        );
+                      })() : gap.learningResource}
+                    </p>
+
+                    {/* Status toggle buttons */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {status === 'not_started' && (
+                        <button
+                          onClick={() => setSkillStatus(gap.skill, 'learning')}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '4px 12px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: 'var(--primary)',
+                            background: 'transparent',
+                            border: '1.5px solid var(--primary)',
+                            borderRadius: 999,
+                            cursor: 'pointer',
+                            transition: 'background 0.15s, color 0.15s',
+                          }}
+                          onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = 'rgba(167,139,250,0.1)'; }}
+                          onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'transparent'; }}
+                        >
+                          <ArrowRight size={12} /> Start Learning
+                        </button>
+                      )}
+
+                      {isLearning && (
+                        <>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              padding: '3px 10px',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              color: '#3b82f6',
+                              background: 'rgba(59,130,246,0.1)',
+                              borderRadius: 999,
+                              letterSpacing: '0.02em',
+                            }}
+                          >
+                            <Loader2 size={11} /> In Progress
+                          </span>
+                          <button
+                            onClick={() => setSkillStatus(gap.skill, 'done')}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              padding: '4px 12px',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              color: '#34d399',
+                              background: 'transparent',
+                              border: '1.5px solid #34d399',
+                              borderRadius: 999,
+                              cursor: 'pointer',
+                              transition: 'background 0.15s',
+                            }}
+                            onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = 'rgba(52,211,153,0.1)'; }}
+                            onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'transparent'; }}
+                          >
+                            <CheckCircle2 size={12} /> Mark Done
+                          </button>
+                        </>
+                      )}
+
+                      {isDone && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '3px 10px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            color: '#34d399',
+                            background: 'rgba(52,211,153,0.1)',
+                            borderRadius: 999,
+                            letterSpacing: '0.02em',
+                          }}
+                        >
+                          <CheckCircle2 size={11} /> Completed
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Right column */}

@@ -23,6 +23,15 @@ const ALL_PROFILES: CareerProfile[] = (() => {
 
 // ── Re-export types matching v1 for backward compat ─────────────────────
 
+export interface DimensionScores {
+  interest: number;      // 0-100
+  personality: number;   // 0-100
+  values: number;        // 0-100
+  aptitude: number;      // 0-100
+  environment: number;   // 0-100
+  stage: number;         // 0-100
+}
+
 export interface CareerMatch {
   title: string;
   matchScore: number;
@@ -34,12 +43,16 @@ export interface CareerMatch {
   salaryRange?: { min: number; max: number };
   growthOutlook?: string;
   domain?: string;
+  dimensions?: DimensionScores;
 }
 
 export interface SkillGap {
   skill: string;
   importance: "high" | "medium" | "low";
   learningResource: string;
+  scoreImpact: number;
+  learningHours: number;
+  roi: number;
 }
 
 export interface AssessmentInput {
@@ -423,9 +436,9 @@ export function scoreDimensional(
   const [us, ps] = encodeDimensionVectors(userAnswers, profile, STAGE_DIMS);
 
   // Blend cosine similarity (direction match) with Jaccard similarity (overlap penalty)
-  // to prevent overly broad profiles from matching everyone. 60% cosine + 40% Jaccard.
+  // to prevent overly broad profiles from matching everyone. 40% cosine + 60% Jaccard.
   const blendSim = (u: number[], p: number[]): number =>
-    cosineSimilarity(u, p) * 0.6 + jaccardSimilarity(u, p) * 0.4;
+    cosineSimilarity(u, p) * 0.4 + jaccardSimilarity(u, p) * 0.6;
 
   const interest = blendSim(ui, pi);
   const personality = blendSim(up, pp);
@@ -972,28 +985,34 @@ export function scoreAntiPatterns(
 // ── 6. Percentile Normalization ─────────────────────────────────────────
 
 /**
- * Normalize raw scores into display-friendly percentiles in the range [15, 98].
- * Uses rank-order percentile mapping to ensure good visual spread.
+ * Normalize raw scores into display-friendly percentiles in the range [20, 92].
+ * Blends rank-order percentile (50%) with raw-score-based scaling (50%) so that
+ * careers with similar raw scores no longer cluster at the ceiling.
  *
- * @returns Map from profileId to display score (15-98).
+ * @returns Map from profileId to display score (20-92).
  */
 export function normalizeToPercentile(
   scores: { profileId: string; rawScore: number }[],
 ): Map<string, number> {
   if (scores.length === 0) return new Map();
 
-  // Sort ascending by raw score for rank-based percentile computation
   const sorted = [...scores].sort((a, b) => a.rawScore - b.rawScore);
   const n = sorted.length;
   const result = new Map<string, number>();
 
-  for (let i = 0; i < n; i++) {
-    // Percentile rank: (rank - 0.5) / n gives mid-rank percentile
-    const percentileRaw = ((i + 0.5) / n) * 100;
+  const minRaw = sorted[0].rawScore;
+  const maxRaw = sorted[n - 1].rawScore;
+  const rawSpread = maxRaw - minRaw || 1;
 
-    // Map to display range [15, 98]
-    const display = Math.round(15 + (percentileRaw / 100) * (98 - 15));
-    result.set(sorted[i].profileId, Math.min(98, Math.max(15, display)));
+  for (let i = 0; i < n; i++) {
+    // Blend rank-based percentile (50%) with raw-score-based scaling (50%)
+    const rankPct = ((i + 0.5) / n) * 100;
+    const rawPct = ((sorted[i].rawScore - minRaw) / rawSpread) * 100;
+    const blended = rankPct * 0.5 + rawPct * 0.5;
+
+    // Map to display range [20, 92]
+    const display = Math.round(20 + (blended / 100) * 72);
+    result.set(sorted[i].profileId, Math.min(92, Math.max(20, display)));
   }
 
   return result;
@@ -1510,21 +1529,55 @@ export function getTopCareerMatchesV2(
     whyThisFits: generateWhyThisFits(profile, dimensions, answers),
     salaryRange: getSalaryRange(profile),
     growthOutlook: getGrowthOutlook(profile),
+    dimensions: {
+      interest: Math.round(dimensions.interest * 100),
+      personality: Math.round(dimensions.personality * 100),
+      values: Math.round(dimensions.values * 100),
+      aptitude: Math.round(dimensions.aptitude * 100),
+      environment: Math.round(dimensions.environment * 100),
+      stage: Math.round(dimensions.stage * 100),
+    },
   }));
 
-  // Skill gaps from top matches
+  // Skill gaps from top matches with ROI-based ranking
   const userSkillsLower = new Set(input.currentSkills.map(s => s.toLowerCase()));
-  const allGaps: SkillGap[] = [];
+  const rawGaps: { skill: string; importance: "high" | "medium" | "low"; learningResource: string }[] = [];
   const seenSkills = new Set<string>();
   for (const { profile } of topProfiles) {
     for (const gap of profile.skillGaps) {
       const key = gap.skill.toLowerCase();
       if (!seenSkills.has(key) && !userSkillsLower.has(key)) {
         seenSkills.add(key);
-        allGaps.push(gap);
+        rawGaps.push(gap);
       }
     }
   }
+
+  // Compute scoreImpact for each gap: how many top careers need it, weighted by match score
+  const rawImpacts = rawGaps.map(gap => {
+    const gapLower = gap.skill.toLowerCase();
+    let weightedCount = 0;
+    for (const { profile, score } of topProfiles) {
+      const needed = profile.requiredSkills.some(
+        rs => rs.toLowerCase().includes(gapLower) || gapLower.includes(rs.toLowerCase()),
+      );
+      if (needed) weightedCount += score / 100;
+    }
+    return weightedCount;
+  });
+
+  // Normalize impacts to 1-10 scale
+  const maxImpact = Math.max(...rawImpacts, 0.01);
+  const allGaps: SkillGap[] = rawGaps.map((gap, i) => {
+    const scoreImpact = Math.max(1, Math.round((rawImpacts[i] / maxImpact) * 10));
+    const learningHours = gap.importance === "high" ? 40 : gap.importance === "medium" ? 20 : 10;
+    const roi = Math.round((scoreImpact / learningHours) * 100);
+    return { ...gap, scoreImpact, learningHours, roi };
+  });
+
+  // Sort by ROI descending, then by importance as tiebreaker
+  const importanceOrder = { high: 0, medium: 1, low: 2 };
+  allGaps.sort((a, b) => b.roi - a.roi || importanceOrder[a.importance] - importanceOrder[b.importance]);
 
   // Categorize all scored results
   const categorizedMatches = categorizeMatches(
