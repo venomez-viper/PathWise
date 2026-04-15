@@ -61,7 +61,10 @@ export default function FocusMode() {
   // Timer config
   const [presetIdx, setPresetIdx] = useState(1); // default 25min
   const [showPresets, setShowPresets] = useState(false);
-  const preset = TIMER_PRESETS[presetIdx];
+  const [customMinutes, setCustomMinutes] = useState<number | null>(null);
+  const preset = customMinutes
+    ? { label: `${customMinutes} min`, work: customMinutes * 60, break: Math.round(customMinutes * 60 / 5) }
+    : TIMER_PRESETS[presetIdx];
 
   // Timer state
   const [phase, setPhase] = useState<TimerPhase>('work');
@@ -269,9 +272,19 @@ export default function FocusMode() {
 
   const selectPreset = (idx: number) => {
     setPresetIdx(idx);
+    setCustomMinutes(null);
     setRunning(false);
     setPhase('work');
     setSecondsLeft(TIMER_PRESETS[idx].work);
+    setShowPresets(false);
+  };
+
+  const setCustomTimer = (mins: number) => {
+    const clamped = Math.max(1, Math.min(120, mins));
+    setCustomMinutes(clamped);
+    setRunning(false);
+    setPhase('work');
+    setSecondsLeft(clamped * 60);
     setShowPresets(false);
   };
 
@@ -395,13 +408,34 @@ export default function FocusMode() {
             {TIMER_PRESETS.map((p, i) => (
               <button key={i} onClick={() => selectPreset(i)} style={{
                 display: 'block', width: '100%', padding: '8px 24px', border: 'none',
-                background: i === presetIdx ? 'rgba(139,79,44,0.08)' : 'transparent',
-                color: i === presetIdx ? 'var(--copper)' : 'var(--on-surface)',
+                background: !customMinutes && i === presetIdx ? 'rgba(139,79,44,0.08)' : 'transparent',
+                color: !customMinutes && i === presetIdx ? 'var(--copper)' : 'var(--on-surface)',
                 fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', textAlign: 'left',
               }}>
                 {p.label}
               </button>
             ))}
+            <div style={{
+              borderTop: '1px solid var(--outline-variant)',
+              padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              <input
+                type="number" min={1} max={120} placeholder="Custom"
+                style={{
+                  width: 60, padding: '4px 8px', border: '1px solid var(--outline-variant)',
+                  borderRadius: 'var(--radius-sm)', fontSize: '0.82rem', fontFamily: 'var(--font-body)',
+                  background: 'var(--surface)',
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = parseInt((e.target as HTMLInputElement).value);
+                    if (val > 0) setCustomTimer(val);
+                  }
+                }}
+                aria-label="Custom minutes"
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }}>min</span>
+            </div>
           </div>
         )}
       </div>
