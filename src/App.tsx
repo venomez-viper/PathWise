@@ -61,6 +61,7 @@ const HelpFAQ          = lazy(() => import('./pages/HelpFAQ'));
 const WhatsNewAppPage  = lazy(() => import('./pages/WhatsNewApp'));
 const CareerMatchDetail = lazy(() => import('./pages/CareerMatchDetail'));
 const SearchPage       = lazy(() => import('./pages/Search'));
+const FocusMode        = lazy(() => import('./pages/FocusMode'));
 
 // Admin pages
 const AdminPage        = lazy(() => import('./pages/Admin'));
@@ -113,9 +114,10 @@ function AppLayout() {
 
   return (
     <div className="saas-layout">
+      <a href="#main-content" className="skip-to-content">Skip to main content</a>
       <Sidebar user={user} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="saas-main" style={{ display: 'flex' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div id="main-content" style={{ flex: 1, minWidth: 0 }}>
           <button
             className="sidebar-hamburger"
             onClick={() => setSidebarOpen(true)}
@@ -207,6 +209,7 @@ export default function App() {
             <Route path="certificate"   element={<Suspense fallback={<PageLoader />}><CertificatePage /></Suspense>} />
             <Route path="career-match"  element={<Suspense fallback={<PageLoader />}><CareerMatchDetail /></Suspense>} />
             <Route path="search"        element={<Suspense fallback={<PageLoader />}><SearchPage /></Suspense>} />
+            <Route path="focus"         element={<Suspense fallback={<PageLoader />}><FocusMode /></Suspense>} />
             <Route path="admin"         element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
             <Route path="whats-new"     element={<Suspense fallback={<PageLoader />}><WhatsNewAppPage /></Suspense>} />
             <Route path="pro"          element={<Suspense fallback={<PageLoader />}><ProPage /></Suspense>} />

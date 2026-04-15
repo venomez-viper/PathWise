@@ -4,6 +4,11 @@
 .auth-layout {
   min-height: 100vh;
   background: var(--surface);
+  animation: pageIn 0.25s ease-out;
+}
+
+.marketing-root {
+  animation: pageIn 0.25s ease-out;
 }
 
 .auth-page {
@@ -403,6 +408,12 @@
 .page {
   padding: 2rem 2.5rem;
   max-width: 100%;
+  animation: pageIn 0.25s ease-out;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .page-header {

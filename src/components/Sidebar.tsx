@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Flame, Award, FileText, HelpCircle, Search, Shield, Bell } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Flame, Award, FileText, HelpCircle, Search, Shield, Bell, Crosshair } from 'lucide-react';
 import Logo from './ui/Logo';
 import { Panda } from './panda';
 import { tokenStore } from '../lib/api';
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/app/assessment-v2', icon: ClipboardList,  label: 'Assessment'           },
   { to: '/app/roadmap',     icon: Compass,         label: 'Roadmap'              },
   { to: '/app/tasks',       icon: CheckSquare,     label: 'Tasks'                },
+  { to: '/app/focus',       icon: Crosshair,       label: 'Focus Mode'           },
   { to: '/app/progress',    icon: BarChart2,       label: 'Progress'             },
   { to: '/app/streaks',     icon: Flame,           label: 'Streaks'              },
   { to: '/app/achievements',icon: Award,           label: 'Achievements'         },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowRight, Target, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Target, TrendingUp, CheckCircle2, Crosshair } from 'lucide-react';
 import DashboardSkeleton from './DashboardSkeleton';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -414,9 +414,19 @@ export default function Dashboard() {
 
         {/* EXPERT INSIGHTS / RECENT TASKS */}
         <div className="panel" style={{ borderRadius: '2rem' }}>
-          <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)', marginBottom: '0.75rem' }}>
-            Recent Tasks
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-variant)', margin: 0 }}>
+              Recent Tasks
+            </p>
+            <Link to="/app/focus" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '3px 10px', borderRadius: 'var(--radius-full)',
+              background: 'rgba(139,79,44,0.08)', color: 'var(--copper)',
+              fontSize: '0.68rem', fontWeight: 600, textDecoration: 'none',
+            }}>
+              <Crosshair size={11} /> Focus
+            </Link>
+          </div>
           {recentTasks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '1rem 0' }}>
               <p style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', marginBottom: '0.75rem' }}>No tasks yet — your roadmap will generate them.</p>
