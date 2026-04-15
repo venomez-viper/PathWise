@@ -186,16 +186,55 @@
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-md);
   padding: 14px;
-  cursor: default;
-  transition: box-shadow 0.15s, transform 0.15s;
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.15s, opacity 0.2s;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
 }
 
 .kanban-card:hover {
   box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
-.kanban-card:active {
-  transform: translateY(0);
+
+.kanban-card--dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* Drag handle grip icon */
+.kanban-card__drag-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.kanban-card__grip {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  opacity: 0;
+  color: var(--on-surface-variant);
+  cursor: grab;
+  transition: opacity 0.15s;
+}
+
+.kanban-card:hover .kanban-card__grip {
+  opacity: 0.5;
+}
+
+.kanban-card--dragging .kanban-card__grip {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+/* Column drag-over highlight */
+.kanban-col--drag-over {
+  background: rgba(139,79,44,0.04);
+  border: 2px dashed var(--copper);
 }
 
 .kanban-card__title {

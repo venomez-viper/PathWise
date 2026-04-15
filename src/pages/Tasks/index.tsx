@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   CheckCircle2, Plus, Sparkles, Loader2, X,
   LayoutGrid, List, ArrowRight, ArrowLeft,
-  Calendar, Target, ArrowUpDown, Layers,
+  Calendar, Target, ArrowUpDown, Layers, GripVertical,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -316,6 +316,35 @@ export default function Tasks() {
       toast('Something went wrong', 'error');
     }
   };
+
+  // ── Drag-and-drop state ──
+  const [dragOverCol, setDragOverCol] = useState<Task['status'] | null>(null);
+
+  const handleColumnDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleColumnDragEnter = useCallback((status: Task['status']) => {
+    setDragOverCol(status);
+  }, []);
+
+  const handleColumnDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    // Only clear if leaving the column itself, not entering a child
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverCol(null);
+    }
+  }, []);
+
+  const handleColumnDrop = useCallback((e: React.DragEvent<HTMLDivElement>, targetStatus: Task['status']) => {
+    e.preventDefault();
+    setDragOverCol(null);
+    const taskId = e.dataTransfer.getData('text/taskId');
+    const sourceStatus = e.dataTransfer.getData('text/sourceStatus') as Task['status'];
+    if (!taskId || sourceStatus === targetStatus) return;
+    const task = taskList.find(t => t.id === taskId);
+    if (task) moveTask(task, targetStatus);
+  }, [taskList, moveTask]);
 
   // Escape key to close detail panel
   useEffect(() => {
@@ -638,7 +667,11 @@ export default function Tasks() {
               return (
                 <div
                   key={col.key}
-                  className={`kanban-col kanban-col--${col.key === 'in_progress' ? 'in-progress' : col.key}`}
+                  className={`kanban-col kanban-col--${col.key === 'in_progress' ? 'in-progress' : col.key}${dragOverCol === col.key ? ' kanban-col--drag-over' : ''}`}
+                  onDragOver={handleColumnDragOver}
+                  onDragEnter={() => handleColumnDragEnter(col.key)}
+                  onDragLeave={handleColumnDragLeave}
+                  onDrop={e => handleColumnDrop(e, col.key)}
                 >
                   <div className="kanban-col__header">
                     <div className="kanban-col__header-left">
@@ -866,12 +899,36 @@ interface TaskCardProps {
 }
 
 const TaskCard = memo(function TaskCard({ task, milestones, onMove, onSelect }: TaskCardProps) {
+  const [dragging, setDragging] = useState(false);
   const overdue = isOverdue(task.dueDate);
   const milestone = task.milestoneId ? milestones.find(m => m.id === task.milestoneId) : null;
 
+  const handleDragStart = (e: React.DragEvent<HTMLElement>) => {
+    e.dataTransfer.setData('text/taskId', task.id);
+    e.dataTransfer.setData('text/sourceStatus', task.status);
+    e.dataTransfer.effectAllowed = 'move';
+    setDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setDragging(false);
+  };
+
   return (
-    <article className="kanban-card" aria-label={`Task: ${task.title}`} onClick={() => onSelect(task)} style={{ cursor: 'pointer' }}>
-      <p className="kanban-card__title">{task.title}</p>
+    <article
+      className={`kanban-card${dragging ? ' kanban-card--dragging' : ''}`}
+      aria-label={`Task: ${task.title}`}
+      onClick={() => onSelect(task)}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="kanban-card__drag-row">
+        <span className="kanban-card__grip" aria-hidden="true">
+          <GripVertical size={14} />
+        </span>
+        <p className="kanban-card__title">{task.title}</p>
+      </div>
 
       <div className="kanban-card__badges">
         {milestone && (
