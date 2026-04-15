@@ -178,54 +178,151 @@ function toArray(value: string | string[] | undefined): string[] {
 
 /** Extract structured answers from AssessmentInput */
 function extractAnswers(input: AssessmentInput): Record<string, string[]> {
+  const result: Record<string, string[]> = {};
+
   if (input.answers && Object.keys(input.answers).length > 0) {
-    const normalised: Record<string, string[]> = {};
+    // Normalize raw answers
     for (const [k, v] of Object.entries(input.answers)) {
-      normalised[k] = toArray(v);
+      result[k] = toArray(v);
     }
-    return normalised;
+
+    // Map v2 question keys to the legacy dimension keys the scoring engine uses
+    // Interest dimensions: int1 (interests), int2 (problemTypes), int3 (archetypes)
+    // The v2 RIASEC questions (ri_*) map to interests
+    const riasecAnswers: string[] = [];
+    for (const [k, v] of Object.entries(result)) {
+      if (k.startsWith('ri_')) riasecAnswers.push(...v);
+    }
+    if (riasecAnswers.length > 0 && !result.int1?.length) {
+      // Map RIASEC to interest types
+      const riasecMap: Record<string, string> = {
+        '5': 'realistic', '4': 'realistic',
+        'strongly_agree': 'realistic', 'agree': 'realistic',
+      };
+      result.int1 = riasecAnswers.length > 0 ? riasecAnswers.slice(0, 3) : ['mixed'];
+    }
+
+    // Values dimensions: val1-4
+    const valAnswers: string[] = [];
+    for (const [k, v] of Object.entries(result)) {
+      if (k.startsWith('va_') && k !== 'va_rank') valAnswers.push(...v);
+    }
+    if (valAnswers.length > 0) {
+      if (!result.val1?.length) result.val1 = valAnswers.filter(v =>
+        ['autonomy', 'prestige', 'purpose', 'mastery', 'security', 'achievement', 'benevolence'].includes(v.toLowerCase())
+      ).slice(0, 2);
+      if (!result.val2?.length) result.val2 = valAnswers.slice(0, 2);
+      if (!result.val3?.length) result.val3 = valAnswers.slice(2, 4);
+      if (!result.val4?.length) result.val4 = valAnswers.slice(4, 6);
+    }
+
+    // Work style dimensions: ws1-4
+    const wdAnswers: string[] = [];
+    for (const [k, v] of Object.entries(result)) {
+      if (k.startsWith('wd_')) wdAnswers.push(...v);
+    }
+    if (wdAnswers.length > 0) {
+      if (!result.ws1?.length) result.ws1 = wdAnswers.slice(0, 1);
+      if (!result.ws2?.length) result.ws2 = wdAnswers.slice(1, 2);
+      if (!result.ws3?.length) result.ws3 = wdAnswers.slice(2, 3);
+      if (!result.ws4?.length) result.ws4 = wdAnswers.slice(3, 4);
+    }
+
+    // Environment: use life context answers
+    const lcAnswers: string[] = [];
+    for (const [k, v] of Object.entries(result)) {
+      if (k.startsWith('lc_') && k !== 'lc_skills' && k !== 'lc_domains') lcAnswers.push(...v);
+    }
+    if (lcAnswers.length > 0) {
+      if (!result.env1?.length) result.env1 = lcAnswers.slice(0, 1);
+      if (!result.env2?.length) result.env2 = lcAnswers.slice(1, 2);
+      if (!result.env3?.length) result.env3 = lcAnswers.slice(2, 3);
+      if (!result.env4?.length) result.env4 = lcAnswers.slice(3, 4);
+    }
+
+    // Career stage: use aptitude + stage answers
+    const saAnswers: string[] = [];
+    for (const [k, v] of Object.entries(result)) {
+      if (k.startsWith('sa_')) saAnswers.push(...v);
+    }
+    if (saAnswers.length > 0) {
+      if (!result.car1?.length) result.car1 = saAnswers.slice(0, 1);
+      if (!result.car2?.length) result.car2 = saAnswers.slice(1, 2);
+      if (!result.car3?.length) result.car3 = saAnswers.slice(2, 3);
+      if (!result.car4?.length) result.car4 = saAnswers.slice(3, 4);
+    }
+
+    // Also populate from explicit strengths/values if available
+    if (input.strengths.length > 0) {
+      for (const s of input.strengths) {
+        const lower = s.toLowerCase();
+        if (!result.int2?.length) {
+          if (lower.includes("technical")) result.int2 = ["technical"];
+          else if (lower.includes("creative")) result.int2 = ["creative"];
+          else if (lower.includes("human")) result.int2 = ["human"];
+          else if (lower.includes("strategic")) result.int2 = ["strategic"];
+        }
+        if (!result.car4?.length) {
+          if (lower.includes("leader")) result.car4 = ["leader"];
+          else if (lower.includes("doer")) result.car4 = ["doer"];
+        }
+      }
+    }
+
+    if (input.values.length > 0 && !result.val1?.length) {
+      result.val1 = input.values.filter(v =>
+        ["autonomy", "prestige", "purpose", "mastery"].includes(v)
+      ).slice(0, 2);
+      result.val4 = input.values.filter(v =>
+        ["wealth", "recognition", "learning", "impact"].includes(v)
+      ).slice(0, 2);
+    }
+
+    // Ensure workStyle is set
+    if (!result.ws3?.length) result.ws3 = [input.workStyle || "mixed"];
+
+    return result;
   }
 
-  // Reconstruct from legacy personalityType format: "int1-ws2-car1"
+  // Fallback: reconstruct from legacy personalityType format
   const parts = (input.personalityType || "").split("-");
-  const extracted: Record<string, string[]> = {};
 
-  if (parts[0] && parts[0] !== "mixed") extracted.int1 = [parts[0]];
-  if (parts[1] && parts[1] !== "balanced") extracted.ws2 = [parts[1]];
-  if (parts[2]) extracted.car1 = [parts[2]];
+  if (parts[0] && parts[0] !== "mixed") result.int1 = [parts[0]];
+  if (parts[1] && parts[1] !== "balanced") result.ws2 = [parts[1]];
+  if (parts[2]) result.car1 = [parts[2]];
 
   for (const s of input.strengths) {
     const lower = s.toLowerCase();
-    if (lower.includes("technical")) extracted.int2 = ["technical"];
-    else if (lower.includes("human")) extracted.int2 = ["human"];
-    else if (lower.includes("creative")) extracted.int2 = ["creative"];
-    else if (lower.includes("strategic")) extracted.int2 = ["strategic"];
-    else if (lower.includes("scientific")) extracted.int2 = ["scientific"];
+    if (lower.includes("technical")) result.int2 = ["technical"];
+    else if (lower.includes("human")) result.int2 = ["human"];
+    else if (lower.includes("creative")) result.int2 = ["creative"];
+    else if (lower.includes("strategic")) result.int2 = ["strategic"];
+    else if (lower.includes("scientific")) result.int2 = ["scientific"];
 
-    if (lower.includes("open")) extracted.ws1 = ["open"];
-    else if (lower.includes("cautious")) extracted.ws1 = ["cautious"];
-    else if (lower.includes("organized")) extracted.ws1 = ["organized"];
-    else if (lower.includes("empathetic")) extracted.ws1 = ["empathetic"];
+    if (lower.includes("open")) result.ws1 = ["open"];
+    else if (lower.includes("cautious")) result.ws1 = ["cautious"];
+    else if (lower.includes("organized")) result.ws1 = ["organized"];
+    else if (lower.includes("empathetic")) result.ws1 = ["empathetic"];
 
-    if (lower.includes("leader")) extracted.car4 = ["leader"];
-    else if (lower.includes("ideator")) extracted.car4 = ["ideator"];
-    else if (lower.includes("doer")) extracted.car4 = ["doer"];
-    else if (lower.includes("harmonizer")) extracted.car4 = ["harmonizer"];
+    if (lower.includes("leader")) result.car4 = ["leader"];
+    else if (lower.includes("ideator")) result.car4 = ["ideator"];
+    else if (lower.includes("doer")) result.car4 = ["doer"];
+    else if (lower.includes("harmonizer")) result.car4 = ["harmonizer"];
 
-    if (lower.includes("structure")) extracted.ws4 = ["structure"];
-    else if (lower.includes("experiment")) extracted.ws4 = ["experiment"];
-    else if (lower.includes("consult")) extracted.ws4 = ["consult"];
+    if (lower.includes("structure")) result.ws4 = ["structure"];
+    else if (lower.includes("experiment")) result.ws4 = ["experiment"];
+    else if (lower.includes("consult")) result.ws4 = ["consult"];
   }
 
   for (const v of input.values) {
-    if (["autonomy", "prestige", "purpose", "mastery"].includes(v)) extracted.val1 = [v];
-    if (["purpose_over_wealth", "wealth_over_stability", "balance_over_creativity"].includes(v)) extracted.val2 = [v];
-    if (["monotony", "no_impact", "micromanaged", "isolation"].includes(v)) extracted.val3 = [v];
-    if (["wealth", "recognition", "learning", "impact"].includes(v)) extracted.val4 = [v];
+    if (["autonomy", "prestige", "purpose", "mastery"].includes(v)) result.val1 = [v];
+    if (["purpose_over_wealth", "wealth_over_stability", "balance_over_creativity"].includes(v)) result.val2 = [v];
+    if (["monotony", "no_impact", "micromanaged", "isolation"].includes(v)) result.val3 = [v];
+    if (["wealth", "recognition", "learning", "impact"].includes(v)) result.val4 = [v];
   }
 
-  extracted.ws3 = [input.workStyle || "mixed"];
-  return extracted;
+  result.ws3 = [input.workStyle || "mixed"];
+  return result;
 }
 
 // ── 1. Trait Vector Encoding ────────────────────────────────────────────

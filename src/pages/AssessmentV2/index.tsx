@@ -629,6 +629,33 @@ export default function AssessmentV2() {
       const domains = Array.isArray(answers['lc_domains']) ? answers['lc_domains'] as string[] : [];
       const expLevel = typeof answers['lc_experience'] === 'string' ? answers['lc_experience'] : 'junior';
 
+      // Extract strengths from aptitude answers (sa_* questions)
+      const extractedStrengths: string[] = [];
+      for (const [key, val] of Object.entries(answers)) {
+        if (key.startsWith('sa_') && val) {
+          const vals = Array.isArray(val) ? val : [String(val)];
+          extractedStrengths.push(...vals.filter(v => typeof v === 'string' && v.length > 0));
+        }
+      }
+
+      // Extract values from values answers (va_* questions)
+      const extractedValues: string[] = [];
+      for (const [key, val] of Object.entries(answers)) {
+        if (key.startsWith('va_') && val && key !== 'va_rank') {
+          const vals = Array.isArray(val) ? val : [String(val)];
+          extractedValues.push(...vals.filter(v => typeof v === 'string' && v.length > 0));
+        }
+      }
+
+      // Extract work style from wd_* answers
+      const workStyleAnswers: string[] = [];
+      for (const [key, val] of Object.entries(answers)) {
+        if (key.startsWith('wd_') && val) {
+          const vals = Array.isArray(val) ? val : [String(val)];
+          workStyleAnswers.push(...vals.filter(v => typeof v === 'string' && v.length > 0));
+        }
+      }
+
       const payload = {
         userId: user.id,
         rawAnswers: answers,
@@ -636,9 +663,9 @@ export default function AssessmentV2() {
         interests: domains,
         experienceLevel: expLevel,
         trajectory: typeof answers['lc_stage'] === 'string' ? answers['lc_stage'] : 'exploring',
-        workStyle: typeof answers['wd_3'] === 'string' ? answers['wd_3'] : 'mixed',
-        strengths: [],
-        values: [],
+        workStyle: workStyleAnswers.length > 0 ? workStyleAnswers[0] : 'mixed',
+        strengths: extractedStrengths,
+        values: extractedValues,
       };
 
       const res: any = await assessmentApi.submitV2(payload);
