@@ -4,7 +4,6 @@ import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { RateLimits } from "../shared/rate-limiter";
 import {
-  getTopCareerMatches,
   getCertificatesForRole,
   getCareerRecsForRole,
   analyzeSkillGapsForRole,
@@ -102,6 +101,7 @@ export interface SubmitAssessmentParams {
   rawAnswers?: Record<string, string | string[]>;
 }
 
+// DEPRECATED: Uses v2 engine internally. Kept for backward compatibility.
 // POST /assessment — Submit questionnaire answers, get career matches via local brain
 export const submitAssessment = api(
   { expose: true, method: "POST", path: "/assessment", auth: true },
@@ -113,7 +113,8 @@ export const submitAssessment = api(
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const now = new Date().toISOString();
 
-    const { careerMatches, skillGaps } = getTopCareerMatches({
+    // v2 engine returns a superset of v1 fields; we strip extra fields below
+    const v2Result = getTopCareerMatchesV2({
       workStyle: params.workStyle,
       strengths: params.strengths,
       values: params.values,
@@ -124,6 +125,16 @@ export const submitAssessment = api(
       personalityType: params.personalityType,
       answers: params.rawAnswers,
     });
+
+    // Map v2 career matches to the v1 shape (5 core fields only)
+    const careerMatches: CareerMatch[] = v2Result.careerMatches.map(m => ({
+      title: m.title,
+      matchScore: m.matchScore,
+      description: m.description,
+      requiredSkills: m.requiredSkills,
+      pathwayTime: m.pathwayTime,
+    }));
+    const skillGaps = v2Result.skillGaps;
 
     const personalityType = `${params.workStyle}-${params.experienceLevel}`;
 
@@ -337,11 +348,56 @@ export const analyzeSkillGaps = api(
   }
 );
 
+// ── Bias Detection ───────────────────────────────────────────────────────────
+
+function detectBias(
+  rawAnswers: Record<string, any>,
+  startedAt?: string,
+): { flags: string[]; confidenceNote?: string } {
+  const flags: string[] = [];
+  const values = Object.values(rawAnswers).map(v => (Array.isArray(v) ? v[0] : v));
+  const total = values.length;
+  if (total === 0) return { flags };
+
+  // 1. Straight-lining: >60% same answer
+  const freq: Record<string, number> = {};
+  for (const v of values) {
+    if (v != null) freq[String(v)] = (freq[String(v)] || 0) + 1;
+  }
+  const maxFreq = Math.max(...Object.values(freq));
+  if (maxFreq / total > 0.6) {
+    flags.push("Straight-line pattern detected: most answers were the same option");
+  }
+
+  // 2. Speed: < 2 minutes for a full-length assessment
+  if (startedAt) {
+    const elapsed = (Date.now() - new Date(startedAt).getTime()) / 1000;
+    if (total >= 50 && elapsed < 120) {
+      flags.push("Responses completed unusually quickly");
+    }
+  }
+
+  // 3. Extreme response bias: >70% at extremes (1/5 or strongly_agree/strongly_disagree)
+  const EXTREMES = new Set(["1", "5", "strongly_agree", "strongly_disagree"]);
+  const extremeCount = values.filter(v => EXTREMES.has(String(v))).length;
+  if (extremeCount / total > 0.7) {
+    flags.push("Most responses were at the extreme ends of the scale");
+  }
+
+  return {
+    flags,
+    confidenceNote: flags.length > 0
+      ? "Some response patterns suggest your results may not fully reflect your preferences. Consider retaking the assessment with more time."
+      : undefined,
+  };
+}
+
 // ── Assessment V2 ────────────────────────────────────────────────────────────
 
 interface SubmitAssessmentV2Params {
   userId: string;
   rawAnswers: Record<string, string | string[]>;
+  startedAt?: string;
   workStyle?: string;
   strengths?: string[];
   values?: string[];
@@ -398,6 +454,8 @@ interface AssessmentV2Response {
       dimensions: { interest: number; personality: number; values: number; aptitude: number; environment: number; stage: number; total: number };
       whyThisFits: string[];
     }[];
+    biasFlags?: string[];
+    confidenceNote?: string;
   };
 }
 
@@ -438,6 +496,8 @@ export const submitAssessmentV2 = api(
       params.trajectory ?? 'explorer',
       { remote: true, teamSize: 'small', pace: 'steady' },
       userID,
+      archetype.confidence,
+      archetype.runnerUp,
     );
 
     // Store results (same table, upsert)
@@ -468,6 +528,9 @@ export const submitAssessmentV2 = api(
       await createNotification({ userId: params.userId, type: "info", title: "Assessment Complete", body: "Check your career matches and start your roadmap." });
     } catch (e) { console.error("[assessment-v2] failed to create notification:", e); }
 
+    // Bias detection
+    const bias = detectBias(rawAnswers, params.startedAt);
+
     return {
       result: {
         careerMatches,
@@ -477,8 +540,71 @@ export const submitAssessmentV2 = api(
         bigFive,
         narrative,
         categorizedMatches,
+        biasFlags: bias.flags.length > 0 ? bias.flags : undefined,
+        confidenceNote: bias.confidenceNote,
       },
     };
+  }
+);
+
+// ── Assessment V2 Progress (save/load) ───────────────────────────────────────
+
+interface SaveProgressParams {
+  currentPhase: number;
+  currentQuestion: number;
+  answers: Record<string, string | string[] | number>;
+  completedTier: number;
+  startedAt: string;
+}
+
+interface SaveProgressResponse {
+  success: boolean;
+}
+
+// POST /assessment-v2/progress -- Save partial assessment state
+export const saveAssessmentProgress = api(
+  { expose: true, method: "POST", path: "/assessment-v2/progress", auth: true },
+  async (params: SaveProgressParams): Promise<SaveProgressResponse> => {
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
+
+    const stateJson = JSON.stringify(params);
+    await db.exec`
+      INSERT INTO assessment_progress (user_id, state, updated_at)
+      VALUES (${userID}, ${stateJson}::jsonb, NOW())
+      ON CONFLICT (user_id) DO UPDATE SET
+        state = ${stateJson}::jsonb,
+        updated_at = NOW()
+    `;
+
+    return { success: true };
+  }
+);
+
+interface GetProgressResponse {
+  progress: SaveProgressParams | null;
+}
+
+// GET /assessment-v2/progress -- Retrieve saved assessment progress
+export const getAssessmentProgress = api(
+  { expose: true, method: "GET", path: "/assessment-v2/progress", auth: true },
+  async (): Promise<GetProgressResponse> => {
+    const authData = getAuthData<AuthData>();
+    if (!authData) throw APIError.unauthenticated("session invalid");
+    const { userID } = authData;
+
+    const row = await db.queryRow`
+      SELECT state FROM assessment_progress WHERE user_id = ${userID}
+    `;
+    if (!row) return { progress: null };
+
+    try {
+      const parsed = typeof row.state === 'string' ? JSON.parse(row.state) : row.state;
+      return { progress: parsed };
+    } catch {
+      return { progress: null };
+    }
   }
 );
 

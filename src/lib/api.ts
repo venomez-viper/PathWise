@@ -127,6 +127,10 @@ export const assessment = {
     request('/assessment/career-recommendations', { method: 'POST', body: JSON.stringify(data) }),
   getSkillGapAnalysis: (data: unknown) =>
     request('/assessment/skill-gap-analysis', { method: 'POST', body: JSON.stringify(data) }),
+  saveProgress: (data: unknown) =>
+    request<{ success: boolean }>('/assessment-v2/progress', { method: 'POST', body: JSON.stringify(data) }),
+  getProgress: () =>
+    request<{ progress: any | null }>('/assessment-v2/progress'),
 };
 
 // --- Roadmap ---

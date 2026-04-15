@@ -437,6 +437,8 @@ export function generateNarrative(
   trajectory: TrajectoryType,
   environmentPrefs: EnvironmentPrefs,
   userId?: string,
+  confidence?: number,
+  runnerUp?: string,
 ): NarrativeProfile {
   const seed = userId ?? "default";
   const variantSeed = simpleHash(seed) % 2;
@@ -464,8 +466,24 @@ export function generateNarrative(
   // Share quote
   const shareQuote = `"${TRAIT_PHRASES[primaryTrait]}" — My PathWise career profile (The ${archetypeName})`;
 
+  // Confidence-aware archetype paragraph
+  let archetypeInsight = "";
+  if (confidence !== undefined && confidence !== null) {
+    if (confidence >= 75) {
+      archetypeInsight = `Your profile strongly aligns with the ${archetypeName} pattern, showing clear direction in your career interests. This level of alignment means the recommendations and growth areas described above are particularly well-calibrated to who you are and how you work.`;
+    } else if (confidence >= 40) {
+      archetypeInsight = `You show a solid fit with the ${archetypeName} pattern, though you also share traits with the ${runnerUp ?? archetypeName} archetype. This blend can be a strength: it means you bring a wider range of instincts to your work than someone who fits neatly into a single category, and it gives you flexibility in how you position yourself professionally.`;
+    } else {
+      archetypeInsight = `Your profile bridges two archetypes, ${archetypeName} and ${runnerUp ?? archetypeName}, giving you versatility across career paths that value both perspectives. Rather than seeing this as ambiguity, consider it range: you can draw on different modes of working depending on what the situation requires, which is a genuine advantage in careers that reward adaptability.`;
+    }
+  }
+
   // Full narrative
-  const fullNarrative = [opening, workStyle, strengths, growthEdge, idealEnvironment, careerDirection].join("\n\n");
+  const paragraphs = [opening, workStyle, strengths, growthEdge, idealEnvironment, careerDirection];
+  if (archetypeInsight) {
+    paragraphs.push(archetypeInsight);
+  }
+  const fullNarrative = paragraphs.join("\n\n");
 
   return {
     headline,

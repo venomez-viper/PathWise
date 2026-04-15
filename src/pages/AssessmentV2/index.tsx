@@ -14,6 +14,7 @@ import { ASSESSMENT_PHASES, getLastPhaseIndexForTier } from '../Assessment/quest
 const STORAGE_KEY = 'pw_assessment_v2';
 const AUTO_ADVANCE_MS = 300;
 const TRANSITION_AUTO_MS = 2000;
+const API_SAVE_DEBOUNCE_MS = 3000;
 
 interface AssessmentV2State {
   currentPhase: number;
@@ -325,24 +326,86 @@ export default function AssessmentV2() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const apiSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastApiSavePhase = useRef<number>(-1);
+  const lastApiSaveQuestion = useRef<number>(0);
 
-  /* ── localStorage persistence ── */
+  /* ── localStorage + server persistence ── */
   const saveState = useCallback((s: AssessmentV2State) => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
-  }, []);
 
-  // Load saved state on mount
+    // Debounced server save: fires on phase change or every 5 questions
+    const phaseChanged = s.currentPhase !== lastApiSavePhase.current;
+    const questionDelta = Math.abs(s.currentQuestion - lastApiSaveQuestion.current);
+    const shouldSaveNow = phaseChanged || questionDelta >= 5;
+
+    if (shouldSaveNow && user) {
+      if (apiSaveTimer.current) clearTimeout(apiSaveTimer.current);
+      apiSaveTimer.current = setTimeout(() => {
+        lastApiSavePhase.current = s.currentPhase;
+        lastApiSaveQuestion.current = s.currentQuestion;
+        assessmentApi.saveProgress({
+          currentPhase: s.currentPhase,
+          currentQuestion: s.currentQuestion,
+          answers: s.answers,
+          completedTier: s.completedTier,
+          startedAt: s.startedAt,
+        }).catch(() => {}); // silent -- localStorage is the primary cache
+      }, API_SAVE_DEBOUNCE_MS);
+    }
+  }, [user]);
+
+  // Load saved state on mount: try API first, fall back to localStorage
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const saved: AssessmentV2State = JSON.parse(raw);
-        if (saved.currentPhase >= 0 && !saved.showAnalyzing) {
-          setHasSavedState(true);
-        }
+    let cancelled = false;
+
+    async function loadProgress() {
+      // Try localStorage first (fast)
+      let localSaved: AssessmentV2State | null = null;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) localSaved = JSON.parse(raw);
+      } catch {}
+
+      // Try API (durable backup)
+      let serverSaved: AssessmentV2State | null = null;
+      if (user) {
+        try {
+          const res = await assessmentApi.getProgress();
+          if (res.progress) {
+            serverSaved = {
+              currentPhase: res.progress.currentPhase,
+              currentQuestion: res.progress.currentQuestion,
+              answers: res.progress.answers,
+              completedTier: res.progress.completedTier ?? 0,
+              startedAt: res.progress.startedAt,
+              showTransition: false,
+              showAnalyzing: false,
+              showTierCheckpoint: false,
+            } as AssessmentV2State;
+          }
+        } catch {}
       }
-    } catch {}
-  }, []);
+
+      if (cancelled) return;
+
+      // Pick whichever has more progress (more answered questions)
+      const localCount = localSaved ? Object.keys(localSaved.answers || {}).length : 0;
+      const serverCount = serverSaved ? Object.keys(serverSaved.answers || {}).length : 0;
+      const best = serverCount > localCount ? serverSaved : localSaved;
+
+      if (best && best.currentPhase >= 0 && !best.showAnalyzing) {
+        // Sync the winner back to localStorage
+        if (best === serverSaved) {
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(best)); } catch {}
+        }
+        setHasSavedState(true);
+      }
+    }
+
+    loadProgress();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const resumeSaved = useCallback(() => {
     try {
@@ -382,10 +445,12 @@ export default function AssessmentV2() {
     }
 
     localStorage.removeItem(STORAGE_KEY);
+    // Clear server-side progress too
+    if (user) { assessmentApi.saveProgress({ currentPhase: 0, currentQuestion: 0, answers: {}, completedTier: 0, startedAt: new Date().toISOString() }).catch(() => {}); }
     setHasSavedState(false);
     setState(prev => ({ ...prev, currentPhase: 0, currentQuestion: 0, answers: {}, showTierCheckpoint: false, startedAt: new Date().toISOString() }));
     setSlideKey(k => k + 1);
-  }, [searchParams, tier1LastIdx, tier2LastIdx]);
+  }, [searchParams, tier1LastIdx, tier2LastIdx, user]);
 
   /* ── Derived values ── */
   const { currentPhase, currentQuestion, answers, showTransition, showAnalyzing, showTierCheckpoint } = state;
@@ -580,6 +645,8 @@ export default function AssessmentV2() {
         saveState({ ...state, showAnalyzing: false, showTransition: false, showTierCheckpoint: false });
       } else {
         localStorage.removeItem(STORAGE_KEY);
+        // Clear server-side progress on full completion
+        assessmentApi.saveProgress({ currentPhase: 0, currentQuestion: 0, answers: {}, completedTier: 0, startedAt: '' }).catch(() => {});
       }
       navigate('/app/assessment-v2/results', { state: { result: res.result, completedTier: tierCompleted } });
     } catch (err) {

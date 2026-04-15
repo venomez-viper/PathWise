@@ -678,6 +678,38 @@ export default function AssessmentResults() {
         </section>
       )}
 
+      {/* Bias detection banner */}
+      {result.biasFlags && result.biasFlags.length > 0 && result.confidenceNote && (
+        <section style={{
+          background: 'rgba(217, 119, 6, 0.08)',
+          border: '1px solid rgba(217, 119, 6, 0.2)',
+          borderRadius: '1rem',
+          padding: '1rem 1.5rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.75rem',
+        }}>
+          <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>&#x1F6C8;</span>
+          <div>
+            <p style={{
+              margin: 0, fontSize: '0.88rem', color: 'var(--on-surface, #333)',
+              lineHeight: 1.6,
+            }}>
+              {result.confidenceNote}
+            </p>
+            <ul style={{
+              margin: '0.5rem 0 0', paddingLeft: '1.25rem',
+              fontSize: '0.82rem', color: 'var(--on-surface-variant, #666)',
+            }}>
+              {result.biasFlags.map((flag: string, i: number) => (
+                <li key={i}>{flag}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* Section: Archetype */}
       <section style={{ marginBottom: '2.5rem' }}>
         <ArchetypeCard

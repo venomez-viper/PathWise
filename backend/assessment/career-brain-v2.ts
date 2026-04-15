@@ -1422,23 +1422,39 @@ function getGrowthOutlook(profile: CareerProfile): string {
   return DOMAIN_GROWTH[primary] ?? "Moderate";
 }
 
-/** Experience-career fit scoring (ported from v1) */
+/** Experience-career fit scoring with level-aware penalties */
 const EXPERIENCE_RANKS: Record<string, number> = {
   student: 0, junior: 1, mid: 2, senior: 3, expert: 4, executive: 5,
 };
 
+/**
+ * Normalize common experience-level strings into canonical levels.
+ * Handles range shortcuts ("0-1", "3-5"), role labels ("intern", "lead"),
+ * and the canonical values the assessment UI already sends.
+ */
+function normalizeExperienceLevel(raw: string): string {
+  const lower = raw.trim().toLowerCase();
+  // Canonical values pass through
+  if (["student", "junior", "mid", "senior", "expert"].includes(lower)) return lower;
+  // Map common aliases
+  const ALIAS_MAP: Record<string, string> = {
+    "0-1": "student", "intern": "student", "entry": "student", "beginner": "student",
+    "1-3": "junior",
+    "3-5": "mid", "mid-level": "mid", "intermediate": "mid",
+    "5-10": "senior",
+    "10+": "expert", "lead": "expert", "executive": "expert", "principal": "expert",
+  };
+  return ALIAS_MAP[lower] ?? "junior";
+}
+
 function scoreExperienceFit(experienceLevel: string, profileLevels: string[]): number {
   if (!experienceLevel || profileLevels.length === 0) return 0;
-  const userRank = EXPERIENCE_RANKS[experienceLevel.toLowerCase()] ?? 1;
-  const profileRanks = profileLevels
-    .map(l => EXPERIENCE_RANKS[l.toLowerCase()] ?? -1)
-    .filter(r => r >= 0);
-  if (profileRanks.length === 0) return 0;
-  if (profileRanks.includes(userRank)) return 5;
-  const minDistance = Math.min(...profileRanks.map(pr => Math.abs(pr - userRank)));
-  if (minDistance === 1) return 2.5;
-  if (minDistance === 2) return 0;
-  return -2;
+  const normalized = normalizeExperienceLevel(experienceLevel);
+  const profileLevelsLower = profileLevels.map(l => l.toLowerCase());
+  // Direct match: no penalty, small boost
+  if (profileLevelsLower.includes(normalized)) return 5;
+  // User level is NOT listed in the profile -- apply penalty to down-rank
+  return -10;
 }
 
 /**
