@@ -242,11 +242,6 @@ export default function FocusMode() {
         </div>
       </div>
 
-      {/* Panda */}
-      <div style={{ marginBottom: '2rem' }}>
-        <Panda mood={pandaMood} size={80} animate />
-      </div>
-
       {/* Tasks */}
       <div style={{ width: '100%', maxWidth: 640 }}>
         {focusTasks.length === 0 ? (
