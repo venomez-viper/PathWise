@@ -22,11 +22,21 @@ interface Archetype {
   superpower: string; growthEdge: string;
 }
 
+interface DimensionScores {
+  interest: number;
+  personality: number;
+  values: number;
+  aptitude: number;
+  environment: number;
+  stage: number;
+}
+
 interface CareerMatch {
   title: string; matchScore: number; careerFamily?: string;
   whyThisFits?: string[]; salaryRange?: { min: number; max: number };
   growthOutlook?: string; description: string;
   requiredSkills?: string[]; pathwayTime?: string; domain?: string;
+  dimensions?: DimensionScores;
 }
 
 type MatchTier = 'excellent' | 'strong' | 'good' | 'developing';
@@ -102,6 +112,7 @@ const MOCK_MATCHES: CareerMatch[] = [
     ],
     salaryRange: { min: 95000, max: 165000 }, growthOutlook: 'High',
     description: 'Uncover insights from complex datasets to drive strategic decisions.',
+    dimensions: { interest: 95, personality: 72, values: 88, aptitude: 45, environment: 60, stage: 78 },
   },
   {
     title: 'Software Architect', matchScore: 87, careerFamily: 'Engineering',
@@ -115,6 +126,7 @@ const MOCK_MATCHES: CareerMatch[] = [
     ],
     salaryRange: { min: 130000, max: 210000 }, growthOutlook: 'High',
     description: 'Design scalable software systems and guide engineering teams.',
+    dimensions: { interest: 80, personality: 85, values: 70, aptitude: 40, environment: 90, stage: 65 },
   },
   {
     title: 'Research Scientist', matchScore: 83, careerFamily: 'Research',
@@ -128,6 +140,7 @@ const MOCK_MATCHES: CareerMatch[] = [
     ],
     salaryRange: { min: 85000, max: 150000 }, growthOutlook: 'Moderate',
     description: 'Push the boundaries of knowledge in your chosen domain.',
+    dimensions: { interest: 90, personality: 55, values: 82, aptitude: 30, environment: 48, stage: 70 },
   },
 ];
 
@@ -413,10 +426,92 @@ function SkillBubbles({ requiredSkills, currentSkills }: { requiredSkills: strin
 
 /* ─── Career Match Card ─────────────────────────────────────────── */
 
+/* ---- Score Breakdown Bars ------------------------------------------ */
+
+const DIMENSION_LABELS: { key: keyof DimensionScores; label: string }[] = [
+  { key: 'interest', label: 'Interest' },
+  { key: 'personality', label: 'Personality' },
+  { key: 'values', label: 'Values' },
+  { key: 'aptitude', label: 'Aptitude' },
+  { key: 'environment', label: 'Environment' },
+  { key: 'stage', label: 'Career Stage' },
+];
+
+function dimensionBarColor(score: number): string {
+  if (score > 75) return '#006a62';   // teal / green
+  if (score >= 50) return '#8b4f2c';  // copper / amber
+  return '#b91c1c';                   // red
+}
+
+function ScoreBreakdown({ dimensions, animate }: { dimensions: DimensionScores; animate: boolean }) {
+  const barH = 18, gap = 12, labelW = 100, maxW = 160;
+  const totalH = DIMENSION_LABELS.length * (barH + gap);
+
+  // Find highest and lowest non-zero dimensions
+  let highKey = DIMENSION_LABELS[0].key;
+  let lowKey = DIMENSION_LABELS[0].key;
+  let highVal = -1;
+  let lowVal = 101;
+  for (const d of DIMENSION_LABELS) {
+    const v = dimensions[d.key];
+    if (v > highVal) { highVal = v; highKey = d.key; }
+    if (v < lowVal) { lowVal = v; lowKey = d.key; }
+  }
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <svg width={labelW + maxW + 80} height={totalH} role="img" aria-label="Score breakdown by dimension">
+        {DIMENSION_LABELS.map((item, i) => {
+          const y = i * (barH + gap);
+          const val = dimensions[item.key];
+          const w = (val / 100) * maxW;
+          const color = dimensionBarColor(val);
+          const isHigh = item.key === highKey;
+          const isLow = item.key === lowKey;
+          return (
+            <g key={item.key}>
+              <text x={labelW - 8} y={y + barH / 2 + 1} textAnchor="end" dominantBaseline="central"
+                style={{ fontSize: 12, fill: 'var(--on-surface, #333)' }}>
+                {item.label}
+              </text>
+              {/* Track */}
+              <rect x={labelW} y={y} width={maxW} height={barH} rx={barH / 2}
+                fill="var(--surface-container-high, #e5e5e5)" opacity={0.5} />
+              {/* Fill */}
+              <rect x={labelW} y={y} width={animate ? w : 0} height={barH} rx={barH / 2}
+                fill={color}
+                style={{ transition: animate ? 'width 0.6s cubic-bezier(.4,0,.2,1)' : 'none' }} />
+              {/* Score value */}
+              <text x={labelW + maxW + 6} y={y + barH / 2 + 1} dominantBaseline="central"
+                style={{ fontSize: 11, fontWeight: 600, fill: 'var(--on-surface, #555)' }}>
+                {val}
+              </text>
+              {/* Strongest / Growth area label */}
+              {isHigh && (
+                <text x={labelW + maxW + 30} y={y + barH / 2 + 1} dominantBaseline="central"
+                  style={{ fontSize: 9, fontWeight: 700, fill: '#006a62', letterSpacing: 0.3 }}>
+                  Strongest
+                </text>
+              )}
+              {isLow && !isHigh && (
+                <text x={labelW + maxW + 30} y={y + barH / 2 + 1} dominantBaseline="central"
+                  style={{ fontSize: 9, fontWeight: 700, fill: '#b91c1c', letterSpacing: 0.3 }}>
+                  Growth area
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 function CareerMatchCard({ match, rank, visible, currentSkills }: { match: CareerMatch; rank: number; visible: boolean; currentSkills: string[] }) {
   const tier = getMatchTier(match.matchScore);
   const tierCfg = TIER_CONFIG[tier];
   const [showWhatIf, setShowWhatIf] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   return (
     <div style={{
@@ -526,9 +621,43 @@ function CareerMatchCard({ match, rank, visible, currentSkills }: { match: Caree
             >
               {showWhatIf ? 'Hide boost tips' : 'How to boost your match'}
             </button>
+            {match.dimensions && (
+              <button
+                onClick={() => setShowBreakdown(v => !v)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: COPPER,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  padding: '0.4rem 0',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: 2,
+                  transition: 'color 0.15s ease',
+                }}
+                onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = '#a0623a')}
+                onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = COPPER)}
+              >
+                {showBreakdown ? 'Hide breakdown' : 'Score breakdown'}
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {showBreakdown && match.dimensions && (
+        <div style={{
+          marginTop: '1rem',
+          padding: '1rem 0.5rem',
+          borderTop: '1px solid var(--surface-container-high, #e5e5e5)',
+        }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: COPPER, textTransform: 'uppercase' as const, letterSpacing: 0.5, display: 'block', marginBottom: '0.75rem', textAlign: 'center' }}>
+            Score Breakdown
+          </span>
+          <ScoreBreakdown dimensions={match.dimensions} animate={showBreakdown} />
+        </div>
+      )}
 
       {showWhatIf && (
         <WhatIfPanel

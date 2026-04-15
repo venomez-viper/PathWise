@@ -26,6 +26,14 @@ export interface CareerMatch {
   whyThisFits?: string[];
   salaryRange?: { min: number; max: number };
   growthOutlook?: string;
+  dimensions?: {
+    interest: number;
+    personality: number;
+    values: number;
+    aptitude: number;
+    environment: number;
+    stage: number;
+  };
 }
 
 export interface SkillGap {
@@ -126,13 +134,14 @@ export const submitAssessment = api(
       answers: params.rawAnswers,
     });
 
-    // Map v2 career matches to the v1 shape (5 core fields only)
+    // Map v2 career matches to the v1 shape with dimensions
     const careerMatches: CareerMatch[] = v2Result.careerMatches.map(m => ({
       title: m.title,
       matchScore: m.matchScore,
       description: m.description,
       requiredSkills: m.requiredSkills,
       pathwayTime: m.pathwayTime,
+      dimensions: m.dimensions,
     }));
     const skillGaps = v2Result.skillGaps;
 
@@ -392,6 +401,119 @@ function detectBias(
   };
 }
 
+// ── Validation Consistency Check ────────────────────────────────────────────
+
+/**
+ * Validation question pairs: each entry maps a validation question ID to the
+ * original question ID it cross-checks, plus a function that returns true when
+ * the two answers are consistent.
+ */
+interface ValidationPair {
+  validationId: string;
+  originalId: string;
+  isConsistent: (originalAnswer: string, validationAnswer: string) => boolean;
+}
+
+const VALIDATION_PAIRS: ValidationPair[] = [
+  {
+    // bf_v1 (reverse-coded: "avoid experiments") vs ri_i1 ("enjoy designing experiments")
+    // ri_i1 "like" should pair with bf_v1 low agreement (1-2), ri_i1 "dislike" with high (4-5)
+    validationId: 'bf_v1',
+    originalId: 'ri_i1',
+    isConsistent: (orig, val) => {
+      const likesExperiments = orig === 'like';
+      const dislikesExperiments = orig === 'dislike';
+      const valNum = parseInt(val, 10);
+      if (isNaN(valNum)) return true; // skip if unparseable
+      if (likesExperiments) return valNum <= 3; // should disagree with "avoid experiments"
+      if (dislikesExperiments) return valNum >= 3; // should agree with "avoid experiments"
+      return true; // neutral is always consistent
+    },
+  },
+  {
+    // wd_v2 (energy after group work) vs bf_e3 ("recharged after collaborating")
+    // bf_e3 high (4-5) = extraverted -> wd_v2 should be "energized"
+    // bf_e3 low (1-2) = introverted -> wd_v2 should be "drained"
+    validationId: 'wd_v2',
+    originalId: 'bf_e3',
+    isConsistent: (orig, val) => {
+      const origNum = parseInt(orig, 10);
+      if (isNaN(origNum)) return true;
+      if (origNum >= 4) return val === 'energized' || val === 'mixed';
+      if (origNum <= 2) return val === 'drained' || val === 'mixed';
+      return true; // neutral is always consistent
+    },
+  },
+  {
+    // sa_v3 (comfort with freelance/variable income) vs va_1 (autonomy vs security)
+    // va_1 "self_direction" -> sa_v3 should be higher (3+)
+    // va_1 "security" -> sa_v3 should be lower (1-3)
+    validationId: 'sa_v3',
+    originalId: 'va_1',
+    isConsistent: (orig, val) => {
+      const valNum = parseInt(val, 10);
+      if (isNaN(valNum)) return true;
+      if (orig === 'self_direction') return valNum >= 3;
+      if (orig === 'security') return valNum <= 3;
+      return true;
+    },
+  },
+  {
+    // lc_v4 (past best work style) vs wd_1 (preferred contribution style)
+    // wd_1 "independent" -> lc_v4 "solo"
+    // wd_1 "paired" -> lc_v4 "pair"
+    // wd_1 "coordinator" -> lc_v4 "team_lead"
+    // wd_1 "foundation" -> lc_v4 "research"
+    validationId: 'lc_v4',
+    originalId: 'wd_1',
+    isConsistent: (orig, val) => {
+      const mapping: Record<string, string> = {
+        independent: 'solo',
+        paired: 'pair',
+        coordinator: 'team_lead',
+        foundation: 'research',
+      };
+      // Consistent if exact match OR either is missing
+      if (!orig || !val) return true;
+      return mapping[orig] === val;
+    },
+  },
+];
+
+function checkConsistency(
+  rawAnswers: Record<string, any>,
+): { consistencyScore: number; flags: string[] } {
+  const flags: string[] = [];
+  let pairsChecked = 0;
+  let pairsConsistent = 0;
+
+  for (const pair of VALIDATION_PAIRS) {
+    const origRaw = rawAnswers[pair.originalId];
+    const valRaw = rawAnswers[pair.validationId];
+    // Skip pairs where either question was not answered
+    if (origRaw == null || valRaw == null) continue;
+
+    const origAnswer = Array.isArray(origRaw) ? origRaw[0] : String(origRaw);
+    const valAnswer = Array.isArray(valRaw) ? valRaw[0] : String(valRaw);
+
+    pairsChecked++;
+    if (pair.isConsistent(origAnswer, valAnswer)) {
+      pairsConsistent++;
+    }
+  }
+
+  // If no pairs could be checked, assume full consistency
+  if (pairsChecked === 0) return { consistencyScore: 100, flags };
+
+  const consistencyScore = Math.round((pairsConsistent / pairsChecked) * 100);
+
+  if (pairsChecked >= 3 && (pairsChecked - pairsConsistent) >= 3) {
+    flags.push("Some answers appear inconsistent - results may be less reliable");
+  }
+
+  return { consistencyScore, flags };
+}
+
 // ── Assessment V2 ────────────────────────────────────────────────────────────
 
 interface SubmitAssessmentV2Params {
@@ -440,8 +562,12 @@ interface AssessmentV2Response {
       whyThisFits?: string[];
       salaryRange?: { min: number; max: number };
       growthOutlook?: string;
+      dimensions?: {
+        interest: number; personality: number; values: number;
+        aptitude: number; environment: number; stage: number;
+      };
     }[];
-    skillGaps: { skill: string; importance: string; learningResource: string }[];
+    skillGaps: { skill: string; importance: string; learningResource: string; scoreImpact?: number; learningHours?: number; roi?: number }[];
     archetype: { id: string; name: string; tagline: string; description: string; confidence?: number; runnerUp?: string };
     riasec: RIASECResult;
     bigFive: BigFiveResult;
@@ -456,6 +582,7 @@ interface AssessmentV2Response {
     }[];
     biasFlags?: string[];
     confidenceNote?: string;
+    consistencyScore?: number;
   };
 }
 
@@ -476,8 +603,11 @@ export const submitAssessmentV2 = api(
     const bigFive = hasV2Keys ? computeBigFiveV2(rawAnswers) : computeBigFive(rawAnswers as Record<string, string[]>);
     const archetype = determineArchetype(riasec, bigFive);
 
+    // Consistency check on validation question pairs
+    const consistency = checkConsistency(rawAnswers);
+
     // Get career matches using v2 engine
-    const { careerMatches, skillGaps, categorizedMatches } = getTopCareerMatchesV2({
+    const { careerMatches: rawCareerMatches, skillGaps, categorizedMatches } = getTopCareerMatchesV2({
       workStyle: params.workStyle ?? '',
       strengths: params.strengths ?? [],
       values: params.values ?? [],
@@ -486,6 +616,11 @@ export const submitAssessmentV2 = api(
       interests: params.interests ?? [],
       answers: rawAnswers,
     }, 3);
+
+    // Dampen extreme scores if consistency is low
+    const careerMatches = consistency.consistencyScore < 50
+      ? rawCareerMatches.map(m => ({ ...m, matchScore: Math.round(m.matchScore * 0.95) }))
+      : rawCareerMatches;
 
     // Generate narrative
     const narrative = generateNarrative(
@@ -531,6 +666,12 @@ export const submitAssessmentV2 = api(
     // Bias detection
     const bias = detectBias(rawAnswers, params.startedAt);
 
+    // Merge consistency flags with bias flags
+    const allFlags = [...bias.flags, ...consistency.flags];
+    const confidenceNote = allFlags.length > 0
+      ? "Some response patterns suggest your results may not fully reflect your preferences. Consider retaking the assessment with more time."
+      : undefined;
+
     return {
       result: {
         careerMatches,
@@ -540,8 +681,9 @@ export const submitAssessmentV2 = api(
         bigFive,
         narrative,
         categorizedMatches,
-        biasFlags: bias.flags.length > 0 ? bias.flags : undefined,
-        confidenceNote: bias.confidenceNote,
+        biasFlags: allFlags.length > 0 ? allFlags : undefined,
+        confidenceNote,
+        consistencyScore: consistency.consistencyScore,
       },
     };
   }
@@ -653,7 +795,7 @@ export const adminDeleteUserAssessment = api(
 interface AdminAssessmentResult {
   completedAt: string;
   careerMatches: { title: string; matchScore: number; description: string }[];
-  skillGaps: { skill: string; importance: string; learningResource: string }[];
+  skillGaps: { skill: string; importance: string; learningResource: string; scoreImpact?: number; learningHours?: number; roi?: number }[];
   currentSkills: string[];
   personalityType: string;
 }
