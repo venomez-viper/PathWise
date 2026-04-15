@@ -1,189 +1,88 @@
 import { useState, useCallback, type CSSProperties } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-
-/* ══════════════════════════════════════════════════════════════════
-   DOMAIN / SKILL DATA
-   ══════════════════════════════════════════════════════════════════ */
 
 const toValue = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 
 interface DomainDef {
   label: string;
   color: string;
+  emoji: string;
   skills: { value: string; label: string }[];
 }
 
 const DOMAINS: DomainDef[] = [
   {
-    label: 'Technology',
-    color: '#006a62',
-    skills: ['Python', 'JavaScript', 'React', 'SQL', 'AWS', 'Docker', 'Git', 'TypeScript', 'Node.js', 'Kubernetes'],
+    label: 'Technology', color: '#006a62', emoji: '💻',
+    skills: ['Python', 'JavaScript', 'React', 'SQL', 'AWS', 'Docker', 'Git', 'TypeScript', 'Node.js', 'Kubernetes', 'Java', 'C++', 'Go', 'Rust', 'Linux'],
   },
   {
-    label: 'Healthcare',
-    color: '#0e7490',
-    skills: ['HIPAA Compliance', 'Epic/Cerner EHR', 'Patient Assessment', 'Medical Coding (ICD-10)', 'Clinical Research', 'Pharmacology', 'Telehealth Platforms'],
+    label: 'Healthcare', color: '#0e7490', emoji: '🏥',
+    skills: ['HIPAA Compliance', 'Epic/Cerner EHR', 'Patient Assessment', 'Medical Coding (ICD-10)', 'Clinical Research', 'Pharmacology', 'Telehealth'],
   },
   {
-    label: 'Finance',
-    color: '#8b4f2c',
-    skills: ['Excel/Financial Modeling', 'QuickBooks', 'Bloomberg Terminal', 'GAAP/IFRS', 'Risk Analysis', 'Tax Preparation', 'SAP'],
+    label: 'Finance', color: '#8b4f2c', emoji: '📊',
+    skills: ['Excel Modeling', 'QuickBooks', 'Bloomberg Terminal', 'GAAP/IFRS', 'Risk Analysis', 'Tax Preparation', 'SAP', 'Power BI'],
   },
   {
-    label: 'Design',
-    color: '#d97706',
-    skills: ['Figma', 'Adobe Creative Suite', 'UI/UX Research', 'Prototyping', 'Design Systems', 'Motion Design', 'Accessibility (WCAG)'],
+    label: 'Design', color: '#d97706', emoji: '🎨',
+    skills: ['Figma', 'Adobe Creative Suite', 'UI/UX Research', 'Prototyping', 'Design Systems', 'Motion Design', 'Accessibility (WCAG)', 'Sketch'],
   },
   {
-    label: 'Marketing',
-    color: '#9333ea',
-    skills: ['Google Analytics', 'SEO/SEM', 'HubSpot/Marketo', 'Social Media Ads', 'Content Strategy', 'A/B Testing', 'Email Marketing'],
+    label: 'Marketing', color: '#9333ea', emoji: '📣',
+    skills: ['Google Analytics', 'SEO/SEM', 'HubSpot', 'Social Media Ads', 'Content Strategy', 'A/B Testing', 'Email Marketing', 'Copywriting'],
   },
   {
-    label: 'Education',
-    color: '#0369a1',
+    label: 'Education', color: '#0369a1', emoji: '📚',
     skills: ['Curriculum Design', 'LMS (Canvas/Moodle)', 'Assessment Design', 'Classroom Management', 'Special Education (IEP)', 'EdTech Tools'],
   },
   {
-    label: 'Engineering',
-    color: '#1d4ed8',
-    skills: ['CAD (AutoCAD/SolidWorks)', 'MATLAB', 'Project Management (PMP)', 'Quality Control (Six Sigma)', 'Structural Analysis', 'GIS'],
+    label: 'Engineering', color: '#1d4ed8', emoji: '⚙️',
+    skills: ['AutoCAD/SolidWorks', 'MATLAB', 'PMP', 'Six Sigma', 'Structural Analysis', 'GIS', '3D Printing', 'FEA Simulation'],
   },
   {
-    label: 'Legal',
-    color: '#7c3aed',
-    skills: ['Legal Research (Westlaw/LexisNexis)', 'Contract Drafting', 'Regulatory Compliance', 'Case Management Software', 'Litigation Support'],
+    label: 'Legal', color: '#7c3aed', emoji: '⚖️',
+    skills: ['Westlaw/LexisNexis', 'Contract Drafting', 'Regulatory Compliance', 'Case Management', 'Litigation Support', 'Legal Writing'],
   },
   {
-    label: 'Science',
-    color: '#0f766e',
-    skills: ['R/SPSS Statistics', 'Lab Techniques', 'Scientific Writing', 'Grant Writing', 'Peer Review', 'Data Analysis'],
+    label: 'Science', color: '#0f766e', emoji: '🔬',
+    skills: ['R/SPSS', 'Lab Techniques', 'Scientific Writing', 'Grant Writing', 'Peer Review', 'Data Analysis', 'MATLAB', 'Bioinformatics'],
   },
   {
-    label: 'Business',
-    color: '#b45309',
-    skills: ['Salesforce CRM', 'Project Management (Jira/Asana)', 'Business Intelligence (Tableau/Power BI)', 'Agile/Scrum', 'Supply Chain Management'],
+    label: 'Business', color: '#b45309', emoji: '💼',
+    skills: ['Salesforce CRM', 'Jira/Asana', 'Tableau/Power BI', 'Agile/Scrum', 'Supply Chain', 'Negotiation', 'Public Speaking'],
   },
   {
-    label: 'Arts',
-    color: '#c2410c',
-    skills: ['Adobe Premiere/After Effects', 'Music Production (DAW)', 'Portfolio Development', 'Color Theory', 'Typography'],
+    label: 'Arts & Media', color: '#c2410c', emoji: '🎬',
+    skills: ['Premiere/After Effects', 'Music Production (DAW)', 'Photography', 'Color Theory', 'Typography', 'Storytelling', 'Podcasting'],
   },
   {
-    label: 'Trades',
-    color: '#64748b',
-    skills: ['Blueprint Reading', 'OSHA Safety', 'Electrical Wiring (NEC)', 'Welding Certification', 'HVAC Systems'],
+    label: 'Trades', color: '#64748b', emoji: '🔧',
+    skills: ['Blueprint Reading', 'OSHA Safety', 'Electrical Wiring', 'Welding', 'HVAC', 'Plumbing', 'Carpentry'],
   },
 ].map(d => ({
   ...d,
   skills: d.skills.map(s => ({ value: toValue(s), label: s })),
 }));
 
-/* ══════════════════════════════════════════════════════════════════
-   STYLES
-   ══════════════════════════════════════════════════════════════════ */
+/* ── Bubble cluster layout ─────────────────────────────────── */
 
-const sty = {
-  wrapper: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.75rem',
-  },
-  domainGrid: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: '0.5rem',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  domainBubble: (color: string, isOpen: boolean, hasSelected: boolean): CSSProperties => ({
-    padding: '0.55rem 1rem',
-    borderRadius: 'var(--radius-sm, 0.75rem)',
-    border: '2px solid',
-    borderColor: isOpen ? color : hasSelected ? color + '88' : 'var(--surface-container-low, #e8f6f8)',
-    background: isOpen ? color + '18' : hasSelected ? color + '0c' : 'var(--surface-container, #f0fafb)',
-    color: isOpen || hasSelected ? color : 'var(--on-surface, #1a1c1f)',
-    fontSize: '0.85rem',
-    fontWeight: isOpen || hasSelected ? 700 : 500,
-    cursor: 'pointer',
-    transition: 'all 0.25s cubic-bezier(0.33,1,0.68,1)',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '0.35rem',
-    userSelect: 'none' as const,
-    transform: isOpen ? 'scale(1.05)' : 'scale(1)',
-    whiteSpace: 'nowrap' as const,
-  }),
-  domainCount: (color: string): CSSProperties => ({
-    fontSize: '0.65rem',
-    fontWeight: 700,
-    background: color,
-    color: '#fff',
-    borderRadius: '2rem',
-    padding: '0.05rem 0.4rem',
-    minWidth: 16,
-    textAlign: 'center' as const,
-    lineHeight: '1.4',
-  }),
-  expandedSection: (color: string): CSSProperties => ({
-    width: '100%',
-    background: color + '08',
-    borderRadius: 'var(--radius-sm, 0.75rem)',
-    border: `1.5px solid ${color}30`,
-    padding: '0.75rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem',
-    animation: 'sdpSlideIn 0.3s cubic-bezier(0.33,1,0.68,1)',
-  }),
-  expandedHeader: (color: string): CSSProperties => ({
-    fontSize: '0.78rem',
-    fontWeight: 700,
-    color,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.04em',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.35rem',
-  }),
-  skillsWrap: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: '0.4rem',
-  },
-  skillChip: (selected: boolean, domainColor: string): CSSProperties => ({
-    padding: '0.4rem 0.8rem',
-    borderRadius: 'var(--radius-full, 9999px)',
-    border: '2px solid',
-    borderColor: selected ? 'var(--copper, #8b4f2c)' : domainColor + '44',
-    background: selected ? 'rgba(139, 79, 44, 0.12)' : 'var(--surface-container-lowest, #ffffff)',
-    color: selected ? 'var(--copper, #8b4f2c)' : 'var(--on-surface, #1a1c1f)',
-    fontSize: '0.82rem',
-    fontWeight: selected ? 600 : 400,
-    cursor: 'pointer',
-    transition: 'all 0.2s cubic-bezier(0.34,1.56,0.64,1)',
-    transform: selected ? 'scale(1.04)' : 'scale(1)',
-    userSelect: 'none' as const,
-  }),
-  counter: {
-    fontSize: '0.8rem',
-    color: 'var(--on-surface-muted, #78747e)',
-    textAlign: 'center' as const,
-    fontWeight: 600 as const,
-  },
-};
+// Position skill bubbles in a circular burst around the domain center
+function getBubblePositions(count: number, radius: number): { x: number; y: number }[] {
+  const positions: { x: number; y: number }[] = [];
+  const angleStep = (2 * Math.PI) / count;
+  const startAngle = -Math.PI / 2; // start from top
+  for (let i = 0; i < count; i++) {
+    const angle = startAngle + i * angleStep;
+    // Add slight randomness for organic feel
+    const r = radius + (i % 2 === 0 ? 0 : radius * 0.15);
+    positions.push({
+      x: Math.cos(angle) * r,
+      y: Math.sin(angle) * r,
+    });
+  }
+  return positions;
+}
 
-/* keyframe for slide-in animation */
-const keyframeStyle = `
-@keyframes sdpSlideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}`;
-
-/* ══════════════════════════════════════════════════════════════════
-   COMPONENT
-   ══════════════════════════════════════════════════════════════════ */
+/* ── Component ─────────────────────────────────────────────── */
 
 interface SkillDomainPickerProps {
   selected: string[];
@@ -191,87 +90,180 @@ interface SkillDomainPickerProps {
 }
 
 export function SkillDomainPicker({ selected, onToggle }: SkillDomainPickerProps) {
-  const [openDomains, setOpenDomains] = useState<Set<string>>(new Set());
+  const [activeDomain, setActiveDomain] = useState<string | null>(null);
 
-  const toggleDomain = useCallback((domain: string) => {
-    setOpenDomains(prev => {
-      const next = new Set(prev);
-      if (next.has(domain)) {
-        next.delete(domain);
-      } else {
-        next.add(domain);
-      }
-      return next;
-    });
+  const toggleDomain = useCallback((label: string) => {
+    setActiveDomain(prev => prev === label ? null : label);
   }, []);
 
-  // Count selected skills per domain
   const domainCounts = new Map<string, number>();
   for (const domain of DOMAINS) {
     const count = domain.skills.filter(sk => selected.includes(sk.value)).length;
     if (count > 0) domainCounts.set(domain.label, count);
   }
 
-  // Collect open domains in order for expansion panels below the grid
-  const openList = DOMAINS.filter(d => openDomains.has(d.label));
+  const activeDef = DOMAINS.find(d => d.label === activeDomain);
 
   return (
-    <div style={sty.wrapper}>
-      {/* Inject keyframe */}
-      <style>{keyframeStyle}</style>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+      <style>{`
+        @keyframes bubblePop {
+          0% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+          60% { transform: translate(var(--tx), var(--ty)) scale(1.1); opacity: 1; }
+          100% { transform: translate(var(--tx), var(--ty)) scale(1); opacity: 1; }
+        }
+        @keyframes domainPulse {
+          0%, 100% { box-shadow: 0 0 0 0 var(--pulse-color); }
+          50% { box-shadow: 0 0 0 8px transparent; }
+        }
+      `}</style>
 
-      {/* Domain bubble grid */}
-      <div style={sty.domainGrid}>
+      {/* Domain bubbles - circular grid */}
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', gap: '0.6rem',
+        justifyContent: 'center', maxWidth: 500,
+      }}>
         {DOMAINS.map(domain => {
-          const isOpen = openDomains.has(domain.label);
+          const isActive = activeDomain === domain.label;
           const count = domainCounts.get(domain.label) || 0;
-          const hasSelected = count > 0;
-          const ChevronIcon = isOpen ? ChevronUp : ChevronDown;
 
           return (
             <button
               key={domain.label}
-              style={sty.domainBubble(domain.color, isOpen, hasSelected)}
               onClick={() => toggleDomain(domain.label)}
-              aria-expanded={isOpen}
+              style={{
+                position: 'relative',
+                width: 72, height: 72,
+                borderRadius: '50%',
+                border: `2.5px solid ${isActive ? domain.color : count > 0 ? domain.color + '66' : 'var(--surface-container-high, #d0e3e6)'}`,
+                background: isActive ? domain.color + '15' : count > 0 ? domain.color + '08' : 'var(--surface-container-lowest, #fff)',
+                cursor: 'pointer',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 2,
+                transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+                transform: isActive ? 'scale(1.12)' : 'scale(1)',
+                '--pulse-color': domain.color + '40',
+                animation: isActive ? 'domainPulse 2s ease infinite' : 'none',
+              } as CSSProperties}
+              aria-expanded={isActive}
+              aria-label={`${domain.label} - ${count} skills selected`}
             >
-              {domain.label}
-              {hasSelected && (
-                <span style={sty.domainCount(domain.color)}>{count}</span>
+              <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{domain.emoji}</span>
+              <span style={{
+                fontSize: '0.58rem', fontWeight: 700, lineHeight: 1.1,
+                color: isActive || count > 0 ? domain.color : 'var(--on-surface-variant)',
+                textAlign: 'center', maxWidth: 60,
+              }}>
+                {domain.label}
+              </span>
+              {count > 0 && (
+                <span style={{
+                  position: 'absolute', top: -2, right: -2,
+                  width: 18, height: 18, borderRadius: '50%',
+                  background: domain.color, color: '#fff',
+                  fontSize: '0.6rem', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {count}
+                </span>
               )}
-              <ChevronIcon size={13} style={{ opacity: 0.5, flexShrink: 0 }} />
             </button>
           );
         })}
       </div>
 
-      {/* Expanded skill panels */}
-      {openList.map(domain => (
-        <div key={domain.label} style={sty.expandedSection(domain.color)}>
-          <div style={sty.expandedHeader(domain.color)}>
-            {domain.label}
+      {/* Skill bubbles - burst from active domain */}
+      {activeDef && (
+        <div style={{
+          position: 'relative',
+          width: '100%', minHeight: 280,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {/* Center label */}
+          <div style={{
+            position: 'absolute',
+            width: 80, height: 80, borderRadius: '50%',
+            background: activeDef.color + '18',
+            border: `2px solid ${activeDef.color}44`,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            zIndex: 2,
+          }}>
+            <span style={{ fontSize: '1.5rem' }}>{activeDef.emoji}</span>
+            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: activeDef.color }}>{activeDef.label}</span>
           </div>
-          <div style={sty.skillsWrap}>
-            {domain.skills.map(skill => {
+
+          {/* Branching skill bubbles */}
+          {(() => {
+            const positions = getBubblePositions(activeDef.skills.length, 110);
+            return activeDef.skills.map((skill, i) => {
+              const pos = positions[i];
               const isSel = selected.includes(skill.value);
+              const delay = i * 0.04;
+
               return (
                 <button
                   key={skill.value}
-                  style={sty.skillChip(isSel, domain.color)}
                   onClick={() => onToggle(skill.value)}
+                  style={{
+                    position: 'absolute',
+                    left: '50%', top: '50%',
+                    '--tx': `${pos.x}px`,
+                    '--ty': `${pos.y}px`,
+                    transform: `translate(${pos.x}px, ${pos.y}px)`,
+                    marginLeft: -40, marginTop: -18,
+                    width: 80, minHeight: 36,
+                    borderRadius: 'var(--radius-full, 9999px)',
+                    border: `2px solid ${isSel ? 'var(--copper, #8b4f2c)' : activeDef.color + '44'}`,
+                    background: isSel ? 'rgba(139,79,44,0.14)' : 'var(--surface-container-lowest, #fff)',
+                    color: isSel ? 'var(--copper, #8b4f2c)' : 'var(--on-surface, #1a1c1f)',
+                    fontSize: '0.72rem', fontWeight: isSel ? 700 : 500,
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    textAlign: 'center',
+                    padding: '4px 8px',
+                    lineHeight: 1.2,
+                    animation: `bubblePop 0.4s ${delay}s cubic-bezier(0.34,1.56,0.64,1) both`,
+                    transition: 'border-color 0.2s, background 0.2s, color 0.2s',
+                    zIndex: 1,
+                    boxShadow: isSel ? '0 2px 8px rgba(139,79,44,0.2)' : '0 1px 4px rgba(0,0,0,0.06)',
+                  } as CSSProperties}
                 >
-                  {isSel && '\u2713 '}{skill.label}
+                  {isSel && '✓ '}{skill.label}
                 </button>
               );
-            })}
-          </div>
-        </div>
-      ))}
+            });
+          })()}
 
-      {/* Counter */}
-      <p style={sty.counter}>
-        Selected ({selected.length})
-      </p>
+          {/* Connecting lines from center to each bubble */}
+          <svg style={{
+            position: 'absolute', left: '50%', top: '50%',
+            width: 0, height: 0, overflow: 'visible', zIndex: 0,
+            pointerEvents: 'none',
+          }}>
+            {getBubblePositions(activeDef.skills.length, 110).map((pos, i) => (
+              <line
+                key={i}
+                x1={0} y1={0} x2={pos.x} y2={pos.y}
+                stroke={activeDef.color + '22'}
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+              />
+            ))}
+          </svg>
+        </div>
+      )}
+
+      {/* Selected count */}
+      {selected.length > 0 && (
+        <p style={{
+          fontSize: '0.8rem', fontWeight: 600,
+          color: 'var(--copper, #8b4f2c)',
+          textAlign: 'center',
+        }}>
+          {selected.length} skill{selected.length !== 1 ? 's' : ''} selected
+        </p>
+      )}
     </div>
   );
 }
