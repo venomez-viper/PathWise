@@ -47,10 +47,10 @@ const TEAL_LIGHT = '#00a396';
 const TEAL_20 = 'rgba(0,106,98,0.20)';
 
 const TIER_CONFIG: Record<MatchTier, { label: string; color: string }> = {
-  excellent:  { label: 'Excellent Match', color: TEAL },
-  strong:     { label: 'Strong Match',    color: TEAL_LIGHT },
-  good:       { label: 'Good Match',      color: '#7ec8c0' },
-  developing: { label: 'Developing',      color: COPPER },
+  excellent:  { label: 'Excellent Match', color: COPPER },
+  strong:     { label: 'Strong Match',    color: '#a0694a' },
+  good:       { label: 'Good Match',      color: '#b8896a' },
+  developing: { label: 'Developing',      color: 'var(--on-surface-variant)' },
 };
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -438,9 +438,9 @@ const DIMENSION_LABELS: { key: keyof DimensionScores; label: string }[] = [
 ];
 
 function dimensionBarColor(score: number): string {
-  if (score > 75) return '#006a62';   // teal / green
-  if (score >= 50) return '#8b4f2c';  // copper / amber
-  return '#b91c1c';                   // red
+  if (score > 75) return '#8b4f2c';   // copper (strong)
+  if (score >= 50) return '#b8896a';  // copper light (moderate)
+  return '#c4a08a';                   // copper muted (needs growth)
 }
 
 function ScoreBreakdown({ dimensions, animate }: { dimensions: DimensionScores; animate: boolean }) {
@@ -489,13 +489,13 @@ function ScoreBreakdown({ dimensions, animate }: { dimensions: DimensionScores; 
               {/* Strongest / Growth area label */}
               {isHigh && (
                 <text x={labelW + maxW + 30} y={y + barH / 2 + 1} dominantBaseline="central"
-                  style={{ fontSize: 9, fontWeight: 700, fill: '#006a62', letterSpacing: 0.3 }}>
+                  style={{ fontSize: 9, fontWeight: 700, fill: '#8b4f2c', letterSpacing: 0.3 }}>
                   Strongest
                 </text>
               )}
               {isLow && !isHigh && (
                 <text x={labelW + maxW + 30} y={y + barH / 2 + 1} dominantBaseline="central"
-                  style={{ fontSize: 9, fontWeight: 700, fill: '#b91c1c', letterSpacing: 0.3 }}>
+                  style={{ fontSize: 9, fontWeight: 700, fill: '#c4a08a', letterSpacing: 0.3 }}>
                   Growth area
                 </text>
               )}
