@@ -95,7 +95,7 @@ export default function PublicProfile() {
                 border: '4px solid #eefcfe',
               }}>
                 {profile.avatarUrl?.trim()
-                  ? <img src={profile.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  ? <img src={profile.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   : initials
                 }
               </div>

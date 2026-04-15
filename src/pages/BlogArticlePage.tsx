@@ -62,7 +62,7 @@ export default function BlogArticlePage() {
             </div>
 
             <figure className="blog-reader__figure">
-              <img src={article.image.src} alt={article.image.alt} className="blog-reader__image" />
+              <img src={article.image.src} alt={article.image.alt} className="blog-reader__image" loading="lazy" />
               <figcaption className="blog-reader__caption">
                 <a href={article.image.creditHref} target="_blank" rel="noreferrer">
                   {article.image.credit}
