@@ -14,10 +14,10 @@ const TIMER_PRESETS = [
 
 const AMBIENT_SOUNDS = [
   { id: 'off', label: 'Off', icon: '🔇' },
-  { id: 'rain', label: 'Rain', icon: '🌧️' },
-  { id: 'whitenoise', label: 'White Noise', icon: '📻' },
-  { id: 'brown', label: 'Brown Noise', icon: '🌊' },
-  { id: 'cafe', label: 'Cafe', icon: '☕' },
+  { id: 'rain', label: 'Soft Rain', icon: '🌧️' },
+  { id: 'ocean', label: 'Ocean Waves', icon: '🌊' },
+  { id: 'forest', label: 'Forest', icon: '🌿' },
+  { id: 'brown', label: 'Deep Hum', icon: '🎵' },
 ];
 
 type TimerPhase = 'work' | 'break';
@@ -78,17 +78,60 @@ export default function FocusMode() {
 
   // Ambient sound
   const [activeSound, setActiveSound] = useState('off');
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.25);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const nodesRef = useRef<AudioNode[]>([]);
   const gainRef = useRef<GainNode | null>(null);
 
   const stopSound = useCallback(() => {
-    try { sourceRef.current?.stop(); } catch { /* already stopped */ }
-    sourceRef.current = null;
+    nodesRef.current.forEach(n => { try { (n as any).stop?.(); } catch { /* ok */ } });
+    nodesRef.current = [];
     try { audioCtxRef.current?.close(); } catch { /* ok */ }
     audioCtxRef.current = null;
+    gainRef.current = null;
   }, []);
+
+  const makeNoise = (ctx: AudioContext, type: 'white' | 'brown' | 'pink'): AudioBufferSourceNode => {
+    const len = 4 * ctx.sampleRate; // 4 second loop for smoother looping
+    const buf = ctx.createBuffer(2, len, ctx.sampleRate); // stereo for width
+    for (let ch = 0; ch < 2; ch++) {
+      const data = buf.getChannelData(ch);
+      if (type === 'brown') {
+        let last = 0;
+        for (let i = 0; i < len; i++) {
+          last = (last + 0.015 * (Math.random() * 2 - 1)) / 1.015;
+          data[i] = last * 4;
+        }
+      } else if (type === 'pink') {
+        // Pink noise via Voss-McCartney
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < len; i++) {
+          const w = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + w * 0.0555179;
+          b1 = 0.99332 * b1 + w * 0.0750759;
+          b2 = 0.96900 * b2 + w * 0.1538520;
+          b3 = 0.86650 * b3 + w * 0.3104856;
+          b4 = 0.55000 * b4 + w * 0.5329522;
+          b5 = -0.7616 * b5 - w * 0.0168980;
+          data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+          b6 = w * 0.115926;
+        }
+      } else {
+        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      }
+      // Fade loop edges for seamless looping (100ms crossfade)
+      const fade = Math.floor(0.1 * ctx.sampleRate);
+      for (let i = 0; i < fade; i++) {
+        const t = i / fade;
+        data[i] *= t;
+        data[len - 1 - i] *= t;
+      }
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    return src;
+  };
 
   const playSound = useCallback((soundId: string) => {
     stopSound();
@@ -96,47 +139,78 @@ export default function FocusMode() {
 
     const ctx = new AudioContext();
     audioCtxRef.current = ctx;
-    const gain = ctx.createGain();
-    gain.gain.value = volume;
-    gain.connect(ctx.destination);
-    gainRef.current = gain;
+    const master = ctx.createGain();
+    master.gain.value = volume;
+    master.connect(ctx.destination);
+    gainRef.current = master;
 
-    const bufferSize = 2 * ctx.sampleRate;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    if (soundId === 'brown') {
-      let last = 0;
-      for (let i = 0; i < bufferSize; i++) {
-        const w = Math.random() * 2 - 1;
-        data[i] = (last + 0.02 * w) / 1.02;
-        last = data[i];
-        data[i] *= 3.5;
-      }
-    } else {
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
-    }
-
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.loop = true;
-    sourceRef.current = source;
+    const nodes: AudioNode[] = [];
 
     if (soundId === 'rain') {
+      // Soft rain: pink noise through gentle low-pass + a second layer for texture
+      const src1 = makeNoise(ctx, 'pink');
+      const lp1 = ctx.createBiquadFilter();
+      lp1.type = 'lowpass'; lp1.frequency.value = 500; lp1.Q.value = 0.3;
+      const g1 = ctx.createGain(); g1.gain.value = 0.7;
+      src1.connect(lp1); lp1.connect(g1); g1.connect(master);
+      src1.start();
+      nodes.push(src1);
+
+      // Gentle high layer (distant patter)
+      const src2 = makeNoise(ctx, 'white');
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 4000; hp.Q.value = 0.2;
+      const lp2 = ctx.createBiquadFilter();
+      lp2.type = 'lowpass'; lp2.frequency.value = 8000; lp2.Q.value = 0.3;
+      const g2 = ctx.createGain(); g2.gain.value = 0.08;
+      src2.connect(hp); hp.connect(lp2); lp2.connect(g2); g2.connect(master);
+      src2.start();
+      nodes.push(src2);
+    } else if (soundId === 'ocean') {
+      // Ocean: brown noise with slow amplitude modulation (wave rhythm)
+      const src = makeNoise(ctx, 'brown');
       const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass'; lp.frequency.value = 800; lp.Q.value = 0.7;
-      source.connect(lp); lp.connect(gain);
-    } else if (soundId === 'cafe') {
+      lp.type = 'lowpass'; lp.frequency.value = 300; lp.Q.value = 0.2;
+      // LFO for wave-like pulsing
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine'; lfo.frequency.value = 0.12; // ~7s wave cycle
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.3;
+      const waveGain = ctx.createGain();
+      waveGain.gain.value = 0.6;
+      lfo.connect(lfoGain); lfoGain.connect(waveGain.gain);
+      src.connect(lp); lp.connect(waveGain); waveGain.connect(master);
+      src.start(); lfo.start();
+      nodes.push(src, lfo as any);
+    } else if (soundId === 'forest') {
+      // Forest: very gentle pink noise (wind in trees) + soft high tones (birds hint)
+      const src = makeNoise(ctx, 'pink');
       const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass'; bp.frequency.value = 600; bp.Q.value = 0.3;
-      source.connect(bp); bp.connect(gain);
-    } else {
-      source.connect(gain);
+      bp.type = 'bandpass'; bp.frequency.value = 400; bp.Q.value = 0.2;
+      const g1 = ctx.createGain(); g1.gain.value = 0.5;
+      src.connect(bp); bp.connect(g1); g1.connect(master);
+      src.start();
+      nodes.push(src);
+
+      // Subtle high shimmer
+      const src2 = makeNoise(ctx, 'white');
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 6000; hp.Q.value = 0.5;
+      const g2 = ctx.createGain(); g2.gain.value = 0.015;
+      src2.connect(hp); hp.connect(g2); g2.connect(master);
+      src2.start();
+      nodes.push(src2);
+    } else if (soundId === 'brown') {
+      // Deep hum: very deep brown noise, almost sub-bass
+      const src = makeNoise(ctx, 'brown');
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 150; lp.Q.value = 0.5;
+      src.connect(lp); lp.connect(master);
+      src.start();
+      nodes.push(src);
     }
 
-    source.start();
+    nodesRef.current = nodes;
     setActiveSound(soundId);
   }, [volume, stopSound]);
 
