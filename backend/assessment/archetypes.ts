@@ -1446,10 +1446,15 @@ const TERTIARY_CODE_BONUS = 0.03;
  * @param bigFive User's Big Five personality scores (each 0–100)
  * @returns       The best-matching Archetype
  */
+export interface ArchetypeResult extends Archetype {
+  confidence: number;
+  runnerUp: string;
+}
+
 export function determineArchetype(
   riasec: RIASECScores,
   bigFive: BigFiveScores,
-): Archetype {
+): ArchetypeResult {
   const dominant = getDominantRIASEC(riasec);
   const secondary = getSecondaryRIASEC(riasec);
   const tertiary = getTertiaryRIASEC(riasec);
@@ -1463,8 +1468,7 @@ export function determineArchetype(
   }
 
   // Stage 2: Rank by weighted Big Five distance with secondary/tertiary bonuses
-  let bestArchetype: Archetype = candidates[0];
-  let bestDistance = Infinity;
+  const scored: { archetype: Archetype; distance: number }[] = [];
 
   for (const archetype of candidates) {
     let distance = bigFiveDistance(
@@ -1483,13 +1487,33 @@ export function determineArchetype(
       distance *= (1 - TERTIARY_CODE_BONUS);
     }
 
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestArchetype = archetype;
-    }
+    scored.push({ archetype, distance });
   }
 
-  return bestArchetype;
+  // Sort ascending by distance (lower = better match)
+  scored.sort((a, b) => a.distance - b.distance);
+
+  const bestArchetype = scored[0].archetype;
+  const topDistance = scored[0].distance;
+  const secondDistance = scored.length > 1 ? scored[1].distance : topDistance;
+  const runnerUpName = scored.length > 1 ? scored[1].archetype.name : bestArchetype.name;
+
+  // Confidence: how much better the top archetype is vs the runner-up.
+  // If topDistance is 0 (perfect match) or only one candidate, confidence is 100.
+  // Otherwise, the bigger the gap between second and first, the higher the confidence.
+  let confidence: number;
+  if (scored.length <= 1 || topDistance === 0) {
+    confidence = 100;
+  } else {
+    confidence = Math.round(((secondDistance - topDistance) / secondDistance) * 100);
+    confidence = Math.max(0, Math.min(100, confidence));
+  }
+
+  return {
+    ...bestArchetype,
+    confidence,
+    runnerUp: runnerUpName,
+  };
 }
 
 // ─── Ranking Function ─────────────────────────────────────────────────────────

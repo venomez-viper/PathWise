@@ -1305,21 +1305,16 @@ const SALARY_RANGES: Record<string, { min: number; max: number }> = {
   "legal-analyst":        { min: 55000, max: 110000 },
   "compliance-officer":   { min: 60000, max: 120000 },
   "growth-hacker":        { min: 55000, max: 110000 },
-  "financial-analyst":    { min: 60000, max: 120000 },
-  "business-analyst":     { min: 60000, max: 115000 },
   "accountant":           { min: 50000, max: 95000 },
   "investment-analyst":   { min: 70000, max: 140000 },
   "investment-banker":    { min: 90000, max: 200000 },
   "sales-manager":        { min: 65000, max: 140000 },
-  "account-executive":    { min: 55000, max: 130000 },
   "business-development-rep": { min: 45000, max: 90000 },
   "hr-manager":           { min: 60000, max: 115000 },
   "hr-business-partner":  { min: 65000, max: 120000 },
-  "recruiter":            { min: 45000, max: 90000 },
   "corporate-trainer":    { min: 50000, max: 90000 },
   "career-coach":         { min: 45000, max: 85000 },
   "healthcare-administrator": { min: 55000, max: 110000 },
-  "clinical-researcher":  { min: 60000, max: 120000 },
   "biotech-project-manager": { min: 80000, max: 150000 },
   "health-informatics-specialist": { min: 65000, max: 120000 },
   "graphic-designer":     { min: 45000, max: 90000 },
@@ -1353,7 +1348,6 @@ const SALARY_RANGES: Record<string, { min: number; max: number }> = {
   "environmental-engineer": { min: 60000, max: 110000 },
   "conservation-biologist": { min: 45000, max: 85000 },
   "supply-chain-manager": { min: 65000, max: 120000 },
-  "operations-manager":   { min: 65000, max: 130000 },
   "commercial-pilot":     { min: 80000, max: 180000 },
   "air-traffic-controller": { min: 70000, max: 140000 },
   "hotel-manager":        { min: 45000, max: 95000 },
@@ -1366,7 +1360,6 @@ const SALARY_RANGES: Record<string, { min: number; max: number }> = {
   "counselor":            { min: 40000, max: 75000 },
   "nonprofit-manager":    { min: 45000, max: 85000 },
   "diplomat":             { min: 60000, max: 120000 },
-  "instructional-designer": { min: 55000, max: 100000 },
   "physical-therapist":   { min: 70000, max: 110000 },
   "content-creator":      { min: 35000, max: 100000 },
   "social-media-manager": { min: 45000, max: 85000 },
@@ -1422,7 +1415,11 @@ function getSalaryRange(profile: CareerProfile): { min: number; max: number } {
 }
 
 function getGrowthOutlook(profile: CareerProfile): string {
-  return DOMAIN_GROWTH[profile.domain] ?? "Moderate";
+  const exact = DOMAIN_GROWTH[profile.domain];
+  if (exact) return exact;
+  // Fallback: try the primary domain (before "/") for compound domains
+  const primary = profile.domain.split("/")[0];
+  return DOMAIN_GROWTH[primary] ?? "Moderate";
 }
 
 /** Experience-career fit scoring (ported from v1) */

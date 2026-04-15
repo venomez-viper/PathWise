@@ -34,7 +34,7 @@ export default function ProPage() {
       <Panda mood="cool" size={100} animate />
 
       <div style={{
-        background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)',
+        background: 'var(--copper)',
         color: '#fff', padding: '0.35rem 1rem', borderRadius: 'var(--radius-full)',
         fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
         textTransform: 'uppercase', marginTop: '1rem',

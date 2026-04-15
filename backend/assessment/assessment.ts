@@ -292,6 +292,20 @@ export const analyzeSkillGaps = api(
       matchedRules?: string[];
     };
   }> => {
+    // Input validation
+    if (typeof params.technicalSkills !== 'object' || params.technicalSkills === null || Array.isArray(params.technicalSkills)) {
+      throw APIError.invalidArgument("technicalSkills must be an object mapping skill names to proficiency levels");
+    }
+    if (typeof params.softSkills !== 'object' || params.softSkills === null || Array.isArray(params.softSkills)) {
+      throw APIError.invalidArgument("softSkills must be an object mapping skill names to proficiency levels");
+    }
+    if (!Array.isArray(params.tools)) {
+      throw APIError.invalidArgument("tools must be an array of tool names");
+    }
+    if (!params.yearsExperience || typeof params.yearsExperience !== 'string' || params.yearsExperience.trim() === '') {
+      throw APIError.invalidArgument("yearsExperience must be a non-empty string");
+    }
+
     const currentSkills = [
       ...params.tools,
       ...Object.entries(params.technicalSkills)
@@ -372,11 +386,18 @@ interface AssessmentV2Response {
       growthOutlook?: string;
     }[];
     skillGaps: { skill: string; importance: string; learningResource: string }[];
-    archetype: { id: string; name: string; tagline: string; description: string };
+    archetype: { id: string; name: string; tagline: string; description: string; confidence?: number; runnerUp?: string };
     riasec: RIASECResult;
     bigFive: BigFiveResult;
     narrative: NarrativeResult;
-    categorizedMatches: { category: string; title: string; score: number }[];
+    categorizedMatches?: {
+      category: string;
+      profile: { id: string; title: string; domain: string; description: string };
+      score: number;
+      confidence: string;
+      dimensions: { interest: number; personality: number; values: number; aptitude: number; environment: number; stage: number; total: number };
+      whyThisFits: string[];
+    }[];
   };
 }
 
@@ -393,13 +414,9 @@ export const submitAssessmentV2 = api(
 
     // Compute scores — detect v2 answer format (ri_/bf_ prefixed keys) vs v1 (int1/ws1)
     const hasV2Keys = Object.keys(rawAnswers).some(k => k.startsWith('ri_') || k.startsWith('bf_'));
-    console.log("[assessment-v2] hasV2Keys:", hasV2Keys, "sample keys:", Object.keys(rawAnswers).slice(0, 10));
     const riasec = hasV2Keys ? computeRIASECV2(rawAnswers) : computeRIASEC(rawAnswers as Record<string, string[]>);
     const bigFive = hasV2Keys ? computeBigFiveV2(rawAnswers) : computeBigFive(rawAnswers as Record<string, string[]>);
-    console.log("[assessment-v2] RIASEC:", JSON.stringify(riasec));
-    console.log("[assessment-v2] BigFive:", JSON.stringify(bigFive));
     const archetype = determineArchetype(riasec, bigFive);
-    console.log("[assessment-v2] Archetype:", archetype.name);
 
     // Get career matches using v2 engine
     const { careerMatches, skillGaps, categorizedMatches } = getTopCareerMatchesV2({
@@ -455,7 +472,7 @@ export const submitAssessmentV2 = api(
       result: {
         careerMatches,
         skillGaps,
-        archetype: { id: archetype.id, name: archetype.name, tagline: archetype.tagline, description: archetype.description },
+        archetype: { id: archetype.id, name: archetype.name, tagline: archetype.tagline, description: archetype.description, confidence: archetype.confidence, runnerUp: archetype.runnerUp },
         riasec,
         bigFive,
         narrative,

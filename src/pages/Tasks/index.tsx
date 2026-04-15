@@ -419,7 +419,7 @@ export default function Tasks() {
               className="stat-tile__fill"
               style={{
                 width: `${pct}%`,
-                background: pct === 100 ? '#34d399' : 'var(--primary)',
+                background: pct === 100 ? '#34d399' : 'var(--copper)',
                 transition: 'width 0.6s ease',
               }}
             />

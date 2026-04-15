@@ -534,7 +534,8 @@ function CareerMatchCard({ match, rank, visible, currentSkills }: { match: Caree
         <WhatIfPanel
           careerTitle={match.title}
           currentScore={match.matchScore}
-          skills={generateWhatIfSkills(match.title, match.matchScore)}
+          skills={generateWhatIfSkills(match.title, match.matchScore, match.requiredSkills)}
+          requiredSkills={match.requiredSkills}
         />
       )}
     </div>

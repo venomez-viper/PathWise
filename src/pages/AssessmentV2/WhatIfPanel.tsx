@@ -15,6 +15,7 @@ export interface WhatIfPanelProps {
   careerTitle: string;
   currentScore: number;
   skills: WhatIfSkill[];
+  requiredSkills?: string[];
 }
 
 /* ─── Career → Skill Mapping ─────────────────────────────────────── */
@@ -116,8 +117,22 @@ const DEFAULT_SKILLS: { skill: string; delta: number; effort: 'low' | 'medium' |
   { skill: 'Networking',            delta: 2, effort: 'low',    time: '~1 month'  },
 ];
 
-export function generateWhatIfSkills(careerTitle: string, currentScore: number): WhatIfSkill[] {
-  const template = CAREER_SKILLS[careerTitle] ?? DEFAULT_SKILLS;
+export function generateWhatIfSkills(careerTitle: string, currentScore: number, requiredSkills?: string[]): WhatIfSkill[] {
+  let template = CAREER_SKILLS[careerTitle];
+
+  // If no hardcoded mapping, generate from the career's required skills
+  if (!template && requiredSkills && requiredSkills.length > 0) {
+    const efforts: ('high' | 'medium' | 'low')[] = ['high', 'medium', 'medium', 'low', 'low'];
+    const times = ['~4 months', '~3 months', '~3 months', '~2 months', '~1 month'];
+    template = requiredSkills.slice(0, 5).map((skill, i) => ({
+      skill,
+      delta: Math.max(3, 8 - i),
+      effort: efforts[i] ?? 'low',
+      time: times[i] ?? '~2 months',
+    }));
+  }
+
+  if (!template) template = DEFAULT_SKILLS;
 
   // Sort by delta descending (highest impact first)
   const sorted = [...template].sort((a, b) => b.delta - a.delta);

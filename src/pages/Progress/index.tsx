@@ -65,7 +65,7 @@ function WeeklyChart({ data }: { data: number[] }) {
           <div style={{
             width: '100%', maxWidth: 32, borderRadius: '6px 6px 0 0',
             height: v > 0 ? Math.max((v / max) * barH, 8) : 8,
-            background: v > 0 ? 'linear-gradient(180deg, var(--primary), var(--primary-light))' : 'var(--surface-container-high)',
+            background: v > 0 ? 'var(--copper)' : 'var(--surface-container-high)',
             transition: 'height 0.6s cubic-bezier(.33,1,.68,1)',
           }} />
           <span style={{ fontSize: '0.62rem', fontWeight: 600, color: 'var(--on-surface-variant)' }}>{days[i]}</span>

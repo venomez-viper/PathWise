@@ -729,6 +729,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "ideator"], requiredSkills: ["Screenwriting", "Cinematography Fundamentals", "Directing Actors", "Production Management", "Post-Production Workflow"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Arts & Entertainment", "Media & Journalism"],
     pathwayTime: "5-10 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Screenwriting", importance: "high", learningResource: "Save the Cat! by Blake Snyder; Final Draft 12 screenwriting software" },
       { skill: "Directing Actors", importance: "high", learningResource: "Directing Actors by Judith Weston; Masterclass David Lynch" },
@@ -769,6 +770,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "doer"], requiredSkills: ["Instrument Proficiency", "Music Theory", "Recording/DAW (Ableton/Logic)", "Music Business & Licensing", "Live Performance"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Arts & Entertainment"],
     pathwayTime: "3-7 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Music Production (Ableton or Logic Pro)", importance: "high", learningResource: "Coursera Berklee Online Music Production courses; YouTube: In The Mix" },
       { skill: "Music Business & Licensing", importance: "high", learningResource: "Music Business Worldwide; Billboard Pro; Berklee Online Music Business courses" },
@@ -811,6 +813,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Environmental Regulations (EPA/CERCLA)", "Remediation Engineering", "Fate & Transport Modeling", "Permitting (NPDES, CAA)", "AutoCAD"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Agriculture & Environment"],
     pathwayTime: "4-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "EPA Regulations (CERCLA, RCRA, NPDES)", importance: "high", learningResource: "EPA.gov training resources; ENSR/Ramboll online regulatory training" },
       { skill: "Fate & Transport Modeling (MODFLOW/BIOSCREEN)", importance: "high", learningResource: "USGS MODFLOW tutorials; EPA groundwater modeling resources" },
@@ -851,6 +854,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "advocate"], requiredSkills: ["Field Data Collection", "GIS Mapping", "Species Identification", "Ecological Statistics (R)", "Grant Writing"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Agriculture & Environment"],
     pathwayTime: "4-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Ecological Statistics in R", importance: "high", learningResource: "Mixed Effects Models and Extensions in Ecology with R; Coursera Data Science in R" },
       { skill: "GIS for Habitat Analysis", importance: "high", learningResource: "Esri ArcGIS training; QGIS conservation mapping tutorials" },
@@ -893,6 +897,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["ERP Systems (SAP/Oracle)", "Demand Forecasting", "Vendor Management", "Logistics & Transportation", "Lean/Six Sigma"],
     experienceLevels: ["mid", "senior"], domains: ["Logistics & Operations"],
     pathwayTime: "3-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "SAP SCM or Oracle Supply Chain", importance: "high", learningResource: "SAP Learning Hub free tutorials; Oracle University supply chain courses" },
       { skill: "Demand Planning & Forecasting", importance: "high", learningResource: "APICS CPIM study materials; IBF Demand Planning certification" },
@@ -933,6 +938,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["Process Improvement", "KPI Management", "Budget Management", "Team Leadership", "Operations Software (ERP/HRIS)"],
     experienceLevels: ["mid", "senior"], domains: ["Logistics & Operations"],
     pathwayTime: "3-5 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Lean Six Sigma Process Improvement", importance: "high", learningResource: "ASQ Lean Six Sigma Green Belt study guide; Coursera Six Sigma Fundamentals" },
       { skill: "Financial Acumen & P&L Management", importance: "high", learningResource: "Harvard Business School Online Finance for Non-Finance Managers" },
@@ -975,6 +981,7 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "doer"], requiredSkills: ["Flight Maneuvers", "Instrument Flying (IFR)", "CRM (Crew Resource Management)", "Aircraft Systems Knowledge", "FAA Regulations (FAR/AIM)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Aviation"],
     pathwayTime: "3-6 years",
+    scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Instrument Flying (IFR)", importance: "high", learningResource: "Sporty's Instrument Rating course; FAA Instrument Flying Handbook (free PDF)" },
       { skill: "FAA Regulations (FAR/AIM)", importance: "high", learningResource: "ASA FAR/AIM annual publication; Sheppard Air FAA exam prep" },
