@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ArrowRight, Target, TrendingUp, CheckCircle2, Crosshair } from 'lucide-react';
 import DashboardSkeleton from './DashboardSkeleton';
 import { Link } from 'react-router-dom';
@@ -35,17 +35,23 @@ export default function Dashboard() {
   });
 
   const [loadKey, setLoadKey] = useState(0);
+  const lastDashFetchRef = useRef(0);
 
-  // Refetch when page becomes visible (user navigates back from Tasks, etc.)
+  // Refetch when page becomes visible (user navigates back from Tasks, etc.) — only if stale (>30s)
   useEffect(() => {
-    const onFocus = () => setLoadKey(k => k + 1);
+    const onFocus = () => {
+      if (Date.now() - lastDashFetchRef.current > 30_000) setLoadKey(k => k + 1);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastDashFetchRef.current > 30_000) {
+        setLoadKey(k => k + 1);
+      }
+    };
     window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') onFocus();
-    });
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
 
@@ -54,6 +60,7 @@ export default function Dashboard() {
     let cancelled = false;
     let mountTimer: ReturnType<typeof setTimeout>;
     async function load() {
+      lastDashFetchRef.current = Date.now();
       try {
         const [assessRes, roadmapRes, tasksRes, progressRes] = await Promise.allSettled([
           assessment.getResult(user!.id), roadmap.get(user!.id),

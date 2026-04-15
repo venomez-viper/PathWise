@@ -33,18 +33,22 @@ export default function Problem() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.querySelectorAll('.fade-up').forEach((el, i) => {
-            setTimeout(() => el.classList.add('visible'), i * 100);
+            timers.push(setTimeout(() => el.classList.add('visible'), i * 100));
           });
         }
       }),
       { threshold: 0.1 }
     );
     if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      timers.forEach(clearTimeout);
+    };
   }, []);
 
   return (

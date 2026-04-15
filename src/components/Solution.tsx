@@ -107,13 +107,27 @@ class FrameLoader {
   private loading: Set<number> = new Set();
   private loaded: Set<number> = new Set();
   private totalFrames: number;
+  private aborted = false;
 
   constructor(totalFrames: number) {
     this.totalFrames = totalFrames;
     this.images = new Array(totalFrames).fill(null);
   }
 
+  /** Stop all in-flight and scheduled loads, release image references */
+  abort(): void {
+    this.aborted = true;
+    // Cancel any in-flight image loads
+    for (const img of this.images) {
+      if (img && !img.complete) img.src = '';
+    }
+    this.images.fill(null);
+    this.loading.clear();
+    this.loaded.clear();
+  }
+
   private loadFrame(index: number): Promise<HTMLImageElement> {
+    if (this.aborted) return Promise.resolve(new Image());
     if (this.images[index] && this.loaded.has(index)) {
       return Promise.resolve(this.images[index]!);
     }
@@ -121,6 +135,7 @@ class FrameLoader {
       // Already in flight — return a promise that resolves when it finishes
       return new Promise((resolve) => {
         const check = () => {
+          if (this.aborted) { resolve(new Image()); return; }
           if (this.loaded.has(index)) resolve(this.images[index]!);
           else setTimeout(check, 16);
         };
@@ -131,6 +146,7 @@ class FrameLoader {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
+        if (this.aborted) { resolve(img); return; }
         this.images[index] = img;
         this.loaded.add(index);
         this.loading.delete(index);
@@ -159,7 +175,7 @@ class FrameLoader {
   /** Lazily load remaining frames in the background with idle callbacks */
   loadRemaining(): void {
     const loadNext = (i: number) => {
-      if (i >= this.totalFrames) return;
+      if (this.aborted || i >= this.totalFrames) return;
       if (this.loaded.has(i)) {
         // Already loaded (was a keyframe) — skip immediately
         loadNext(i + 1);
@@ -168,6 +184,7 @@ class FrameLoader {
       // Use requestIdleCallback where available, otherwise rAF
       const schedule = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : requestAnimationFrame;
       schedule(() => {
+        if (this.aborted) return;
         this.loadFrame(i).then(() => loadNext(i + 1));
       });
     };
@@ -225,11 +242,17 @@ export default function Solution() {
     loaderRef.current = loader;
 
     loader.preloadKeyframes(INITIAL_PRELOAD).then((firstFrame) => {
-      setImagesLoaded(true);
-      if (firstFrame) drawFrame(0);
-      // Load remaining frames in background during idle time
-      loader.loadRemaining();
+      if (loader === loaderRef.current) {
+        setImagesLoaded(true);
+        if (firstFrame) drawFrame(0);
+        loader.loadRemaining();
+      }
     });
+
+    return () => {
+      loader.abort();
+      loaderRef.current = null;
+    };
   }, []);
 
   const drawFrame = useCallback((frameIdx: number) => {
@@ -365,6 +388,13 @@ export default function Solution() {
       cancelAnimationFrame(rafId.current);
       window.removeEventListener('scroll', onScroll);
       clearTimeout(scrollTimeout);
+      // Release canvas resources
+      const canvas = canvasRef.current;
+      if (canvas) {
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+      canvasSized.current = false;
     };
   }, [drawFrame, imagesLoaded]);
 

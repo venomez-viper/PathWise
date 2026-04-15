@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
 
 export default function AnimatedShaderBackground({ children, className }: { children?: React.ReactNode; className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -9,21 +8,35 @@ export default function AnimatedShaderBackground({ children, className }: { chil
     const container = containerRef.current;
     if (!container) return;
 
-    // Wait a tick for layout to stabilize
-    const initTimer = setTimeout(() => {
+    let frameId: number;
+    let renderer: any;
+    let geometry: any;
+    let material: any;
+    let handleResize: (() => void) | null = null;
+    let cleanedUp = false;
+    let isInViewport = true;
+
+    const init = async () => {
+      // Small delay for layout to stabilize
+      await new Promise(r => setTimeout(r, 50));
+      if (cleanedUp) return;
+
+      const THREE = await import('three');
+      if (cleanedUp) return;
+
       const w = container.offsetWidth || window.innerWidth;
       const h = container.offsetHeight || window.innerHeight;
 
       const scene = new THREE.Scene();
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'low-power' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.setSize(w, h);
       renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:0;';
       container.insertBefore(renderer.domElement, container.firstChild);
       canvasRef.current = renderer.domElement;
 
-      const material = new THREE.ShaderMaterial({
+      material = new THREE.ShaderMaterial({
         uniforms: {
           iTime: { value: 0 },
           iResolution: { value: new THREE.Vector2(w, h) }
@@ -57,10 +70,10 @@ export default function AnimatedShaderBackground({ children, className }: { chil
             vec2 v; vec4 o = vec4(0.0);
             float f = 2.0 + fbm(p + vec2(iTime*5.0, 0.0))*0.5;
 
-            for (float i = 0.0; i < 35.0; i++) {
+            for (float i = 0.0; i < 20.0; i++) {
               v = p + cos(i*i + (iTime + p.x*0.08)*0.025 + i*vec2(13,11))*3.5
                 + vec2(sin(iTime*3.0+i)*0.003, cos(iTime*3.5-i)*0.003);
-              float tailNoise = fbm(v + vec2(iTime*0.5, i))*0.3*(1.0-(i/35.0));
+              float tailNoise = fbm(v + vec2(iTime*0.5, i))*0.3*(1.0-(i/20.0));
               // Purple-teal aurora tinted for PathWise
               vec4 colors = vec4(
                 0.08 + 0.15*sin(i*0.2 + iTime*0.4),
@@ -69,46 +82,69 @@ export default function AnimatedShaderBackground({ children, className }: { chil
                 1.0
               );
               vec4 contrib = colors * exp(sin(i*i + iTime*0.8)) / length(max(v, vec2(v.x*f*0.015, v.y*1.5)));
-              float thin = smoothstep(0.0, 1.0, i/35.0)*0.6;
+              float thin = smoothstep(0.0, 1.0, i/20.0)*0.6;
               o += contrib * (1.0 + tailNoise*0.8) * thin;
             }
-            o = tanh(pow(o / 100.0, vec4(1.6)));
+            o = tanh(pow(o / 60.0, vec4(1.6)));
             gl_FragColor = o * 1.1;
           }
         `
       });
 
-      const geometry = new THREE.PlaneGeometry(2, 2);
+      geometry = new THREE.PlaneGeometry(2, 2);
       const mesh = new THREE.Mesh(geometry, material);
       scene.add(mesh);
 
-      let frameId: number;
-      const animate = () => {
+      let lastFrame = 0;
+      const TARGET_FPS = 30;
+      const FRAME_INTERVAL = 1000 / TARGET_FPS;
+
+      const animate = (now: number) => {
+        if (cleanedUp) return;
+        frameId = requestAnimationFrame(animate);
+        // Skip frame if not in viewport or tab hidden
+        if (!isInViewport || document.hidden) return;
+        // Throttle to 30fps
+        if (now - lastFrame < FRAME_INTERVAL) return;
+        lastFrame = now;
         material.uniforms.iTime.value += 0.016;
         renderer.render(scene, camera);
-        frameId = requestAnimationFrame(animate);
       };
-      animate();
+      frameId = requestAnimationFrame(animate);
 
-      const handleResize = () => {
+      handleResize = () => {
         const cw = container.offsetWidth || window.innerWidth;
         const ch = container.offsetHeight || window.innerHeight;
         renderer.setSize(cw, ch);
         material.uniforms.iResolution.value.set(cw, ch);
       };
       window.addEventListener('resize', handleResize);
+    };
 
-      return () => {
-        cancelAnimationFrame(frameId);
-        window.removeEventListener('resize', handleResize);
+    // Observe viewport intersection to pause when scrolled away
+    const viewportObserver = new IntersectionObserver(
+      ([entry]) => { isInViewport = entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    viewportObserver.observe(container);
+
+    init();
+
+    return () => {
+      cleanedUp = true;
+      isInViewport = false;
+      viewportObserver.disconnect();
+      if (frameId) cancelAnimationFrame(frameId);
+      if (handleResize) window.removeEventListener('resize', handleResize);
+      if (geometry) geometry.dispose();
+      if (material) material.dispose();
+      if (renderer) {
         if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
-        geometry.dispose();
-        material.dispose();
+        renderer.forceContextLoss();
         renderer.dispose();
-      };
-    }, 50);
-
-    return () => clearTimeout(initTimer);
+      }
+      canvasRef.current = null;
+    };
   }, []);
 
   return (

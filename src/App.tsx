@@ -36,11 +36,11 @@ const ForgotPassword   = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword    = lazy(() => import('./pages/ResetPassword'));
 const LogoutPage       = lazy(() => import('./pages/Logout'));
 
-// Core app pages (eagerly loaded for instant navigation)
+// Core app pages
 import Dashboard from './pages/Dashboard';
-import Roadmap from './pages/Roadmap';
-import Tasks from './pages/Tasks';
-import SettingsPage from './pages/Settings';
+const Roadmap = lazy(() => import('./pages/Roadmap'));
+const Tasks = lazy(() => import('./pages/Tasks'));
+const SettingsPage = lazy(() => import('./pages/Settings'));
 
 // Other app pages (lazy loaded)
 const Progress         = lazy(() => import('./pages/Progress'));
@@ -190,10 +190,10 @@ export default function App() {
           {/* ── Webapp (/app/*) ── */}
           <Route path="/app" element={<AppLayout />}>
             <Route index             element={<Dashboard />} />
-            <Route path="roadmap"    element={<Roadmap />} />
-            <Route path="tasks"      element={<Tasks />} />
+            <Route path="roadmap"    element={<Suspense fallback={<PageLoader />}><Roadmap /></Suspense>} />
+            <Route path="tasks"      element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
             <Route path="progress"   element={<Suspense fallback={<PageLoader />}><Progress /></Suspense>} />
-            <Route path="settings"   element={<SettingsPage />} />
+            <Route path="settings"   element={<Suspense fallback={<PageLoader />}><SettingsPage /></Suspense>} />
             <Route path="onboarding"  element={<Suspense fallback={<PageLoader />}><Onboarding /></Suspense>} />
             <Route path="assessment"  element={<Suspense fallback={<PageLoader />}><Assessment /></Suspense>} />
             <Route path="assessment-v2" element={<Suspense fallback={<PageLoader />}><AssessmentV2 /></Suspense>} />

@@ -5,7 +5,7 @@
  * Shown on: Roadmap, Tasks, Progress, Streaks, Achievements, Certificates, Search, Help
  * Hidden on: Dashboard, Assessment, Settings, Onboarding, SkillGapAssessment
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi, roadmap as roadmapApi } from '../../lib/api';
@@ -46,8 +46,11 @@ export default function AppWidgetPanel() {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loaded, setLoaded] = useState(false);
 
+  const lastFetchRef = useRef(0);
+
   const loadData = useCallback(async () => {
     if (!user) return;
+    lastFetchRef.current = Date.now();
     try {
       const [tasksRes, roadmapRes] = await Promise.allSettled([
         tasksApi.list(user.id),
@@ -66,18 +69,24 @@ export default function AppWidgetPanel() {
     loadData();
   }, [loadData]);
 
+  // Refetch on route change only if data is stale (>30s old)
   useEffect(() => {
-    if (loaded) loadData();
+    if (loaded && Date.now() - lastFetchRef.current > 30_000) loadData();
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Refresh when page becomes visible (user switches tabs, navigates back)
+  // Refresh when page becomes visible (user switches tabs, navigates back) — only if stale
   useEffect(() => {
-    const refresh = () => { if (document.visibilityState === 'visible') loadData(); };
+    const refresh = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastFetchRef.current > 30_000) loadData();
+    };
+    const onFocus = () => {
+      if (Date.now() - lastFetchRef.current > 30_000) loadData();
+    };
     document.addEventListener('visibilitychange', refresh);
-    window.addEventListener('focus', loadData);
+    window.addEventListener('focus', onFocus);
     return () => {
       document.removeEventListener('visibilitychange', refresh);
-      window.removeEventListener('focus', loadData);
+      window.removeEventListener('focus', onFocus);
     };
   }, [loadData]);
 

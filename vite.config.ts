@@ -16,8 +16,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/react-router')) return 'vendor-react';
-          if (id.includes('node_modules/three')) return 'vendor-three';
-          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/motion')) return 'vendor-motion';
+          if (id.includes('node_modules/motion')) return 'vendor-motion';
           if (id.includes('node_modules/@sentry') || id.includes('node_modules/posthog')) return 'vendor-analytics';
           if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
         },
