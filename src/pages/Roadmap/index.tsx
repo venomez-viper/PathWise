@@ -270,7 +270,7 @@ export default function Roadmap() {
       {actionError && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.06)', borderRadius: '2rem', marginBottom: '1rem', color: '#ef4444', fontSize: '0.85rem' }}>
           <AlertCircle size={16} />{actionError}
-          <button onClick={() => setActionError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>✕</button>
+          <button onClick={() => setActionError(null)} aria-label="Dismiss error" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>✕</button>
         </div>
       )}
 
@@ -576,7 +576,7 @@ export default function Roadmap() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--on-surface)' }}>Add Custom Task</h3>
-              <button onClick={() => setShowAddTask(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 4 }}>
+              <button onClick={() => setShowAddTask(false)} aria-label="Close dialog" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 4 }}>
                 <X size={20} />
               </button>
             </div>

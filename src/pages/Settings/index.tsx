@@ -267,7 +267,7 @@ export default function SettingsPage() {
         {/* Edit name form */}
         {editingProfile && (
           <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <input className="settings-input" value={profileForm.name} onChange={e => { setProfileForm(f => ({ ...f, name: e.target.value })); setProfileError(''); setProfileSuccess(false); }} placeholder="Display name" />
+            <input className="settings-input" value={profileForm.name} onChange={e => { setProfileForm(f => ({ ...f, name: e.target.value })); setProfileError(''); setProfileSuccess(false); }} placeholder="Display name" aria-label="Display name" />
             {profileError && <p style={{ fontSize: '0.8rem', color: '#ef4444' }}>{profileError}</p>}
             <button className="btn-page-action" style={{ alignSelf: 'flex-start', background: 'var(--copper)', cursor: 'pointer' }} disabled={profileSaving || !profileForm.name.trim()} onClick={saveProfile}>
               {profileSaving ? 'Saving…' : <><Check size={14} /> Save Changes</>}
@@ -364,6 +364,7 @@ export default function SettingsPage() {
                 <>
                   {['current', 'newPw', 'confirm'].map(f => (
                     <input key={f} type="password" className="settings-input" placeholder={f === 'current' ? 'Current password' : f === 'newPw' ? 'New password' : 'Confirm new password'}
+                      aria-label={f === 'current' ? 'Current password' : f === 'newPw' ? 'New password' : 'Confirm new password'}
                       value={pwForm[f as keyof typeof pwForm]} onChange={e => { setPwForm(p => ({ ...p, [f]: e.target.value })); setPwError(''); }} />
                   ))}
                   {pwError && <p style={{ fontSize: '0.78rem', color: '#ef4444' }}>{pwError}</p>}
@@ -435,6 +436,7 @@ export default function SettingsPage() {
                   value={profileSettings.profileSlug}
                   onChange={e => { setProfileSettings(s => ({ ...s, profileSlug: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '') })); setProfileSettingsSuccess(false); }}
                   placeholder="your-slug"
+                  aria-label="Profile URL slug"
                   style={{ flex: 1 }}
                 />
                 {profileSettings.profilePublic && profileSettings.profileSlug && (

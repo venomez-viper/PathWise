@@ -47,7 +47,7 @@
   /* Text */
   --on-surface: #1a1c1f;
   --on-surface-variant: #49454f;
-  --on-surface-muted: #78747e;
+  --on-surface-muted: #655f6b;
 
   /* Borders — ghost only */
   --outline-variant: rgba(73, 69, 79, 0.10);
@@ -118,6 +118,43 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+/* ── Accessibility: global focus ring ── */
+:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* ── Accessibility: skip-to-content link ── */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0 0 var(--radius-md) 0;
+  text-decoration: none;
+}
+.skip-to-content:focus {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
 }
 
 img { max-width: 100%; display: block; }
