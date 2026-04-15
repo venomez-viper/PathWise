@@ -20,9 +20,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep - Financial Modeling" },
-      { skill: "SQL", importance: "high", learningResource: "Mode Analytics SQL Tutorial" },
-      { skill: "Data Visualization", importance: "medium", learningResource: "Tableau Public tutorials" },
+      { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep Financial Modeling - https://www.wallstreetprep.com/self-study-programs/" },
+      { skill: "SQL", importance: "high", learningResource: "Mode SQL Tutorial - https://mode.com/sql-tutorial/" },
+      { skill: "Data Visualization", importance: "medium", learningResource: "Tableau Free Training Videos - https://www.tableau.com/learn/training" },
     ],
     certifications: [
       { skill: "Finance", certName: "Google Data Analytics Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-data-analytics", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Foundation for data-driven finance roles" },
@@ -68,9 +68,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Requirements Gathering", importance: "high", learningResource: "IIBA BABOK Guide" },
-      { skill: "SQL", importance: "high", learningResource: "W3Schools SQL Tutorial" },
-      { skill: "Process Mapping", importance: "medium", learningResource: "Lucidchart BPMN tutorials" },
+      { skill: "Requirements Gathering", importance: "high", learningResource: "IIBA BABOK Guide - https://www.iiba.org/business-analysis-body-of-knowledge/" },
+      { skill: "SQL", importance: "high", learningResource: "W3Schools SQL Tutorial - https://www.w3schools.com/sql/" },
+      { skill: "Process Mapping", importance: "medium", learningResource: "Lucidchart BPMN Tutorials - https://www.lucidchart.com/pages/bpmn" },
     ],
     certifications: [
       { skill: "Business Analysis", certName: "IIBA Entry Certificate in Business Analysis", provider: "IIBA", url: "https://www.iiba.org/certification/ecba/", duration: "3 months", level: "Beginner", cost: "$350", whyRecommended: "Recognized entry-level BA certification" },
@@ -112,9 +112,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-18 months",
     scoringWeights: { interest: 0.15, personality: 0.15, values: 0.25, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "GAAP", importance: "high", learningResource: "Coursera Financial Accounting Fundamentals" },
-      { skill: "Tax Preparation", importance: "high", learningResource: "IRS Free File training materials" },
-      { skill: "Accounting Software", importance: "medium", learningResource: "QuickBooks Online tutorials" },
+      { skill: "GAAP", importance: "high", learningResource: "Coursera Financial Accounting (UVA) - https://www.coursera.org/learn/uva-darden-financial-accounting" },
+      { skill: "Tax Preparation", importance: "high", learningResource: "IRS Free File Resources - https://www.irs.gov/filing/free-file-do-your-federal-taxes-for-free" },
+      { skill: "Accounting Software", importance: "medium", learningResource: "QuickBooks Online Tutorials - https://quickbooks.intuit.com/tutorials/" },
     ],
     certifications: [
       { skill: "Accounting", certName: "CPA Exam Preparation", provider: "Becker", url: "https://www.becker.com/cpa-review", duration: "12 months", level: "Advanced", cost: "$2,499", whyRecommended: "CPA is the gold standard for accountants" },
@@ -156,9 +156,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.20, personality: 0.15, values: 0.15, aptitude: 0.30, environment: 0.05, stage: 0.15 },
     skillGaps: [
-      { skill: "Equity Research", importance: "high", learningResource: "Aswath Damodaran NYU lectures (free)" },
-      { skill: "Bloomberg Terminal", importance: "high", learningResource: "Bloomberg Market Concepts (BMC)" },
-      { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep Self-Study" },
+      { skill: "Equity Research", importance: "high", learningResource: "Aswath Damodaran NYU Lectures - https://pages.stern.nyu.edu/~adamodar/" },
+      { skill: "Bloomberg Terminal", importance: "high", learningResource: "Bloomberg Market Concepts - https://portal.bloombergforeducation.com/courses/bloomberg-market-concepts" },
+      { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep Self-Study - https://www.wallstreetprep.com/self-study-programs/" },
     ],
     certifications: [
       { skill: "Investment Analysis", certName: "CFA Level I", provider: "CFA Institute", url: "https://www.cfainstitute.org/programs/cfa", duration: "6 months", level: "Intermediate", cost: "$1,200", whyRecommended: "Gold standard credential in investment management" },
@@ -646,7 +646,7 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     skillGaps: [
       { skill: "EHR Systems", importance: "high", learningResource: "Epic training programs or Cerner certification" },
       { skill: "HL7/FHIR Standards", importance: "high", learningResource: "HL7 International free resources" },
-      { skill: "SQL", importance: "medium", learningResource: "W3Schools SQL Tutorial" },
+      { skill: "SQL", importance: "medium", learningResource: "W3Schools SQL Tutorial - https://www.w3schools.com/sql/" },
     ],
     certifications: [
       { skill: "Health Informatics", certName: "AHIMA Certified Health Data Analyst", provider: "AHIMA", url: "https://www.ahima.org/certification/chda", duration: "6 months", level: "Intermediate", cost: "$349", whyRecommended: "Validates health data analysis competency" },

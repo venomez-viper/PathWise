@@ -18,6 +18,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["leader", "analyst"], requiredSkills: ["Westlaw/LexisNexis Research", "Contract Drafting (Redlining)", "Bluebook Citation", "Oral Advocacy (Moot Court)", "Legal Brief Writing"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Law & Policy", "Consulting"],
     pathwayTime: "3-7 years (JD required)",
+    careerPathway: {
+      entryFrom: ["Paralegal", "Law Student", "Legal Intern"],
+      progressTo: ["Senior Associate", "Partner", "Judge", "General Counsel"],
+    },
     scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Legal Research", importance: "high", learningResource: "Westlaw and LexisNexis tutorials via law school access" },
@@ -101,6 +105,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "leader"], requiredSkills: ["GRC Platforms (ServiceNow/Archer)", "SOX/AML Compliance Frameworks", "Audit Trail Documentation", "Data Privacy Regulations (GDPR/CCPA)", "Risk Assessment Matrices (RCSA)"],
     experienceLevels: ["mid", "senior"], domains: ["Law & Policy", "Finance", "Healthcare"],
     pathwayTime: "2-4 years",
+    careerPathway: {
+      entryFrom: ["Paralegal", "Internal Auditor", "Risk Analyst"],
+      progressTo: ["Chief Compliance Officer", "VP of Risk", "General Counsel"],
+    },
     scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Regulatory Frameworks (GDPR, SOX, HIPAA)", importance: "high", learningResource: "IAPP Privacy Law training; COSO framework guides" },
@@ -1522,6 +1530,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["SIEM (Splunk/Microsoft Sentinel)", "Incident Response", "Network Security", "Penetration Testing Basics", "NIST/ISO 27001 Frameworks"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology"],
     pathwayTime: "1-3 years",
+    careerPathway: {
+      entryFrom: ["IT Support", "Network Administrator", "Security Analyst"],
+      progressTo: ["Security Engineer", "Penetration Tester", "Security Architect", "CISO"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "SIEM & Log Analysis (Splunk)", importance: "high", learningResource: "Splunk free training at Splunk Education; TryHackMe Splunk learning path" },
@@ -1604,6 +1616,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Financial Modeling (LBO/DCF/Merger)", "Pitch Book Design (PowerPoint)", "Capital IQ/Bloomberg Terminal", "Valuation (Comps/Precedent Transactions)", "SEC Filings Analysis (10-K/S-1)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Finance", "Consulting"],
     pathwayTime: "2-4 years",
+    careerPathway: {
+      entryFrom: ["Financial Analyst", "Finance Intern", "Accounting Graduate"],
+      progressTo: ["Vice President", "Managing Director", "Private Equity Partner"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "LBO & M&A Financial Modeling", importance: "high", learningResource: "Wall Street Prep IB modeling course; Breaking Into Wall Street BIWS" },
@@ -1687,6 +1703,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     groupRoles: ["ideator", "leader"], requiredSkills: ["Adobe Premiere/Final Cut Pro", "YouTube Studio Analytics", "Thumbnail Design (Photoshop/Canva)", "SEO for Video (TubeBuddy/VidIQ)", "Sponsorship/Brand Deal Negotiation"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Media & Entertainment", "Marketing"],
     pathwayTime: "3-6 months",
+    careerPathway: {
+      entryFrom: ["Social Media Enthusiast", "Blogger", "Video Hobbyist"],
+      progressTo: ["Brand Strategist", "Media Company Founder", "Creative Director"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Video Editing", importance: "high", learningResource: "DaVinci Resolve free tutorials on YouTube" },
