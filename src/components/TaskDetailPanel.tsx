@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Trash2, Save, Calendar, Tag, Flag, Layers } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 /* ── Types ── */
 type Task = {
@@ -16,8 +17,15 @@ type Task = {
   createdAt?: string;
 };
 
+interface Milestone {
+  id: string;
+  title: string;
+  status: string;
+}
+
 interface TaskDetailPanelProps {
   task: Task | null;
+  milestones?: Milestone[];
   onClose: () => void;
   onSave: (taskId: string, updates: Partial<Task>) => Promise<void>;
   onDelete: (taskId: string) => Promise<void>;
@@ -45,7 +53,7 @@ const PRIORITY_OPTIONS: { value: Task['priority']; label: string; color: string 
   { value: 'high', label: 'High', color: 'var(--error, #ef4444)' },
 ];
 
-export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: TaskDetailPanelProps) {
+export default function TaskDetailPanel({ task, milestones = [], onClose, onSave, onDelete }: TaskDetailPanelProps) {
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState<Task['status']>('todo');
   const [priority, setPriority] = useState<Task['priority']>('medium');
@@ -343,11 +351,24 @@ export default function TaskDetailPanel({ task, onClose, onSave, onDelete }: Tas
                 Completed: {new Date(task.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             )}
-            {task.milestoneId && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }}>
-                Linked to milestone
-              </span>
-            )}
+            {task.milestoneId && (() => {
+              const ms = milestones.find(m => m.id === task.milestoneId);
+              return ms ? (
+                <Link
+                  to="/app/roadmap"
+                  style={{
+                    fontSize: '0.75rem', color: 'var(--copper)', fontWeight: 600,
+                    textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  <Layers size={12} /> {ms.title}
+                </Link>
+              ) : (
+                <span style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)' }}>
+                  Linked to milestone
+                </span>
+              );
+            })()}
           </div>
         </div>
 

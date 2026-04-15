@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   CheckCircle2, Plus, Sparkles, Loader2, X,
   LayoutGrid, List, ArrowRight, ArrowLeft,
-  Calendar, ClipboardList, Target, ArrowUpDown,
+  Calendar, ClipboardList, Target, ArrowUpDown, Layers,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
@@ -631,7 +631,7 @@ export default function Tasks() {
                     )}
 
                     {colTasks.map(task => (
-                      <TaskCard key={task.id} task={task} onMove={moveTask} onSelect={setSelectedTask} />
+                      <TaskCard key={task.id} task={task} milestones={milestones} onMove={moveTask} onSelect={setSelectedTask} />
                     ))}
                   </div>
                 </div>
@@ -726,7 +726,22 @@ export default function Tasks() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p className="task-row__title">{task.title}</p>
-                        {task.description && <p className="task-row__meta">{task.description}</p>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          {task.description && <p className="task-row__meta" style={{ margin: 0 }}>{task.description}</p>}
+                          {task.milestoneId && milestones.find(m => m.id === task.milestoneId) && (
+                            <Link
+                              to="/app/roadmap"
+                              onClick={e => e.stopPropagation()}
+                              style={{
+                                fontSize: '0.65rem', fontWeight: 600, padding: '1px 7px', borderRadius: '999px',
+                                background: 'rgba(139,79,44,0.08)', color: 'var(--copper)', textDecoration: 'none',
+                                display: 'inline-flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap',
+                              }}
+                            >
+                              <Layers size={9} /> {milestones.find(m => m.id === task.milestoneId)!.title}
+                            </Link>
+                          )}
+                        </div>
                       </div>
                       <span
                         style={{
@@ -786,6 +801,7 @@ export default function Tasks() {
       {/* Task detail/edit panel */}
       <TaskDetailPanel
         task={selectedTask}
+        milestones={milestones}
         onClose={() => setSelectedTask(null)}
         onSave={handleSaveTask}
         onDelete={handleDeleteTask}
@@ -799,18 +815,33 @@ export default function Tasks() {
    ================================================================ */
 interface TaskCardProps {
   task: Task;
+  milestones: Milestone[];
   onMove: (task: Task, status: Task['status']) => void;
   onSelect: (task: Task) => void;
 }
 
-function TaskCard({ task, onMove, onSelect }: TaskCardProps) {
+function TaskCard({ task, milestones, onMove, onSelect }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate);
+  const milestone = task.milestoneId ? milestones.find(m => m.id === task.milestoneId) : null;
 
   return (
     <article className="kanban-card" aria-label={`Task: ${task.title}`} onClick={() => onSelect(task)} style={{ cursor: 'pointer' }}>
       <p className="kanban-card__title">{task.title}</p>
 
       <div className="kanban-card__badges">
+        {milestone && (
+          <Link
+            to={`/app/roadmap`}
+            onClick={e => e.stopPropagation()}
+            style={{
+              fontSize: '0.65rem', fontWeight: 600, padding: '2px 8px', borderRadius: '999px',
+              background: 'rgba(139,79,44,0.1)', color: 'var(--copper)', textDecoration: 'none',
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+            }}
+          >
+            <Layers size={10} /> {milestone.title}
+          </Link>
+        )}
         {task.category && (
           <span className={`kanban-badge kanban-badge--${task.category}`}>
             {CATEGORY_LABELS[task.category] ?? task.category}
