@@ -24,10 +24,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Legal Research", importance: "high", learningResource: "Westlaw and LexisNexis tutorials via law school access" },
-      { skill: "Contract Drafting", importance: "high", learningResource: "American Bar Association Contract Drafting courses" },
-      { skill: "Oral Advocacy", importance: "high", learningResource: "National Institute for Trial Advocacy (NITA) programs" },
-      { skill: "Legal Writing", importance: "medium", learningResource: "Plain English for Lawyers by Richard Wydick" },
+      { skill: "Legal Research", importance: "high", learningResource: "Westlaw and LexisNexis Tutorials via Law School Access - https://www.law.cornell.edu/" },
+      { skill: "Contract Drafting", importance: "high", learningResource: "American Bar Association Contract Drafting Courses - https://www.americanbar.org/" },
+      { skill: "Oral Advocacy", importance: "high", learningResource: "National Institute for Trial Advocacy (NITA) Programs - https://www.nita.org/" },
+      { skill: "Legal Writing", importance: "medium", learningResource: "Plain English for Lawyers by Richard Wydick - https://www.law.cornell.edu/" },
     ],
     certifications: [
       { skill: "Law", certName: "Juris Doctor (JD)", provider: "ABA-accredited law school", url: "https://www.americanbar.org/groups/legal_education/resources/aba_approved_law_schools/", duration: "3 years full-time", level: "Graduate", cost: "$30,000–$70,000/year", whyRecommended: "Required to practice law in all US states" },
@@ -70,9 +70,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Legal Research", importance: "high", learningResource: "Paralegal Studies textbooks; free LexisNexis academic access" },
-      { skill: "Case Management Software", importance: "high", learningResource: "Clio Academy (free training for Clio practice management)" },
-      { skill: "Legal Writing", importance: "medium", learningResource: "NALA Paralegal Certification study materials" },
+      { skill: "Legal Research", importance: "high", learningResource: "Paralegal Studies Textbooks; Free LexisNexis Academic Access - https://www.law.cornell.edu/" },
+      { skill: "Case Management Software", importance: "high", learningResource: "Clio Academy (Free Training for Clio Practice Management) - https://www.clio.com/resources/" },
+      { skill: "Legal Writing", importance: "medium", learningResource: "NALA Paralegal Certification Study Materials - https://www.nala.org/" },
     ],
     certifications: [
       { skill: "Paralegal", certName: "Certified Paralegal (CP)", provider: "NALA – The Paralegal Association", url: "https://nala.org/certification/", duration: "Self-study, exam in 1 day", level: "Professional", cost: "$250 (NALA members) / $370 (non-members)", whyRecommended: "Most widely recognized paralegal credential in the US" },
@@ -115,9 +115,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.15, personality: 0.20, values: 0.25, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Regulatory Frameworks (GDPR, SOX, HIPAA)", importance: "high", learningResource: "IAPP Privacy Law training; COSO framework guides" },
-      { skill: "Risk Assessment", importance: "high", learningResource: "RIMS Risk Management fundamentals course" },
-      { skill: "Policy Writing", importance: "medium", learningResource: "SCCE Compliance & Ethics training library" },
+      { skill: "Regulatory Frameworks (GDPR, SOX, HIPAA)", importance: "high", learningResource: "IAPP Privacy Law Training; COSO Framework Guides - https://iapp.org/" },
+      { skill: "Risk Assessment", importance: "high", learningResource: "RIMS Risk Management Fundamentals Course - https://www.rims.org/" },
+      { skill: "Policy Writing", importance: "medium", learningResource: "SCCE Compliance & Ethics Training Library - https://www.corporatecompliance.org/" },
     ],
     certifications: [
       { skill: "Compliance", certName: "Certified Compliance & Ethics Professional (CCEP)", provider: "Society of Corporate Compliance and Ethics (SCCE)", url: "https://www.corporatecompliance.org/certifications", duration: "Self-study + exam", level: "Professional", cost: "$400–$600", whyRecommended: "Gold standard compliance credential recognized across industries" },
@@ -162,10 +162,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.05 },
     skillGaps: [
-      { skill: "Revit / BIM Modeling", importance: "high", learningResource: "Autodesk Revit official tutorials on Autodesk Learning" },
-      { skill: "Building Codes (IBC)", importance: "high", learningResource: "International Building Code study guides via ICC" },
-      { skill: "Sustainable Design (LEED)", importance: "medium", learningResource: "USGBC LEED credentials study guide" },
-      { skill: "Construction Documents", importance: "high", learningResource: "AIA Contract Documents overview; Schiff Hardin CDs course" },
+      { skill: "Revit / BIM Modeling", importance: "high", learningResource: "Autodesk Revit Official Tutorials on Autodesk Learning - https://www.autodesk.com/certification/learn" },
+      { skill: "Building Codes (IBC)", importance: "high", learningResource: "International Building Code Study Guides via ICC - https://www.iccsafe.org/" },
+      { skill: "Sustainable Design (LEED)", importance: "medium", learningResource: "USGBC LEED Credentials Study Guide - https://www.usgbc.org/" },
+      { skill: "Construction Documents", importance: "high", learningResource: "AIA Contract Documents Overview; Schiff Hardin CDs Course - https://www.aia.org/" },
     ],
     certifications: [
       { skill: "Architecture", certName: "Architect Registration Exam (ARE 5.0)", provider: "National Council of Architectural Registration Boards (NCARB)", url: "https://www.ncarb.org/pass-the-are", duration: "6 divisions, self-paced", level: "Professional Licensure", cost: "$235 per division", whyRecommended: "Required to become a licensed architect in the US" },
@@ -208,9 +208,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.10, stage: 0.05 },
     skillGaps: [
-      { skill: "AutoCAD Civil 3D", importance: "high", learningResource: "Autodesk Civil 3D official learning path on Autodesk University" },
-      { skill: "Structural Analysis (STAAD/SAP2000)", importance: "high", learningResource: "Bentley STAAD.Pro tutorials and ASCE training resources" },
-      { skill: "Hydrology & Stormwater Design", importance: "medium", learningResource: "ASCE continuing education; Bentley WaterGEMS tutorials" },
+      { skill: "AutoCAD Civil 3D", importance: "high", learningResource: "Autodesk Civil 3D Official Learning Path on Autodesk University - https://www.autodesk.com/certification/learn" },
+      { skill: "Structural Analysis (STAAD/SAP2000)", importance: "high", learningResource: "Bentley STAAD.Pro Tutorials and ASCE Training Resources - https://www.asce.org/" },
+      { skill: "Hydrology & Stormwater Design", importance: "medium", learningResource: "ASCE Continuing Education; Bentley WaterGEMS Tutorials - https://www.asce.org/" },
     ],
     certifications: [
       { skill: "Engineering", certName: "Professional Engineer (PE) License", provider: "NCEES", url: "https://ncees.org/engineering/pe/", duration: "4+ years experience + exam", level: "Professional Licensure", cost: "$375 exam fee", whyRecommended: "Required to sign off on public infrastructure designs; greatly increases earning potential" },
@@ -249,9 +249,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "4-8 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.15, stage: 0.05 },
     skillGaps: [
-      { skill: "Primavera P6 Scheduling", importance: "high", learningResource: "Oracle Primavera P6 free tutorials on Oracle University" },
-      { skill: "Cost Estimating (Procore/Bluebeam)", importance: "high", learningResource: "Procore Certification free online training" },
-      { skill: "OSHA 30-Hour Safety", importance: "high", learningResource: "OSHA.gov 30-hour online course via authorized OSHA outreach trainers" },
+      { skill: "Primavera P6 Scheduling", importance: "high", learningResource: "Oracle Primavera P6 Free Tutorials on Oracle University - https://education.oracle.com/" },
+      { skill: "Cost Estimating (Procore/Bluebeam)", importance: "high", learningResource: "Procore Certification Free Online Training - https://learn.procore.com/" },
+      { skill: "OSHA 30-Hour Safety", importance: "high", learningResource: "OSHA.gov 30-Hour Online Course via Authorized OSHA Outreach Trainers - https://www.osha.gov/training" },
     ],
     certifications: [
       { skill: "Construction Management", certName: "Certified Construction Manager (CCM)", provider: "Construction Management Association of America (CMAA)", url: "https://www.cmaanet.org/professional-development/certifications/ccm", duration: "Experience + exam", level: "Professional", cost: "$400–$650", whyRecommended: "Industry-leading credential for construction managers; required by many public agencies" },
@@ -296,9 +296,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.05 },
     skillGaps: [
-      { skill: "Investigative Research & FOIA", importance: "high", learningResource: "IRE (Investigative Reporters and Editors) tipsheets and training" },
-      { skill: "Data Journalism", importance: "high", learningResource: "Knight Center for Journalism MOOC: Introduction to Data Journalism" },
-      { skill: "Multimedia Production", importance: "medium", learningResource: "Adobe Premiere Pro tutorials on Adobe Learn" },
+      { skill: "Investigative Research & FOIA", importance: "high", learningResource: "IRE (Investigative Reporters and Editors) Tipsheets and Training - https://www.ire.org/" },
+      { skill: "Data Journalism", importance: "high", learningResource: "Knight Center for Journalism MOOC: Introduction to Data Journalism - https://journalismcourses.org/" },
+      { skill: "Multimedia Production", importance: "medium", learningResource: "Adobe Premiere Pro Tutorials on Adobe Learn - https://helpx.adobe.com/creative-cloud/tutorials.html" },
     ],
     certifications: [
       { skill: "Journalism", certName: "NCTJ Diploma in Journalism", provider: "National Council for the Training of Journalists (NCTJ)", url: "https://www.nctj.com/", duration: "6–12 months", level: "Professional", cost: "£2,500–£8,000 depending on provider", whyRecommended: "Internationally recognized journalism qualification; widely used in broadcast and print hiring" },
@@ -337,9 +337,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "1-2 years",
     scoringWeights: { interest: 0.30, personality: 0.25, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Press Release Writing & AP Style", importance: "high", learningResource: "Associated Press Stylebook; PR Daily writing workshops" },
-      { skill: "Media Database Tools (Cision)", importance: "high", learningResource: "Cision free demo and training videos on Cision.com" },
-      { skill: "Crisis Communications", importance: "medium", learningResource: "PRSA Crisis Communications Certificate Program" },
+      { skill: "Press Release Writing & AP Style", importance: "high", learningResource: "Associated Press Stylebook; PR Daily Writing Workshops - https://www.prdaily.com/" },
+      { skill: "Media Database Tools (Cision)", importance: "high", learningResource: "Cision Free Demo and Training Videos on Cision.com - https://www.cision.com/" },
+      { skill: "Crisis Communications", importance: "medium", learningResource: "PRSA Crisis Communications Certificate Program - https://www.prsa.org/" },
     ],
     certifications: [
       { skill: "Public Relations", certName: "Accredited in Public Relations (APR)", provider: "Public Relations Society of America (PRSA)", url: "https://www.prsa.org/professional-development/apr/", duration: "Self-study + panel review + exam", level: "Professional", cost: "$385 (members) / $505 (non-members)", whyRecommended: "The most recognized voluntary credential in the PR profession" },
@@ -380,9 +380,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.30, values: 0.15, aptitude: 0.05, environment: 0.15, stage: 0.10 },
     skillGaps: [
-      { skill: "Real Estate Law & Contracts", importance: "high", learningResource: "State real estate pre-license course (Kaplan or Champions School)" },
-      { skill: "Comparative Market Analysis (CMA)", importance: "high", learningResource: "NAR Center for REALTOR Development courses" },
-      { skill: "Lead Generation & CRM", importance: "medium", learningResource: "Tom Ferry's free YouTube coaching and KW Command CRM training" },
+      { skill: "Real Estate Law & Contracts", importance: "high", learningResource: "State Real Estate Pre-License Course (Kaplan or Champions School) - https://www.kapre.com/" },
+      { skill: "Comparative Market Analysis (CMA)", importance: "high", learningResource: "NAR Center for REALTOR Development Courses - https://www.nar.realtor/" },
+      { skill: "Lead Generation & CRM", importance: "medium", learningResource: "Tom Ferry's Free YouTube Coaching and KW Command CRM Training - https://www.linkedin.com/learning/" },
     ],
     certifications: [
       { skill: "Real Estate", certName: "Real Estate Salesperson License", provider: "State Real Estate Commission", url: "https://www.arello.com/regulatory-agency-database/", duration: "40–180 hours pre-license education + exam", level: "Professional Licensure", cost: "$200–$800 total", whyRecommended: "Required by law to represent buyers and sellers in real estate transactions" },
@@ -421,9 +421,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "1-3 years",
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
-      { skill: "Property Management Software (AppFolio/Yardi)", importance: "high", learningResource: "AppFolio free training videos; Yardi Voyager training on Yardi Client Central" },
-      { skill: "Lease Administration & Fair Housing Law", importance: "high", learningResource: "IREM courses; NAA Lease Addendum training" },
-      { skill: "Financial Reporting & Budgeting", importance: "medium", learningResource: "IREM CPM designation course on operations and budgeting" },
+      { skill: "Property Management Software (AppFolio/Yardi)", importance: "high", learningResource: "AppFolio Free Training Videos; Yardi Voyager Training on Yardi Client Central - https://www.appfolio.com/" },
+      { skill: "Lease Administration & Fair Housing Law", importance: "high", learningResource: "IREM Courses; NAA Lease Addendum Training - https://www.irem.org/" },
+      { skill: "Financial Reporting & Budgeting", importance: "medium", learningResource: "IREM CPM Designation Course on Operations and Budgeting - https://www.irem.org/" },
     ],
     certifications: [
       { skill: "Property Management", certName: "Certified Property Manager (CPM)", provider: "Institute of Real Estate Management (IREM)", url: "https://www.irem.org/credentials/cpm", duration: "Experience + coursework + exam", level: "Professional", cost: "$1,000–$3,000 total", whyRecommended: "Most respected property management credential; significantly increases salary and advancement" },
@@ -464,9 +464,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "4-5 years (apprenticeship)",
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.20, aptitude: 0.15, environment: 0.20, stage: 0.00 },
     skillGaps: [
-      { skill: "National Electrical Code (NEC)", importance: "high", learningResource: "Mike Holt NEC Illustrated Guide and free YouTube lectures" },
-      { skill: "Blueprint & Schematic Reading", importance: "high", learningResource: "IBEW/NECA apprenticeship training materials" },
-      { skill: "Conduit Bending & Installation", importance: "high", learningResource: "NJATC (National Joint Apprenticeship Training Committee) apprenticeship program" },
+      { skill: "National Electrical Code (NEC)", importance: "high", learningResource: "Mike Holt NEC Illustrated Guide and Free YouTube Lectures - https://www.mikeholt.com/" },
+      { skill: "Blueprint & Schematic Reading", importance: "high", learningResource: "IBEW/NECA Apprenticeship Training Materials - https://www.ibew.org/" },
+      { skill: "Conduit Bending & Installation", importance: "high", learningResource: "NJATC (National Joint Apprenticeship Training Committee) Apprenticeship Program - https://www.njatc.org/" },
     ],
     certifications: [
       { skill: "Electrician", certName: "Journeyman Electrician License", provider: "State Electrical Licensing Board", url: "https://www.electrical-licensing.com/state-electrical-licensing.html", duration: "4–5 year apprenticeship + exam", level: "Professional Licensure", cost: "$50–$200 exam fee", whyRecommended: "Required to work as an electrician without direct supervision; major income jump from apprentice" },
@@ -505,9 +505,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "4-5 years (apprenticeship)",
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.25, aptitude: 0.10, environment: 0.20, stage: 0.00 },
     skillGaps: [
-      { skill: "Uniform Plumbing Code (UPC) / IPC", importance: "high", learningResource: "IAPMO UPC study guide; ICC IPC exam prep books" },
-      { skill: "Pipe Fitting & Soldering", importance: "high", learningResource: "UA (United Association) apprenticeship program training materials" },
-      { skill: "Gas Piping & Pressure Testing", importance: "high", learningResource: "NFPA 54 National Fuel Gas Code study guide" },
+      { skill: "Uniform Plumbing Code (UPC) / IPC", importance: "high", learningResource: "IAPMO UPC Study Guide; ICC IPC Exam Prep Books - https://www.iapmo.org/" },
+      { skill: "Pipe Fitting & Soldering", importance: "high", learningResource: "UA (United Association) Apprenticeship Program Training Materials - https://www.ua.org/" },
+      { skill: "Gas Piping & Pressure Testing", importance: "high", learningResource: "NFPA 54 National Fuel Gas Code Study Guide - https://www.nfpa.org/" },
     ],
     certifications: [
       { skill: "Plumbing", certName: "Journeyman Plumber License", provider: "State Plumbing Licensing Board", url: "https://www.plumbing-license.com/", duration: "4–5 year apprenticeship + exam", level: "Professional Licensure", cost: "$50–$200 exam fee", whyRecommended: "Required to work as a plumber without direct supervision in most states" },
@@ -546,9 +546,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "2-5 years",
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.20, aptitude: 0.15, environment: 0.20, stage: 0.00 },
     skillGaps: [
-      { skill: "EPA 608 Refrigerant Handling", importance: "high", learningResource: "HVAC Excellence EPA 608 study guide; Esco Group certification prep" },
-      { skill: "Electrical Diagnostics & Controls", importance: "high", learningResource: "NATE HVAC technician study guides" },
-      { skill: "Load Calculations (Manual J)", importance: "medium", learningResource: "ACCA Manual J Residential Load Calculation software tutorial" },
+      { skill: "EPA 608 Refrigerant Handling", importance: "high", learningResource: "HVAC Excellence EPA 608 Study Guide; Esco Group Certification Prep - https://www.escogroup.org/" },
+      { skill: "Electrical Diagnostics & Controls", importance: "high", learningResource: "NATE HVAC Technician Study Guides - https://www.natex.org/" },
+      { skill: "Load Calculations (Manual J)", importance: "medium", learningResource: "ACCA Manual J Residential Load Calculation Software Tutorial - https://www.acca.org/" },
     ],
     certifications: [
       { skill: "Refrigerants", certName: "EPA Section 608 Certification", provider: "EPA-approved testing organization", url: "https://www.epa.gov/section608", duration: "Self-study + half-day exam", level: "Required by Law", cost: "$20–$50", whyRecommended: "Federally required to purchase and handle refrigerants; must have before any HVAC job" },
@@ -589,9 +589,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "2-4 years",
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.30, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
-      { skill: "Quantitative Policy Research", importance: "high", learningResource: "Urban Institute free policy research methods course" },
-      { skill: "Statistical Analysis (R or Stata)", importance: "high", learningResource: "DataCamp Statistical Inference with R course" },
-      { skill: "Cost-Benefit Analysis", importance: "medium", learningResource: "Benefit-Cost Analysis textbook by Boardman et al.; OMB Circular A-94" },
+      { skill: "Quantitative Policy Research", importance: "high", learningResource: "Urban Institute Free Policy Research Methods Course - https://www.urban.org/" },
+      { skill: "Statistical Analysis (R or Stata)", importance: "high", learningResource: "DataCamp Statistical Inference with R Course - https://www.datacamp.com/" },
+      { skill: "Cost-Benefit Analysis", importance: "medium", learningResource: "Benefit-Cost Analysis Textbook by Boardman et al.; OMB Circular A-94 - https://www.coursera.org/" },
     ],
     certifications: [
       { skill: "Policy Analysis", certName: "Master of Public Policy (MPP)", provider: "NASPAA-accredited school", url: "https://www.naspaa.org/find-a-program", duration: "2 years full-time", level: "Graduate", cost: "$20,000–$55,000/year", whyRecommended: "Standard terminal professional degree for federal and state policy analyst careers" },
@@ -630,9 +630,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-5 years",
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.30, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
-      { skill: "GIS (ArcGIS or QGIS)", importance: "high", learningResource: "Esri ArcGIS training (esri.com/training); QGIS free tutorials on QGIS.org" },
-      { skill: "Zoning Law & Entitlements", importance: "high", learningResource: "APA Zoning Practice publication; state planning association training" },
-      { skill: "Environmental Review (NEPA/CEQA)", importance: "medium", learningResource: "Council on Environmental Quality NEPA guides; California OPR CEQA guidelines" },
+      { skill: "GIS (ArcGIS or QGIS)", importance: "high", learningResource: "Esri ArcGIS Training (esri.com/training); QGIS Free Tutorials on QGIS.org - https://www.esri.com/training/" },
+      { skill: "Zoning Law & Entitlements", importance: "high", learningResource: "APA Zoning Practice Publication; State Planning Association Training - https://www.planning.org/" },
+      { skill: "Environmental Review (NEPA/CEQA)", importance: "medium", learningResource: "Council on Environmental Quality NEPA Guides; California OPR CEQA Guidelines - https://ceq.doe.gov/" },
     ],
     certifications: [
       { skill: "Planning", certName: "American Institute of Certified Planners (AICP)", provider: "American Planning Association (APA)", url: "https://www.planning.org/aicp/", duration: "2 years experience + exam", level: "Professional", cost: "$400–$575", whyRecommended: "Industry standard credential; required or strongly preferred for senior planning positions" },
@@ -673,9 +673,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "2-4 years",
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
-      { skill: "Unity Game Development", importance: "high", learningResource: "Unity Learn free tutorials (learn.unity.com)" },
-      { skill: "Game Design Documentation (GDD)", importance: "high", learningResource: "The Art of Game Design by Jesse Schell; GDC Vault free lectures" },
-      { skill: "Level Design", importance: "medium", learningResource: "World of Level Design tutorials; GDC Vault level design talks" },
+      { skill: "Unity Game Development", importance: "high", learningResource: "Unity Learn Free Tutorials - https://learn.unity.com/" },
+      { skill: "Game Design Documentation (GDD)", importance: "high", learningResource: "The Art of Game Design by Jesse Schell; GDC Vault Free Lectures - https://gdcvault.com/" },
+      { skill: "Level Design", importance: "medium", learningResource: "World of Level Design Tutorials; GDC Vault Level Design Talks - https://gdcvault.com/" },
     ],
     certifications: [
       { skill: "Game Development", certName: "Unity Certified Associate: Game Developer", provider: "Unity Technologies", url: "https://unity.com/products/unity-certifications", duration: "Self-study + exam", level: "Entry-Level", cost: "$150", whyRecommended: "Industry-recognized Unity credential; shows studios you have verified hands-on skills" },
@@ -714,9 +714,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "2-4 years",
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.05 },
     skillGaps: [
-      { skill: "Maya or Blender 3D Animation", importance: "high", learningResource: "AnimSchool free lectures; Blender Guru YouTube channel" },
-      { skill: "12 Principles of Animation", importance: "high", learningResource: "The Animator's Survival Kit by Richard Williams" },
-      { skill: "Character Rigging", importance: "medium", learningResource: "CGCircuit rigging courses; Rigging Dojo tutorials" },
+      { skill: "Maya or Blender 3D Animation", importance: "high", learningResource: "AnimSchool Free Lectures; Blender Guru YouTube Channel - https://www.blender.org/support/tutorials/" },
+      { skill: "12 Principles of Animation", importance: "high", learningResource: "The Animator's Survival Kit by Richard Williams - https://www.linkedin.com/learning/" },
+      { skill: "Character Rigging", importance: "medium", learningResource: "CGCircuit Rigging Courses; Rigging Dojo Tutorials - https://www.linkedin.com/learning/" },
     ],
     certifications: [
       { skill: "3D Animation", certName: "Autodesk Maya Associate Certification", provider: "Autodesk", url: "https://www.autodesk.com/certification/", duration: "Self-study + exam", level: "Entry-Level", cost: "$150", whyRecommended: "Verified Maya skills boost resume competitiveness for VFX and game studio positions" },
@@ -755,9 +755,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "5-10 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Screenwriting", importance: "high", learningResource: "Save the Cat! by Blake Snyder; Final Draft 12 screenwriting software" },
-      { skill: "Directing Actors", importance: "high", learningResource: "Directing Actors by Judith Weston; Masterclass David Lynch" },
-      { skill: "Cinematography & Camera", importance: "high", learningResource: "No Film School; DSLR Video Shooter YouTube channel" },
+      { skill: "Screenwriting", importance: "high", learningResource: "Save the Cat! by Blake Snyder; Final Draft 12 Screenwriting Software - https://www.finaldraft.com/" },
+      { skill: "Directing Actors", importance: "high", learningResource: "Directing Actors by Judith Weston; Masterclass David Lynch - https://www.masterclass.com/" },
+      { skill: "Cinematography & Camera", importance: "high", learningResource: "No Film School; DSLR Video Shooter YouTube Channel - https://nofilmschool.com/" },
     ],
     certifications: [
       { skill: "Film", certName: "DGA Training Program", provider: "Directors Guild of America", url: "https://www.dgatrainingprogram.org/", duration: "2-year training program", level: "Professional", cost: "Free (competitive entry)", whyRecommended: "The definitive path to union directing in Hollywood; alumni direct major TV and feature projects" },
@@ -796,9 +796,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-7 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Music Production (Ableton or Logic Pro)", importance: "high", learningResource: "Coursera Berklee Online Music Production courses; YouTube: In The Mix" },
-      { skill: "Music Business & Licensing", importance: "high", learningResource: "Music Business Worldwide; Billboard Pro; Berklee Online Music Business courses" },
-      { skill: "Music Theory & Ear Training", importance: "medium", learningResource: "musictheory.net free lessons; LightNote.ca; Teoria.com" },
+      { skill: "Music Production (Ableton or Logic Pro)", importance: "high", learningResource: "Coursera Berklee Online Music Production Courses - https://www.coursera.org/" },
+      { skill: "Music Business & Licensing", importance: "high", learningResource: "Music Business Worldwide; Billboard Pro; Berklee Online Music Business Courses - https://www.coursera.org/" },
+      { skill: "Music Theory & Ear Training", importance: "medium", learningResource: "musictheory.net Free Lessons; LightNote.ca; Teoria.com - https://www.musictheory.net/" },
     ],
     certifications: [
       { skill: "Music Production", certName: "Berklee Online Certificate in Music Production", provider: "Berklee Online", url: "https://online.berklee.edu/certificate-programs/music-production", duration: "12 months self-paced", level: "Professional", cost: "$6,990", whyRecommended: "The most credible online music production credential; teaches production, mixing, and industry skills" },
@@ -839,9 +839,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "4-6 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "EPA Regulations (CERCLA, RCRA, NPDES)", importance: "high", learningResource: "EPA.gov training resources; ENSR/Ramboll online regulatory training" },
-      { skill: "Fate & Transport Modeling (MODFLOW/BIOSCREEN)", importance: "high", learningResource: "USGS MODFLOW tutorials; EPA groundwater modeling resources" },
-      { skill: "Environmental Data Analysis (R or Python)", importance: "medium", learningResource: "DataCamp Environmental Data Science path" },
+      { skill: "EPA Regulations (CERCLA, RCRA, NPDES)", importance: "high", learningResource: "EPA.gov Training Resources; ENSR/Ramboll Online Regulatory Training - https://www.epa.gov/learning" },
+      { skill: "Fate & Transport Modeling (MODFLOW/BIOSCREEN)", importance: "high", learningResource: "USGS MODFLOW Tutorials; EPA Groundwater Modeling Resources - https://www.usgs.gov/software/modflow-6-usgs-modular-hydrologic-model" },
+      { skill: "Environmental Data Analysis (R or Python)", importance: "medium", learningResource: "DataCamp Environmental Data Science Path - https://www.datacamp.com/" },
     ],
     certifications: [
       { skill: "Engineering", certName: "Professional Engineer (PE) – Environmental", provider: "NCEES", url: "https://ncees.org/engineering/pe/environmental/", duration: "FE exam + 4 years experience + PE exam", level: "Professional Licensure", cost: "$375", whyRecommended: "Required to sign environmental engineering design documents; dramatically increases career options" },
@@ -880,9 +880,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "4-6 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Ecological Statistics in R", importance: "high", learningResource: "Mixed Effects Models and Extensions in Ecology with R; Coursera Data Science in R" },
-      { skill: "GIS for Habitat Analysis", importance: "high", learningResource: "Esri ArcGIS training; QGIS conservation mapping tutorials" },
-      { skill: "Grant Writing", importance: "medium", learningResource: "Grantcraft.org; Nature Conservancy grant writing guides" },
+      { skill: "Ecological Statistics in R", importance: "high", learningResource: "Mixed Effects Models and Extensions in Ecology with R; Coursera Data Science in R - https://www.coursera.org/" },
+      { skill: "GIS for Habitat Analysis", importance: "high", learningResource: "Esri ArcGIS Training; QGIS Conservation Mapping Tutorials - https://www.esri.com/training/" },
+      { skill: "Grant Writing", importance: "medium", learningResource: "Grantcraft.org; Nature Conservancy Grant Writing Guides - https://www.nature.org/" },
     ],
     certifications: [
       { skill: "Biology", certName: "Society for Conservation Biology (SCB) Student Membership", provider: "Society for Conservation Biology", url: "https://conbio.org/", duration: "Annual", level: "Professional", cost: "$25/year", whyRecommended: "Access to the Conservation Biology journal, job board, and global network of conservation professionals" },
@@ -923,9 +923,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-6 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "SAP SCM or Oracle Supply Chain", importance: "high", learningResource: "SAP Learning Hub free tutorials; Oracle University supply chain courses" },
-      { skill: "Demand Planning & Forecasting", importance: "high", learningResource: "APICS CPIM study materials; IBF Demand Planning certification" },
-      { skill: "Lean Six Sigma", importance: "medium", learningResource: "ASQ Six Sigma Green Belt study guide; Villanova online Lean Six Sigma course" },
+      { skill: "SAP SCM or Oracle Supply Chain", importance: "high", learningResource: "SAP Learning Hub Free Tutorials; Oracle University Supply Chain Courses - https://learning.sap.com/" },
+      { skill: "Demand Planning & Forecasting", importance: "high", learningResource: "APICS CPIM Study Materials; IBF Demand Planning Certification - https://www.ascm.org/" },
+      { skill: "Lean Six Sigma", importance: "medium", learningResource: "ASQ Six Sigma Green Belt Study Guide; Villanova Online Lean Six Sigma Course - https://asq.org/" },
     ],
     certifications: [
       { skill: "Supply Chain", certName: "APICS Certified in Production and Inventory Management (CPIM)", provider: "Association for Supply Chain Management (ASCM)", url: "https://www.ascm.org/cpim/", duration: "Self-study + 2 exams", level: "Professional", cost: "$730 (members) / $995 (non-members)", whyRecommended: "Most recognized supply chain operations credential; standard requirement in manufacturing and retail" },
@@ -964,9 +964,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-5 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Lean Six Sigma Process Improvement", importance: "high", learningResource: "ASQ Lean Six Sigma Green Belt study guide; Coursera Six Sigma Fundamentals" },
-      { skill: "Financial Acumen & P&L Management", importance: "high", learningResource: "Harvard Business School Online Finance for Non-Finance Managers" },
-      { skill: "Operations Analytics (Tableau/Power BI)", importance: "medium", learningResource: "Tableau Public free training; Microsoft Power BI free learning" },
+      { skill: "Lean Six Sigma Process Improvement", importance: "high", learningResource: "ASQ Lean Six Sigma Green Belt Study Guide; Coursera Six Sigma Fundamentals - https://www.coursera.org/" },
+      { skill: "Financial Acumen & P&L Management", importance: "high", learningResource: "Harvard Business School Online Finance for Non-Finance Managers - https://online.hbs.edu/" },
+      { skill: "Operations Analytics (Tableau/Power BI)", importance: "medium", learningResource: "Tableau Public Free Training; Microsoft Power BI Free Learning - https://www.tableau.com/learn/training" },
     ],
     certifications: [
       { skill: "Operations", certName: "Six Sigma Green Belt", provider: "ASQ (American Society for Quality)", url: "https://asq.org/cert/six-sigma-green-belt", duration: "Self-study + exam", level: "Professional", cost: "$438 (members) / $538 (non-members)", whyRecommended: "Most recognized process improvement credential; required or preferred for ops manager roles in manufacturing, healthcare, and tech" },
@@ -1007,9 +1007,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-6 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Instrument Flying (IFR)", importance: "high", learningResource: "Sporty's Instrument Rating course; FAA Instrument Flying Handbook (free PDF)" },
-      { skill: "FAA Regulations (FAR/AIM)", importance: "high", learningResource: "ASA FAR/AIM annual publication; Sheppard Air FAA exam prep" },
-      { skill: "Multi-Engine Flying", importance: "high", learningResource: "AOPA multi-engine training resources; local Part 61/141 flight school" },
+      { skill: "Instrument Flying (IFR)", importance: "high", learningResource: "Sporty's Instrument Rating Course; FAA Instrument Flying Handbook (Free PDF) - https://www.faa.gov/regulations_policies/handbooks_manuals/aviation" },
+      { skill: "FAA Regulations (FAR/AIM)", importance: "high", learningResource: "ASA FAR/AIM Annual Publication; Sheppard Air FAA Exam Prep - https://www.faa.gov/regulations_policies" },
+      { skill: "Multi-Engine Flying", importance: "high", learningResource: "AOPA Multi-Engine Training Resources; Local Part 61/141 Flight School - https://www.aopa.org/" },
     ],
     certifications: [
       { skill: "Flying", certName: "Commercial Pilot Certificate (Multi-Engine Instrument)", provider: "FAA", url: "https://www.faa.gov/pilots/become/", duration: "18–36 months (250+ flight hours)", level: "Professional Licensure", cost: "$60,000–$100,000 total training", whyRecommended: "Required to fly for hire; minimum qualification for regional airline First Officer positions" },
@@ -1048,9 +1048,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-5 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "FAA Regulations & Airspace Classification", importance: "high", learningResource: "FAA Aeronautical Information Manual (AIM) free PDF; Sheppard Air study tools" },
-      { skill: "Radar Separation & Procedures", importance: "high", learningResource: "FAA JO 7110.65 Air Traffic Control Order (free from FAA.gov)" },
-      { skill: "Aviation Weather & NOTAMs", importance: "medium", learningResource: "Aviation Weather Center (aviationweather.gov); King Schools Aviation Weather" },
+      { skill: "FAA Regulations & Airspace Classification", importance: "high", learningResource: "FAA Aeronautical Information Manual (AIM) Free PDF; Sheppard Air Study Tools - https://www.faa.gov/air_traffic/publications" },
+      { skill: "Radar Separation & Procedures", importance: "high", learningResource: "FAA JO 7110.65 Air Traffic Control Order (Free from FAA.gov) - https://www.faa.gov/air_traffic/publications" },
+      { skill: "Aviation Weather & NOTAMs", importance: "medium", learningResource: "Aviation Weather Center; King Schools Aviation Weather - https://aviationweather.gov/" },
     ],
     certifications: [
       { skill: "ATC", certName: "FAA Air Traffic Control Specialist Certificate", provider: "FAA (via USAJOBS federal hiring)", url: "https://www.usajobs.gov/", whyRecommended: "Official FAA credential awarded after completing FAA Academy training in Oklahoma City; required for all ATC work", duration: "12–24 months of FAA Academy + field training", level: "Professional Licensure", cost: "Paid training (federal salary)" },
@@ -1091,9 +1091,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "4-8 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Revenue Management & Yield Optimization", importance: "high", learningResource: "Cornell eCornell Revenue Management course; HSMAI Revenue Management certification" },
-      { skill: "Property Management System (Opera)", importance: "high", learningResource: "Oracle Opera free training on Oracle University" },
-      { skill: "F&B Cost Control", importance: "medium", learningResource: "American Hotel & Lodging Educational Institute (AHLEI) Food & Beverage courses" },
+      { skill: "Revenue Management & Yield Optimization", importance: "high", learningResource: "Cornell eCornell Revenue Management Course; HSMAI Revenue Management Certification - https://www.ecornell.com/" },
+      { skill: "Property Management System (Opera)", importance: "high", learningResource: "Oracle Opera Free Training on Oracle University - https://education.oracle.com/" },
+      { skill: "F&B Cost Control", importance: "medium", learningResource: "American Hotel & Lodging Educational Institute (AHLEI) Food & Beverage Courses - https://www.ahlei.org/" },
     ],
     certifications: [
       { skill: "Hospitality", certName: "Certified Hotel Administrator (CHA)", provider: "American Hotel & Lodging Educational Institute (AHLEI)", url: "https://www.ahlei.org/certifications/", duration: "Experience + exam", level: "Professional", cost: "$395", whyRecommended: "Most recognized hotel management credential; required for GM positions at major branded properties" },
@@ -1132,9 +1132,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "1-3 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Event Software (Cvent or Eventbrite)", importance: "high", learningResource: "Cvent Academy free certification courses; Eventbrite Organizer free training" },
-      { skill: "Event Budgeting & Financial Management", importance: "high", learningResource: "MPI (Meeting Professionals International) budget training; PCMA education" },
-      { skill: "Event Design & Décor", importance: "medium", learningResource: "NACE (National Association for Catering and Events) design courses" },
+      { skill: "Event Software (Cvent or Eventbrite)", importance: "high", learningResource: "Cvent Academy Free Certification Courses; Eventbrite Organizer Free Training - https://www.cvent.com/" },
+      { skill: "Event Budgeting & Financial Management", importance: "high", learningResource: "MPI (Meeting Professionals International) Budget Training; PCMA Education - https://www.mpi.org/" },
+      { skill: "Event Design & Décor", importance: "medium", learningResource: "NACE (National Association for Catering and Events) Design Courses - https://www.nace.net/" },
     ],
     certifications: [
       { skill: "Event Planning", certName: "Certified Meeting Professional (CMP)", provider: "Events Industry Council (EIC)", url: "https://eventscouncil.org/cmp/", duration: "Experience + exam", level: "Professional", cost: "$375 (members) / $475 (non-members)", whyRecommended: "Most recognized event planning credential globally; standard for corporate and association events careers" },
@@ -1173,9 +1173,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "5-10 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Advanced Culinary Techniques (French/Modernist)", importance: "high", learningResource: "CIA Pro Chef textbook; Jacques Pepin Heart & Soul cookbook and YouTube" },
-      { skill: "Food Cost Management & Recipe Costing", importance: "high", learningResource: "Restaurant365 free webinars; Chef's pencil food cost calculator guides" },
-      { skill: "HACCP Food Safety Management", importance: "high", learningResource: "ServSafe Manager Certification course from NRA" },
+      { skill: "Advanced Culinary Techniques (French/Modernist)", importance: "high", learningResource: "CIA Pro Chef Textbook; Jacques Pepin Heart & Soul Cookbook - https://www.ciachef.edu/" },
+      { skill: "Food Cost Management & Recipe Costing", importance: "high", learningResource: "Restaurant365 Free Webinars; Chef's Pencil Food Cost Calculator Guides - https://www.restaurant365.com/" },
+      { skill: "HACCP Food Safety Management", importance: "high", learningResource: "ServSafe Manager Certification Course from NRA - https://www.servsafe.com/" },
     ],
     certifications: [
       { skill: "Food Safety", certName: "ServSafe Food Manager Certification", provider: "National Restaurant Association", url: "https://www.servsafe.com/", duration: "8-hour course + exam", level: "Required in most states", cost: "$125–$175", whyRecommended: "Required by law for food service managers in most US states; absolute first credential for any chef" },
@@ -1220,9 +1220,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Experimental Design & DOE", importance: "high", learningResource: "Design of Experiments by Douglas Montgomery; Coursera Research Methods Specialization" },
-      { skill: "Statistical Analysis (R or Python)", importance: "high", learningResource: "DataCamp Data Science in Python; StatQuest with Josh Starmer (YouTube)" },
-      { skill: "Scientific Writing & Publication", importance: "high", learningResource: "Writing Your Journal Article in Twelve Weeks by Wendy Belcher; Coursera Scientific Writing" },
+      { skill: "Experimental Design & DOE", importance: "high", learningResource: "Design of Experiments by Douglas Montgomery; Coursera Research Methods Specialization - https://www.coursera.org/" },
+      { skill: "Statistical Analysis (R or Python)", importance: "high", learningResource: "DataCamp Data Science in Python; StatQuest with Josh Starmer - https://www.datacamp.com/" },
+      { skill: "Scientific Writing & Publication", importance: "high", learningResource: "Writing Your Journal Article in Twelve Weeks by Wendy Belcher; Coursera Scientific Writing - https://www.coursera.org/" },
     ],
     certifications: [
       { skill: "Research", certName: "PhD in Relevant Scientific Discipline", provider: "Accredited research university", url: "https://www.petersons.com/graduate-schools/", duration: "4–6 years", level: "Graduate", cost: "Often fully funded with stipend in STEM fields", whyRecommended: "Required for independent research scientist positions at universities, national labs, and R&D divisions" },
@@ -1265,9 +1265,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Clinical Pharmacology & Therapeutics", importance: "high", learningResource: "Pharmacotherapy: A Pathophysiologic Approach (DiPiro et al.) 12th edition" },
-      { skill: "Pharmacy Law (HIPAA, DEA Regulations)", importance: "high", learningResource: "Federal Pharmacy Law by Alan Leal (MPJE prep book)" },
-      { skill: "Medication Therapy Management (MTM)", importance: "medium", learningResource: "APhA MTM Certificate Training Program" },
+      { skill: "Clinical Pharmacology & Therapeutics", importance: "high", learningResource: "Pharmacotherapy: A Pathophysiologic Approach (DiPiro et al.) 12th Edition - https://www.linkedin.com/learning/" },
+      { skill: "Pharmacy Law (HIPAA, DEA Regulations)", importance: "high", learningResource: "Federal Pharmacy Law by Alan Leal (MPJE Prep Book) - https://www.linkedin.com/learning/" },
+      { skill: "Medication Therapy Management (MTM)", importance: "medium", learningResource: "APhA MTM Certificate Training Program - https://www.pharmacist.com/" },
     ],
     certifications: [
       { skill: "Pharmacy", certName: "Doctor of Pharmacy (PharmD)", provider: "ACPE-accredited pharmacy school", url: "https://www.acpe-accredit.org/find-an-accredited-program/", duration: "4 years (post-BS)", level: "Graduate", cost: "$30,000–$55,000/year", whyRecommended: "Required degree for pharmacist licensure in the United States" },
@@ -1310,9 +1310,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Clinical Diagnosis & Physical Exam", importance: "high", learningResource: "Small Animal Internal Medicine by Richard Nelson; NAVLE prep resources" },
-      { skill: "Surgical Techniques", importance: "high", learningResource: "Veterinary Surgery: Small Animal (Johnston & Tobias); wet-lab surgical training" },
-      { skill: "Veterinary Pharmacology", importance: "high", learningResource: "Veterinary Drug Handbook by Donald Plumb; NAVLE pharmacology review" },
+      { skill: "Clinical Diagnosis & Physical Exam", importance: "high", learningResource: "Small Animal Internal Medicine by Richard Nelson; NAVLE Prep Resources - https://www.vin.com/" },
+      { skill: "Surgical Techniques", importance: "high", learningResource: "Veterinary Surgery: Small Animal (Johnston & Tobias); Wet-Lab Surgical Training - https://www.vin.com/" },
+      { skill: "Veterinary Pharmacology", importance: "high", learningResource: "Veterinary Drug Handbook by Donald Plumb; NAVLE Pharmacology Review - https://www.vin.com/" },
     ],
     certifications: [
       { skill: "Veterinary Medicine", certName: "Doctor of Veterinary Medicine (DVM)", provider: "AVMA-accredited veterinary school", url: "https://www.avma.org/education/", duration: "4 years", level: "Graduate", cost: "$30,000–$70,000/year", whyRecommended: "Required degree for veterinarian licensure in the United States" },
@@ -1357,9 +1357,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Motivational Interviewing", importance: "high", learningResource: "MINT (Motivational Interviewing Network of Trainers) workshops; free MI training videos on YouTube" },
-      { skill: "DSM-5 Assessment & Diagnosis", importance: "high", learningResource: "DSM-5-TR; ASWB Clinical Study Guide for LCSW exam" },
-      { skill: "Trauma-Informed Practice", importance: "medium", learningResource: "SAMHSA Trauma-Informed Approach guide (free PDF); NASW trauma training" },
+      { skill: "Motivational Interviewing", importance: "high", learningResource: "MINT (Motivational Interviewing Network of Trainers) Workshops; Free MI Training Videos - https://motivationalinterviewing.org/" },
+      { skill: "DSM-5 Assessment & Diagnosis", importance: "high", learningResource: "DSM-5-TR; ASWB Clinical Study Guide for LCSW Exam - https://www.aswb.org/" },
+      { skill: "Trauma-Informed Practice", importance: "medium", learningResource: "SAMHSA Trauma-Informed Approach Guide (Free PDF); NASW Trauma Training - https://www.samhsa.gov/" },
     ],
     certifications: [
       { skill: "Social Work", certName: "Licensed Clinical Social Worker (LCSW)", provider: "State Social Work Licensing Board", url: "https://www.aswb.org/", whyRecommended: "Required to practice clinical social work independently; enables private practice and highest billing rates", duration: "MSW + 2 years supervised experience + exam", level: "Advanced Licensure", cost: "$230 (ASWB exam fee)" },
@@ -1398,9 +1398,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "4-6 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "CBT & DBT Therapy Techniques", importance: "high", learningResource: "Beck Institute CBT training; Marsha Linehan DBT Skills Training Manual" },
-      { skill: "DSM-5 Diagnostic Assessment", importance: "high", learningResource: "DSM-5-TR Clinical Cases book; NBCC NCE exam prep resources" },
-      { skill: "Trauma-Focused CBT (TF-CBT)", importance: "medium", learningResource: "TF-CBT Web 2.0 free online training at musc.edu" },
+      { skill: "CBT & DBT Therapy Techniques", importance: "high", learningResource: "Beck Institute CBT Training; Marsha Linehan DBT Skills Training Manual - https://beckinstitute.org/" },
+      { skill: "DSM-5 Diagnostic Assessment", importance: "high", learningResource: "DSM-5-TR Clinical Cases Book; NBCC NCE Exam Prep Resources - https://www.nbcc.org/" },
+      { skill: "Trauma-Focused CBT (TF-CBT)", importance: "medium", learningResource: "TF-CBT Web 2.0 Free Online Training at MUSC.edu - https://tfcbt2.musc.edu/" },
     ],
     certifications: [
       { skill: "Counseling", certName: "National Certified Counselor (NCC)", provider: "NBCC (National Board for Certified Counselors)", url: "https://www.nbcc.org/", duration: "Graduate degree + supervised experience + exam", level: "Professional", cost: "$275", whyRecommended: "The primary national counseling credential; accepted in all states and required by many employers" },
@@ -1439,9 +1439,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-6 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Grant Writing & Reporting", importance: "high", learningResource: "GrantSpace.org by Candid; Grant Writing USA workshops" },
-      { skill: "Logic Model & Impact Measurement", importance: "high", learningResource: "W.K. Kellogg Foundation Logic Model Development Guide (free PDF)" },
-      { skill: "Nonprofit Financial Management", importance: "medium", learningResource: "Nonprofit Finance Fund Financial Management for Nonprofits course" },
+      { skill: "Grant Writing & Reporting", importance: "high", learningResource: "GrantSpace.org by Candid; Grant Writing USA Workshops - https://learning.candid.org/" },
+      { skill: "Logic Model & Impact Measurement", importance: "high", learningResource: "W.K. Kellogg Foundation Logic Model Development Guide (Free PDF) - https://www.wkkf.org/" },
+      { skill: "Nonprofit Financial Management", importance: "medium", learningResource: "Nonprofit Finance Fund Financial Management for Nonprofits Course - https://nff.org/" },
     ],
     certifications: [
       { skill: "Nonprofit", certName: "Certified Nonprofit Professional (CNP)", provider: "Nonprofit Leadership Alliance", url: "https://www.nonprofitleadershipalliance.org/cnp", duration: "Education + 300 hour NLA Alliance Member Organization internship + exam", level: "Professional", cost: "$200", whyRecommended: "Most recognized nonprofit management credential; demonstrates sector-specific leadership competency" },
@@ -1482,9 +1482,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-5 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Foreign Language (FSI Level 3+)", importance: "high", learningResource: "Pimsleur or Rosetta Stone; Defense Language Institute open courseware" },
-      { skill: "International Relations & Foreign Policy", importance: "high", learningResource: "Council on Foreign Relations CFR.org resources; Coursera International Relations courses" },
-      { skill: "Diplomatic Writing & Cables", importance: "medium", learningResource: "US State Department Writing Style Guide; ADST (Association for Diplomatic Studies) oral history archive" },
+      { skill: "Foreign Language (FSI Level 3+)", importance: "high", learningResource: "Pimsleur or Rosetta Stone; Defense Language Institute Open Courseware - https://www.dliflc.edu/" },
+      { skill: "International Relations & Foreign Policy", importance: "high", learningResource: "Council on Foreign Relations CFR.org Resources; Coursera International Relations Courses - https://www.cfr.org/" },
+      { skill: "Diplomatic Writing & Cables", importance: "medium", learningResource: "US State Department Writing Style Guide; ADST Oral History Archive - https://adst.org/" },
     ],
     certifications: [
       { skill: "Foreign Service", certName: "Foreign Service Officer Test (FSOT) & Selection", provider: "US Department of State", url: "https://careers.state.gov/work/foreign-service/officer/", duration: "Multi-stage selection process (6–24 months)", level: "Federal Employment", cost: "Free", whyRecommended: "The competitive entry exam and assessment process for US Foreign Service Officers (FSOs)" },
@@ -1523,9 +1523,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "1-3 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Articulate Storyline 360", importance: "high", learningResource: "Articulate community free tutorials at community.articulate.com" },
-      { skill: "Instructional Design Theory (ADDIE, Bloom's Taxonomy)", importance: "high", learningResource: "e-Learning Instructional Design by Clark and Mayer; Coursera Learning Design courses" },
-      { skill: "LMS Administration (Canvas/Cornerstone)", importance: "medium", learningResource: "Canvas free training at community.canvaslms.com; Cornerstone training videos" },
+      { skill: "Articulate Storyline 360", importance: "high", learningResource: "Articulate Community Free Tutorials - https://community.articulate.com/" },
+      { skill: "Instructional Design Theory (ADDIE, Bloom's Taxonomy)", importance: "high", learningResource: "e-Learning Instructional Design by Clark and Mayer; Coursera Learning Design Courses - https://www.coursera.org/" },
+      { skill: "LMS Administration (Canvas/Cornerstone)", importance: "medium", learningResource: "Canvas Free Training; Cornerstone Training Videos - https://community.canvaslms.com/" },
     ],
     certifications: [
       { skill: "Instructional Design", certName: "ATD Certified Professional in Learning and Performance (CPLP)", provider: "Association for Talent Development (ATD)", url: "https://www.td.org/certification", duration: "Experience + exam", level: "Professional", cost: "$1,250 (ATD members) / $1,550 (non-members)", whyRecommended: "Most recognized L&D and instructional design credential; preferred by corporate universities and consulting firms" },
@@ -1568,9 +1568,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "SIEM & Log Analysis (Splunk)", importance: "high", learningResource: "Splunk free training at Splunk Education; TryHackMe Splunk learning path" },
-      { skill: "Incident Response & Threat Hunting", importance: "high", learningResource: "SANS FOR508 Incident Response course; TryHackMe SOC Level 1 path" },
-      { skill: "Network Security & Packet Analysis", importance: "high", learningResource: "Professor Messer CompTIA Security+ free course; Wireshark University" },
+      { skill: "SIEM & Log Analysis (Splunk)", importance: "high", learningResource: "Splunk Free Training at Splunk Education; TryHackMe Splunk Learning Path - https://tryhackme.com/" },
+      { skill: "Incident Response & Threat Hunting", importance: "high", learningResource: "SANS FOR508 Incident Response Course; TryHackMe SOC Level 1 Path - https://tryhackme.com/" },
+      { skill: "Network Security & Packet Analysis", importance: "high", learningResource: "Professor Messer CompTIA Security+ Free Course; Wireshark University - https://www.professormesser.com/" },
     ],
     certifications: [
       { skill: "Security", certName: "CompTIA Security+", provider: "CompTIA", url: "https://www.comptia.org/certifications/security", duration: "Self-study (60–90 hours) + exam", level: "Entry-Level", cost: "$392", whyRecommended: "DoD-approved baseline security certification; standard entry credential for SOC analyst and security analyst roles" },
@@ -1609,9 +1609,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-6 years",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "HR Analytics & Workforce Planning", importance: "high", learningResource: "SHRM HR Analytics Certificate; Coursera People Analytics by UPenn" },
-      { skill: "Employment Law (FMLA, ADA, Title VII)", importance: "high", learningResource: "SHRM Learning System; Employment Law for HR Professionals by BLR" },
-      { skill: "Compensation & Benefits Design", importance: "medium", learningResource: "WorldatWork Total Rewards certification study materials" },
+      { skill: "HR Analytics & Workforce Planning", importance: "high", learningResource: "SHRM HR Analytics Certificate; Coursera People Analytics by UPenn - https://www.coursera.org/" },
+      { skill: "Employment Law (FMLA, ADA, Title VII)", importance: "high", learningResource: "SHRM Learning System; Employment Law for HR Professionals by BLR - https://www.shrm.org/learning/" },
+      { skill: "Compensation & Benefits Design", importance: "medium", learningResource: "WorldatWork Total Rewards Certification Study Materials - https://worldatwork.org/" },
     ],
     certifications: [
       { skill: "HR", certName: "SHRM-CP (Certified Professional)", provider: "SHRM", url: "https://www.shrm.org/credentials", duration: "Self-study + exam", level: "Professional", cost: "$300 (members) / $400 (non-members)", whyRecommended: "Most recognized HR credential globally; standard requirement for HR generalist and HRBP roles" },
@@ -1654,9 +1654,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "LBO & M&A Financial Modeling", importance: "high", learningResource: "Wall Street Prep IB modeling course; Breaking Into Wall Street BIWS" },
-      { skill: "Pitch Book & Presentation Design", importance: "high", learningResource: "Macabacus PowerPoint add-in; Practitioner's Guide to IB Pitch Books" },
-      { skill: "Accounting & Financial Statement Analysis", importance: "high", learningResource: "Accounting Made Simple by Mike Piper; CFA Institute free reading materials" },
+      { skill: "LBO & M&A Financial Modeling", importance: "high", learningResource: "Wall Street Prep IB Modeling Course; Breaking Into Wall Street BIWS - https://www.wallstreetprep.com/" },
+      { skill: "Pitch Book & Presentation Design", importance: "high", learningResource: "Macabacus PowerPoint Add-in; Practitioner's Guide to IB Pitch Books - https://macabacus.com/" },
+      { skill: "Accounting & Financial Statement Analysis", importance: "high", learningResource: "Accounting Made Simple by Mike Piper; CFA Institute Free Reading Materials - https://www.cfainstitute.org/" },
     ],
     certifications: [
       { skill: "Finance", certName: "CFA Level I", provider: "CFA Institute", url: "https://www.cfainstitute.org/", duration: "6 months part-time study + exam", level: "Professional", cost: "$940–$1,200", whyRecommended: "The gold-standard finance credential; CFA Levels I–III significantly improve IB and PE career trajectories" },
@@ -1695,9 +1695,9 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "6-7 years (DPT required)",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.20, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Musculoskeletal Assessment & Special Tests", importance: "high", learningResource: "Orthopedic Physical Assessment by Magee; NPTE prep resources by TherapyEd" },
-      { skill: "Manual Therapy Techniques", importance: "high", learningResource: "NAIOMT manual therapy courses; AAOMPT continuing education" },
-      { skill: "Functional Movement Screening (FMS)", importance: "medium", learningResource: "FMS official certification courses at functionalmovement.com" },
+      { skill: "Musculoskeletal Assessment & Special Tests", importance: "high", learningResource: "Orthopedic Physical Assessment by Magee; NPTE Prep Resources by TherapyEd - https://www.apta.org/" },
+      { skill: "Manual Therapy Techniques", importance: "high", learningResource: "NAIOMT Manual Therapy Courses; AAOMPT Continuing Education - https://www.naiomt.com/" },
+      { skill: "Functional Movement Screening (FMS)", importance: "medium", learningResource: "FMS Official Certification Courses - https://www.functionalmovement.com/" },
     ],
     certifications: [
       { skill: "Physical Therapy", certName: "Doctor of Physical Therapy (DPT)", provider: "CAPTE-accredited PT program", url: "https://www.capteonline.org/", duration: "3 years post-BS", level: "Graduate", cost: "$25,000–$50,000/year", whyRecommended: "Required degree for physical therapist licensure in the United States" },
@@ -1741,11 +1741,11 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.15, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Video Editing", importance: "high", learningResource: "DaVinci Resolve free tutorials on YouTube" },
-      { skill: "Content Strategy", importance: "high", learningResource: "HubSpot Content Marketing Certification (free)" },
-      { skill: "SEO & Analytics", importance: "medium", learningResource: "Google Analytics Academy" },
-      { skill: "Copywriting", importance: "medium", learningResource: "Copyblogger free resources" },
-      { skill: "Thumbnail & Graphic Design", importance: "medium", learningResource: "Canva Design School" },
+      { skill: "Video Editing", importance: "high", learningResource: "DaVinci Resolve Free Tutorials - https://www.blackmagicdesign.com/products/davinciresolve/training" },
+      { skill: "Content Strategy", importance: "high", learningResource: "HubSpot Content Marketing Certification (Free) - https://academy.hubspot.com/" },
+      { skill: "SEO & Analytics", importance: "medium", learningResource: "Google Analytics Academy - https://analytics.google.com/analytics/academy/" },
+      { skill: "Copywriting", importance: "medium", learningResource: "Copyblogger Free Resources - https://copyblogger.com/" },
+      { skill: "Thumbnail & Graphic Design", importance: "medium", learningResource: "Canva Design School - https://www.canva.com/designschool/" },
     ],
     certifications: [
       { skill: "Content Marketing", certName: "HubSpot Content Marketing Certification", provider: "HubSpot Academy", url: "https://academy.hubspot.com/courses/content-marketing", duration: "6 hours", level: "Beginner", cost: "Free", whyRecommended: "Industry-standard content strategy credential" },
@@ -1789,10 +1789,10 @@ export const CAREER_PROFILES_3: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Social Media Strategy", importance: "high", learningResource: "HubSpot Social Media Certification (free)" },
-      { skill: "Analytics & Reporting", importance: "high", learningResource: "Google Analytics Academy" },
-      { skill: "Graphic Design", importance: "medium", learningResource: "Canva Design School" },
-      { skill: "Copywriting", importance: "medium", learningResource: "Copyblogger fundamentals" },
+      { skill: "Social Media Strategy", importance: "high", learningResource: "HubSpot Social Media Certification (Free) - https://academy.hubspot.com/" },
+      { skill: "Analytics & Reporting", importance: "high", learningResource: "Google Analytics Academy - https://analytics.google.com/analytics/academy/" },
+      { skill: "Graphic Design", importance: "medium", learningResource: "Canva Design School - https://www.canva.com/designschool/" },
+      { skill: "Copywriting", importance: "medium", learningResource: "Copyblogger Fundamentals - https://copyblogger.com/" },
     ],
     certifications: [
       { skill: "Social Media", certName: "HubSpot Social Media Marketing Certification", provider: "HubSpot Academy", url: "https://academy.hubspot.com/courses/social-media", duration: "5 hours", level: "Beginner", cost: "Free", whyRecommended: "Covers strategy, listening, and ROI measurement" },

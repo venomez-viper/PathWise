@@ -208,9 +208,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.30, values: 0.15, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
-      { skill: "Sales Strategy", importance: "high", learningResource: "HubSpot Sales Management Training" },
-      { skill: "CRM Tools", importance: "high", learningResource: "Salesforce Trailhead" },
-      { skill: "Data-Driven Sales", importance: "medium", learningResource: "Sales Analytics on LinkedIn Learning" },
+      { skill: "Sales Strategy", importance: "high", learningResource: "HubSpot Sales Management Training - https://academy.hubspot.com/" },
+      { skill: "CRM Tools", importance: "high", learningResource: "Salesforce Trailhead - https://trailhead.salesforce.com/" },
+      { skill: "Data-Driven Sales", importance: "medium", learningResource: "Sales Analytics on LinkedIn Learning - https://www.linkedin.com/learning/" },
     ],
     certifications: [
       { skill: "Sales", certName: "HubSpot Sales Management Certificate", provider: "HubSpot Academy", url: "https://academy.hubspot.com/", duration: "2 months", level: "Intermediate", cost: "Free", whyRecommended: "Covers modern sales management best practices" },
@@ -252,9 +252,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.20, personality: 0.30, values: 0.15, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
-      { skill: "Prospecting", importance: "high", learningResource: "Fanatical Prospecting by Jeb Blount" },
-      { skill: "Negotiation", importance: "high", learningResource: "Never Split the Difference (Chris Voss)" },
-      { skill: "CRM Tools", importance: "medium", learningResource: "HubSpot CRM free training" },
+      { skill: "Prospecting", importance: "high", learningResource: "Fanatical Prospecting by Jeb Blount - https://www.linkedin.com/learning/" },
+      { skill: "Negotiation", importance: "high", learningResource: "Never Split the Difference (Chris Voss) - https://www.linkedin.com/learning/" },
+      { skill: "CRM Tools", importance: "medium", learningResource: "HubSpot CRM Free Training - https://academy.hubspot.com/" },
     ],
     certifications: [
       { skill: "Sales", certName: "HubSpot Inbound Sales Certification", provider: "HubSpot Academy", url: "https://academy.hubspot.com/", duration: "1 month", level: "Beginner", cost: "Free", whyRecommended: "Learn modern inbound sales methodology" },
@@ -296,9 +296,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "1-3 months",
     scoringWeights: { interest: 0.25, personality: 0.30, values: 0.15, aptitude: 0.05, environment: 0.15, stage: 0.10 },
     skillGaps: [
-      { skill: "Cold Calling", importance: "high", learningResource: "Fanatical Prospecting by Jeb Blount" },
-      { skill: "Email Outreach", importance: "high", learningResource: "HubSpot Email Marketing Course" },
-      { skill: "CRM Tools", importance: "medium", learningResource: "Salesforce Trailhead basics" },
+      { skill: "Cold Calling", importance: "high", learningResource: "Fanatical Prospecting by Jeb Blount - https://www.linkedin.com/learning/" },
+      { skill: "Email Outreach", importance: "high", learningResource: "HubSpot Email Marketing Course - https://academy.hubspot.com/" },
+      { skill: "CRM Tools", importance: "medium", learningResource: "Salesforce Trailhead Basics - https://trailhead.salesforce.com/" },
     ],
     certifications: [
       { skill: "Sales", certName: "HubSpot Inbound Certification", provider: "HubSpot Academy", url: "https://academy.hubspot.com/", duration: "1 month", level: "Beginner", cost: "Free", whyRecommended: "Free certification that shows sales methodology knowledge" },
@@ -344,9 +344,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.25, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Employment Law", importance: "high", learningResource: "SHRM Learning System" },
-      { skill: "HRIS Systems", importance: "high", learningResource: "Workday or BambooHR training" },
-      { skill: "People Analytics", importance: "medium", learningResource: "Wharton People Analytics course on Coursera" },
+      { skill: "Employment Law", importance: "high", learningResource: "SHRM Learning System - https://www.shrm.org/learning/" },
+      { skill: "HRIS Systems", importance: "high", learningResource: "Workday or BambooHR Training - https://www.linkedin.com/learning/" },
+      { skill: "People Analytics", importance: "medium", learningResource: "Wharton People Analytics Course on Coursera - https://www.coursera.org/" },
     ],
     certifications: [
       { skill: "HR Management", certName: "SHRM-CP", provider: "SHRM", url: "https://www.shrm.org/certification", duration: "6 months", level: "Intermediate", cost: "$475", whyRecommended: "Most recognized HR certification globally" },
@@ -388,9 +388,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "2-4 months",
     scoringWeights: { interest: 0.25, personality: 0.30, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Sourcing", importance: "high", learningResource: "LinkedIn Recruiter training" },
-      { skill: "ATS Tools", importance: "high", learningResource: "Greenhouse or Lever tutorials" },
-      { skill: "Interviewing", importance: "medium", learningResource: "Structured Interviewing course on LinkedIn Learning" },
+      { skill: "Sourcing", importance: "high", learningResource: "LinkedIn Recruiter Training - https://www.linkedin.com/learning/" },
+      { skill: "ATS Tools", importance: "high", learningResource: "Greenhouse or Lever Tutorials - https://www.linkedin.com/learning/" },
+      { skill: "Interviewing", importance: "medium", learningResource: "Structured Interviewing Course on LinkedIn Learning - https://www.linkedin.com/learning/" },
     ],
     certifications: [
       { skill: "Recruiting", certName: "LinkedIn Certified Professional Recruiter", provider: "LinkedIn", url: "https://www.linkedin.com/learning/", duration: "2 months", level: "Beginner", cost: "$29.99/month", whyRecommended: "Validates sourcing and recruiting skills on the top platform" },
@@ -432,9 +432,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.25, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Instructional Design", importance: "high", learningResource: "ATD Instructional Design Certificate" },
-      { skill: "LMS Tools", importance: "high", learningResource: "Articulate 360 tutorials" },
-      { skill: "Needs Assessment", importance: "medium", learningResource: "ATD Training Needs Analysis guide" },
+      { skill: "Instructional Design", importance: "high", learningResource: "ATD Instructional Design Certificate - https://www.td.org/" },
+      { skill: "LMS Tools", importance: "high", learningResource: "Articulate 360 Tutorials - https://community.articulate.com/" },
+      { skill: "Needs Assessment", importance: "medium", learningResource: "ATD Training Needs Analysis Guide - https://www.td.org/" },
     ],
     certifications: [
       { skill: "Training", certName: "ATD Certified Professional in Talent Development", provider: "ATD", url: "https://www.td.org/certification", duration: "4 months", level: "Intermediate", cost: "$499", whyRecommended: "Premier certification for L&D professionals" },
@@ -476,9 +476,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.25, values: 0.25, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Coaching Methodology", importance: "high", learningResource: "ICF Coach Training programs" },
-      { skill: "Career Development Theory", importance: "high", learningResource: "NCDA Career Development Facilitator course" },
-      { skill: "Personal Branding", importance: "medium", learningResource: "LinkedIn Learning Personal Branding course" },
+      { skill: "Coaching Methodology", importance: "high", learningResource: "ICF Coach Training Programs - https://coachingfederation.org/" },
+      { skill: "Career Development Theory", importance: "high", learningResource: "NCDA Career Development Facilitator Course - https://www.ncda.org/" },
+      { skill: "Personal Branding", importance: "medium", learningResource: "LinkedIn Learning Personal Branding Course - https://www.linkedin.com/learning/" },
     ],
     certifications: [
       { skill: "Coaching", certName: "ICF Associate Certified Coach", provider: "ICF", url: "https://coachingfederation.org/credentials-and-standards/acc", duration: "6 months", level: "Intermediate", cost: "$300+training", whyRecommended: "Globally recognized coaching credential" },
@@ -524,9 +524,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.20, values: 0.25, aptitude: 0.15, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Healthcare Regulations", importance: "high", learningResource: "ACHE Healthcare Management courses" },
-      { skill: "Budget Management", importance: "high", learningResource: "Coursera Healthcare Financial Management" },
-      { skill: "EHR Systems", importance: "medium", learningResource: "Epic or Cerner training programs" },
+      { skill: "Healthcare Regulations", importance: "high", learningResource: "ACHE Healthcare Management Courses - https://www.ache.org/" },
+      { skill: "Budget Management", importance: "high", learningResource: "Coursera Healthcare Financial Management - https://www.coursera.org/" },
+      { skill: "EHR Systems", importance: "medium", learningResource: "Epic or Cerner Training Programs - https://www.linkedin.com/learning/" },
     ],
     certifications: [
       { skill: "Healthcare Administration", certName: "Fellow of ACHE (FACHE)", provider: "ACHE", url: "https://www.ache.org/fache", duration: "12 months", level: "Advanced", cost: "$400", whyRecommended: "Gold standard for healthcare leadership" },
@@ -568,9 +568,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.30, personality: 0.10, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Clinical Trial Design", importance: "high", learningResource: "Coursera Clinical Trials course (Johns Hopkins)" },
-      { skill: "Biostatistics", importance: "high", learningResource: "edX Biostatistics for Public Health" },
-      { skill: "GCP Compliance", importance: "medium", learningResource: "CITI GCP Training" },
+      { skill: "Clinical Trial Design", importance: "high", learningResource: "Coursera Clinical Trials Course (Johns Hopkins) - https://www.coursera.org/" },
+      { skill: "Biostatistics", importance: "high", learningResource: "edX Biostatistics for Public Health - https://www.edx.org/" },
+      { skill: "GCP Compliance", importance: "medium", learningResource: "CITI GCP Training - https://about.citiprogram.org/" },
     ],
     certifications: [
       { skill: "Clinical Research", certName: "ACRP Certified Clinical Research Professional", provider: "ACRP", url: "https://acrpnet.org/certifications/", duration: "6 months", level: "Intermediate", cost: "$450", whyRecommended: "Industry-recognized clinical research credential" },
@@ -612,9 +612,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.20, personality: 0.20, values: 0.20, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Biotech Regulatory", importance: "high", learningResource: "RAPS Regulatory Affairs Certification prep" },
-      { skill: "Project Management", importance: "high", learningResource: "PMI PMP Certification prep" },
-      { skill: "Risk Management", importance: "medium", learningResource: "Coursera Risk Management in Life Sciences" },
+      { skill: "Biotech Regulatory", importance: "high", learningResource: "RAPS Regulatory Affairs Certification Prep - https://www.raps.org/" },
+      { skill: "Project Management", importance: "high", learningResource: "PMI PMP Certification Prep - https://www.pmi.org/" },
+      { skill: "Risk Management", importance: "medium", learningResource: "Coursera Risk Management in Life Sciences - https://www.coursera.org/" },
     ],
     certifications: [
       { skill: "Project Management", certName: "PMP Certification", provider: "PMI", url: "https://www.pmi.org/certifications/project-management-pmp", duration: "6 months", level: "Intermediate", cost: "$555", whyRecommended: "Universal PM credential valued in biotech" },
@@ -656,8 +656,8 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "EHR Systems", importance: "high", learningResource: "Epic training programs or Cerner certification" },
-      { skill: "HL7/FHIR Standards", importance: "high", learningResource: "HL7 International free resources" },
+      { skill: "EHR Systems", importance: "high", learningResource: "Epic Training Programs or Cerner Certification - https://www.linkedin.com/learning/" },
+      { skill: "HL7/FHIR Standards", importance: "high", learningResource: "HL7 International Free Resources - https://www.hl7.org/" },
       { skill: "SQL", importance: "medium", learningResource: "W3Schools SQL Tutorial - https://www.w3schools.com/sql/" },
     ],
     certifications: [
@@ -704,9 +704,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Adobe Creative Suite", importance: "high", learningResource: "Adobe Creative Cloud tutorials" },
-      { skill: "Typography", importance: "high", learningResource: "Butterick's Practical Typography (free)" },
-      { skill: "Brand Identity", importance: "medium", learningResource: "Skillshare Brand Identity Design" },
+      { skill: "Adobe Creative Suite", importance: "high", learningResource: "Adobe Creative Cloud Tutorials - https://helpx.adobe.com/creative-cloud/tutorials.html" },
+      { skill: "Typography", importance: "high", learningResource: "Butterick's Practical Typography (Free) - https://practicaltypography.com/" },
+      { skill: "Brand Identity", importance: "medium", learningResource: "Skillshare Brand Identity Design - https://www.skillshare.com/" },
     ],
     certifications: [
       { skill: "Design", certName: "Google UX Design Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-ux-design", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Covers design fundamentals with portfolio projects" },
@@ -748,9 +748,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "3-9 months",
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Video Editing", importance: "high", learningResource: "Adobe Premiere Pro tutorials on LinkedIn Learning" },
-      { skill: "Motion Graphics", importance: "high", learningResource: "School of Motion After Effects Kickstart" },
-      { skill: "Color Grading", importance: "medium", learningResource: "DaVinci Resolve free training" },
+      { skill: "Video Editing", importance: "high", learningResource: "Adobe Premiere Pro Tutorials on LinkedIn Learning - https://www.linkedin.com/learning/" },
+      { skill: "Motion Graphics", importance: "high", learningResource: "School of Motion After Effects Kickstart - https://www.schoolofmotion.com/" },
+      { skill: "Color Grading", importance: "medium", learningResource: "DaVinci Resolve Free Training - https://www.blackmagicdesign.com/products/davinciresolve/training" },
     ],
     certifications: [
       { skill: "Video Editing", certName: "Adobe Certified Professional in Premiere Pro", provider: "Adobe", url: "https://www.adobe.com/products/adobe-certified-professional.html", duration: "3 months", level: "Intermediate", cost: "$180", whyRecommended: "Validates proficiency in industry-standard editing software" },
@@ -796,9 +796,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.35, personality: 0.15, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Copywriting", importance: "high", learningResource: "The Copywriter's Handbook by Robert Bly" },
-      { skill: "SEO Writing", importance: "high", learningResource: "Yoast SEO Academy (free)" },
-      { skill: "Brand Voice", importance: "medium", learningResource: "Contently Brand Voice guide" },
+      { skill: "Copywriting", importance: "high", learningResource: "The Copywriter's Handbook by Robert Bly - https://www.linkedin.com/learning/" },
+      { skill: "SEO Writing", importance: "high", learningResource: "Yoast SEO Academy (Free) - https://yoast.com/academy/" },
+      { skill: "Brand Voice", importance: "medium", learningResource: "Contently Brand Voice Guide - https://contently.com/" },
     ],
     certifications: [
       { skill: "Content", certName: "HubSpot Content Marketing Certification", provider: "HubSpot Academy", url: "https://academy.hubspot.com/", duration: "1 month", level: "Beginner", cost: "Free", whyRecommended: "Free cert covering content strategy and writing" },
@@ -840,9 +840,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Brand Strategy", importance: "high", learningResource: "Brand Master Academy on Skillshare" },
-      { skill: "Consumer Insights", importance: "high", learningResource: "Coursera Consumer Behavior course" },
-      { skill: "Market Research", importance: "medium", learningResource: "Qualtrics Research Methods course" },
+      { skill: "Brand Strategy", importance: "high", learningResource: "Brand Master Academy on Skillshare - https://www.skillshare.com/" },
+      { skill: "Consumer Insights", importance: "high", learningResource: "Coursera Consumer Behavior Course - https://www.coursera.org/" },
+      { skill: "Market Research", importance: "medium", learningResource: "Qualtrics Research Methods Course - https://www.qualtrics.com/" },
     ],
     certifications: [
       { skill: "Marketing", certName: "AMA Professional Certified Marketer", provider: "AMA", url: "https://www.ama.org/certifications/", duration: "3 months", level: "Intermediate", cost: "$349", whyRecommended: "Broad marketing credential with brand strategy focus" },
@@ -888,9 +888,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "SIEM Tools", importance: "high", learningResource: "Splunk Fundamentals (free)" },
-      { skill: "Network Security", importance: "high", learningResource: "CompTIA Security+ study guide" },
-      { skill: "Incident Response", importance: "medium", learningResource: "SANS Incident Handler's Handbook (free)" },
+      { skill: "SIEM Tools", importance: "high", learningResource: "Splunk Fundamentals (Free) - https://www.splunk.com/en_us/training/free-courses.html" },
+      { skill: "Network Security", importance: "high", learningResource: "CompTIA Security+ Study Guide - https://www.comptia.org/certifications/security" },
+      { skill: "Incident Response", importance: "medium", learningResource: "SANS Incident Handler's Handbook (Free) - https://www.sans.org/" },
     ],
     certifications: [
       { skill: "Security", certName: "CompTIA Security+", provider: "CompTIA", url: "https://www.comptia.org/certifications/security", duration: "3 months", level: "Beginner", cost: "$404", whyRecommended: "Industry-standard entry-level security certification" },
@@ -932,9 +932,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Ethical Hacking", importance: "high", learningResource: "TryHackMe and HackTheBox" },
-      { skill: "Web App Security", importance: "high", learningResource: "PortSwigger Web Security Academy (free)" },
-      { skill: "Scripting", importance: "medium", learningResource: "Automate the Boring Stuff with Python (free)" },
+      { skill: "Ethical Hacking", importance: "high", learningResource: "TryHackMe and HackTheBox - https://tryhackme.com/" },
+      { skill: "Web App Security", importance: "high", learningResource: "PortSwigger Web Security Academy (Free) - https://portswigger.net/web-security" },
+      { skill: "Scripting", importance: "medium", learningResource: "Automate the Boring Stuff with Python (Free) - https://automatetheboringstuff.com/" },
     ],
     certifications: [
       { skill: "Penetration Testing", certName: "OSCP (Offensive Security Certified Professional)", provider: "Offensive Security", url: "https://www.offsec.com/courses/pen-200/", duration: "6 months", level: "Intermediate", cost: "$1,599", whyRecommended: "Most respected hands-on pentesting certification" },
@@ -980,9 +980,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.30, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Product Development", importance: "high", learningResource: "Y Combinator Startup School (free)" },
-      { skill: "Fundraising", importance: "high", learningResource: "Venture Deals by Brad Feld" },
-      { skill: "Financial Literacy", importance: "medium", learningResource: "Startup Financial Modeling (Carta)" },
+      { skill: "Product Development", importance: "high", learningResource: "Y Combinator Startup School (Free) - https://www.startupschool.org/" },
+      { skill: "Fundraising", importance: "high", learningResource: "Venture Deals by Brad Feld - https://www.linkedin.com/learning/" },
+      { skill: "Financial Literacy", importance: "medium", learningResource: "Startup Financial Modeling (Carta) - https://carta.com/" },
     ],
     certifications: [
       { skill: "Startups", certName: "Y Combinator Startup School", provider: "Y Combinator", url: "https://www.startupschool.org/", duration: "2 months", level: "Beginner", cost: "Free", whyRecommended: "Best free startup education from top accelerator" },
@@ -1024,9 +1024,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.25, values: 0.20, aptitude: 0.15, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Business Development", importance: "high", learningResource: "Million Dollar Consulting by Alan Weiss" },
-      { skill: "Client Management", importance: "high", learningResource: "The Trusted Advisor by Maister" },
-      { skill: "Proposal Writing", importance: "medium", learningResource: "Freelance proposal templates (Proposify)" },
+      { skill: "Business Development", importance: "high", learningResource: "Million Dollar Consulting by Alan Weiss - https://www.linkedin.com/learning/" },
+      { skill: "Client Management", importance: "high", learningResource: "The Trusted Advisor by Maister - https://www.linkedin.com/learning/" },
+      { skill: "Proposal Writing", importance: "medium", learningResource: "Freelance Proposal Templates (Proposify) - https://www.proposify.com/" },
     ],
     certifications: [
       { skill: "Consulting", certName: "CMC (Certified Management Consultant)", provider: "IMC", url: "https://www.imcusa.org/", duration: "6 months", level: "Advanced", cost: "$500", whyRecommended: "Global certification for management consultants" },
@@ -1068,9 +1068,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.30, aptitude: 0.10, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Carbon Accounting", importance: "high", learningResource: "GHG Protocol Corporate Standard (free)" },
-      { skill: "Environmental Regulations", importance: "high", learningResource: "EPA Compliance resources" },
-      { skill: "Sustainability Reporting", importance: "medium", learningResource: "GRI Standards Academy" },
+      { skill: "Carbon Accounting", importance: "high", learningResource: "GHG Protocol Corporate Standard (Free) - https://ghgprotocol.org/" },
+      { skill: "Environmental Regulations", importance: "high", learningResource: "EPA Compliance Resources - https://www.epa.gov/compliance" },
+      { skill: "Sustainability Reporting", importance: "medium", learningResource: "GRI Standards Academy - https://www.globalreporting.org/" },
     ],
     certifications: [
       { skill: "Sustainability", certName: "ISSP Sustainability Associate", provider: "ISSP", url: "https://www.sustainabilityprofessionals.org/", duration: "3 months", level: "Beginner", cost: "$400", whyRecommended: "Entry-level sustainability professional credential" },
@@ -1112,9 +1112,9 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.20, personality: 0.15, values: 0.30, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "ESG Frameworks", importance: "high", learningResource: "CFA ESG Investing Certificate prep" },
-      { skill: "Financial Analysis", importance: "high", learningResource: "Coursera Financial Analysis Fundamentals" },
-      { skill: "ESG Data Tools", importance: "medium", learningResource: "MSCI ESG Ratings methodology docs" },
+      { skill: "ESG Frameworks", importance: "high", learningResource: "CFA ESG Investing Certificate Prep - https://www.cfainstitute.org/" },
+      { skill: "Financial Analysis", importance: "high", learningResource: "Coursera Financial Analysis Fundamentals - https://www.coursera.org/" },
+      { skill: "ESG Data Tools", importance: "medium", learningResource: "MSCI ESG Ratings Methodology Docs - https://www.msci.com/" },
     ],
     certifications: [
       { skill: "ESG", certName: "CFA Certificate in ESG Investing", provider: "CFA Institute", url: "https://www.cfainstitute.org/programs/esg-investing", duration: "6 months", level: "Intermediate", cost: "$780", whyRecommended: "Gold standard ESG credential from CFA Institute" },
