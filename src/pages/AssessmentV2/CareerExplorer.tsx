@@ -1,4 +1,5 @@
 import { useState, useMemo, type CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Panda from '../../components/panda/Panda';
 
 /* ─── Types ─────────────────────────────────────────────────────── */
@@ -16,8 +17,8 @@ export interface CareerExplorerProps {
 type SortKey = 'score' | 'alpha' | 'domain';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
-const TEAL = '#006a62';
-const TEAL_LIGHT = '#00a396';
+const COPPER = '#8b4f2c';
+const COPPER_LIGHT = '#a0694a';
 
 const DOMAINS = [
   'Technology',
@@ -64,10 +65,10 @@ function MiniGauge({ score }: { score: number }) {
   const filled = (score / 100) * circumHalf;
 
   const color =
-    score >= 85 ? TEAL :
-    score >= 70 ? TEAL_LIGHT :
-    score >= 55 ? '#7ec8c0' :
-    '#8b4f2c';
+    score >= 85 ? COPPER :
+    score >= 70 ? COPPER_LIGHT :
+    score >= 55 ? '#b8896a' :
+    '#c4a08a';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -137,12 +138,13 @@ const cardStyle: CSSProperties = {
 
 function CareerCard({ match }: { match: CareerExplorerProps['allMatches'][number] & { _domain: Domain } }) {
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div
       style={{
         ...cardStyle,
-        boxShadow: hovered ? '0 4px 16px rgba(0,106,98,0.14)' : cardStyle.boxShadow as string,
+        boxShadow: hovered ? '0 4px 16px rgba(139,79,44,0.14)' : cardStyle.boxShadow as string,
         transform: hovered ? 'translateY(-2px)' : 'none',
       }}
       onMouseEnter={() => setHovered(true)}
@@ -196,7 +198,7 @@ function CareerCard({ match }: { match: CareerExplorerProps['allMatches'][number
             display: 'inline-block',
             padding: '0.45rem 1.1rem',
             borderRadius: '2rem',
-            background: TEAL,
+            background: COPPER,
             color: '#fff',
             fontWeight: 600,
             fontSize: 13,
@@ -204,11 +206,9 @@ function CareerCard({ match }: { match: CareerExplorerProps['allMatches'][number
             cursor: 'pointer',
             transition: 'background 0.2s',
           }}
-          onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = TEAL_LIGHT)}
-          onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = TEAL)}
-          onClick={() => {
-            // Future: navigate to career detail page
-          }}
+          onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = COPPER_LIGHT)}
+          onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = COPPER)}
+          onClick={() => navigate('/app/career-match', { state: { selectedCareer: match.title } })}
         >
           Explore
         </button>
@@ -253,7 +253,7 @@ function FilterBar({
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         {/* Score slider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 200px', minWidth: 0 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: TEAL, whiteSpace: 'nowrap' }}>
+          <label style={{ fontSize: 13, fontWeight: 600, color: COPPER, whiteSpace: 'nowrap' }}>
             Min match:
           </label>
           <input
@@ -263,16 +263,16 @@ function FilterBar({
             step={5}
             value={minScore}
             onChange={e => onMinScoreChange(Number(e.target.value))}
-            style={{ flex: 1, accentColor: TEAL }}
+            style={{ flex: 1, accentColor: COPPER }}
           />
-          <span style={{ fontSize: 13, fontWeight: 700, color: TEAL, minWidth: 36 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: COPPER, minWidth: 36 }}>
             {minScore}%
           </span>
         </div>
 
         {/* Sort */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: TEAL, whiteSpace: 'nowrap' }}>
+          <label style={{ fontSize: 13, fontWeight: 600, color: COPPER, whiteSpace: 'nowrap' }}>
             Sort:
           </label>
           <select
@@ -304,11 +304,11 @@ function FilterBar({
           onClick={() => setExpanded(v => !v)}
           style={{
             fontSize: 13, fontWeight: 600,
-            border: `1px solid ${TEAL}44`,
+            border: `1px solid ${COPPER}44`,
             borderRadius: '0.6rem',
             padding: '0.3rem 0.75rem',
-            background: expanded ? TEAL : 'transparent',
-            color: expanded ? '#fff' : TEAL,
+            background: expanded ? COPPER : 'transparent',
+            color: expanded ? '#fff' : COPPER,
             cursor: 'pointer',
             transition: 'all 0.2s',
             whiteSpace: 'nowrap',

@@ -12,51 +12,55 @@ interface DomainDef {
 const DOMAINS: DomainDef[] = [
   {
     label: 'Technology', color: '#006a62', emoji: '💻',
-    skills: ['Python', 'JavaScript', 'React', 'SQL', 'AWS', 'Docker', 'Git', 'TypeScript', 'Node.js', 'Kubernetes', 'Java', 'C++', 'Go', 'Rust', 'Linux'],
+    skills: ['Python', 'JavaScript', 'React', 'SQL', 'AWS', 'Docker', 'Git', 'TypeScript', 'Node.js', 'Kubernetes', 'Java', 'C++', 'Go', 'Rust', 'Linux', 'MongoDB', 'PostgreSQL', 'GraphQL', 'REST APIs', 'CI/CD'],
+  },
+  {
+    label: 'Data & AI', color: '#059669', emoji: '🤖',
+    skills: ['Machine Learning', 'TensorFlow/PyTorch', 'Pandas/NumPy', 'Data Pipelines', 'NLP', 'Computer Vision', 'Spark', 'Jupyter', 'Feature Engineering', 'MLOps', 'Deep Learning', 'LLMs/Prompt Engineering'],
   },
   {
     label: 'Healthcare', color: '#0e7490', emoji: '🏥',
-    skills: ['HIPAA Compliance', 'Epic/Cerner EHR', 'Patient Assessment', 'Medical Coding (ICD-10)', 'Clinical Research', 'Pharmacology', 'Telehealth'],
+    skills: ['HIPAA Compliance', 'Epic/Cerner EHR', 'Patient Assessment', 'Medical Coding (ICD-10)', 'Clinical Research', 'Pharmacology', 'Telehealth', 'Medical Imaging', 'FHIR/HL7', 'Clinical Trials', 'CPR/BLS', 'Lab Diagnostics'],
   },
   {
     label: 'Finance', color: '#8b4f2c', emoji: '📊',
-    skills: ['Excel Modeling', 'QuickBooks', 'Bloomberg Terminal', 'GAAP/IFRS', 'Risk Analysis', 'Tax Preparation', 'SAP', 'Power BI'],
+    skills: ['Excel Modeling', 'QuickBooks', 'Bloomberg Terminal', 'GAAP/IFRS', 'Risk Analysis', 'Tax Preparation', 'SAP', 'Power BI', 'DCF Valuation', 'Derivatives', 'Financial Planning', 'Auditing', 'Crypto/Blockchain'],
   },
   {
     label: 'Design', color: '#d97706', emoji: '🎨',
-    skills: ['Figma', 'Adobe Creative Suite', 'UI/UX Research', 'Prototyping', 'Design Systems', 'Motion Design', 'Accessibility (WCAG)', 'Sketch'],
+    skills: ['Figma', 'Adobe Creative Suite', 'UI/UX Research', 'Prototyping', 'Design Systems', 'Motion Design', 'Accessibility (WCAG)', 'Sketch', 'Wireframing', 'User Testing', 'Responsive Design', 'Brand Identity', 'Illustration'],
   },
   {
     label: 'Marketing', color: '#9333ea', emoji: '📣',
-    skills: ['Google Analytics', 'SEO/SEM', 'HubSpot', 'Social Media Ads', 'Content Strategy', 'A/B Testing', 'Email Marketing', 'Copywriting'],
+    skills: ['Google Analytics', 'SEO/SEM', 'HubSpot', 'Social Media Ads', 'Content Strategy', 'A/B Testing', 'Email Marketing', 'Copywriting', 'TikTok/Reels', 'Influencer Marketing', 'Brand Strategy', 'PR/Communications', 'Market Research'],
   },
   {
     label: 'Education', color: '#0369a1', emoji: '📚',
-    skills: ['Curriculum Design', 'LMS (Canvas/Moodle)', 'Assessment Design', 'Classroom Management', 'Special Education (IEP)', 'EdTech Tools'],
+    skills: ['Curriculum Design', 'LMS (Canvas/Moodle)', 'Assessment Design', 'Classroom Management', 'Special Education (IEP)', 'EdTech Tools', 'Tutoring', 'Instructional Design', 'E-Learning Development', 'Student Counseling', 'Grant Writing', 'Research Methods'],
   },
   {
     label: 'Engineering', color: '#1d4ed8', emoji: '⚙️',
-    skills: ['AutoCAD/SolidWorks', 'MATLAB', 'PMP', 'Six Sigma', 'Structural Analysis', 'GIS', '3D Printing', 'FEA Simulation'],
+    skills: ['AutoCAD/SolidWorks', 'MATLAB', 'PMP', 'Six Sigma', 'Structural Analysis', 'GIS', '3D Printing', 'FEA Simulation', 'Lean Manufacturing', 'Robotics', 'PCB Design', 'Thermodynamics', 'Systems Engineering'],
   },
   {
     label: 'Legal', color: '#7c3aed', emoji: '⚖️',
-    skills: ['Westlaw/LexisNexis', 'Contract Drafting', 'Regulatory Compliance', 'Case Management', 'Litigation Support', 'Legal Writing'],
+    skills: ['Westlaw/LexisNexis', 'Contract Drafting', 'Regulatory Compliance', 'Case Management', 'Litigation Support', 'Legal Writing', 'IP Law', 'Due Diligence', 'Mediation', 'Corporate Governance', 'Privacy Law (GDPR)', 'Paralegal Skills'],
   },
   {
     label: 'Science', color: '#0f766e', emoji: '🔬',
-    skills: ['R/SPSS', 'Lab Techniques', 'Scientific Writing', 'Grant Writing', 'Peer Review', 'Data Analysis', 'MATLAB', 'Bioinformatics'],
+    skills: ['R/SPSS', 'Lab Techniques', 'Scientific Writing', 'Grant Writing', 'Peer Review', 'Data Analysis', 'MATLAB', 'Bioinformatics', 'PCR/Sequencing', 'Microscopy', 'Statistical Modeling', 'Environmental Sampling', 'GMP/GLP'],
   },
   {
     label: 'Business', color: '#b45309', emoji: '💼',
-    skills: ['Salesforce CRM', 'Jira/Asana', 'Tableau/Power BI', 'Agile/Scrum', 'Supply Chain', 'Negotiation', 'Public Speaking'],
+    skills: ['Salesforce CRM', 'Jira/Asana', 'Tableau/Power BI', 'Agile/Scrum', 'Supply Chain', 'Negotiation', 'Public Speaking', 'Strategic Planning', 'Budgeting', 'Stakeholder Management', 'Change Management', 'OKRs/KPIs', 'Consulting'],
   },
   {
     label: 'Arts & Media', color: '#c2410c', emoji: '🎬',
-    skills: ['Premiere/After Effects', 'Music Production (DAW)', 'Photography', 'Color Theory', 'Typography', 'Storytelling', 'Podcasting'],
+    skills: ['Premiere/After Effects', 'Music Production (DAW)', 'Photography', 'Color Theory', 'Typography', 'Storytelling', 'Podcasting', 'Video Editing', 'Animation', 'Sound Design', 'Screenwriting', 'Live Streaming', 'Graphic Novels'],
   },
   {
     label: 'Trades', color: '#64748b', emoji: '🔧',
-    skills: ['Blueprint Reading', 'OSHA Safety', 'Electrical Wiring', 'Welding', 'HVAC', 'Plumbing', 'Carpentry'],
+    skills: ['Blueprint Reading', 'OSHA Safety', 'Electrical Wiring', 'Welding', 'HVAC', 'Plumbing', 'Carpentry', 'CNC Machining', 'Auto Repair', 'Solar Installation', 'Masonry', 'Heavy Equipment', 'Fire Safety'],
   },
 ].map(d => ({
   ...d,
@@ -66,18 +70,21 @@ const DOMAINS: DomainDef[] = [
 /* ── Bubble cluster layout ─────────────────────────────────── */
 
 // Position skill bubbles in a circular burst around the domain center
-function getBubblePositions(count: number, radius: number): { x: number; y: number }[] {
+function getBubblePositions(count: number): { x: number; y: number }[] {
   const positions: { x: number; y: number }[] = [];
-  const angleStep = (2 * Math.PI) / count;
-  const startAngle = -Math.PI / 2; // start from top
-  for (let i = 0; i < count; i++) {
-    const angle = startAngle + i * angleStep;
-    // Add slight randomness for organic feel
-    const r = radius + (i % 2 === 0 ? 0 : radius * 0.15);
-    positions.push({
-      x: Math.cos(angle) * r,
-      y: Math.sin(angle) * r,
-    });
+  // Use two rings for many items to avoid overlap
+  const innerCount = Math.min(count, 8);
+  const outerCount = count - innerCount;
+  const innerR = 105;
+  const outerR = 170;
+
+  for (let i = 0; i < innerCount; i++) {
+    const angle = (-Math.PI / 2) + (2 * Math.PI * i) / innerCount;
+    positions.push({ x: Math.cos(angle) * innerR, y: Math.sin(angle) * innerR });
+  }
+  for (let i = 0; i < outerCount; i++) {
+    const angle = (-Math.PI / 2) + (2 * Math.PI * i) / outerCount + (Math.PI / outerCount); // offset
+    positions.push({ x: Math.cos(angle) * outerR, y: Math.sin(angle) * outerR });
   }
   return positions;
 }
@@ -176,7 +183,7 @@ export function SkillDomainPicker({ selected, onToggle }: SkillDomainPickerProps
       {activeDef && (
         <div style={{
           position: 'relative',
-          width: '100%', minHeight: 280,
+          width: '100%', minHeight: 420,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           {/* Center label */}
@@ -195,7 +202,7 @@ export function SkillDomainPicker({ selected, onToggle }: SkillDomainPickerProps
 
           {/* Branching skill bubbles */}
           {(() => {
-            const positions = getBubblePositions(activeDef.skills.length, 110);
+            const positions = getBubblePositions(activeDef.skills.length);
             return activeDef.skills.map((skill, i) => {
               const pos = positions[i];
               const isSel = selected.includes(skill.value);
@@ -241,7 +248,7 @@ export function SkillDomainPicker({ selected, onToggle }: SkillDomainPickerProps
             width: 0, height: 0, overflow: 'visible', zIndex: 0,
             pointerEvents: 'none',
           }}>
-            {getBubblePositions(activeDef.skills.length, 110).map((pos, i) => (
+            {getBubblePositions(activeDef.skills.length).map((pos, i) => (
               <line
                 key={i}
                 x1={0} y1={0} x2={pos.x} y2={pos.y}
