@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, warmup } from '../../lib/api';
+import { useToast } from '../../lib/toast-context';
 import './Assessment.css';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -175,6 +176,7 @@ const TOTAL_STEPS = 8; // 0-5 questions + 6 analyzing + 7 results
 
 export default function Assessment() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   // Wake up Encore backend on page load (cold starts take 5-15s)
@@ -268,7 +270,9 @@ export default function Assessment() {
       setResult(res.result);
       setIsPartial(!!res.partial);
       setStep(7);
+      toast('Progress saved', 'success');
     } catch (err: unknown) {
+      toast('Something went wrong', 'error');
       setIsSubmitting(false);
       setStep(5);
       if (err instanceof TypeError) {

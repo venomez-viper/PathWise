@@ -4,6 +4,7 @@ import { Panda } from '../../components/panda';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { tokenStore, auth as authApi, roadmap as roadmapApi } from '../../lib/api';
+import { useToast } from '../../lib/toast-context';
 
 const AVATAR_OPTIONS = [
   { id: 'adventurer-1', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=Aiden' },
@@ -22,6 +23,7 @@ const AVATAR_OPTIONS = [
 
 export default function SettingsPage() {
   const { user, refresh } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -84,7 +86,8 @@ export default function SettingsPage() {
       setProfileSettingsSuccess(true);
       const t = setTimeout(() => setProfileSettingsSuccess(false), 3000);
       timersRef.current.push(t);
-    } catch (err) { alert(err instanceof Error ? err.message : 'Failed to save'); }
+      toast('Settings saved', 'success');
+    } catch (err) { toast(err instanceof Error ? err.message : 'Something went wrong', 'error'); }
     finally { setProfileSettingsSaving(false); }
   };
 
@@ -111,7 +114,8 @@ export default function SettingsPage() {
       await refresh(); setEditingProfile(false); setProfileSuccess(true);
       const t = setTimeout(() => setProfileSuccess(false), 3000);
       timersRef.current.push(t);
-    } catch (err: unknown) { setProfileError(err instanceof Error ? err.message : 'Failed to save profile.'); }
+      toast('Settings saved', 'success');
+    } catch (err: unknown) { setProfileError(err instanceof Error ? err.message : 'Failed to save profile.'); toast('Something went wrong', 'error'); }
     finally { setProfileSaving(false); }
   };
 
@@ -134,7 +138,8 @@ export default function SettingsPage() {
       setPwSuccess(true); setPwForm({ current: '', newPw: '', confirm: '' });
       const t = setTimeout(() => { setPwSuccess(false); setShowPasswordForm(false); }, 2500);
       timersRef.current.push(t);
-    } catch (err: unknown) { setPwError(err instanceof Error ? err.message : 'Failed to change password.'); }
+      toast('Password updated', 'success');
+    } catch (err: unknown) { setPwError(err instanceof Error ? err.message : 'Failed to change password.'); toast('Something went wrong', 'error'); }
     finally { setPwSaving(false); }
   };
 
@@ -212,7 +217,7 @@ export default function SettingsPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: '1.5rem', fontWeight: 800, overflow: 'hidden',
             }}>
-              {user?.avatarUrl?.trim() ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : initials}
+              {user?.avatarUrl?.trim() ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : initials}
             </div>
             <div style={{
               position: 'absolute', bottom: -2, right: -2,

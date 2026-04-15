@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, warmup } from '../../lib/api';
 import { Panda } from '../../components/panda';
+import { useToast } from '../../lib/toast-context';
 import { getArchetypePreview } from './archetypePreview';
 import { ASSESSMENT_PHASES, getLastPhaseIndexForTier } from '../Assessment/questionData';
 import { SkillDomainPicker } from './SkillDomainPicker';
@@ -300,6 +301,7 @@ const s = {
 
 export default function AssessmentV2() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -649,11 +651,11 @@ export default function AssessmentV2() {
         // Clear server-side progress on full completion
         assessmentApi.saveProgress({ currentPhase: 0, currentQuestion: 0, answers: {}, completedTier: 0, startedAt: '' }).catch(() => {});
       }
+      toast('Progress saved', 'success');
       navigate('/app/assessment-v2/results', { state: { result: res.result, completedTier: tierCompleted } });
     } catch (err) {
-
+      toast('Something went wrong', 'error');
       setIsSubmitting(false);
-      alert('Something went wrong submitting your assessment. Please try again.');
       // On error go back to last answered phase so user can retry
       const lastPhaseIdx = Math.min(state.currentPhase, phases.length - 1);
       setState(prev => ({

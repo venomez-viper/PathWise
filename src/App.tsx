@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Outlet, useNavigate, Link } from 'react-r
 import * as Sentry from '@sentry/react';
 import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './lib/auth-context';
+import { ToastProvider } from './lib/toast-context';
 
 // Shared layout components (eagerly loaded)
 import Navbar          from './components/Navbar';
@@ -35,12 +36,14 @@ const ForgotPassword   = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword    = lazy(() => import('./pages/ResetPassword'));
 const LogoutPage       = lazy(() => import('./pages/Logout'));
 
-// App pages
-const Dashboard        = lazy(() => import('./pages/Dashboard'));
-const Roadmap          = lazy(() => import('./pages/Roadmap'));
-const Tasks            = lazy(() => import('./pages/Tasks'));
+// Core app pages (eagerly loaded for instant navigation)
+import Dashboard from './pages/Dashboard';
+import Roadmap from './pages/Roadmap';
+import Tasks from './pages/Tasks';
+import SettingsPage from './pages/Settings';
+
+// Other app pages (lazy loaded)
 const Progress         = lazy(() => import('./pages/Progress'));
-const SettingsPage     = lazy(() => import('./pages/Settings'));
 const Onboarding       = lazy(() => import('./pages/Onboarding'));
 const SupportPage      = lazy(() => import('./pages/Support'));
 const CertificatePage  = lazy(() => import('./pages/Certificate'));
@@ -149,6 +152,7 @@ export default function App() {
     </div>}>
     <BrowserRouter>
       <AuthProvider>
+        <ToastProvider>
         <Routes>
           {/* ── Marketing site ── */}
           <Route element={<MarketingLayout />}>
@@ -183,11 +187,11 @@ export default function App() {
 
           {/* ── Webapp (/app/*) ── */}
           <Route path="/app" element={<AppLayout />}>
-            <Route index             element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
-            <Route path="roadmap"    element={<Suspense fallback={<PageLoader />}><Roadmap /></Suspense>} />
-            <Route path="tasks"      element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
+            <Route index             element={<Dashboard />} />
+            <Route path="roadmap"    element={<Roadmap />} />
+            <Route path="tasks"      element={<Tasks />} />
             <Route path="progress"   element={<Suspense fallback={<PageLoader />}><Progress /></Suspense>} />
-            <Route path="settings"   element={<Suspense fallback={<PageLoader />}><SettingsPage /></Suspense>} />
+            <Route path="settings"   element={<SettingsPage />} />
             <Route path="onboarding"  element={<Suspense fallback={<PageLoader />}><Onboarding /></Suspense>} />
             <Route path="assessment"  element={<Suspense fallback={<PageLoader />}><Assessment /></Suspense>} />
             <Route path="assessment-v2" element={<Suspense fallback={<PageLoader />}><AssessmentV2 /></Suspense>} />
@@ -211,6 +215,7 @@ export default function App() {
           {/* ── 404 catch-all ── */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
     </Sentry.ErrorBoundary>
