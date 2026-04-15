@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check, Play, Pause, RotateCcw, Coffee } from 'lucide-react';
+import { ArrowLeft, Check, Play, Pause, RotateCcw, Coffee, Clock, ChevronDown, Keyboard } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi } from '../../lib/api';
 import { Panda } from '../../components/panda';
 
-const WORK_SECONDS = 25 * 60;
-const BREAK_SECONDS = 5 * 60;
+const TIMER_PRESETS = [
+  { label: '15 min', work: 15 * 60, break: 3 * 60 },
+  { label: '25 min', work: 25 * 60, break: 5 * 60 },
+  { label: '45 min', work: 45 * 60, break: 10 * 60 },
+  { label: '60 min', work: 60 * 60, break: 15 * 60 },
+];
 
 type TimerPhase = 'work' | 'break';
 
@@ -22,17 +26,51 @@ function isSameDay(a: Date, b: Date): boolean {
     && a.getDate() === b.getDate();
 }
 
+const SESSION_KEY = 'pathwise_focus_session';
+
+function loadSession(): { pomodorosCompleted: number; totalFocusSeconds: number; tasksCompleted: number; date: string } {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return { pomodorosCompleted: 0, totalFocusSeconds: 0, tasksCompleted: 0, date: '' };
+    const data = JSON.parse(raw);
+    if (data.date !== new Date().toISOString().split('T')[0]) {
+      return { pomodorosCompleted: 0, totalFocusSeconds: 0, tasksCompleted: 0, date: '' };
+    }
+    return data;
+  } catch { return { pomodorosCompleted: 0, totalFocusSeconds: 0, tasksCompleted: 0, date: '' }; }
+}
+
+function saveSession(data: { pomodorosCompleted: number; totalFocusSeconds: number; tasksCompleted: number }) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ ...data, date: new Date().toISOString().split('T')[0] }));
+}
+
 export default function FocusMode() {
   const { user } = useAuth();
   const [allTasks, setAllTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [justCompleted, setJustCompleted] = useState<string | null>(null);
 
+  // Timer config
+  const [presetIdx, setPresetIdx] = useState(1); // default 25min
+  const [showPresets, setShowPresets] = useState(false);
+  const preset = TIMER_PRESETS[presetIdx];
+
   // Timer state
   const [phase, setPhase] = useState<TimerPhase>('work');
-  const [secondsLeft, setSecondsLeft] = useState(WORK_SECONDS);
+  const [secondsLeft, setSecondsLeft] = useState(preset.work);
   const [running, setRunning] = useState(false);
+  const [autoAdvance, setAutoAdvance] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Session stats
+  const [session, setSession] = useState(loadSession);
+
+  // Task notes
+  const [noteTaskId, setNoteTaskId] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState('');
+
+  // Shortcuts help
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Fetch tasks
   useEffect(() => {
@@ -67,14 +105,28 @@ export default function FocusMode() {
     intervalRef.current = setInterval(() => {
       setSecondsLeft(prev => {
         if (prev <= 1) {
-          setRunning(false);
-          // Auto-switch phase
-          setPhase(p => {
-            const next = p === 'work' ? 'break' : 'work';
-            setSecondsLeft(next === 'work' ? WORK_SECONDS : BREAK_SECONDS);
-            return next;
-          });
-          return 0;
+          // Phase complete
+          if (phase === 'work') {
+            setSession(s => {
+              const updated = {
+                pomodorosCompleted: s.pomodorosCompleted + 1,
+                totalFocusSeconds: s.totalFocusSeconds + preset.work,
+                tasksCompleted: s.tasksCompleted,
+              };
+              saveSession(updated);
+              return { ...updated, date: new Date().toISOString().split('T')[0] };
+            });
+          }
+
+          if (autoAdvance) {
+            const next: TimerPhase = phase === 'work' ? 'break' : 'work';
+            setPhase(next);
+            setSecondsLeft(next === 'work' ? preset.work : preset.break);
+            return next === 'work' ? preset.work : preset.break;
+          } else {
+            setRunning(false);
+            return 0;
+          }
         }
         return prev - 1;
       });
@@ -82,14 +134,33 @@ export default function FocusMode() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
+  }, [running, phase, autoAdvance, preset]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === 'Space') { e.preventDefault(); running ? setRunning(false) : setRunning(true); }
+      if (e.code === 'KeyR') { setRunning(false); setSecondsLeft(phase === 'work' ? preset.work : preset.break); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [running, phase, preset]);
+
+  // Warn before navigating away while timer is running
+  useEffect(() => {
+    if (!running) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
   }, [running]);
 
   const handleStart = useCallback(() => setRunning(true), []);
   const handlePause = useCallback(() => setRunning(false), []);
   const handleReset = useCallback(() => {
     setRunning(false);
-    setSecondsLeft(phase === 'work' ? WORK_SECONDS : BREAK_SECONDS);
-  }, [phase]);
+    setSecondsLeft(phase === 'work' ? preset.work : preset.break);
+  }, [phase, preset]);
 
   const handleMarkDone = useCallback(async (taskId: string) => {
     try {
@@ -97,21 +168,46 @@ export default function FocusMode() {
       setJustCompleted(taskId);
       setTimeout(() => setJustCompleted(null), 2000);
       setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'done' } : t));
+      setSession(s => {
+        const updated = { ...s, tasksCompleted: s.tasksCompleted + 1 };
+        saveSession(updated);
+        return { ...updated, date: new Date().toISOString().split('T')[0] };
+      });
     } catch (e) {
       console.error('Failed to mark task done', e);
     }
   }, []);
 
-  // Panda mood
-  const pandaMood = justCompleted ? 'celebrating' : running ? 'working' : phase === 'break' ? 'happy' : 'thinking';
+  const handleSaveNote = useCallback(async (taskId: string) => {
+    try {
+      await tasksApi.update(taskId, { description: noteText });
+      setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, description: noteText } : t));
+      setNoteTaskId(null);
+      setNoteText('');
+    } catch { /* silent */ }
+  }, [noteText]);
+
+  const selectPreset = (idx: number) => {
+    setPresetIdx(idx);
+    setRunning(false);
+    setPhase('work');
+    setSecondsLeft(TIMER_PRESETS[idx].work);
+    setShowPresets(false);
+  };
 
   // Timer ring
-  const totalForPhase = phase === 'work' ? WORK_SECONDS : BREAK_SECONDS;
+  const totalForPhase = phase === 'work' ? preset.work : preset.break;
   const progress = 1 - secondsLeft / totalForPhase;
   const ringSize = 200;
   const ringR = 88;
   const circ = 2 * Math.PI * ringR;
   const strokeOff = circ * (1 - progress);
+
+  // Format session stats
+  const focusMinutes = Math.floor(session.totalFocusSeconds / 60);
+  const focusHours = Math.floor(focusMinutes / 60);
+  const focusRemainder = focusMinutes % 60;
+  const focusTimeLabel = focusHours > 0 ? `${focusHours}h ${focusRemainder}m` : `${focusMinutes}m`;
 
   if (loading) {
     return (
@@ -136,8 +232,8 @@ export default function FocusMode() {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '2rem 1.5rem 4rem',
     }}>
-      {/* Back link */}
-      <div style={{ width: '100%', maxWidth: 640, marginBottom: '1.5rem' }}>
+      {/* Back link + shortcuts */}
+      <div style={{ width: '100%', maxWidth: 640, marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Link to="/app" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           fontSize: '0.82rem', fontWeight: 600,
@@ -145,10 +241,34 @@ export default function FocusMode() {
         }}>
           <ArrowLeft size={16} /> Back to Dashboard
         </Link>
+        <button
+          onClick={() => setShowShortcuts(v => !v)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 4,
+            fontSize: '0.72rem', color: 'var(--on-surface-muted)', fontWeight: 600,
+          }}
+          aria-label="Keyboard shortcuts"
+        >
+          <Keyboard size={14} /> Shortcuts
+        </button>
       </div>
 
+      {/* Shortcuts tooltip */}
+      {showShortcuts && (
+        <div style={{
+          width: '100%', maxWidth: 640, marginBottom: '1rem',
+          background: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-md)',
+          padding: '0.75rem 1rem', fontSize: '0.78rem', color: 'var(--on-surface-variant)',
+          display: 'flex', gap: 24,
+        }}>
+          <span><kbd style={{ padding: '1px 6px', borderRadius: 4, background: 'var(--surface-container)', fontFamily: 'monospace', fontSize: '0.72rem' }}>Space</kbd> Play / Pause</span>
+          <span><kbd style={{ padding: '1px 6px', borderRadius: 4, background: 'var(--surface-container)', fontFamily: 'monospace', fontSize: '0.72rem' }}>R</kbd> Reset timer</span>
+        </div>
+      )}
+
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
         <h1 style={{
           fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800,
           color: 'var(--on-surface)', letterSpacing: '-0.03em', marginBottom: 4,
@@ -160,10 +280,56 @@ export default function FocusMode() {
         </p>
       </div>
 
+      {/* Session stats bar */}
+      {(session.pomodorosCompleted > 0 || session.tasksCompleted > 0) && (
+        <div style={{
+          display: 'flex', gap: 20, marginBottom: '1.5rem',
+          fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface-variant)',
+        }}>
+          <span>{session.pomodorosCompleted} pomodoro{session.pomodorosCompleted !== 1 ? 's' : ''}</span>
+          <span>{focusTimeLabel} focused</span>
+          <span>{session.tasksCompleted} task{session.tasksCompleted !== 1 ? 's' : ''} done</span>
+        </div>
+      )}
+
+      {/* Timer duration selector */}
+      <div style={{ position: 'relative', marginBottom: '1rem' }}>
+        <button
+          onClick={() => setShowPresets(v => !v)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)',
+            borderRadius: 'var(--radius-full)', padding: '6px 16px',
+            fontSize: '0.8rem', fontWeight: 600, color: 'var(--on-surface)', cursor: 'pointer',
+          }}
+        >
+          <Clock size={14} /> {preset.label} <ChevronDown size={14} />
+        </button>
+        {showPresets && (
+          <div style={{
+            position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+            marginTop: 4, background: 'var(--surface-container-lowest)',
+            border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--shadow-md)', overflow: 'hidden', zIndex: 10,
+          }}>
+            {TIMER_PRESETS.map((p, i) => (
+              <button key={i} onClick={() => selectPreset(i)} style={{
+                display: 'block', width: '100%', padding: '8px 24px', border: 'none',
+                background: i === presetIdx ? 'rgba(139,79,44,0.08)' : 'transparent',
+                color: i === presetIdx ? 'var(--copper)' : 'var(--on-surface)',
+                fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', textAlign: 'left',
+              }}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Timer */}
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        marginBottom: '3rem',
+        marginBottom: '2rem',
       }}>
         <div style={{ position: 'relative', width: ringSize, height: ringSize, marginBottom: '1.25rem' }}>
           <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`}>
@@ -240,14 +406,26 @@ export default function FocusMode() {
             <RotateCcw size={16} />
           </button>
         </div>
+
+        {/* Auto-advance toggle */}
+        <label style={{
+          display: 'flex', alignItems: 'center', gap: 8, marginTop: '0.75rem',
+          fontSize: '0.75rem', color: 'var(--on-surface-variant)', cursor: 'pointer',
+        }}>
+          <input
+            type="checkbox"
+            checked={autoAdvance}
+            onChange={(e) => setAutoAdvance(e.target.checked)}
+            style={{ accentColor: 'var(--copper)' }}
+          />
+          Auto-start next phase
+        </label>
       </div>
 
       {/* Tasks */}
       <div style={{ width: '100%', maxWidth: 640 }}>
         {focusTasks.length === 0 ? (
-          <div style={{
-            textAlign: 'center', padding: '3rem 1rem',
-          }}>
+          <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
             <Panda mood="happy" size={100} animate />
             <h2 style={{
               fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700,
@@ -323,14 +501,52 @@ export default function FocusMode() {
                     }}>
                       {task.title}
                     </h3>
-                    {task.description && (
+                    {task.description && noteTaskId !== task.id && (
                       <p style={{
                         fontSize: '0.82rem', color: 'var(--on-surface-variant)',
-                        lineHeight: 1.5, marginTop: 6, margin: '6px 0 0',
+                        lineHeight: 1.5, margin: '6px 0 0',
                       }}>
                         {task.description}
                       </p>
                     )}
+
+                    {/* Quick note */}
+                    {noteTaskId === task.id ? (
+                      <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+                        <input
+                          type="text"
+                          value={noteText}
+                          onChange={(e) => setNoteText(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveNote(task.id); if (e.key === 'Escape') setNoteTaskId(null); }}
+                          placeholder="Add a quick note..."
+                          autoFocus
+                          style={{
+                            flex: 1, padding: '6px 10px', borderRadius: 'var(--radius-sm)',
+                            border: '1px solid var(--outline-variant)', fontSize: '0.82rem',
+                            fontFamily: 'var(--font-body)', background: 'var(--surface)',
+                          }}
+                        />
+                        <button onClick={() => handleSaveNote(task.id)} style={{
+                          padding: '6px 12px', borderRadius: 'var(--radius-sm)',
+                          background: 'var(--copper)', color: '#fff', border: 'none',
+                          fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                        }}>Save</button>
+                      </div>
+                    ) : (
+                      !isDone && (
+                        <button
+                          onClick={() => { setNoteTaskId(task.id); setNoteText(task.description || ''); }}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontSize: '0.72rem', color: 'var(--on-surface-muted)', fontWeight: 600,
+                            marginTop: 6, padding: 0,
+                          }}
+                        >
+                          {task.description ? 'Edit note' : '+ Add note'}
+                        </button>
+                      )
+                    )}
+
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 8, marginTop: 8,
                     }}>
@@ -382,6 +598,22 @@ export default function FocusMode() {
           </div>
         )}
       </div>
+
+      {/* Daily summary */}
+      {session.pomodorosCompleted >= 2 && (
+        <div style={{
+          width: '100%', maxWidth: 640, marginTop: '2rem',
+          background: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-xl)',
+          padding: '1.25rem 1.5rem', textAlign: 'center',
+        }}>
+          <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--copper)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+            Today's Summary
+          </p>
+          <p style={{ fontSize: '0.9rem', color: 'var(--on-surface)', lineHeight: 1.5 }}>
+            You focused for <strong>{focusTimeLabel}</strong> across {session.pomodorosCompleted} session{session.pomodorosCompleted !== 1 ? 's' : ''} and completed <strong>{session.tasksCompleted} task{session.tasksCompleted !== 1 ? 's' : ''}</strong>.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
