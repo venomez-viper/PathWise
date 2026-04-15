@@ -4,7 +4,7 @@ import Skeleton from '../../components/Skeleton';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
-import { Panda, PandaSpot } from '../../components/panda';
+import { Panda } from '../../components/panda';
 import { useToast } from '../../lib/toast-context';
 
 type Task = { id: string; title: string; status: string; milestoneId?: string; category?: string; priority?: string; description?: string };

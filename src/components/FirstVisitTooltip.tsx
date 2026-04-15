@@ -63,7 +63,6 @@ export default function FirstVisitTooltip({
 
   if (!visible || !coords) return null;
 
-  const isVertical = position === 'top' || position === 'bottom';
   const transformMap: Record<string, string> = {
     top: 'translateX(-50%) translateY(-100%)',
     bottom: 'translateX(-50%)',
