@@ -186,20 +186,40 @@ function extractAnswers(input: AssessmentInput): Record<string, string[]> {
       result[k] = toArray(v);
     }
 
-    // Map v2 question keys to the legacy dimension keys the scoring engine uses
-    // Interest dimensions: int1 (interests), int2 (problemTypes), int3 (archetypes)
-    // The v2 RIASEC questions (ri_*) map to interests
-    const riasecAnswers: string[] = [];
+    // Map v2 RIASEC questions (ri_*) to interest dimension names
+    // ri_r* = realistic, ri_i* = investigative, ri_a* = artistic,
+    // ri_s* = social, ri_e* = enterprising, ri_c* = conventional
+    const riasecDimScores: Record<string, number[]> = {
+      realistic: [], investigative: [], artistic: [],
+      social: [], enterprising: [], conventional: [],
+    };
+    const riasecPrefixMap: Record<string, string> = {
+      ri_r: 'realistic', ri_i: 'investigative', ri_a: 'artistic',
+      ri_s: 'social', ri_e: 'enterprising', ri_c: 'conventional',
+    };
     for (const [k, v] of Object.entries(result)) {
-      if (k.startsWith('ri_')) riasecAnswers.push(...v);
+      if (!k.startsWith('ri_')) continue;
+      const prefix = k.substring(0, 4); // "ri_r", "ri_i", etc.
+      const dim = riasecPrefixMap[prefix];
+      if (dim) {
+        for (const val of v) {
+          const num = parseFloat(val);
+          if (!isNaN(num)) riasecDimScores[dim].push(num);
+        }
+      }
     }
-    if (riasecAnswers.length > 0 && !result.int1?.length) {
-      // Map RIASEC to interest types
-      const riasecMap: Record<string, string> = {
-        '5': 'realistic', '4': 'realistic',
-        'strongly_agree': 'realistic', 'agree': 'realistic',
-      };
-      result.int1 = riasecAnswers.length > 0 ? riasecAnswers.slice(0, 3) : ['mixed'];
+    // Average scores per dimension, pick top 2-3 as user's interests
+    const riasecRanked = Object.entries(riasecDimScores)
+      .map(([dim, scores]) => ({
+        dim,
+        avg: scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0,
+      }))
+      .filter(d => d.avg > 0)
+      .sort((a, b) => b.avg - a.avg);
+
+    if (riasecRanked.length > 0 && !result.int1?.length) {
+      // Store the top 2-3 RIASEC dimension NAMES (not numeric scores)
+      result.int1 = riasecRanked.slice(0, 3).map(d => d.dim);
     }
 
     // Values dimensions: val1-4
