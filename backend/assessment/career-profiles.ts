@@ -2,6 +2,11 @@ export interface SkillGapEntry { skill: string; importance: "high" | "medium" | 
 export interface CertEntry { skill: string; certName: string; provider: string; url: string; duration: string; level: string; cost: string; whyRecommended: string; }
 export interface RecEntry { type: "portfolio" | "networking" | "job_application"; title: string; description: string; platform?: string; url?: string; difficulty?: string; timeEstimate?: string; why: string; actionStep: string; }
 export interface MilestoneEntry { title: string; description: string; tasks: string[]; estimatedWeeks: number; }
+export interface CareerPathway {
+  entryFrom: string[];
+  progressTo: string[];
+}
+
 export interface CareerProfile {
   id: string; title: string; domain: string; description: string;
   interests: string[]; problemTypes: string[]; archetypes: string[];
@@ -12,6 +17,7 @@ export interface CareerProfile {
   careerStages: string[]; riskLevels: string[]; trajectories: string[];
   groupRoles: string[]; requiredSkills: string[]; experienceLevels: string[];
   domains: string[]; pathwayTime: string;
+  careerPathway?: CareerPathway;
   scoringWeights?: {
     interest: number;      // 0-1, sum to 1.0
     personality: number;
@@ -40,11 +46,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "ideator"], requiredSkills: ["JavaScript/TypeScript", "React", "CSS", "Git", "Testing"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology", "Design & UX"],
     pathwayTime: "3-6 months",
+    careerPathway: {
+      entryFrom: ["Web Designer", "Bootcamp Graduate", "Graphic Designer"],
+      progressTo: ["Full-Stack Developer", "Engineering Manager", "Technical Lead", "UX Engineer"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "React", importance: "high", learningResource: "React.dev official tutorial" },
-      { skill: "TypeScript", importance: "high", learningResource: "TypeScript Handbook" },
-      { skill: "CSS/Tailwind", importance: "medium", learningResource: "Tailwind CSS docs" },
+      { skill: "React", importance: "high", learningResource: "React.dev Official Tutorial - https://react.dev/learn" },
+      { skill: "TypeScript", importance: "high", learningResource: "TypeScript Handbook - https://www.typescriptlang.org/docs/handbook/" },
+      { skill: "CSS/Tailwind", importance: "medium", learningResource: "Tailwind CSS Documentation - https://tailwindcss.com/docs" },
     ],
     certifications: [
       { skill: "Frontend", certName: "Meta Front-End Developer Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/meta-front-end-developer", duration: "7 months", level: "Beginner", cost: "$49/month", whyRecommended: "Industry-recognized frontend credential" },
@@ -86,11 +96,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Node.js/Python/Go", "SQL", "REST APIs", "Git", "Docker"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology"],
     pathwayTime: "4-8 months",
+    careerPathway: {
+      entryFrom: ["IT Support", "Junior Developer", "Computer Science Student"],
+      progressTo: ["Full-Stack Developer", "DevOps/SRE Engineer", "Software Architect", "Engineering Manager"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Node.js or Python", importance: "high", learningResource: "The Odin Project backend path" },
-      { skill: "SQL & Databases", importance: "high", learningResource: "SQLBolt interactive tutorials" },
-      { skill: "Docker", importance: "medium", learningResource: "Docker Getting Started docs" },
+      { skill: "Node.js or Python", importance: "high", learningResource: "The Odin Project Backend Path - https://www.theodinproject.com/paths/full-stack-javascript/courses/nodejs" },
+      { skill: "SQL & Databases", importance: "high", learningResource: "SQLBolt Interactive Tutorials - https://sqlbolt.com/" },
+      { skill: "Docker", importance: "medium", learningResource: "Docker Getting Started Guide - https://docs.docker.com/get-started/" },
     ],
     certifications: [
       { skill: "Backend", certName: "Meta Back-End Developer Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/meta-back-end-developer", duration: "8 months", level: "Beginner", cost: "$49/month", whyRecommended: "Comprehensive backend curriculum" },
@@ -132,11 +146,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "connector"], requiredSkills: ["JavaScript/TypeScript", "React", "Node.js", "SQL", "Git", "Docker"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Technology"],
     pathwayTime: "6-12 months",
+    careerPathway: {
+      entryFrom: ["Frontend Developer", "Backend Developer", "Bootcamp Graduate"],
+      progressTo: ["Software Architect", "Engineering Manager", "Technical Lead", "Startup Founder"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Full-Stack Frameworks", importance: "high", learningResource: "Next.js official docs" },
-      { skill: "Database Design", importance: "high", learningResource: "PostgreSQL Tutorial" },
-      { skill: "Deployment/CI-CD", importance: "medium", learningResource: "Vercel + GitHub Actions docs" },
+      { skill: "Full-Stack Frameworks", importance: "high", learningResource: "Next.js Official Documentation - https://nextjs.org/docs" },
+      { skill: "Database Design", importance: "high", learningResource: "PostgreSQL Tutorial - https://www.postgresqltutorial.com/" },
+      { skill: "Deployment/CI-CD", importance: "medium", learningResource: "GitHub Actions Documentation - https://docs.github.com/en/actions" },
     ],
     certifications: [
       { skill: "Full-Stack", certName: "IBM Full Stack Software Developer", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer", duration: "4 months", level: "Beginner", cost: "$49/month", whyRecommended: "End-to-end full-stack coverage" },
@@ -178,11 +196,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "ideator"], requiredSkills: ["React Native/Flutter", "JavaScript/Dart", "Mobile UI", "REST APIs", "Git"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Technology", "Design & UX"],
     pathwayTime: "4-8 months",
+    careerPathway: {
+      entryFrom: ["Frontend Developer", "Computer Science Student", "Web Developer"],
+      progressTo: ["Mobile Lead", "Engineering Manager", "Full-Stack Developer"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "React Native or Flutter", importance: "high", learningResource: "React Native docs or Flutter.dev" },
-      { skill: "Mobile UI Patterns", importance: "high", learningResource: "Material Design guidelines" },
-      { skill: "App Store Deployment", importance: "medium", learningResource: "Apple/Google developer docs" },
+      { skill: "React Native or Flutter", importance: "high", learningResource: "React Native Official Docs - https://reactnative.dev/docs/getting-started" },
+      { skill: "Mobile UI Patterns", importance: "high", learningResource: "Material Design Guidelines - https://m3.material.io/" },
+      { skill: "App Store Deployment", importance: "medium", learningResource: "Apple Developer Documentation - https://developer.apple.com/documentation/" },
     ],
     certifications: [
       { skill: "Mobile", certName: "Meta React Native Specialization", provider: "Coursera", url: "https://www.coursera.org/specializations/meta-react-native", duration: "5 months", level: "Intermediate", cost: "$49/month", whyRecommended: "React Native from Meta engineers" },
@@ -224,11 +246,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "doer"], requiredSkills: ["Linux", "Docker", "Kubernetes", "CI/CD", "Cloud (AWS/GCP)", "Terraform"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Technology"],
     pathwayTime: "6-12 months",
+    careerPathway: {
+      entryFrom: ["Backend Developer", "Systems Administrator", "QA/Test Engineer"],
+      progressTo: ["Cloud Architect", "Site Reliability Director", "VP of Engineering"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Kubernetes", importance: "high", learningResource: "Kubernetes.io official tutorials" },
-      { skill: "Terraform/IaC", importance: "high", learningResource: "HashiCorp Learn tutorials" },
-      { skill: "CI/CD Pipelines", importance: "medium", learningResource: "GitHub Actions documentation" },
+      { skill: "Kubernetes", importance: "high", learningResource: "Kubernetes Official Tutorials - https://kubernetes.io/docs/tutorials/" },
+      { skill: "Terraform/IaC", importance: "high", learningResource: "HashiCorp Terraform Tutorials - https://developer.hashicorp.com/terraform/tutorials" },
+      { skill: "CI/CD Pipelines", importance: "medium", learningResource: "GitHub Actions Documentation - https://docs.github.com/en/actions" },
     ],
     certifications: [
       { skill: "Cloud", certName: "AWS Solutions Architect Associate", provider: "AWS", url: "https://aws.amazon.com/certification/certified-solutions-architect-associate/", duration: "3 months", level: "Intermediate", cost: "$150", whyRecommended: "Most in-demand cloud certification" },
@@ -272,9 +298,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.20, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Test Automation", importance: "high", learningResource: "Cypress.io documentation" },
-      { skill: "API Testing", importance: "high", learningResource: "Postman Learning Center" },
-      { skill: "Performance Testing", importance: "medium", learningResource: "K6 documentation" },
+      { skill: "Test Automation", importance: "high", learningResource: "Cypress Documentation - https://docs.cypress.io/" },
+      { skill: "API Testing", importance: "high", learningResource: "Postman Learning Center - https://learning.postman.com/" },
+      { skill: "Performance Testing", importance: "medium", learningResource: "Grafana k6 Documentation - https://grafana.com/docs/k6/latest/" },
     ],
     certifications: [
       { skill: "QA", certName: "ISTQB Foundation Level", provider: "ISTQB", url: "https://www.istqb.org/certifications/certified-tester-foundation-level", duration: "2 months", level: "Beginner", cost: "$250", whyRecommended: "Industry standard QA certification" },
@@ -316,11 +342,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "ideator"], requiredSkills: ["Python", "Statistics", "ML/sklearn", "SQL", "Data Visualization"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Data & Analytics", "Technology"],
     pathwayTime: "6-12 months",
+    careerPathway: {
+      entryFrom: ["Data Analyst", "Software Developer", "Statistics Graduate"],
+      progressTo: ["ML Engineer", "AI Research Scientist", "Head of Data Science", "Chief Data Officer"],
+    },
     scoringWeights: { interest: 0.35, personality: 0.10, values: 0.15, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Machine Learning", importance: "high", learningResource: "Andrew Ng's ML Specialization on Coursera" },
-      { skill: "Statistics", importance: "high", learningResource: "Khan Academy Statistics" },
-      { skill: "Python/Pandas", importance: "medium", learningResource: "Kaggle Learn Python" },
+      { skill: "Machine Learning", importance: "high", learningResource: "Andrew Ng ML Specialization (Coursera) - https://www.coursera.org/specializations/machine-learning-introduction" },
+      { skill: "Statistics", importance: "high", learningResource: "Khan Academy Statistics - https://www.khanacademy.org/math/statistics-probability" },
+      { skill: "Python/Pandas", importance: "medium", learningResource: "Kaggle Learn Python - https://www.kaggle.com/learn/python" },
     ],
     certifications: [
       { skill: "Data Science", certName: "IBM Data Science Professional Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/ibm-data-science", duration: "5 months", level: "Beginner", cost: "$49/month", whyRecommended: "Comprehensive data science path" },
@@ -362,11 +392,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["analyst", "presenter"], requiredSkills: ["SQL", "Excel", "Tableau/Power BI", "Python/R", "Statistics"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Data & Analytics", "Finance"],
     pathwayTime: "3-6 months",
+    careerPathway: {
+      entryFrom: ["Excel Power User", "Business Intern", "Statistics Student"],
+      progressTo: ["Data Scientist", "BI Analyst", "Analytics Manager", "Business Intelligence Director"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.15, values: 0.15, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "SQL", importance: "high", learningResource: "Mode Analytics SQL Tutorial" },
-      { skill: "Tableau/Power BI", importance: "high", learningResource: "Tableau Public free training" },
-      { skill: "Statistics", importance: "medium", learningResource: "Khan Academy Statistics" },
+      { skill: "SQL", importance: "high", learningResource: "Mode SQL Tutorial - https://mode.com/sql-tutorial/" },
+      { skill: "Tableau/Power BI", importance: "high", learningResource: "Tableau Free Training Videos - https://www.tableau.com/learn/training" },
+      { skill: "Statistics", importance: "medium", learningResource: "Khan Academy Statistics - https://www.khanacademy.org/math/statistics-probability" },
     ],
     certifications: [
       { skill: "Data Analytics", certName: "Google Data Analytics Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-data-analytics", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Most popular analytics certification" },
@@ -408,11 +442,15 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     groupRoles: ["doer", "analyst"], requiredSkills: ["Python", "TensorFlow/PyTorch", "MLOps", "Docker", "SQL", "Cloud"],
     experienceLevels: ["mid", "senior"], domains: ["Data & Analytics", "Technology"],
     pathwayTime: "8-14 months",
+    careerPathway: {
+      entryFrom: ["Data Scientist", "Backend Developer", "Software Engineer"],
+      progressTo: ["AI Research Scientist", "ML Platform Lead", "Head of AI"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.10, values: 0.15, aptitude: 0.30, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Deep Learning", importance: "high", learningResource: "fast.ai Practical Deep Learning" },
-      { skill: "MLOps", importance: "high", learningResource: "Made With ML MLOps course" },
-      { skill: "Cloud ML Services", importance: "medium", learningResource: "AWS SageMaker tutorials" },
+      { skill: "Deep Learning", importance: "high", learningResource: "fast.ai Practical Deep Learning - https://course.fast.ai/" },
+      { skill: "MLOps", importance: "high", learningResource: "Made With ML MLOps Course - https://madewithml.com/" },
+      { skill: "Cloud ML Services", importance: "medium", learningResource: "AWS SageMaker Documentation - https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html" },
     ],
     certifications: [
       { skill: "ML", certName: "AWS Machine Learning Specialty", provider: "AWS", url: "https://aws.amazon.com/certification/certified-machine-learning-specialty/", duration: "3 months", level: "Advanced", cost: "$300", whyRecommended: "Top ML cloud certification" },
@@ -456,9 +494,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "6-10 months",
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.15, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Apache Spark", importance: "high", learningResource: "Databricks Academy free courses" },
-      { skill: "Airflow/Orchestration", importance: "high", learningResource: "Apache Airflow documentation" },
-      { skill: "Data Modeling", importance: "medium", learningResource: "Kimball Group data warehouse toolkit" },
+      { skill: "Apache Spark", importance: "high", learningResource: "Databricks Academy Free Courses - https://www.databricks.com/learn" },
+      { skill: "Airflow/Orchestration", importance: "high", learningResource: "Apache Airflow Documentation - https://airflow.apache.org/docs/" },
+      { skill: "Data Modeling", importance: "medium", learningResource: "Kimball Group Data Warehouse Resources - https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/" },
     ],
     certifications: [
       { skill: "Data Engineering", certName: "Google Professional Data Engineer", provider: "Google Cloud", url: "https://cloud.google.com/learn/certification/data-engineer", duration: "3 months", level: "Intermediate", cost: "$200", whyRecommended: "Top cloud data engineering cert" },
@@ -502,9 +540,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Power BI", importance: "high", learningResource: "Microsoft Learn Power BI path" },
-      { skill: "SQL", importance: "high", learningResource: "W3Schools SQL Tutorial" },
-      { skill: "DAX", importance: "medium", learningResource: "SQLBI DAX Guide" },
+      { skill: "Power BI", importance: "high", learningResource: "Microsoft Learn Power BI Path - https://learn.microsoft.com/en-us/training/powerplatform/power-bi" },
+      { skill: "SQL", importance: "high", learningResource: "W3Schools SQL Tutorial - https://www.w3schools.com/sql/" },
+      { skill: "DAX", importance: "medium", learningResource: "SQLBI DAX Guide - https://dax.guide/" },
     ],
     certifications: [
       { skill: "Power BI", certName: "Microsoft Power BI Data Analyst (PL-300)", provider: "Microsoft", url: "https://learn.microsoft.com/en-us/certifications/power-bi-data-analyst-associate/", duration: "3 months", level: "Intermediate", cost: "$165", whyRecommended: "Most valued BI certification" },
@@ -543,14 +581,18 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["hybrid", "office"], teamSizes: ["small", "medium"], paces: ["steady", "burst"],
     managementStyles: ["collaborative", "mentorship"], careerStages: ["exploring", "building", "pivoting"],
     riskLevels: ["moderate", "low"], trajectories: ["specialist", "generalist"],
-    groupRoles: ["ideator", "facilitator"], requiredSkills: ["Figma", "User Research", "Wireframing", "Prototyping", "Usability Testing"],
+    groupRoles: ["ideator", "facilitator"], requiredSkills: ["Figma", "User Interview Techniques", "Wireframing (Balsamiq/Figma)", "Prototyping (InVision/Figma)", "Usability Testing (UserTesting.com/Maze)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Design & UX"],
     pathwayTime: "4-8 months",
+    careerPathway: {
+      entryFrom: ["Graphic Designer", "Web Designer", "Psychology Graduate"],
+      progressTo: ["Product Designer", "UX Lead", "Design Director", "VP of Design"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Figma", importance: "high", learningResource: "Figma official tutorials" },
-      { skill: "User Research", importance: "high", learningResource: "NNGroup articles on UX research" },
-      { skill: "Prototyping", importance: "medium", learningResource: "Figma prototyping docs" },
+      { skill: "Figma", importance: "high", learningResource: "Figma Official Tutorials - https://help.figma.com/hc/en-us/categories/360002051613" },
+      { skill: "User Research", importance: "high", learningResource: "NNGroup UX Research Articles - https://www.nngroup.com/topic/user-research/" },
+      { skill: "Prototyping", importance: "medium", learningResource: "Figma Prototyping Documentation - https://help.figma.com/hc/en-us/articles/360040314193" },
     ],
     certifications: [
       { skill: "UX", certName: "Google UX Design Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-ux-design", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Most popular UX certification" },
@@ -589,12 +631,12 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["remote", "hybrid"], teamSizes: ["small", "medium"], paces: ["steady", "burst"],
     managementStyles: ["handsoff", "mentorship"], careerStages: ["exploring", "building"],
     riskLevels: ["moderate", "low"], trajectories: ["specialist"],
-    groupRoles: ["ideator", "doer"], requiredSkills: ["Figma", "Visual Design", "Typography", "Color Theory", "Design Systems"],
+    groupRoles: ["ideator", "doer"], requiredSkills: ["Figma (Auto Layout/Variants)", "Adobe Illustrator/Photoshop", "Design Tokens & Systems (Storybook)", "Responsive Design (CSS Grid/Flexbox)", "Accessibility Standards (WCAG 2.1)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Design & UX"],
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Figma Advanced", importance: "high", learningResource: "Figma community tutorials" },
+      { skill: "Figma Advanced", importance: "high", learningResource: "Figma Community Tutorials - https://help.figma.com/hc/en-us/categories/360002051613" },
       { skill: "Design Systems", importance: "high", learningResource: "Figma Design Systems guide" },
       { skill: "Typography", importance: "medium", learningResource: "Typewolf resources" },
     ],
@@ -635,7 +677,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["hybrid", "office"], teamSizes: ["medium", "small"], paces: ["steady"],
     managementStyles: ["collaborative", "mentorship"], careerStages: ["exploring", "building"],
     riskLevels: ["low", "moderate"], trajectories: ["specialist"],
-    groupRoles: ["analyst", "facilitator"], requiredSkills: ["User Interviews", "Survey Design", "Usability Testing", "Data Analysis", "Research Synthesis"],
+    groupRoles: ["analyst", "facilitator"], requiredSkills: ["UserTesting.com/Lookback.io", "Survey Tools (Qualtrics/Typeform)", "Usability Testing (Maze/Optimal Workshop)", "Dovetail/EnjoyHQ Research Repositories", "Statistical Analysis (SPSS/R)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Design & UX"],
     pathwayTime: "4-8 months",
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
@@ -681,13 +723,17 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["hybrid", "remote"], teamSizes: ["small", "medium"], paces: ["fast", "steady"],
     managementStyles: ["collaborative", "handsoff"], careerStages: ["building", "advancing"],
     riskLevels: ["moderate"], trajectories: ["generalist", "leader"],
-    groupRoles: ["ideator", "facilitator"], requiredSkills: ["Figma", "User Research", "Prototyping", "Visual Design", "Design Thinking"],
+    groupRoles: ["ideator", "facilitator"], requiredSkills: ["Figma (Auto Layout/Components)", "Sketch/Adobe XD", "Prototyping (Framer/ProtoPie)", "Design Systems (Storybook)", "User Testing (Maze/Lookback)"],
     experienceLevels: ["mid", "senior"], domains: ["Design & UX", "Technology"],
     pathwayTime: "6-10 months",
+    careerPathway: {
+      entryFrom: ["UX Designer", "UI Designer", "Graphic Designer"],
+      progressTo: ["Design Director", "VP of Design", "Head of Product Design"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Design Thinking", importance: "high", learningResource: "IDEO Design Thinking resources" },
-      { skill: "Figma Advanced", importance: "high", learningResource: "Figma official tutorials" },
+      { skill: "Figma Advanced", importance: "high", learningResource: "Figma Official Tutorials - https://help.figma.com/hc/en-us/categories/360002051613" },
       { skill: "Product Strategy", importance: "medium", learningResource: "Reforge Product Design course" },
     ],
     certifications: [
@@ -727,9 +773,13 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["hybrid", "office"], teamSizes: ["medium", "large"], paces: ["fast", "steady"],
     managementStyles: ["collaborative", "mentorship"], careerStages: ["building", "advancing", "pivoting"],
     riskLevels: ["moderate", "high"], trajectories: ["leader", "generalist"],
-    groupRoles: ["facilitator", "connector"], requiredSkills: ["Product Strategy", "Prioritization", "Data Analysis", "User Research", "Roadmapping"],
+    groupRoles: ["facilitator", "connector"], requiredSkills: ["Aha!/Productboard Roadmapping", "SQL for Product Analytics", "A/B Testing (Optimizely)", "PRD/Spec Writing", "RICE/ICE Prioritization Frameworks"],
     experienceLevels: ["mid", "senior"], domains: ["Product Management", "Technology"],
     pathwayTime: "4-8 months",
+    careerPathway: {
+      entryFrom: ["Business Analyst", "UX Designer", "Software Developer", "Project Manager"],
+      progressTo: ["Senior PM", "Director of Product", "VP of Product", "Chief Product Officer"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Product Strategy", importance: "high", learningResource: "Inspired by Marty Cagan (book)" },
@@ -773,9 +823,13 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["hybrid", "office"], teamSizes: ["medium", "large"], paces: ["steady"],
     managementStyles: ["collaborative", "directive"], careerStages: ["building", "advancing"],
     riskLevels: ["low", "moderate"], trajectories: ["leader", "generalist"],
-    groupRoles: ["coordinator", "facilitator"], requiredSkills: ["Project Planning", "Agile/Scrum", "Risk Management", "Budgeting", "Stakeholder Management"],
+    groupRoles: ["coordinator", "facilitator"], requiredSkills: ["MS Project/Smartsheet", "Agile/Scrum Methodology", "PMP Certification Prep", "Earned Value Management", "RACI Matrix Design"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Product Management", "Consulting"],
     pathwayTime: "3-6 months",
+    careerPathway: {
+      entryFrom: ["Team Lead", "Business Analyst", "Coordinator"],
+      progressTo: ["Program Manager", "Product Manager", "Director of Operations"],
+    },
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
       { skill: "Agile/Scrum", importance: "high", learningResource: "Scrum.org learning path" },
@@ -819,7 +873,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["hybrid", "office"], teamSizes: ["small", "medium"], paces: ["steady", "fast"],
     managementStyles: ["collaborative", "servant_leader"], careerStages: ["building", "pivoting"],
     riskLevels: ["low", "moderate"], trajectories: ["leader", "specialist"],
-    groupRoles: ["facilitator", "coach"], requiredSkills: ["Scrum Framework", "Facilitation", "Coaching", "Jira", "Conflict Resolution"],
+    groupRoles: ["facilitator", "coach"], requiredSkills: ["Scrum Guide Framework", "Jira/Azure DevOps", "Sprint Planning/Retrospectives", "Burndown/Velocity Charts", "CSM/PSM Certification"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Product Management", "Technology"],
     pathwayTime: "2-4 months",
     scoringWeights: { interest: 0.20, personality: 0.30, values: 0.20, aptitude: 0.05, environment: 0.15, stage: 0.10 },
@@ -865,7 +919,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["hybrid", "office"], teamSizes: ["large", "medium"], paces: ["fast", "steady"],
     managementStyles: ["collaborative", "directive"], careerStages: ["advancing", "building"],
     riskLevels: ["moderate"], trajectories: ["leader"],
-    groupRoles: ["coordinator", "connector"], requiredSkills: ["Program Management", "Technical Knowledge", "Stakeholder Mgmt", "Risk Mgmt", "Communication"],
+    groupRoles: ["coordinator", "connector"], requiredSkills: ["Jira/Asana Portfolio", "RAID Log Management", "OKR Frameworks", "Gantt Charts (MS Project)", "Technical Architecture Reviews"],
     experienceLevels: ["mid", "senior"], domains: ["Technology", "Product Management"],
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.20, personality: 0.20, values: 0.15, aptitude: 0.25, environment: 0.10, stage: 0.10 },
@@ -911,9 +965,13 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["remote", "hybrid"], teamSizes: ["small", "medium"], paces: ["fast", "burst"],
     managementStyles: ["handsoff", "collaborative"], careerStages: ["exploring", "building"],
     riskLevels: ["moderate", "high"], trajectories: ["generalist", "leader"],
-    groupRoles: ["ideator", "doer"], requiredSkills: ["Google Ads", "Social Media", "Analytics", "Email Marketing", "Content Strategy"],
+    groupRoles: ["ideator", "doer"], requiredSkills: ["Google Ads/Meta Ads Manager", "Google Analytics 4", "Mailchimp/Klaviyo", "HubSpot/Marketo", "A/B Testing Platforms"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Marketing"],
     pathwayTime: "3-6 months",
+    careerPathway: {
+      entryFrom: ["Social Media Coordinator", "Marketing Intern", "Content Writer"],
+      progressTo: ["Marketing Manager", "Growth Hacker", "Head of Marketing", "CMO"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Google Ads", importance: "high", learningResource: "Google Skillshop" },
@@ -957,7 +1015,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["remote", "hybrid"], teamSizes: ["small", "medium"], paces: ["steady", "burst"],
     managementStyles: ["handsoff", "collaborative"], careerStages: ["exploring", "building"],
     riskLevels: ["low", "moderate"], trajectories: ["specialist", "generalist"],
-    groupRoles: ["ideator", "presenter"], requiredSkills: ["Writing", "SEO", "Content Planning", "Analytics", "CMS"],
+    groupRoles: ["ideator", "presenter"], requiredSkills: ["WordPress/Webflow CMS", "Ahrefs/SEMrush", "Google Analytics 4", "Content Calendar Tools (Asana/CoSchedule)", "Copywriting Frameworks (AIDA/PAS)"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Marketing", "Media & Entertainment"],
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
@@ -1003,7 +1061,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["remote", "hybrid"], teamSizes: ["small", "medium"], paces: ["steady"],
     managementStyles: ["handsoff", "mentorship"], careerStages: ["exploring", "building"],
     riskLevels: ["moderate", "low"], trajectories: ["specialist"],
-    groupRoles: ["analyst", "doer"], requiredSkills: ["Technical SEO", "Keyword Research", "Content Optimization", "Analytics", "Link Building"],
+    groupRoles: ["analyst", "doer"], requiredSkills: ["Ahrefs/SEMrush", "Google Search Console", "Schema Markup (JSON-LD)", "Google Analytics 4", "Screaming Frog Audits"],
     experienceLevels: ["student", "junior", "mid"], domains: ["Marketing", "E-commerce"],
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.20, environment: 0.10, stage: 0.10 },
@@ -1049,7 +1107,7 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["remote", "hybrid"], teamSizes: ["small"], paces: ["fast", "burst"],
     managementStyles: ["handsoff"], careerStages: ["building", "exploring"],
     riskLevels: ["high", "moderate"], trajectories: ["generalist", "leader"],
-    groupRoles: ["ideator", "doer"], requiredSkills: ["Analytics", "A/B Testing", "Paid Ads", "SQL", "Product Sense"],
+    groupRoles: ["ideator", "doer"], requiredSkills: ["Mixpanel/Amplitude Analytics", "A/B Testing (Optimizely/VWO)", "Google Ads/Meta Ads Manager", "SQL for Funnel Analysis", "Attribution Modeling (UTM/MTA)"],
     experienceLevels: ["junior", "mid", "senior"], domains: ["Marketing", "E-commerce"],
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.15, aptitude: 0.20, environment: 0.05, stage: 0.10 },
@@ -1095,9 +1153,13 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     environments: ["office", "hybrid"], teamSizes: ["small", "medium"], paces: ["fast"],
     managementStyles: ["mentorship", "collaborative"], careerStages: ["exploring", "building", "advancing"],
     riskLevels: ["moderate", "high"], trajectories: ["leader", "generalist"],
-    groupRoles: ["analyst", "presenter"], requiredSkills: ["Problem Solving", "Data Analysis", "Presentation", "Excel/Modeling", "Communication"],
+    groupRoles: ["analyst", "presenter"], requiredSkills: ["Case Interview Frameworks", "Financial Modeling (DCF/LBO)", "PowerPoint Deck Design", "SQL/Tableau", "Market Sizing Methodologies"],
     experienceLevels: ["student", "junior", "mid", "senior"], domains: ["Consulting", "Finance"],
     pathwayTime: "4-8 months",
+    careerPathway: {
+      entryFrom: ["Business Analyst", "Financial Analyst", "MBA Graduate"],
+      progressTo: ["Senior Consultant", "Engagement Manager", "Partner", "Startup Founder"],
+    },
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Case Interview Prep", importance: "high", learningResource: "Case in Point (book)" },
