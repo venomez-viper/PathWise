@@ -778,6 +778,10 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["creator", "doer"], requiredSkills: ["Content Audit Frameworks", "Ahrefs/SEMrush Keyword Research", "CMS Platforms (WordPress/Contentful)", "Content Scoring Models", "Editorial Calendar Tools (CoSchedule/Airtable)"],
     experienceLevels: ["entry", "junior", "mid"], domains: ["Media & Entertainment", "Marketing"],
     pathwayTime: "2-6 months",
+    careerPathway: {
+      entryFrom: ["English Major", "Journalism Student", "Blogger"],
+      progressTo: ["Content Strategist", "Creative Director", "Brand Strategist"],
+    },
     scoringWeights: { interest: 0.35, personality: 0.15, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Copywriting", importance: "high", learningResource: "The Copywriter's Handbook by Robert Bly" },
@@ -866,6 +870,10 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["doer", "supporter"], requiredSkills: ["SIEM (Splunk/QRadar)", "Wireshark/tcpdump Packet Analysis", "NIST Incident Response Framework", "Nessus/Qualys Vulnerability Scanning", "Linux Administration (CentOS/Ubuntu)"],
     experienceLevels: ["entry", "junior", "mid"], domains: ["Technology"],
     pathwayTime: "6-12 months",
+    careerPathway: {
+      entryFrom: ["IT Support", "Network Administrator", "Computer Science Graduate"],
+      progressTo: ["Penetration Tester", "Security Engineer", "CISO"],
+    },
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.25, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "SIEM Tools", importance: "high", learningResource: "Splunk Fundamentals (free)" },
@@ -954,6 +962,10 @@ export const CAREER_PROFILES_PART2: CareerProfile[] = [
     groupRoles: ["leader", "creator"], requiredSkills: ["Lean Canvas/Business Model Canvas", "Financial Projections (Cap Tables)", "Pitch Deck Design", "MVP Prototyping Tools", "Stripe/Payment Integration"],
     experienceLevels: ["mid", "senior"], domains: ["E-commerce", "Technology"],
     pathwayTime: "6-24 months",
+    careerPathway: {
+      entryFrom: ["Product Manager", "Software Developer", "Management Consultant"],
+      progressTo: ["CEO", "Venture Capitalist", "Board Advisor", "Serial Entrepreneur"],
+    },
     scoringWeights: { interest: 0.30, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.05, stage: 0.10 },
     skillGaps: [
       { skill: "Product Development", importance: "high", learningResource: "Y Combinator Startup School (free)" },

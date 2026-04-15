@@ -637,8 +637,8 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.15, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
       { skill: "Figma Advanced", importance: "high", learningResource: "Figma Community Tutorials - https://help.figma.com/hc/en-us/categories/360002051613" },
-      { skill: "Design Systems", importance: "high", learningResource: "Figma Design Systems guide" },
-      { skill: "Typography", importance: "medium", learningResource: "Typewolf resources" },
+      { skill: "Design Systems", importance: "high", learningResource: "Design Systems Guide - https://www.designsystems.com/" },
+      { skill: "Typography", importance: "medium", learningResource: "Typewolf Typography Resources - https://www.typewolf.com/" },
     ],
     certifications: [
       { skill: "UI", certName: "Google UX Design Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-ux-design", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Covers visual design fundamentals" },
@@ -682,9 +682,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "4-8 months",
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Qualitative Research", importance: "high", learningResource: "NNGroup UX research articles" },
-      { skill: "Survey Design", importance: "high", learningResource: "Qualtrics survey methodology guide" },
-      { skill: "Data Analysis", importance: "medium", learningResource: "Google Data Analytics basics" },
+      { skill: "Qualitative Research", importance: "high", learningResource: "NNGroup UX Research Articles - https://www.nngroup.com/topic/user-research/" },
+      { skill: "Survey Design", importance: "high", learningResource: "Qualtrics Survey Methodology - https://www.qualtrics.com/experience-management/research/survey-methodology/" },
+      { skill: "Data Analysis", importance: "medium", learningResource: "Google Data Analytics Certificate - https://www.coursera.org/professional-certificates/google-data-analytics" },
     ],
     certifications: [
       { skill: "UX Research", certName: "Google UX Design Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-ux-design", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Covers UX research fundamentals" },
@@ -732,9 +732,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Design Thinking", importance: "high", learningResource: "IDEO Design Thinking resources" },
+      { skill: "Design Thinking", importance: "high", learningResource: "IDEO Design Thinking Resources - https://designthinking.ideo.com/" },
       { skill: "Figma Advanced", importance: "high", learningResource: "Figma Official Tutorials - https://help.figma.com/hc/en-us/categories/360002051613" },
-      { skill: "Product Strategy", importance: "medium", learningResource: "Reforge Product Design course" },
+      { skill: "Product Strategy", importance: "medium", learningResource: "Reforge Product Design Course - https://www.reforge.com/product-design" },
     ],
     certifications: [
       { skill: "Product Design", certName: "Google UX Design Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-ux-design", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "End-to-end product design process" },
@@ -782,9 +782,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.25, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Product Strategy", importance: "high", learningResource: "Inspired by Marty Cagan (book)" },
-      { skill: "Data-Driven Decisions", importance: "high", learningResource: "Google Data Analytics basics" },
-      { skill: "Roadmapping", importance: "medium", learningResource: "ProductPlan roadmapping guide" },
+      { skill: "Product Strategy", importance: "high", learningResource: "Inspired by Marty Cagan (SVPG) - https://www.svpg.com/inspired-how-to-create-tech-products-customers-love/" },
+      { skill: "Data-Driven Decisions", importance: "high", learningResource: "Google Data Analytics Certificate - https://www.coursera.org/professional-certificates/google-data-analytics" },
+      { skill: "Roadmapping", importance: "medium", learningResource: "ProductPlan Roadmapping Guide - https://www.productplan.com/learn/what-is-a-product-roadmap/" },
     ],
     certifications: [
       { skill: "PM", certName: "Google Project Management Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-project-management", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Solid PM fundamentals from Google" },
@@ -832,9 +832,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.10, environment: 0.15, stage: 0.10 },
     skillGaps: [
-      { skill: "Agile/Scrum", importance: "high", learningResource: "Scrum.org learning path" },
-      { skill: "Project Planning", importance: "high", learningResource: "Google Project Management Certificate" },
-      { skill: "Risk Management", importance: "medium", learningResource: "PMI risk management resources" },
+      { skill: "Agile/Scrum", importance: "high", learningResource: "Scrum.org Learning Path - https://www.scrum.org/learning-series" },
+      { skill: "Project Planning", importance: "high", learningResource: "Google Project Management Certificate - https://www.coursera.org/professional-certificates/google-project-management" },
+      { skill: "Risk Management", importance: "medium", learningResource: "PMI Learning Library - https://www.pmi.org/learning/library" },
     ],
     certifications: [
       { skill: "PM", certName: "Google Project Management Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-project-management", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Industry-recognized PM certification" },
@@ -878,9 +878,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "2-4 months",
     scoringWeights: { interest: 0.20, personality: 0.30, values: 0.20, aptitude: 0.05, environment: 0.15, stage: 0.10 },
     skillGaps: [
-      { skill: "Scrum Framework", importance: "high", learningResource: "Scrum Guide (scrumguides.org)" },
-      { skill: "Facilitation", importance: "high", learningResource: "Liberating Structures" },
-      { skill: "Agile Coaching", importance: "medium", learningResource: "Agile Coaching Institute resources" },
+      { skill: "Scrum Framework", importance: "high", learningResource: "The Scrum Guide - https://scrumguides.org/" },
+      { skill: "Facilitation", importance: "high", learningResource: "Liberating Structures - https://www.liberatingstructures.com/" },
+      { skill: "Agile Coaching", importance: "medium", learningResource: "Agile Coaching Institute - https://agilecoachinginstitute.com/" },
     ],
     certifications: [
       { skill: "Scrum", certName: "Professional Scrum Master I (PSM I)", provider: "Scrum.org", url: "https://www.scrum.org/assessments/professional-scrum-master-i-certification", duration: "1 month", level: "Beginner", cost: "$150", whyRecommended: "Most respected Scrum certification" },
@@ -924,9 +924,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "6-12 months",
     scoringWeights: { interest: 0.20, personality: 0.20, values: 0.15, aptitude: 0.25, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Program Management", importance: "high", learningResource: "Google Project Management Certificate" },
-      { skill: "Technical Architecture", importance: "high", learningResource: "System Design Primer (GitHub)" },
-      { skill: "Stakeholder Communication", importance: "medium", learningResource: "Crucial Conversations (book)" },
+      { skill: "Program Management", importance: "high", learningResource: "Google Project Management Certificate - https://www.coursera.org/professional-certificates/google-project-management" },
+      { skill: "Technical Architecture", importance: "high", learningResource: "System Design Primer - https://github.com/donnemartin/system-design-primer" },
+      { skill: "Stakeholder Communication", importance: "medium", learningResource: "Crucial Conversations Resources - https://cruciallearning.com/crucial-conversations-book/" },
     ],
     certifications: [
       { skill: "Program Mgmt", certName: "PgMP (Program Management Professional)", provider: "PMI", url: "https://www.pmi.org/certifications/program-management-pgmp", duration: "4 months", level: "Advanced", cost: "$555", whyRecommended: "Top program management credential" },
@@ -974,9 +974,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.20, aptitude: 0.10, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Google Ads", importance: "high", learningResource: "Google Skillshop" },
-      { skill: "Analytics", importance: "high", learningResource: "Google Analytics Academy" },
-      { skill: "Email Marketing", importance: "medium", learningResource: "Mailchimp resources" },
+      { skill: "Google Ads", importance: "high", learningResource: "Google Skillshop - https://skillshop.withgoogle.com/" },
+      { skill: "Analytics", importance: "high", learningResource: "Google Analytics Academy - https://analytics.google.com/analytics/academy/" },
+      { skill: "Email Marketing", importance: "medium", learningResource: "Mailchimp Email Marketing Resources - https://mailchimp.com/resources/" },
     ],
     certifications: [
       { skill: "Digital Marketing", certName: "Google Digital Marketing Certificate", provider: "Coursera", url: "https://www.coursera.org/professional-certificates/google-digital-marketing-ecommerce", duration: "6 months", level: "Beginner", cost: "$49/month", whyRecommended: "Comprehensive digital marketing path" },
@@ -1020,9 +1020,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.35, personality: 0.20, values: 0.20, aptitude: 0.05, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Content Strategy", importance: "high", learningResource: "Content Strategy for the Web (book)" },
-      { skill: "SEO Writing", importance: "high", learningResource: "Yoast SEO blog" },
-      { skill: "Analytics", importance: "medium", learningResource: "Google Analytics Academy" },
+      { skill: "Content Strategy", importance: "high", learningResource: "Content Strategy for the Web - https://www.contentstrategy.com/" },
+      { skill: "SEO Writing", importance: "high", learningResource: "Yoast SEO Blog - https://yoast.com/seo-blog/" },
+      { skill: "Analytics", importance: "medium", learningResource: "Google Analytics Academy - https://analytics.google.com/analytics/academy/" },
     ],
     certifications: [
       { skill: "Content", certName: "HubSpot Content Marketing Certification", provider: "HubSpot", url: "https://academy.hubspot.com/courses/content-marketing", duration: "1 month", level: "Beginner", cost: "Free", whyRecommended: "Respected content marketing credential" },
@@ -1066,9 +1066,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.25, personality: 0.15, values: 0.20, aptitude: 0.20, environment: 0.10, stage: 0.10 },
     skillGaps: [
-      { skill: "Technical SEO", importance: "high", learningResource: "Google Search Central docs" },
-      { skill: "Keyword Research", importance: "high", learningResource: "Ahrefs Academy" },
-      { skill: "Content Optimization", importance: "medium", learningResource: "Moz Beginner's Guide to SEO" },
+      { skill: "Technical SEO", importance: "high", learningResource: "Google Search Central - https://developers.google.com/search/docs" },
+      { skill: "Keyword Research", importance: "high", learningResource: "Ahrefs Academy - https://ahrefs.com/academy" },
+      { skill: "Content Optimization", importance: "medium", learningResource: "Moz Beginner's Guide to SEO - https://moz.com/beginners-guide-to-seo" },
     ],
     certifications: [
       { skill: "SEO", certName: "Google SEO Fundamentals", provider: "Coursera/UC Davis", url: "https://www.coursera.org/learn/seo-fundamentals", duration: "2 months", level: "Beginner", cost: "$49/month", whyRecommended: "University-backed SEO training" },
@@ -1112,9 +1112,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     pathwayTime: "3-6 months",
     scoringWeights: { interest: 0.30, personality: 0.20, values: 0.15, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "A/B Testing", importance: "high", learningResource: "Optimizely Academy" },
-      { skill: "Analytics & SQL", importance: "high", learningResource: "Mode Analytics SQL tutorial" },
-      { skill: "Paid Acquisition", importance: "medium", learningResource: "Google Skillshop" },
+      { skill: "A/B Testing", importance: "high", learningResource: "Optimizely Academy - https://www.optimizely.com/academy/" },
+      { skill: "Analytics & SQL", importance: "high", learningResource: "Mode SQL Tutorial - https://mode.com/sql-tutorial/" },
+      { skill: "Paid Acquisition", importance: "medium", learningResource: "Google Skillshop - https://skillshop.withgoogle.com/" },
     ],
     certifications: [
       { skill: "Growth", certName: "Reforge Growth Series", provider: "Reforge", url: "https://www.reforge.com/growth-series", duration: "2 months", level: "Intermediate", cost: "$1995/year", whyRecommended: "Gold standard growth program" },
@@ -1162,9 +1162,9 @@ export const CAREER_PROFILES_PART1: CareerProfile[] = [
     },
     scoringWeights: { interest: 0.20, personality: 0.25, values: 0.20, aptitude: 0.20, environment: 0.05, stage: 0.10 },
     skillGaps: [
-      { skill: "Case Interview Prep", importance: "high", learningResource: "Case in Point (book)" },
-      { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep free resources" },
-      { skill: "Slide Storytelling", importance: "medium", learningResource: "McKinsey presentation guides" },
+      { skill: "Case Interview Prep", importance: "high", learningResource: "Case in Point by Marc Cosentino - https://www.casequestions.com/" },
+      { skill: "Financial Modeling", importance: "high", learningResource: "Wall Street Prep Free Resources - https://www.wallstreetprep.com/self-study-programs/" },
+      { skill: "Slide Storytelling", importance: "medium", learningResource: "McKinsey Insights - https://www.mckinsey.com/featured-insights" },
     ],
     certifications: [
       { skill: "Consulting", certName: "McKinsey Forward Program", provider: "McKinsey", url: "https://www.mckinsey.com/forward/overview", duration: "2 months", level: "Beginner", cost: "Free", whyRecommended: "Free McKinsey problem-solving training" },

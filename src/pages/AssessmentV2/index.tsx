@@ -6,6 +6,7 @@ import { assessment as assessmentApi, warmup } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import { getArchetypePreview } from './archetypePreview';
 import { ASSESSMENT_PHASES, getLastPhaseIndexForTier } from '../Assessment/questionData';
+import { SkillDomainPicker } from './SkillDomainPicker';
 
 /* ══════════════════════════════════════════════════════════════════
    CONSTANTS & TYPES
@@ -969,6 +970,24 @@ export default function AssessmentV2() {
         // lc_skills: no upper limit; lc_domains: up to 8; lc_learning: up to 3
         const max = question.id === 'lc_skills' ? Infinity : question.id === 'lc_domains' ? 8 : 3;
         const min = question.id === 'lc_skills' ? 0 : 1;
+
+        // Skills question uses the interactive domain-to-skill picker
+        if (question.id === 'lc_skills') {
+          return (
+            <div>
+              <SkillDomainPicker
+                selected={selected}
+                onToggle={(value: string) => toggleChip(question.id, value, Infinity)}
+              />
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                <button style={s.cta(phaseAccent)} onClick={goNext}>
+                  Continue <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div>
             <div style={s.chipsWrap}>

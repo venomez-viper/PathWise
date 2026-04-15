@@ -18,6 +18,8 @@ export interface Question {
   phase: number;
   weight: number;
   reverseCoded?: boolean;
+  /** If set, this question validates the answer of the referenced question ID for consistency checking. */
+  validatesQuestion?: string;
 }
 
 export interface Phase {
@@ -549,6 +551,18 @@ const phase2Questions: Question[] = [
     weight: 1.0,
     reverseCoded: true,
   },
+  // Validation: checks consistency with ri_i1 (enjoy designing experiments)
+  {
+    id: 'bf_v1',
+    text: 'At work, I tend to avoid tasks that involve testing hypotheses or running experiments.',
+    format: 'likert5',
+    options: LIKERT5_OPTIONS,
+    dimension: 'bigfive_openness',
+    phase: 2,
+    weight: 0.5,
+    reverseCoded: true,
+    validatesQuestion: 'ri_i1',
+  },
   // Emotional Stability
   {
     id: 'bf_es1',
@@ -827,6 +841,22 @@ const phase4Questions: Question[] = [
     phase: 4,
     weight: 1.0,
   },
+  // Validation: checks consistency with bf_e3 (recharged after collaborating)
+  {
+    id: 'wd_v2',
+    text: 'You finish a long day of back-to-back group brainstorms and team planning sessions. How do you feel at the end of the day?',
+    format: 'scenario',
+    options: [
+      { value: 'energized', label: 'Energized and excited. Days like this are when I do my best thinking.' },
+      { value: 'satisfied', label: 'Satisfied but ready for some quiet time to process everything.' },
+      { value: 'drained', label: 'Drained. I need to recharge alone before I can be productive again.' },
+      { value: 'mixed', label: 'It depends on the group. The right people energize me, the wrong ones exhaust me.' },
+    ],
+    dimension: 'workdna_collaboration',
+    phase: 4,
+    weight: 0.5,
+    validatesQuestion: 'bf_e3',
+  },
   {
     id: 'wd_7',
     text: 'Your company offers any of these four setups for the next year. Which do you choose?',
@@ -962,6 +992,17 @@ const phase5Questions: Question[] = [
     phase: 5,
     weight: 1.0,
   },
+  // Validation: checks consistency with va_1 (autonomy vs security)
+  {
+    id: 'sa_v3',
+    text: 'How comfortable are you with taking on freelance or contract work where income varies but you set your own schedule?',
+    format: 'likert5',
+    options: APTITUDE_OPTIONS,
+    dimension: 'aptitude_abstract',
+    phase: 5,
+    weight: 0.5,
+    validatesQuestion: 'va_1',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1061,6 +1102,22 @@ const phase6Questions: Question[] = [
     phase: 6,
     weight: 1.0,
   },
+  // Validation: checks consistency with wd_1 (collaboration style)
+  {
+    id: 'lc_v4',
+    text: 'When you have completed your best work in the past, how were you typically working?',
+    format: 'select',
+    options: [
+      { value: 'solo', label: 'Independently, with full ownership of the task' },
+      { value: 'pair', label: 'Closely with one partner, bouncing ideas back and forth' },
+      { value: 'team_lead', label: 'Leading or coordinating a group effort' },
+      { value: 'research', label: 'Doing deep research that others then built on' },
+    ],
+    dimension: 'context_work_style',
+    phase: 6,
+    weight: 0.5,
+    validatesQuestion: 'wd_1',
+  },
   {
     id: 'lc_learning',
     text: 'How do you prefer to learn new skills? (Choose up to 3)',
@@ -1089,7 +1146,7 @@ const phase6Tier1Questions = phase6Questions.filter(q =>
   ['lc_age', 'lc_stage', 'lc_experience', 'lc_skills'].includes(q.id)
 );
 const phase6Tier2Questions = phase6Questions.filter(q =>
-  ['lc_domains', 'lc_learning'].includes(q.id)
+  ['lc_domains', 'lc_learning', 'lc_v4'].includes(q.id)
 );
 const phase6Tier3Questions = phase6Questions.filter(q =>
   ['lc_decision', 'lc_financial'].includes(q.id)
