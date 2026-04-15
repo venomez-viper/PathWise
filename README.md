@@ -1,16 +1,16 @@
 # PathWise
 
-AI-powered career guidance platform that helps users assess strengths, discover career matches, generate personalized roadmaps, and track progress through actionable tasks.
+Career guidance platform that helps users assess strengths, discover career matches, generate personalized roadmaps, and track progress through actionable tasks.
 
 [Live Demo](https://pathwise.fit) | Built with React + TypeScript + Encore.dev
 
 ## Key Features
 
-- **AI career assessment** - 83 questions across 6 dimensions, producing 30 archetypes mapped to 91 career profiles
+- **Career assessment** - 83 questions across 6 dimensions, producing 30 archetypes mapped to 91 career profiles
 - **Career match scoring** - transparent score breakdowns with cross-dimensional synergy detection and anti-pattern penalties
 - **Personalized roadmap generation** - adaptive milestones scaled to 3/6/12-month timelines based on experience level
 - **Skill gap analysis** - ROI-ranked learning recommendations with resources matched to preferred learning style
-- **Task management** - kanban board with drag-and-drop, AI-generated tasks, and a slide-over detail panel
+- **Task management** - kanban board with drag-and-drop, auto-generated tasks, and a slide-over detail panel
 - **Focus Mode** - pomodoro timer with ambient sounds for deep work sessions
 - **Streak tracking** - daily progress tracking with celebration animations and achievement badges
 - **OAuth login** - Google and Apple social login with PKCE and nonce verification
@@ -28,7 +28,7 @@ AI-powered career guidance platform that helps users assess strengths, discover 
 |-------|-----------|
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS, Framer Motion |
 | Backend | Encore.dev (TypeScript), PostgreSQL (per-service DBs) |
-| AI | Claude API (Anthropic) for assessments and roadmaps |
+| Career Brain | Custom scoring engine with cosine/Jaccard similarity, RIASEC, Big Five |
 | Auth | JWT + OAuth (Google, Apple), bcrypt |
 | Deployment | Vercel (frontend), Encore Cloud (backend) |
 | Analytics | PostHog, Microsoft Clarity |
@@ -42,7 +42,7 @@ The backend is split into independent microservices, each with its own PostgreSQ
 | **Auth** | JWT authentication, OAuth (Google/Apple), profile management, avatar system |
 | **Assessment** | Career assessment engine, scoring with 4-layer expert system, skill gap analysis |
 | **Roadmap** | Milestone generation, adaptive planning, timeline scaling |
-| **Tasks** | CRUD operations, completion tracking, AI task generation |
+| **Tasks** | CRUD operations, completion tracking, task generation |
 | **Progress** | Career readiness score computation, dashboard analytics |
 | **Streaks** | Daily tracking, achievements, XP system, notification triggers |
 
@@ -88,7 +88,7 @@ The frontend runs at `http://localhost:5173` by default.
 
 ## Why This Project
 
-Career planning tools today fall into two camps: shallow quizzes that produce generic results, or expensive coaching that most people cannot access. PathWise sits in between. It combines structured psychometric assessment with AI-generated guidance to give users a concrete, actionable plan for reaching their target role. The platform is designed for students, career changers, and early-career professionals who need more than a job board but less than a career coach.
+Career planning tools today fall into two camps: shallow quizzes that produce generic results, or expensive coaching that most people cannot access. PathWise sits in between. It combines structured psychometric assessment with a custom scoring engine to give users a concrete, actionable plan for reaching their target role. The platform is designed for students, career changers, and early-career professionals who need more than a job board but less than a career coach.
 
 ## Version History
 
