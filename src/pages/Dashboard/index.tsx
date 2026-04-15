@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
-import { ArrowRight, Loader2, Target, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ArrowRight, Target, TrendingUp, CheckCircle2 } from 'lucide-react';
+import DashboardSkeleton from './DashboardSkeleton';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment, roadmap, tasks, progress } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import OnboardingTour from '../../components/OnboardingTour';
 import ShareButton from '../../components/ShareButton';
+import QuickStartChecklist from '../../components/QuickStartChecklist';
+import FirstVisitTooltip from '../../components/FirstVisitTooltip';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -90,9 +93,10 @@ export default function Dashboard() {
 
   const [showTour, setShowTour] = useState(false);
 
-  const allMilestonesComplete =
+  const allMilestonesComplete = useMemo(() =>
     data.milestones.length > 0 &&
-    data.milestones.every((m: any) => m.status === 'completed');
+    data.milestones.every((m: any) => m.status === 'completed'),
+  [data.milestones]);
 
   useEffect(() => {
     if (data.hasAssessment && !localStorage.getItem('pathwise_tour_done')) {
@@ -106,11 +110,7 @@ export default function Dashboard() {
   const ringSize = 90; const ringR = 38; const circ = 2 * Math.PI * ringR;
   const strokeOff = mounted ? circ * (1 - roadmapPct / 100) : circ;
 
-  if (loading) return (
-    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <Loader2 size={22} color="var(--primary)" style={{ animation: 'spin 0.8s linear infinite' }} />
-    </div>
-  );
+  if (loading) return <DashboardSkeleton />;
 
   if (!loading && !data.hasAssessment) {
     const firstName = user?.name?.split(' ')[0] ?? '';
@@ -125,6 +125,15 @@ export default function Dashboard() {
           boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
           textAlign: 'center',
         }}>
+          {/* Step indicator */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(139, 79, 44, 0.08)', borderRadius: 'var(--radius-full)',
+            padding: '4px 14px', marginBottom: '1.25rem',
+          }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--copper)' }}>Step 1 of 3</span>
+          </div>
+
           <Panda mood="waving" size={120} animate />
 
           <h1 style={{
@@ -137,35 +146,44 @@ export default function Dashboard() {
 
           <p style={{
             fontSize: '0.95rem', color: 'var(--on-surface-variant)', lineHeight: 1.65,
-            marginTop: '0.75rem', marginBottom: '1.75rem', maxWidth: 360, marginLeft: 'auto', marginRight: 'auto',
+            marginTop: '0.75rem', marginBottom: '1.25rem', maxWidth: 360, marginLeft: 'auto', marginRight: 'auto',
           }}>
-            Take a quick 5-minute career assessment and we'll build you a personalised roadmap with career matches, milestones, and daily tasks.
+            Your career journey starts here. Three simple steps to a personalized career plan.
           </p>
 
+          {/* 3-step flow */}
           <div style={{
             display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem',
             maxWidth: 320, marginLeft: 'auto', marginRight: 'auto',
           }}>
             {[
-              { icon: <Target size={16} color="var(--primary)" />, text: 'Discover your top career matches' },
-              { icon: <TrendingUp size={16} color="var(--primary)" />, text: 'Get a step-by-step roadmap' },
-              { icon: <CheckCircle2 size={16} color="var(--primary)" />, text: 'Track progress with daily tasks' },
-            ].map((item, i) => (
-              <div key={i} style={{
+              { step: 1, icon: <Target size={16} color="var(--copper)" />, text: 'Take Assessment', sub: 'Answer a few questions about your skills', active: true },
+              { step: 2, icon: <TrendingUp size={16} color="var(--on-surface-variant)" />, text: 'Get Career Matches', sub: 'See roles that fit your strengths', active: false },
+              { step: 3, icon: <CheckCircle2 size={16} color="var(--on-surface-variant)" />, text: 'Build Your Roadmap', sub: 'Milestones and tasks tailored to you', active: false },
+            ].map((item) => (
+              <div key={item.step} style={{
                 display: 'flex', alignItems: 'center', gap: '0.75rem',
-                background: 'var(--surface-container-low)', borderRadius: 'var(--radius-xl)',
+                background: item.active ? 'rgba(139, 79, 44, 0.06)' : 'var(--surface-container-low)',
+                border: item.active ? '1.5px solid rgba(139, 79, 44, 0.2)' : '1.5px solid transparent',
+                borderRadius: 'var(--radius-xl)',
                 padding: '0.7rem 1rem', textAlign: 'left',
               }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 'var(--radius-full)',
-                  background: 'rgba(98,69,164,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: item.active ? 'rgba(139, 79, 44, 0.12)' : 'rgba(98,69,164,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
                 }}>
                   {item.icon}
                 </div>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--on-surface)' }}>
-                  {item.text}
-                </span>
+                <div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: item.active ? 'var(--on-surface)' : 'var(--on-surface-variant)', display: 'block' }}>
+                    {item.text}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', lineHeight: 1.3 }}>
+                    {item.sub}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -175,7 +193,7 @@ export default function Dashboard() {
             background: 'var(--copper)', width: '100%', maxWidth: 320,
             color: '#fff', padding: '0.9rem 2rem', borderRadius: 'var(--radius-full)',
             fontWeight: 700, fontSize: '1rem', textDecoration: 'none', cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(98,69,164,0.25)', transition: 'transform 0.15s, box-shadow 0.15s',
+            boxShadow: '0 4px 16px rgba(139,79,44,0.25)', transition: 'transform 0.15s, box-shadow 0.15s',
           }}>
             Start Your Assessment <ArrowRight size={18} />
           </Link>
@@ -259,6 +277,23 @@ export default function Dashboard() {
         </div>
         <Panda mood="waving" size={130} style={{ position: 'absolute', bottom: -10, right: 24, opacity: 0.95 }} animate />
       </div>
+
+      {/* ── QUICK START CHECKLIST — for users still getting started ── */}
+      <QuickStartChecklist
+        hasAssessment={hasAssessment}
+        hasCareerMatches={careerMatches.length > 0}
+        hasRoadmap={data.milestones.length > 0}
+        hasCompletedTask={data.doneCount > 0}
+      />
+
+      {/* ── FIRST-VISIT TOOLTIP on progress ring ── */}
+      <FirstVisitTooltip
+        id="dashboard-progress-ring"
+        message="This ring shows your overall roadmap completion. It fills up as you finish milestones."
+        targetSelector=".panel svg circle[stroke='var(--copper)']"
+        position="right"
+        delay={1500}
+      />
 
       {/* ── MAIN GRID — Progress + Career Matches ── */}
       <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

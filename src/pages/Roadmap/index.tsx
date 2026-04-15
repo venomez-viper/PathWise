@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, AlertCircle, Lock, CheckCircle2, Sparkles, ArrowRight, BookOpen, Briefcase, Users, Plus, MoreHorizontal, X, Clock } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { roadmap as roadmapApi, tasks as tasksApi } from '../../lib/api';
 import { Panda, PandaSpot } from '../../components/panda';
+import { useToast } from '../../lib/toast-context';
 
 type Task = { id: string; title: string; status: string; milestoneId?: string; category?: string; priority?: string; description?: string };
 
@@ -44,6 +46,7 @@ const PRIORITY_COLORS: Record<string, { bg: string; color: string }> = {
 
 export default function Roadmap() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
@@ -93,15 +96,16 @@ export default function Roadmap() {
     try {
       await tasksApi.aiGenerate({ userId: user.id, milestoneId: m.id, milestoneTitle: m.title, milestoneDescription: m.description, targetRole: data?.targetRole ?? '' });
       await loadData(user.id, true);
-    } catch (err) { setActionError(err instanceof Error ? err.message : 'Failed to generate tasks.'); }
+      toast('Roadmap generated!', 'success');
+    } catch (err) { setActionError(err instanceof Error ? err.message : 'Failed to generate tasks.'); toast('Something went wrong', 'error'); }
     finally { setGenerating(null); }
   }
 
   async function handleComplete(milestoneId: string) {
     if (!user || completing) return;
     setActionError(null); setCompleting(milestoneId);
-    try { await roadmapApi.completeMilestone(milestoneId); await loadData(user.id, true); }
-    catch (err) { setActionError(err instanceof Error ? err.message : 'Failed to complete milestone.'); }
+    try { await roadmapApi.completeMilestone(milestoneId); await loadData(user.id, true); toast('Milestone completed!', 'success'); }
+    catch (err) { setActionError(err instanceof Error ? err.message : 'Failed to complete milestone.'); toast('Something went wrong', 'error'); }
     finally { setCompleting(null); }
   }
 
@@ -186,9 +190,29 @@ export default function Roadmap() {
   }, [showTimeline]);
 
   if (loading) return (
-    <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-      <PandaSpot context="loading" position="inline" size={90} animate />
-      <Loader2 size={22} color="var(--copper)" style={{ animation: 'spin 0.8s linear infinite' }} />
+    <div className="page">
+      <Skeleton width="45%" height={20} borderRadius="var(--radius-sm)" style={{ marginBottom: '1.5rem' }} />
+      {/* Progress circle skeleton */}
+      <div className="panel" style={{ borderRadius: '2rem', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, marginBottom: '1.5rem' }}>
+        <Skeleton width={120} height={120} borderRadius="50%" />
+        <Skeleton width="30%" height={14} borderRadius="var(--radius-sm)" />
+        <Skeleton width="50%" height={10} borderRadius="var(--radius-sm)" />
+      </div>
+      {/* Milestone card skeletons */}
+      <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: 8 }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} className="panel" style={{ borderRadius: '2rem', padding: '1.5rem', minWidth: 280, flex: '0 0 auto' }}>
+            <Skeleton width="60%" height={14} borderRadius="var(--radius-sm)" style={{ marginBottom: 12 }} />
+            <Skeleton width="80%" height={10} borderRadius="var(--radius-sm)" style={{ marginBottom: 8 }} />
+            <Skeleton width="40%" height={10} borderRadius="var(--radius-sm)" style={{ marginBottom: 16 }} />
+            <Skeleton height={5} borderRadius={999} style={{ marginBottom: 12 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Skeleton width={80} height={28} borderRadius="var(--radius-full)" />
+              <Skeleton width={80} height={28} borderRadius="var(--radius-full)" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 
@@ -196,10 +220,20 @@ export default function Roadmap() {
     <div className="page">
       <h1 className="page-title">Growth Roadmap</h1>
       <div className="panel" style={{ textAlign: 'center', padding: '3rem', borderRadius: '2rem' }}>
-        <PandaSpot context="empty-state" position="inline" message="Complete onboarding to start your journey!" animate />
-        <p style={{ fontWeight: 600, color: 'var(--on-surface)', marginBottom: 8, marginTop: 12 }}>No roadmap yet</p>
-        <p style={{ fontSize: '0.875rem', color: 'var(--on-surface-variant)', marginBottom: 16 }}>Complete onboarding to generate your career roadmap.</p>
-        <Link to="/app/onboarding" className="btn-page-action" style={{ background: 'var(--copper)' }}>Start Onboarding</Link>
+        <Panda mood="curious" size={110} animate />
+        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--on-surface)', marginBottom: 8, marginTop: 16 }}>No milestones yet</p>
+        <p style={{ fontSize: '0.88rem', color: 'var(--on-surface-variant)', marginBottom: 20, lineHeight: 1.6, maxWidth: 340, marginLeft: 'auto', marginRight: 'auto' }}>
+          Take the career assessment first to get personalized milestones tailored to your goals and skills.
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link to="/app/assessment-v2" className="btn-page-action" style={{ background: 'var(--copper)' }}>Take Assessment <ArrowRight size={14} /></Link>
+          <Link to="/app/onboarding" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-full)',
+            background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontWeight: 600,
+            fontSize: '0.82rem', textDecoration: 'none', border: '1px solid var(--surface-container-high)',
+          }}>Already assessed? Set your role</Link>
+        </div>
       </div>
     </div>
   );

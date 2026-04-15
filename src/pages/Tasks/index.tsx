@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   CheckCircle2, Plus, Sparkles, Loader2, X,
   LayoutGrid, List, ArrowRight, ArrowLeft,
@@ -10,6 +10,8 @@ import { tasks as tasksApi, roadmap as roadmapApi, streaks as streaksApi } from 
 import TaskCelebration from '../../components/TaskCelebration';
 import TaskDetailPanel from '../../components/TaskDetailPanel';
 import { Panda, PandaSpot } from '../../components/panda';
+import { useToast } from '../../lib/toast-context';
+import Skeleton from '../../components/Skeleton';
 import './Tasks.css';
 
 /* ── Types ── */
@@ -67,6 +69,7 @@ function formatDate(dateStr: string): string {
    ================================================================ */
 export default function Tasks() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [taskList, setTaskList] = useState<Task[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,15 +152,16 @@ export default function Tasks() {
       setNewTaskPriority('medium');
       setNewTaskCategory('');
       setAddingTask(false);
+      toast('Task created', 'success');
     } catch {
-      // keep form open on error
+      toast('Something went wrong', 'error');
     } finally {
       setAddingLoading(false);
     }
   };
 
   /* ── Move task (optimistic) ── */
-  const moveTask = async (task: Task, newStatus: Task['status']) => {
+  const moveTask = useCallback(async (task: Task, newStatus: Task['status']) => {
     const prevStatus = task.status;
     // Optimistic update
     setTaskList(prev =>
@@ -171,12 +175,13 @@ export default function Tasks() {
         prev.map(t => (t.id === task.id ? { ...t, status: prevStatus } : t))
       );
     }
-  };
+  }, []);
 
   /* ── Toggle (for list view) ── */
   const toggle = async (task: Task) => {
     const newStatus: Task['status'] = task.status === 'done' ? 'todo' : 'done';
     await moveTask(task, newStatus);
+    if (newStatus === 'done') toast('Task completed!', 'success');
   };
 
   /* ── Mark all complete ── */
@@ -197,17 +202,14 @@ export default function Tasks() {
     }
   };
 
-  /* ── Derived data ── */
-  const done = taskList.filter(t => t.status === 'done').length;
+  /* ── Derived data (memoized) ── */
+  const done = useMemo(() => taskList.filter(t => t.status === 'done').length, [taskList]);
   const total = taskList.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  const visible = taskList.filter(t =>
-    filter === 'all' ? true : filter === 'done' ? t.status === 'done' : t.status !== 'done'
-  );
 
-  const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const priorityOrder: Record<string, number> = useMemo(() => ({ high: 0, medium: 1, low: 2 }), []);
 
-  const sortTasks = (a: Task, b: Task): number => {
+  const sortTasks = useCallback((a: Task, b: Task): number => {
     switch (sortBy) {
       case 'priority':
         return (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
@@ -224,24 +226,42 @@ export default function Tasks() {
       default:
         return 0;
     }
-  };
+  }, [sortBy, priorityOrder]);
 
-  const tasksByStatus = (status: Task['status']) => {
-    let filtered = taskList.filter(t => t.status === status);
-    if (filterMilestoneId) {
-      filtered = filtered.filter(t => t.milestoneId === filterMilestoneId);
-    }
+  const todoTasks = useMemo(() => {
+    let filtered = taskList.filter(t => t.status === 'todo');
+    if (filterMilestoneId) filtered = filtered.filter(t => t.milestoneId === filterMilestoneId);
     return filtered.sort(sortTasks);
-  };
+  }, [taskList, filterMilestoneId, sortTasks]);
+
+  const inProgressTasks = useMemo(() => {
+    let filtered = taskList.filter(t => t.status === 'in_progress');
+    if (filterMilestoneId) filtered = filtered.filter(t => t.milestoneId === filterMilestoneId);
+    return filtered.sort(sortTasks);
+  }, [taskList, filterMilestoneId, sortTasks]);
+
+  const doneTasks = useMemo(() => {
+    let filtered = taskList.filter(t => t.status === 'done');
+    if (filterMilestoneId) filtered = filtered.filter(t => t.milestoneId === filterMilestoneId);
+    return filtered.sort(sortTasks);
+  }, [taskList, filterMilestoneId, sortTasks]);
+
+  const tasksByStatus = useCallback((status: Task['status']) => {
+    if (status === 'todo') return todoTasks;
+    if (status === 'in_progress') return inProgressTasks;
+    return doneTasks;
+  }, [todoTasks, inProgressTasks, doneTasks]);
 
   // Filtered visible list for list view
   const visibleFiltered = useMemo(() => {
-    let list = visible;
+    let list = taskList.filter(t =>
+      filter === 'all' ? true : filter === 'done' ? t.status === 'done' : t.status !== 'done'
+    );
     if (filterMilestoneId) {
       list = list.filter(t => t.milestoneId === filterMilestoneId);
     }
     return list.sort(sortTasks);
-  }, [visible, filterMilestoneId, sortBy]);
+  }, [taskList, filter, filterMilestoneId, sortTasks]);
 
   /* ── Reset add form ── */
   const cancelAdd = () => {
@@ -286,9 +306,14 @@ export default function Tasks() {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    await tasksApi.delete(taskId);
-    await load();
-    setSelectedTask(null);
+    try {
+      await tasksApi.delete(taskId);
+      await load();
+      setSelectedTask(null);
+      toast('Task deleted', 'success');
+    } catch {
+      toast('Something went wrong', 'error');
+    }
   };
 
   // Escape key to close detail panel
@@ -575,11 +600,19 @@ export default function Tasks() {
       {/* ── Loading skeleton ── */}
       {loading && (
         <div className="kanban-skeleton" aria-busy="true" aria-label="Loading tasks">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="kanban-skeleton__col">
-              <div className="kanban-skeleton__bar" style={{ width: '60%' }} />
-              <div className="kanban-skeleton__card" />
-              <div className="kanban-skeleton__card" style={{ height: 60, animationDelay: '0.2s' }} />
+          {[0, 1, 2].map(colIdx => (
+            <div key={colIdx} className="kanban-skeleton__col">
+              <Skeleton width="60%" height={14} borderRadius="var(--radius-sm)" />
+              {[0, 1, ...(colIdx < 2 ? [2] : [])].map(cardIdx => (
+                <div key={cardIdx} style={{ background: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Skeleton width={['85%', '70%', '90%'][cardIdx]} height={12} borderRadius="var(--radius-sm)" />
+                  <Skeleton width="45%" height={10} borderRadius="var(--radius-sm)" />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                    <Skeleton width={50} height={18} borderRadius="var(--radius-full)" />
+                    <Skeleton width={60} height={18} borderRadius="var(--radius-full)" />
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -820,7 +853,7 @@ interface TaskCardProps {
   onSelect: (task: Task) => void;
 }
 
-function TaskCard({ task, milestones, onMove, onSelect }: TaskCardProps) {
+const TaskCard = memo(function TaskCard({ task, milestones, onMove, onSelect }: TaskCardProps) {
   const overdue = isOverdue(task.dueDate);
   const milestone = task.milestoneId ? milestones.find(m => m.id === task.milestoneId) : null;
 
@@ -899,7 +932,7 @@ function TaskCard({ task, milestones, onMove, onSelect }: TaskCardProps) {
       </div>
     </article>
   );
-}
+});
 
 /* ================================================================
    AddTaskForm — inline form at top of To Do column
