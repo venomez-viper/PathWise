@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check, Play, Pause, RotateCcw, Coffee, Clock, ChevronDown, Keyboard } from 'lucide-react';
+import { ArrowLeft, Check, Play, Pause, RotateCcw, Coffee, Clock, ChevronDown, Keyboard, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi } from '../../lib/api';
 import { Panda } from '../../components/panda';
@@ -10,6 +10,14 @@ const TIMER_PRESETS = [
   { label: '25 min', work: 25 * 60, break: 5 * 60 },
   { label: '45 min', work: 45 * 60, break: 10 * 60 },
   { label: '60 min', work: 60 * 60, break: 15 * 60 },
+];
+
+const AMBIENT_SOUNDS = [
+  { id: 'off', label: 'Off', icon: '🔇' },
+  { id: 'rain', label: 'Rain', icon: '🌧️' },
+  { id: 'whitenoise', label: 'White Noise', icon: '📻' },
+  { id: 'brown', label: 'Brown Noise', icon: '🌊' },
+  { id: 'cafe', label: 'Cafe', icon: '☕' },
 ];
 
 type TimerPhase = 'work' | 'break';
@@ -64,6 +72,78 @@ export default function FocusMode() {
 
   // Session stats
   const [session, setSession] = useState(loadSession);
+
+  // Ambient sound
+  const [activeSound, setActiveSound] = useState('off');
+  const [volume, setVolume] = useState(0.3);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+
+  const stopSound = useCallback(() => {
+    try { sourceRef.current?.stop(); } catch { /* already stopped */ }
+    sourceRef.current = null;
+    try { audioCtxRef.current?.close(); } catch { /* ok */ }
+    audioCtxRef.current = null;
+  }, []);
+
+  const playSound = useCallback((soundId: string) => {
+    stopSound();
+    if (soundId === 'off') { setActiveSound('off'); return; }
+
+    const ctx = new AudioContext();
+    audioCtxRef.current = ctx;
+    const gain = ctx.createGain();
+    gain.gain.value = volume;
+    gain.connect(ctx.destination);
+    gainRef.current = gain;
+
+    const bufferSize = 2 * ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    if (soundId === 'brown') {
+      let last = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const w = Math.random() * 2 - 1;
+        data[i] = (last + 0.02 * w) / 1.02;
+        last = data[i];
+        data[i] *= 3.5;
+      }
+    } else {
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    sourceRef.current = source;
+
+    if (soundId === 'rain') {
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 800; lp.Q.value = 0.7;
+      source.connect(lp); lp.connect(gain);
+    } else if (soundId === 'cafe') {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 600; bp.Q.value = 0.3;
+      source.connect(bp); bp.connect(gain);
+    } else {
+      source.connect(gain);
+    }
+
+    source.start();
+    setActiveSound(soundId);
+  }, [volume, stopSound]);
+
+  // Update volume live
+  useEffect(() => {
+    if (gainRef.current) gainRef.current.gain.value = volume;
+  }, [volume]);
+
+  // Cleanup on unmount
+  useEffect(() => () => stopSound(), [stopSound]);
 
   // Task notes
   const [noteTaskId, setNoteTaskId] = useState<string | null>(null);
@@ -420,6 +500,62 @@ export default function FocusMode() {
           />
           Auto-start next phase
         </label>
+      </div>
+
+      {/* Panda - mood changes with timer state */}
+      <div style={{ marginBottom: '1rem', transition: 'opacity 0.5s ease' }}>
+        <Panda
+          mood={
+            justCompleted ? 'celebrating'
+            : running && phase === 'work' ? 'working'
+            : running && phase === 'break' ? 'sleepy'
+            : phase === 'break' && !running ? 'happy'
+            : secondsLeft === 0 ? 'celebrating'
+            : 'thinking'
+          }
+          size={64}
+          animate
+        />
+      </div>
+
+      {/* Ambient Sound */}
+      <div style={{
+        width: '100%', maxWidth: 640, marginBottom: '2rem',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {activeSound !== 'off' ? <Volume2 size={14} color="var(--copper)" /> : <VolumeX size={14} color="var(--on-surface-muted)" />}
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)' }}>
+            Ambient Sound
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {AMBIENT_SOUNDS.map(s => (
+            <button
+              key={s.id}
+              onClick={() => playSound(s.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '6px 14px', borderRadius: 'var(--radius-full)',
+                border: activeSound === s.id ? '1.5px solid var(--copper)' : '1px solid var(--outline-variant)',
+                background: activeSound === s.id ? 'rgba(139,79,44,0.08)' : 'var(--surface-container-lowest)',
+                color: activeSound === s.id ? 'var(--copper)' : 'var(--on-surface)',
+                fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {s.icon} {s.label}
+            </button>
+          ))}
+        </div>
+        {activeSound !== 'off' && (
+          <input
+            type="range" min={0} max={1} step={0.05} value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            style={{ width: 160, accentColor: 'var(--copper)' }}
+            aria-label="Volume"
+          />
+        )}
       </div>
 
       {/* Tasks */}
