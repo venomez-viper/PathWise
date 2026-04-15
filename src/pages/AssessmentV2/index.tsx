@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, warmup } from '../../lib/api';
@@ -727,18 +727,66 @@ export default function AssessmentV2() {
 
   /* ── Welcome Screen ── */
   if (currentPhase === -1 && !showAnalyzing) {
+    const phases = [
+      { icon: '🎯', label: 'Interests', desc: 'What excites you' },
+      { icon: '🧠', label: 'Personality', desc: 'How you think' },
+      { icon: '💎', label: 'Values', desc: 'What matters most' },
+      { icon: '⚡', label: 'Work Style', desc: 'How you work best' },
+      { icon: '🔧', label: 'Aptitudes', desc: 'Your natural strengths' },
+      { icon: '🌍', label: 'Life Context', desc: 'Where you are now' },
+    ];
+    const outcomes = [
+      'Your unique career archetype (30 possible types)',
+      'Top 3 career matches with match scores',
+      'Skill gaps ranked by ROI with free learning resources',
+      'A personalized roadmap with milestones and daily tasks',
+    ];
     return (
       <div style={s.page}>
-        <div style={{ ...s.card, marginTop: '3rem', animation: 'fadeIn 0.4s ease-out' }}>
+        <div style={{ ...s.card, marginTop: '2rem', maxWidth: 520, animation: 'fadeIn 0.4s ease-out' }}>
           <div style={s.center}>
-            <Panda mood="celebrating" size={120} />
-            <h1 style={{ ...s.questionText, fontSize: '1.75rem', marginBottom: '0.25rem' }}>
+            <Panda mood="celebrating" size={100} />
+            <h1 style={{ ...s.questionText, fontSize: '1.85rem', marginBottom: '0.25rem', letterSpacing: '-0.03em' }}>
               Discover Your Career DNA
             </h1>
-            <p style={{ color: 'var(--on-surface-variant, #49454f)', fontSize: '1rem', marginBottom: '1.5rem' }}>
-              ~8 minutes &middot; no wrong answers
+            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.95rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+              83 questions across 6 dimensions. No wrong answers.
+              <br />Takes about 8 minutes.
             </p>
-            <button style={s.cta('var(--secondary, #006a62)')} onClick={startFresh}>
+          </div>
+
+          {/* 6 Phase pills */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: '1.5rem' }}>
+            {phases.map((p, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'var(--surface-container-low)', borderRadius: 'var(--radius-full)',
+                padding: '6px 14px', fontSize: '0.78rem', fontWeight: 600, color: 'var(--on-surface)',
+              }}>
+                <span style={{ fontSize: '0.9rem' }}>{p.icon}</span> {p.label}
+              </div>
+            ))}
+          </div>
+
+          {/* What you'll get */}
+          <div style={{
+            background: 'var(--surface-container-low)', borderRadius: 'var(--radius-xl)',
+            padding: '1.25rem 1.5rem', marginBottom: '1.5rem', textAlign: 'left',
+          }}>
+            <p style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--copper)', marginBottom: '0.75rem' }}>
+              What you'll get
+            </p>
+            {outcomes.map((text, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: i < outcomes.length - 1 ? '0.6rem' : 0 }}>
+                <CheckCircle2 size={16} color="var(--copper)" style={{ flexShrink: 0, marginTop: 2 }} />
+                <span style={{ fontSize: '0.88rem', color: 'var(--on-surface)', lineHeight: 1.45 }}>{text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={s.center}>
+            <button style={{ ...s.cta('var(--copper)'), width: '100%', maxWidth: 320 }} onClick={startFresh}>
               Start Assessment <ArrowRight size={18} />
             </button>
             {hasSavedState && (
@@ -746,6 +794,9 @@ export default function AssessmentV2() {
                 Resume where you left off
               </button>
             )}
+            <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-muted)', marginTop: '1rem' }}>
+              Your progress is saved automatically. You can pause and return anytime.
+            </p>
           </div>
         </div>
       </div>
