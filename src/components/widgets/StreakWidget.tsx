@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Flame, Zap } from 'lucide-react';
 import { widgetTitleStyle } from './types';
 import { streaks as streaksApi } from '../../lib/api';
+import StreakCelebration, { getUncelebratedMilestone } from '../StreakCelebration';
 
 interface StreakWidgetProps {
   userId: string;
@@ -30,6 +31,21 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
     };
   }, [userId]);
 
+  // Streak milestone celebration
+  const [celebrateMilestone, setCelebrateMilestone] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (data) {
+      const streak = data.currentStreak ?? 0;
+      const milestone = getUncelebratedMilestone(streak);
+      if (milestone !== null) {
+        setCelebrateMilestone(milestone);
+      }
+    }
+  }, [data]);
+
+  const dismissCelebration = useCallback(() => setCelebrateMilestone(null), []);
+
   const currentStreak = data?.currentStreak ?? 0;
   const bestStreak = data?.bestStreak ?? 0;
   const weeklyProgress = data?.weeklyProgress ?? [];
@@ -37,6 +53,10 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
   const todayMapped = todayIdx === 0 ? 6 : todayIdx - 1;
 
   return (
+    <>
+      {celebrateMilestone !== null && (
+        <StreakCelebration milestone={celebrateMilestone} onDismiss={dismissCelebration} />
+      )}
     <div className="panel" style={{ borderRadius: '1.5rem', padding: '1.1rem 1.2rem' }}>
       <h4 style={widgetTitleStyle}>
         <Flame size={15} color="#ef4444" /> Streak
@@ -86,5 +106,6 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Flame, Zap, Clock, Loader2, CheckCircle2, Award, Target, Calendar, ArrowRight, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { streaks as streaksApi } from '../../lib/api';
 import { Panda } from '../../components/panda';
+import StreakCelebration, { getUncelebratedMilestone } from '../../components/StreakCelebration';
 import './Streaks.css';
 
 type ViewMode = 'week' | 'month' | 'year';
@@ -63,6 +64,21 @@ export default function Streaks() {
     return () => document.removeEventListener('visibilitychange', refresh);
   }, [user]);
 
+  // Streak milestone celebration
+  const [celebrateMilestone, setCelebrateMilestone] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (data) {
+      const streak = data.currentStreak ?? 0;
+      const milestone = getUncelebratedMilestone(streak);
+      if (milestone !== null) {
+        setCelebrateMilestone(milestone);
+      }
+    }
+  }, [data]);
+
+  const dismissCelebration = useCallback(() => setCelebrateMilestone(null), []);
+
   const [viewMode, setViewMode] = useState<ViewMode>('week');
 
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -120,6 +136,10 @@ export default function Streaks() {
 
   return (
     <div className="page streaks">
+      {celebrateMilestone !== null && (
+        <StreakCelebration milestone={celebrateMilestone} onDismiss={dismissCelebration} />
+      )}
+
       {/* Header */}
       <div className="streaks__header">
         <h1 className="streaks__title">Momentum</h1>
