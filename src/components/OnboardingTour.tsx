@@ -21,6 +21,18 @@ const TOUR_STEPS = [
     position: 'right' as const,
   },
   {
+    title: 'Focus Mode',
+    body: 'When you need to ship work, jump into Focus Mode. It pulls today\'s tasks into a distraction-free view with a 25-minute pomodoro timer — one task at a time, no noise.',
+    target: '[href="/app/focus"]',
+    position: 'right' as const,
+  },
+  {
+    title: 'Career Journal',
+    body: 'A quiet space to reflect on your career. Type or dictate entries with voice, get AI-generated tags, daily prompts, and ask natural-language questions across your own journey.',
+    target: '[href="/app/journal"]',
+    position: 'right' as const,
+  },
+  {
     title: 'Track Your Growth',
     body: 'Your Progress dashboard shows your career readiness score, task completion rate, skill breakdown, and weekly activity. Watch your score climb as you complete tasks.',
     target: '[href="/app/progress"]',
