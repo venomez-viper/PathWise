@@ -82,18 +82,18 @@ export default function CareerJournalPage() {
 
   return (
     <div className="min-h-screen bg-[#eefcfe]">
-      <div className="mx-auto max-w-[680px] px-4 py-8">
-        <header className="mb-6">
-          <h1 className="font-[Manrope] text-3xl font-bold text-slate-900">Journal</h1>
-          <p className="mt-1 text-sm text-slate-600">A quiet place to think about your career.</p>
+      <div className="mx-auto max-w-[860px] px-6 py-12 sm:px-8">
+        <header className="mb-8">
+          <h1 className="font-[Manrope] text-4xl font-bold text-slate-900">Journal</h1>
+          <p className="mt-2 text-base text-slate-600">A quiet place to think about your career.</p>
         </header>
 
-        <div className="mb-4">
+        <div className="mb-6">
           <AskJournalBar userId={user.id} />
         </div>
 
         {prompt && (
-          <div className="mb-4">
+          <div className="mb-6">
             <DailyPromptBanner
               prompt={prompt}
               onAnswer={(p) => setPrefillPrompt(p)}
@@ -101,7 +101,7 @@ export default function CareerJournalPage() {
           </div>
         )}
 
-        <div className="mb-6">
+        <div className="mb-10">
           <EntryComposer
             userId={user.id}
             prefill={prefillPrompt}
@@ -117,7 +117,7 @@ export default function CareerJournalPage() {
         ) : feed.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-5">
             {feed.map((item) =>
               item.type === "entry" ? (
                 <EntryCard key={`e-${item.entry.id}`} entry={item.entry} onDelete={handleDelete} />

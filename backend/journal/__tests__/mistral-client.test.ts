@@ -10,7 +10,7 @@ const mockTranscribe = vi.fn();
 vi.mock("@mistralai/mistralai", () => ({
   Mistral: class {
     chat = { complete: (...args: unknown[]) => mockChatComplete(...args) };
-    audio = { transcriptions: { create: (...args: unknown[]) => mockTranscribe(...args) } };
+    audio = { transcriptions: { complete: (...args: unknown[]) => mockTranscribe(...args) } };
   },
 }));
 
