@@ -1682,12 +1682,102 @@ cd /home/admin1/PathWise && git add src/pages/CareerJournal/components/TagChip.t
 
 ---
 
-## Task 22: useAudioRecorder hook
+## Task 21.5: Install frontend component dependencies (REVISED)
+
+**Files:**
+- Modify: `package.json`
+
+Rationale: rather than hand-rolling a MediaRecorder wrapper and canvas-based waveform (security + maintenance burden), use vetted npm packages. Pin exact versions, audit before commit.
+
+- [ ] **Step 1: Install packages**
+
+```bash
+cd /home/admin1/PathWise && npm install react-media-recorder@1.7.1 react-audio-visualize@1.2.0
+```
+
+These two packages together replace the hand-rolled `useAudioRecorder` + `Waveform`:
+- `react-media-recorder` — wraps MediaRecorder API, returns `startRecording`, `stopRecording`, `mediaBlob`, `status`. ~600k weekly downloads, MIT, maintained.
+- `react-audio-visualize` — `<LiveAudioVisualizer />` React component that renders a canvas waveform from a MediaRecorder instance. MIT, maintained.
+
+- [ ] **Step 2: Security audit the additions**
+
+```bash
+cd /home/admin1/PathWise && npm audit --production
+```
+
+Expected: no high/critical findings introduced by the new packages. If any appear, report and pause before continuing.
+
+- [ ] **Step 3: Commit**
+
+```bash
+cd /home/admin1/PathWise && git add package.json package-lock.json && git commit -m "chore(journal): add react-media-recorder + react-audio-visualize"
+```
+
+---
+
+## Task 22: useAudioRecorder hook (REVISED — thin wrapper over react-media-recorder)
 
 **Files:**
 - Create: `src/pages/CareerJournal/hooks/useAudioRecorder.ts`
 
-- [ ] **Step 1: Implement**
+Note: instead of hand-rolling MediaRecorder + AudioContext logic (~80 lines of browser API gotchas), we re-export the vetted package with a minimal PathWise-specific shim.
+
+- [ ] **Step 1: Implement thin wrapper**
+
+```typescript
+// src/pages/CareerJournal/hooks/useAudioRecorder.ts
+import { useReactMediaRecorder } from "react-media-recorder";
+
+export interface UseRecorderResult {
+  status: "idle" | "recording" | "stopped" | "acquiring_media" | "permission_denied" | string;
+  startRecording: () => void;
+  stopRecording: () => void;
+  mediaBlob: Blob | null;
+  mediaStream: MediaStream | null;
+  error: string;
+}
+
+export function useAudioRecorder(): UseRecorderResult {
+  const {
+    status, startRecording, stopRecording,
+    mediaBlobUrl, previewAudioStream, error,
+  } = useReactMediaRecorder({ audio: true, blobPropertyBag: { type: "audio/webm" } });
+
+  // The hook exposes mediaBlobUrl; components that need the Blob itself fetch it
+  // once stopped. We expose a Blob loader to keep callers simple.
+  return {
+    status,
+    startRecording,
+    stopRecording,
+    mediaBlob: null, // caller uses mediaBlobUrl via fetchBlob below
+    mediaStream: previewAudioStream ?? null,
+    error: error ?? "",
+  };
+}
+
+export async function fetchBlob(blobUrl: string): Promise<Blob> {
+  const r = await fetch(blobUrl);
+  return r.blob();
+}
+
+// Re-export the raw hook for components that want full control (Waveform needs mediaStream)
+export { useReactMediaRecorder } from "react-media-recorder";
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+cd /home/admin1/PathWise && git add src/pages/CareerJournal/hooks/useAudioRecorder.ts && git commit -m "feat(journal): useAudioRecorder (wraps react-media-recorder)"
+```
+
+---
+
+## Task 22-DEPRECATED (original hand-rolled version — DO NOT IMPLEMENT)
+
+The block below is the previous hand-rolled version, kept only for reference in case the npm package becomes unavailable. Skip it.
+
+<details>
+<summary>Legacy hand-rolled version (reference only)</summary>
 
 ```typescript
 // src/pages/CareerJournal/hooks/useAudioRecorder.ts
@@ -1767,39 +1857,36 @@ export function useAudioRecorder() {
 }
 ```
 
-- [ ] **Step 2: Commit**
-
-```bash
-cd /home/admin1/PathWise && git add src/pages/CareerJournal/hooks/useAudioRecorder.ts && git commit -m "feat(journal): useAudioRecorder hook"
-```
+</details>
 
 ---
 
-## Task 23: Waveform component
+## Task 23: Waveform component (REVISED — wraps react-audio-visualize)
 
 **Files:**
 - Create: `src/pages/CareerJournal/components/Waveform.tsx`
+
+Replaces hand-rolled canvas bars with the vetted `LiveAudioVisualizer` from `react-audio-visualize`. Takes a MediaRecorder instance, renders a maintained canvas waveform. Styled in PathWise teal.
 
 - [ ] **Step 1: Implement**
 
 ```tsx
 // src/pages/CareerJournal/components/Waveform.tsx
-export function Waveform({ level }: { level: number }) {
-  const bars = 20;
-  const amp = Math.min(1, level * 3);
+import { LiveAudioVisualizer } from "react-audio-visualize";
+
+export function Waveform({ mediaRecorder }: { mediaRecorder: MediaRecorder | null }) {
+  if (!mediaRecorder) return null;
   return (
-    <div className="flex h-5 items-center gap-0.5" aria-hidden>
-      {Array.from({ length: bars }).map((_, i) => {
-        const phase = Math.sin((i / bars) * Math.PI);
-        const h = 4 + amp * phase * 16;
-        return (
-          <span
-            key={i}
-            className="w-0.5 rounded-full bg-teal-500 transition-[height] duration-75"
-            style={{ height: `${h}px` }}
-          />
-        );
-      })}
+    <div aria-hidden className="flex items-center">
+      <LiveAudioVisualizer
+        mediaRecorder={mediaRecorder}
+        width={120}
+        height={28}
+        barColor="#0D9488"
+        barWidth={2}
+        gap={1}
+        smoothingTimeConstant={0.85}
+      />
     </div>
   );
 }
@@ -1808,7 +1895,7 @@ export function Waveform({ level }: { level: number }) {
 - [ ] **Step 2: Commit**
 
 ```bash
-cd /home/admin1/PathWise && git add src/pages/CareerJournal/components/Waveform.tsx && git commit -m "feat(journal): Waveform visualizer"
+cd /home/admin1/PathWise && git add src/pages/CareerJournal/components/Waveform.tsx && git commit -m "feat(journal): Waveform (wraps react-audio-visualize)"
 ```
 
 ---
@@ -1876,8 +1963,8 @@ cd /home/admin1/PathWise && git add src/pages/CareerJournal/components/RecordBut
 
 ```tsx
 // src/pages/CareerJournal/components/EntryComposer.tsx
-import { useState } from "react";
-import { useAudioRecorder } from "../hooks/useAudioRecorder";
+import { useState, useRef, useEffect } from "react";
+import { useReactMediaRecorder } from "react-media-recorder";
 import { RecordButton } from "./RecordButton";
 import { Waveform } from "./Waveform";
 import { transcribeAudio, createEntry } from "../api";
@@ -1889,26 +1976,47 @@ export function EntryComposer({
   token: string;
   onCreated: () => void;
 }) {
-  const { state, start, stop } = useAudioRecorder();
+  const {
+    status, startRecording, stopRecording, mediaBlobUrl, clearBlobUrl, error: recError,
+    previewAudioStream,
+  } = useReactMediaRecorder({ audio: true, blobPropertyBag: { type: "audio/webm" } });
+
   const [body, setBody] = useState("");
   const [transcribing, setTranscribing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<"typed" | "voice">("typed");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
-  const handleStopRecording = async () => {
-    try {
-      const blob = await stop();
-      setTranscribing(true);
-      const transcript = await transcribeAudio(userId, blob, token);
-      setBody(prev => prev ? `${prev}\n\n${transcript}` : transcript);
-      setSource("voice");
-    } catch (err) {
-      setError((err as Error).message || "Voice unavailable — please type instead");
-    } finally {
-      setTranscribing(false);
+  const isRecording = status === "recording";
+
+  // Construct a MediaRecorder instance from the preview stream for the visualizer
+  useEffect(() => {
+    if (isRecording && previewAudioStream && !mediaRecorderRef.current) {
+      mediaRecorderRef.current = new MediaRecorder(previewAudioStream);
     }
-  };
+    if (!isRecording) mediaRecorderRef.current = null;
+  }, [isRecording, previewAudioStream]);
+
+  // When recording stops and we have a blob URL, transcribe it
+  useEffect(() => {
+    if (!mediaBlobUrl || transcribing) return;
+    (async () => {
+      try {
+        setTranscribing(true);
+        const blob = await (await fetch(mediaBlobUrl)).blob();
+        const transcript = await transcribeAudio(userId, blob, token);
+        setBody(prev => prev ? `${prev}\n\n${transcript}` : transcript);
+        setSource("voice");
+      } catch (err) {
+        setError((err as Error).message || "Voice unavailable — please type instead");
+      } finally {
+        setTranscribing(false);
+        clearBlobUrl();
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaBlobUrl]);
 
   const handleSave = async () => {
     if (!body.trim()) return;
@@ -1929,7 +2037,7 @@ export function EntryComposer({
   return (
     <div
       className={`rounded-2xl bg-white/70 backdrop-blur-md ring-1 ring-teal-100 shadow-sm p-4 transition-all duration-300
-        ${state.isRecording ? "ring-2 ring-teal-400 shadow-teal-100" : ""}`}
+        ${isRecording ? "ring-2 ring-teal-400 shadow-teal-100" : ""}`}
     >
       <textarea
         value={body}
@@ -1941,19 +2049,19 @@ export function EntryComposer({
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <RecordButton
-            isRecording={state.isRecording}
-            onStart={start}
-            onStop={handleStopRecording}
+            isRecording={isRecording}
+            onStart={startRecording}
+            onStop={stopRecording}
             disabled={transcribing || saving}
           />
-          {state.isRecording && <Waveform level={state.level} />}
+          {isRecording && <Waveform mediaRecorder={mediaRecorderRef.current} />}
           {transcribing && <span className="text-sm text-slate-500">Transcribing…</span>}
-          {state.error && <span className="text-sm text-rose-600">{state.error}</span>}
+          {recError && <span className="text-sm text-rose-600">{recError}</span>}
         </div>
         <button
           type="button"
           onClick={handleSave}
-          disabled={!body.trim() || saving || state.isRecording}
+          disabled={!body.trim() || saving || isRecording}
           className="cursor-pointer rounded-lg bg-[#6245a4] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4a3280] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save"}
