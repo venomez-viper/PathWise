@@ -62,6 +62,7 @@ const WhatsNewAppPage  = lazy(() => import('./pages/WhatsNewApp'));
 const CareerMatchDetail = lazy(() => import('./pages/CareerMatchDetail'));
 const SearchPage       = lazy(() => import('./pages/Search'));
 const FocusMode        = lazy(() => import('./pages/FocusMode'));
+const CareerJournal    = lazy(() => import('./pages/CareerJournal'));
 
 // Admin pages
 const AdminPage        = lazy(() => import('./pages/Admin'));
@@ -210,6 +211,7 @@ export default function App() {
             <Route path="career-match"  element={<Suspense fallback={<PageLoader />}><CareerMatchDetail /></Suspense>} />
             <Route path="search"        element={<Suspense fallback={<PageLoader />}><SearchPage /></Suspense>} />
             <Route path="focus"         element={<Suspense fallback={<PageLoader />}><FocusMode /></Suspense>} />
+            <Route path="journal"       element={<Suspense fallback={<PageLoader />}><CareerJournal /></Suspense>} />
             <Route path="admin"         element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
             <Route path="whats-new"     element={<Suspense fallback={<PageLoader />}><WhatsNewAppPage /></Suspense>} />
             <Route path="pro"          element={<Suspense fallback={<PageLoader />}><ProPage /></Suspense>} />
