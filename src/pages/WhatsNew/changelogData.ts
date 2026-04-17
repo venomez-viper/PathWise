@@ -33,6 +33,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.20.0',
+    date: 'April 17, 2026',
+    title: 'Career Journal — write, dictate, reflect',
+    tag: 'feature',
+    description:
+      'A quiet new space to journal your career. Type or dictate entries with voice, get AI-generated tags and periodic reflections, and ask questions across your own journey.',
+    highlights: [
+      'Voice dictation with Mistral Voxtral',
+      'AI-generated tags on every entry (win, skill-gap, interview-prep, …)',
+      'Daily reflection prompts, refreshed every 24 hours',
+      'Auto-summaries every 5 entries',
+      'Ask natural-language questions across your entire journal',
+    ],
+  },
+  {
     version: '0.19.0',
     date: 'April 15, 2026',
     title: 'Focus Mode, Drag & Drop, Streak Celebrations',

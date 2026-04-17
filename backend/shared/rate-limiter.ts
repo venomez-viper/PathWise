@@ -16,7 +16,7 @@ const store = new Map<string, RateLimitEntry>();
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of store) {
-    entry.timestamps = entry.timestamps.filter(t => now - t < 600000); // keep last 10 min
+    entry.timestamps = entry.timestamps.filter(t => now - t < 90_000_000); // keep last ~25 hours
     if (entry.timestamps.length === 0) store.delete(key);
   }
 }, 60000);
@@ -84,4 +84,16 @@ export const RateLimits = {
 
   /** Profile updates: 10 per minute per user */
   profile: (key: string) => checkRateLimit(key, 10, 60000),
+
+  /** Journal entry creation: 10 per day per user */
+  journalEntry: (key: string) => checkRateLimit(key, 10, 86_400_000),
+
+  /** Journal voice transcription: 5 per day per user */
+  journalVoice: (key: string) => checkRateLimit(key, 5, 86_400_000),
+
+  /** Journal ask queries: 5 per day per user */
+  journalAsk: (key: string) => checkRateLimit(key, 5, 86_400_000),
+
+  /** Journal read operations: 30 per minute per user */
+  journalRead: (key: string) => checkRateLimit(key, 30, 60_000),
 };

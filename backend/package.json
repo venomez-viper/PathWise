@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
+    "@mistralai/mistralai": "^1.15.1",
     "bcryptjs": "^3.0.3",
     "encore.dev": "^1.56.3",
     "jsonwebtoken": "^9.0.3",
