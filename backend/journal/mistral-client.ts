@@ -49,10 +49,10 @@ export interface TranscribeOptions {
 
 export async function transcribeAudio(opts: TranscribeOptions): Promise<string> {
   try {
-    const resp = await getClient().audio.transcriptions.create({
+    const resp = await getClient().audio.transcriptions.complete({
       model: "voxtral-mini-2507",
       file: { fileName: opts.filename, content: opts.audio },
-      language: opts.language,
+      language: opts.language ?? undefined,
     } as any);
     const text = (resp as any)?.text;
     if (typeof text !== "string") throw new Error("no transcript in response");

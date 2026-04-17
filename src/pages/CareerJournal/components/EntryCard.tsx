@@ -10,8 +10,8 @@ export function EntryCard({
 }) {
   const date = new Date(entry.createdAt);
   return (
-    <article className="rounded-2xl bg-white/70 backdrop-blur-md ring-1 ring-teal-100 p-4 transition-shadow hover:shadow-md">
-      <header className="mb-2 flex items-center justify-between">
+    <article className="rounded-2xl bg-white/70 backdrop-blur-md ring-1 ring-teal-100 p-6 transition-shadow hover:shadow-md">
+      <header className="mb-3 flex items-center justify-between">
         <time
           dateTime={entry.createdAt}
           className="text-xs uppercase tracking-wide text-slate-500"
@@ -24,8 +24,8 @@ export function EntryCard({
           </span>
         )}
       </header>
-      <p className="whitespace-pre-wrap text-base text-slate-900">{entry.body}</p>
-      <footer className="mt-3 flex flex-wrap items-center justify-between gap-2">
+      <p className="whitespace-pre-wrap text-base leading-relaxed text-slate-900">{entry.body}</p>
+      <footer className="mt-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
           {entry.tags.map(t => <TagChip key={t} tag={t} />)}
         </div>
