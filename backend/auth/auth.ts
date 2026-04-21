@@ -48,6 +48,15 @@ interface AuthParams {
 
 export interface AuthData {
   userID: string;
+  /**
+   * True when this session was minted via the admin impersonation endpoint.
+   * Admin-only endpoints refuse these tokens so a stolen impersonation link
+   * can never chain into further admin actions (compose broadcast, mint
+   * another impersonation token, update plans, delete users, etc).
+   */
+  isImpersonation: boolean;
+  /** Who opened the impersonation session. Null for regular logins. */
+  impersonatedBy: string | null;
 }
 
 export const authHandlerDef = authHandler<AuthParams, AuthData>(
@@ -60,12 +69,27 @@ export const authHandlerDef = authHandler<AuthParams, AuthData>(
     try {
       const payload = jwt.verify(token, jwtSecret()) as jwt.JwtPayload;
       if (!payload.sub) throw new Error("no sub");
-      return { userID: payload.sub };
+      return {
+        userID: payload.sub,
+        isImpersonation: Boolean(payload.isImpersonation),
+        impersonatedBy: typeof payload.impersonatedBy === "string" ? payload.impersonatedBy : null,
+      };
     } catch {
       throw APIError.unauthenticated("invalid or expired token");
     }
   }
 );
+
+/**
+ * Reject the request if the caller is on an impersonation token. Use at the
+ * top of any admin mutation endpoint that should not be reachable via
+ * impersonation (which is a read-only support tool by policy).
+ */
+export function refuseImpersonation(auth: AuthData): void {
+  if (auth.isImpersonation) {
+    throw APIError.permissionDenied("impersonation sessions cannot perform admin actions");
+  }
+}
 
 // Register the auth handler with Encore's Gateway
 export const gateway = new Gateway({ authHandler: authHandlerDef });
@@ -372,11 +396,30 @@ export const ADMIN_EMAILS: string[] = [
 /** @deprecated Use ADMIN_EMAILS instead */
 export const ADMIN_EMAIL = ADMIN_EMAILS[0];
 
+/**
+ * Admin gate. Accepts both bootstrap `ADMIN_EMAILS` and users granted the
+ * `admin` role via the `user_roles` table (Team Roles console). Prior
+ * versions used only the bootstrap list, which silently locked DB-granted
+ * admins out of half the admin surface — keep this in sync with
+ * `checkAdmin()` below.
+ */
 async function requireAdmin(userID: string): Promise<void> {
   const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
-  if (!row || !ADMIN_EMAILS.includes(row.email)) {
+  if (!row) throw APIError.permissionDenied("admin access required");
+  const email = row.email as string;
+  if (ADMIN_EMAILS.includes(email)) return;
+  const granted = await db.queryRow`
+    SELECT 1 FROM user_roles WHERE email = ${email} AND role = 'admin'
+  `;
+  if (!granted) {
     throw APIError.permissionDenied("admin access required");
   }
+}
+
+/** Returns true if the user is a bootstrap admin (not DB-granted). */
+async function isBootstrapAdmin(userID: string): Promise<boolean> {
+  const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
+  return !!row && ADMIN_EMAILS.includes(row.email as string);
 }
 
 export interface AdminUser {
@@ -426,8 +469,10 @@ export interface DeleteUserResponse {
 export const adminDeleteUser = api(
   { expose: true, method: "DELETE", path: "/admin/users/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<DeleteUserResponse> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const auth = getAuthData<AuthData>()!;
+    const { userID } = auth;
     RateLimits.admin("admin:" + userID);
+    refuseImpersonation(auth);
     await requireAdmin(userID);
 
     // Don't allow deleting the admin themselves
@@ -436,10 +481,26 @@ export const adminDeleteUser = api(
     if (ADMIN_EMAILS.includes(targetRow.email)) {
       throw APIError.invalidArgument("cannot delete an admin user");
     }
+    const grantedAdmin = await db.queryRow`
+      SELECT 1 FROM user_roles WHERE email = ${targetRow.email} AND role = 'admin'
+    `;
+    if (grantedAdmin) {
+      throw APIError.invalidArgument("cannot delete an admin user");
+    }
 
     // Delete from users table (user_oauth_providers will cascade if FK exists)
     try { await db.exec`DELETE FROM user_oauth_providers WHERE user_id = ${userId}`; } catch {}
     await db.exec`DELETE FROM users WHERE id = ${userId}`;
+
+    try {
+      await db.exec`
+        INSERT INTO admin_audit (id, actor_id, action, target_id, target_type, metadata, created_at)
+        VALUES (${crypto.randomUUID()}, ${userID}, 'delete_user', ${userId}, 'user',
+                ${JSON.stringify({ email: targetRow.email })}, ${new Date().toISOString()})
+      `;
+    } catch (auditErr) {
+      console.warn("adminDeleteUser: audit write failed", auditErr instanceof Error ? auditErr.message : auditErr);
+    }
 
     return { success: true, deletedUserId: userId };
   }
@@ -450,12 +511,24 @@ export const adminDeleteUser = api(
 export const adminUpdatePlan = api(
   { expose: true, method: "PATCH", path: "/admin/users/:userId/plan", auth: true },
   async ({ userId, plan }: { userId: string; plan: string }): Promise<{ success: boolean }> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const auth = getAuthData<AuthData>()!;
+    const { userID } = auth;
+    RateLimits.admin("admin:" + userID);
+    refuseImpersonation(auth);
     await requireAdmin(userID);
     if (plan !== 'free' && plan !== 'premium') {
       throw APIError.invalidArgument("plan must be 'free' or 'premium'");
     }
     await db.exec`UPDATE users SET plan = ${plan} WHERE id = ${userId}`;
+    try {
+      await db.exec`
+        INSERT INTO admin_audit (id, actor_id, action, target_id, target_type, metadata, created_at)
+        VALUES (${crypto.randomUUID()}, ${userID}, 'update_plan', ${userId}, 'user',
+                ${JSON.stringify({ plan })}, ${new Date().toISOString()})
+      `;
+    } catch (auditErr) {
+      console.warn("adminUpdatePlan: audit write failed", auditErr instanceof Error ? auditErr.message : auditErr);
+    }
     return { success: true };
   }
 );
@@ -465,10 +538,29 @@ export const adminUpdatePlan = api(
 export const adminImpersonate = api(
   { expose: true, method: "POST", path: "/admin/impersonate/:userId", auth: true },
   async ({ userId }: { userId: string }): Promise<{ token: string; expiresIn: string }> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const auth = getAuthData<AuthData>()!;
+    const { userID } = auth;
+    RateLimits.admin("admin:" + userID);
+    // Impersonation cannot chain. If someone stole an impersonation token
+    // they still can't mint a new one for any other account.
+    refuseImpersonation(auth);
     await requireAdmin(userID);
-    const row = await db.queryRow`SELECT id FROM users WHERE id = ${userId}`;
+
+    const row = await db.queryRow`SELECT id, email FROM users WHERE id = ${userId}`;
     if (!row) throw APIError.notFound("user not found");
+
+    // Never impersonate another admin — otherwise two admins fighting could
+    // chain up to bootstrap-admin privileges, and every admin has full trust
+    // anyway.
+    if (ADMIN_EMAILS.includes(row.email as string)) {
+      throw APIError.permissionDenied("cannot impersonate an admin user");
+    }
+    const grantedAdmin = await db.queryRow`
+      SELECT 1 FROM user_roles WHERE email = ${row.email} AND role = 'admin'
+    `;
+    if (grantedAdmin) {
+      throw APIError.permissionDenied("cannot impersonate an admin user");
+    }
 
     // Short-lived impersonation token (1 hour, not 30 days)
     const token = jwt.sign(
@@ -476,6 +568,19 @@ export const adminImpersonate = api(
       jwtSecret(),
       { expiresIn: "1h" }
     );
+
+    // Best-effort audit trail. If the audit table is missing (migration not
+    // applied yet) we still let the impersonation proceed — the stderr log
+    // is the last line of defense.
+    try {
+      await db.exec`
+        INSERT INTO admin_audit (id, actor_id, action, target_id, created_at, metadata)
+        VALUES (${crypto.randomUUID()}, ${userID}, 'impersonate', ${userId}, ${new Date().toISOString()}, NULL)
+      `;
+    } catch (auditErr) {
+      console.warn("adminImpersonate: audit write failed", auditErr instanceof Error ? auditErr.message : auditErr);
+    }
+    console.info("adminImpersonate", { actor: userID, target: userId });
 
     return { token, expiresIn: "1 hour" };
   }
@@ -709,10 +814,17 @@ export const getProfileSettings = api(
 
 // ── Admin Broadcast Email ─────────────────────────────────────────────────────
 
+/** Bootstrap-ish email validator — same shape as the tickets normalizer. */
+const BROADCAST_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_BROADCAST_TARGETS = 500;
+
 export const adminBroadcastEmail = api(
   { expose: true, method: "POST", path: "/admin/broadcast-email", auth: true },
   async ({ subject, message, targetEmails }: { subject: string; message: string; targetEmails?: string[] }): Promise<{ success: boolean; sent: number }> => {
-    const { userID } = getAuthData<AuthData>()!;
+    const auth = getAuthData<AuthData>()!;
+    const { userID } = auth;
+    RateLimits.admin("broadcast:" + userID);
+    refuseImpersonation(auth);
     await requireAdmin(userID);
 
     if (!subject?.trim()) throw APIError.invalidArgument("subject is required");
@@ -722,7 +834,27 @@ export const adminBroadcastEmail = api(
 
     let emails: string[];
     if (targetEmails && targetEmails.length > 0) {
-      emails = targetEmails;
+      if (targetEmails.length > MAX_BROADCAST_TARGETS) {
+        throw APIError.invalidArgument(`too many target emails (max ${MAX_BROADCAST_TARGETS})`);
+      }
+      // Validate every address — unlike the tickets normalizer we do not
+      // throw on one bad row; we drop it so an admin fat-fingering one entry
+      // doesn't abort a 400-recipient broadcast. But the count cap still
+      // applies to the raw input, so attackers can't slip 10k junk entries.
+      const seen = new Set<string>();
+      emails = [];
+      for (const raw of targetEmails) {
+        const addr = (raw ?? "").trim().toLowerCase();
+        if (!addr) continue;
+        if (addr.length > 254) continue;
+        if (!BROADCAST_EMAIL_REGEX.test(addr)) continue;
+        if (seen.has(addr)) continue;
+        seen.add(addr);
+        emails.push(addr);
+      }
+      if (emails.length === 0) {
+        throw APIError.invalidArgument("no valid target emails");
+      }
     } else {
       emails = [];
       const rows = db.query`SELECT email FROM users ORDER BY created_at ASC`;
@@ -738,6 +870,17 @@ export const adminBroadcastEmail = api(
     for (let i = 0; i < emails.length; i += 10) {
       const batch = emails.slice(i, i + 10);
       await Promise.allSettled(batch.map(to => sendEmail({ to, ...emailContent }).then(r => { if (r.success) sent++; })));
+    }
+
+    try {
+      await db.exec`
+        INSERT INTO admin_audit (id, actor_id, action, target_id, target_type, metadata, created_at)
+        VALUES (${crypto.randomUUID()}, ${userID}, 'broadcast_email', NULL, 'users',
+                ${JSON.stringify({ recipients: emails.length, sent, subject: subject.slice(0, 120) })},
+                ${new Date().toISOString()})
+      `;
+    } catch (auditErr) {
+      console.warn("adminBroadcastEmail: audit write failed", auditErr instanceof Error ? auditErr.message : auditErr);
     }
 
     return { success: true, sent };

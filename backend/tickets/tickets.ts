@@ -6,6 +6,54 @@ import { RateLimits } from "../shared/rate-limiter";
 
 const db = new SQLDatabase("tickets", { migrations: "./migrations" });
 
+// ── Shared helpers ────────────────────────────────────────────────────────────
+
+/** RFC 5321 octet limit for an email address is 254 chars. */
+const MAX_EMAIL_LEN = 254;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Normalize a list of email addresses: lowercase, trim, drop empties, enforce
+ * max length, max count, and RFC-ish format. Throws APIError on invalid input.
+ */
+function normalizeEmailList(
+  list: string[] | undefined,
+  label: string,
+  maxCount: number,
+): string[] {
+  if (!list) return [];
+  const out: string[] = [];
+  for (const raw of list) {
+    const addr = (raw ?? "").trim().toLowerCase();
+    if (!addr) continue;
+    if (addr.length > MAX_EMAIL_LEN) {
+      throw APIError.invalidArgument(`${label} email too long`);
+    }
+    if (!EMAIL_REGEX.test(addr)) {
+      throw APIError.invalidArgument(`invalid ${label} email`);
+    }
+    out.push(addr);
+  }
+  if (out.length > maxCount) {
+    throw APIError.invalidArgument(`too many ${label} recipients (max ${maxCount})`);
+  }
+  return out;
+}
+
+/**
+ * Map a DB / internal error to a short, non-leaky category we can safely
+ * surface to support agents in UI responses and debug logs. The full error
+ * is still logged server-side via console.error.
+ */
+function categorizeInternalError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/constraint|foreign key|violates/i.test(msg)) return "db-constraint";
+  if (/column.*does not exist|schema/i.test(msg)) return "db-schema";
+  if (/duplicate key/i.test(msg)) return "db-duplicate";
+  if (/connection|timeout|ECONN/i.test(msg)) return "db-connection";
+  return "internal-error";
+}
+
 // ── Submit Ticket (public, no auth) ───────────────────────────────────────────
 
 interface SubmitTicketParams {
@@ -37,7 +85,11 @@ export const submitTicket = api(
       throw APIError.invalidArgument("message must be at least 10 characters");
     }
     if (params.name.length > 100) throw APIError.invalidArgument("name too long");
-    if (params.email.length > 255) throw APIError.invalidArgument("email too long");
+    if (params.email.length > MAX_EMAIL_LEN) throw APIError.invalidArgument("email too long");
+    const submitterEmail = params.email.trim().toLowerCase();
+    if (!EMAIL_REGEX.test(submitterEmail)) {
+      throw APIError.invalidArgument("invalid email address");
+    }
     if (params.subject && params.subject.length > 500) throw APIError.invalidArgument("subject too long");
     if (params.message.length > 5000) throw APIError.invalidArgument("message too long");
 
@@ -47,7 +99,7 @@ export const submitTicket = api(
 
     await db.exec`
       INSERT INTO tickets (id, name, email, subject, message, status, created_at)
-      VALUES (${id}, ${params.name}, ${params.email}, ${subject}, ${params.message}, 'open', ${now})
+      VALUES (${id}, ${params.name}, ${submitterEmail}, ${subject}, ${params.message}, 'open', ${now})
     `;
 
     // Send confirmation to user + notification to admin
@@ -55,11 +107,15 @@ export const submitTicket = api(
       const { sendEmail, contactConfirmationEmail, adminTicketNotificationEmail } = await import("../email/email");
       // Confirm to user
       const confirm = contactConfirmationEmail(params.name);
-      await sendEmail({ to: params.email, ...confirm });
+      await sendEmail({ to: submitterEmail, ...confirm });
       // Notify all admins
-      const notify = adminTicketNotificationEmail(params.name, params.email, params.subject || '', params.message);
+      const notify = adminTicketNotificationEmail(params.name, submitterEmail, params.subject || '', params.message);
       await Promise.all(ADMIN_EMAILS.map(email => sendEmail({ to: email, ...notify })));
-    } catch {}
+    } catch (err) {
+      // Ticket is already stored; emails are best-effort. Log server-side
+      // so on-call can spot sustained failures (e.g. Resend outages).
+      console.error("submitTicket: email dispatch failed", err instanceof Error ? err.message : err);
+    }
 
     return { id, success: true };
   }
@@ -231,16 +287,29 @@ export const adminReplyToTicket = api(
     if (params.from && !(FROM_KEYS as string[]).includes(params.from)) {
       throw APIError.invalidArgument(`invalid from address: ${params.from}`);
     }
-    if (params.rawHtml && params.rawHtml.length > 200000) {
-      throw APIError.invalidArgument("rawHtml too long (max 200KB)");
+    if (params.rawHtml) {
+      // rawHtml bypasses our templating/escaping; restrict to admins so
+      // support agents can't craft arbitrary HTML emails from a verified
+      // pathwise.fit sender.
+      const { isAdmin } = await checkAdmin({ userID });
+      if (!isAdmin) {
+        throw APIError.permissionDenied("HTML editing is admin-only");
+      }
+      if (params.rawHtml.length > 200000) {
+        throw APIError.invalidArgument("rawHtml too long (max 200KB)");
+      }
     }
     const emailContent = params.rawHtml
       ? { subject: params.subject, html: params.rawHtml }
       : adminReplyEmail(params.subject, messageWithSignature);
 
-    // Build To list: primary ticket email + any additional addresses
-    const toList = [ticket.email, ...(params.additionalTo ?? [])].filter(Boolean);
-    const ccList = (params.cc ?? []).filter(Boolean);
+    // Primary ticket email is always included (it's already been validated
+    // at ticket-creation time). Additional recipients and CC must pass the
+    // same format + length + count checks as compose so we never hand
+    // unsanitized strings to Resend.
+    const extraTo = normalizeEmailList(params.additionalTo, "additional to", 10);
+    const ccList = normalizeEmailList(params.cc, "cc", 10);
+    const toList = [ticket.email, ...extraTo];
 
     await sendEmail({
       to: toList.length === 1 ? toList[0] : toList,
@@ -387,30 +456,21 @@ export const adminComposeEmail = api(
       throw APIError.permissionDenied("support access required");
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const normalize = (list: string[] | undefined, label: string): string[] => {
-      if (!list) return [];
-      const out: string[] = [];
-      for (const raw of list) {
-        const addr = (raw ?? "").trim().toLowerCase();
-        if (!addr) continue;
-        if (!emailRegex.test(addr)) throw APIError.invalidArgument(`invalid ${label} email: ${raw}`);
-        out.push(addr);
-      }
-      return out;
-    };
-
-    const toList = normalize(params.to, "to");
-    const ccList = normalize(params.cc, "cc");
+    const toList = normalizeEmailList(params.to, "to", 10);
+    const ccList = normalizeEmailList(params.cc, "cc", 10);
     if (toList.length === 0) throw APIError.invalidArgument("to is required");
-    if (toList.length > 10) throw APIError.invalidArgument("too many recipients (max 10)");
-    if (ccList.length > 10) throw APIError.invalidArgument("too many cc (max 10)");
     if (!params.subject?.trim()) throw APIError.invalidArgument("subject is required");
     if (!params.message?.trim()) throw APIError.invalidArgument("message is required");
     if (params.subject.length > 500) throw APIError.invalidArgument("subject too long");
     if (params.message.length > 10000) throw APIError.invalidArgument("message too long");
-    if (params.rawHtml && params.rawHtml.length > 200000) {
-      throw APIError.invalidArgument("rawHtml too long (max 200KB)");
+    if (params.rawHtml) {
+      const { isAdmin } = await checkAdmin({ userID });
+      if (!isAdmin) {
+        throw APIError.permissionDenied("HTML editing is admin-only");
+      }
+      if (params.rawHtml.length > 200000) {
+        throw APIError.invalidArgument("rawHtml too long (max 200KB)");
+      }
     }
 
     const { getUserEmail } = await import("../auth/auth");
@@ -477,8 +537,13 @@ export const adminComposeEmail = api(
         `;
         ticketIds.push(ticketId);
       } catch (dbErr) {
-        const msg = dbErr instanceof Error ? dbErr.message : "unknown db error";
-        failures.push({ to, error: `ticket create failed: ${msg}` });
+        // Log the full error server-side but return only a short category
+        // to the UI so PG error text (tables, constraint names, hints) never
+        // leaks to agents.
+        console.error("adminComposeEmail: ticket create failed", {
+          to, err: dbErr instanceof Error ? dbErr.message : dbErr,
+        });
+        failures.push({ to, error: `could not create ticket (${categorizeInternalError(dbErr)})` });
         return; // don't send if we can't track it
       }
 
