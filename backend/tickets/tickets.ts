@@ -78,6 +78,7 @@ interface AdminTicket {
   lastActivityAt: string;
   unread: boolean;
   replyCount: number;
+  initiatedBy: "user" | "agent";
 }
 
 interface AdminTicketsResponse {
@@ -98,6 +99,7 @@ export const adminListTickets = api(
       SELECT
         t.id, t.name, t.email, t.subject, t.message, t.status, t.created_at,
         t.unread, COALESCE(t.last_activity_at, t.created_at) AS last_activity_at,
+        COALESCE(t.initiated_by, 'user') AS initiated_by,
         (SELECT COUNT(*) FROM ticket_replies r WHERE r.ticket_id = t.id) AS reply_count
       FROM tickets t
       ORDER BY COALESCE(t.last_activity_at, t.created_at) DESC
@@ -114,6 +116,7 @@ export const adminListTickets = api(
         lastActivityAt: row.last_activity_at,
         unread: Boolean(row.unread),
         replyCount: Number(row.reply_count ?? 0),
+        initiatedBy: row.initiated_by === "agent" ? "agent" : "user",
       });
     }
     return { tickets };
@@ -160,6 +163,7 @@ interface ReplyToTicketParams {
   message: string;
   additionalTo?: string[];
   cc?: string[];
+  from?: string;
 }
 
 export const adminReplyToTicket = api(
@@ -222,8 +226,11 @@ export const adminReplyToTicket = api(
       WHERE id = ${params.ticketId}
     `;
 
-    const { sendEmail, adminReplyEmail } = await import("../email/email");
-    const emailContent = adminReplyEmail(ticket.name, params.subject, messageWithSignature);
+    const { sendEmail, adminReplyEmail, FROM_KEYS } = await import("../email/email");
+    if (params.from && !(FROM_KEYS as string[]).includes(params.from)) {
+      throw APIError.invalidArgument(`invalid from address: ${params.from}`);
+    }
+    const emailContent = adminReplyEmail(params.subject, messageWithSignature);
 
     // Build To list: primary ticket email + any additional addresses
     const toList = [ticket.email, ...(params.additionalTo ?? [])].filter(Boolean);
@@ -238,6 +245,7 @@ export const adminReplyToTicket = api(
       messageId,
       inReplyTo,
       references,
+      from: params.from,
       ...emailContent,
     });
 
@@ -299,7 +307,7 @@ export const adminPreviewTicketReply = api(
       : params.message;
 
     const { adminReplyEmail } = await import("../email/email");
-    return adminReplyEmail(ticket.name, params.subject, messageWithSignature);
+    return adminReplyEmail(params.subject, messageWithSignature);
   }
 );
 
@@ -341,6 +349,155 @@ export const adminGetTicketThread = api(
       });
     }
     return { replies };
+  }
+);
+
+// ── Admin Compose Email (send to any recipient from the inbox) ───────────────
+
+interface ComposeEmailParams {
+  to: string[];
+  cc?: string[];
+  subject: string;
+  message: string;
+  from?: string;
+}
+
+export const adminComposeEmail = api(
+  { expose: true, method: "POST", path: "/admin/compose-email", auth: true },
+  async (params: ComposeEmailParams): Promise<{ success: boolean; sent: number; ticketIds: string[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    RateLimits.ticketReply("compose:" + userID);
+
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) {
+      throw APIError.permissionDenied("support access required");
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const normalize = (list: string[] | undefined, label: string): string[] => {
+      if (!list) return [];
+      const out: string[] = [];
+      for (const raw of list) {
+        const addr = (raw ?? "").trim().toLowerCase();
+        if (!addr) continue;
+        if (!emailRegex.test(addr)) throw APIError.invalidArgument(`invalid ${label} email: ${raw}`);
+        out.push(addr);
+      }
+      return out;
+    };
+
+    const toList = normalize(params.to, "to");
+    const ccList = normalize(params.cc, "cc");
+    if (toList.length === 0) throw APIError.invalidArgument("to is required");
+    if (toList.length > 10) throw APIError.invalidArgument("too many recipients (max 10)");
+    if (ccList.length > 10) throw APIError.invalidArgument("too many cc (max 10)");
+    if (!params.subject?.trim()) throw APIError.invalidArgument("subject is required");
+    if (!params.message?.trim()) throw APIError.invalidArgument("message is required");
+    if (params.subject.length > 500) throw APIError.invalidArgument("subject too long");
+    if (params.message.length > 10000) throw APIError.invalidArgument("message too long");
+
+    const { getUserEmail } = await import("../auth/auth");
+    const { getSignatureForUser } = await import("../auth/roles");
+    const authorEmail = (await getUserEmail({ userID })).email ?? "admin@pathwise.fit";
+    const signature = (await getSignatureForUser({ userID })).signature;
+    const messageWithSignature = signature ? `${params.message}\n\n${signature}` : params.message;
+
+    const { sendEmail, adminBroadcastEmail, FROM_KEYS } = await import("../email/email");
+    if (params.from && !(FROM_KEYS as string[]).includes(params.from)) {
+      throw APIError.invalidArgument(`invalid from address: ${params.from}`);
+    }
+    const emailContent = adminBroadcastEmail(params.subject, messageWithSignature);
+    const trimmedSubject = params.subject.trim();
+
+    const ticketIds: string[] = [];
+    let sent = 0;
+
+    await Promise.allSettled(toList.map(async to => {
+      const ticketId = crypto.randomUUID();
+      const replyId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      const messageId = `<ticket-${ticketId}-${replyId}@pathwise.fit>`;
+      const nameFromEmail = to.split("@")[0] || to;
+
+      // Create a tracked ticket so replies thread back into the inbox.
+      await db.exec`
+        INSERT INTO tickets
+          (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
+        VALUES
+          (${ticketId}, ${nameFromEmail}, ${to}, ${trimmedSubject}, ${messageWithSignature},
+           'open', ${now}, 0, ${now}, 'agent')
+      `;
+      await db.exec`
+        INSERT INTO ticket_replies
+          (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
+        VALUES
+          (${replyId}, ${ticketId}, 'admin', ${authorEmail}, 'PathWise Support',
+           ${messageWithSignature}, ${messageId}, NULL, ${now})
+      `;
+      ticketIds.push(ticketId);
+
+      const res = await sendEmail({
+        to,
+        cc: ccList.length > 0 ? ccList : undefined,
+        ...emailContent,
+        replyTo: "reply@support.pathwise.fit",
+        messageId,
+        references: messageId,
+        from: params.from,
+      });
+      if (res.success) sent++;
+    }));
+
+    return { success: true, sent, ticketIds };
+  }
+);
+
+// ── Admin Preview Compose Email ───────────────────────────────────────────────
+
+export const adminPreviewCompose = api(
+  { expose: true, method: "POST", path: "/admin/compose-email/preview", auth: true },
+  async ({ subject, message }: { subject: string; message: string }): Promise<{ subject: string; html: string }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) throw APIError.permissionDenied("support access required");
+    if (!subject?.trim()) throw APIError.invalidArgument("subject is required");
+    if (!message?.trim()) throw APIError.invalidArgument("message is required");
+    if (subject.length > 500) throw APIError.invalidArgument("subject too long");
+    if (message.length > 10000) throw APIError.invalidArgument("message too long");
+
+    const { getSignatureForUser } = await import("../auth/roles");
+    const signature = (await getSignatureForUser({ userID })).signature;
+    const messageWithSignature = signature ? `${message}\n\n${signature}` : message;
+
+    const { adminBroadcastEmail } = await import("../email/email");
+    return adminBroadcastEmail(subject, messageWithSignature);
+  }
+);
+
+// ── Admin List Sender Addresses ──────────────────────────────────────────────
+
+interface SenderOption {
+  key: string;
+  address: string;
+  label: string;
+}
+
+export const adminListSenders = api(
+  { expose: true, method: "GET", path: "/admin/senders", auth: true },
+  async (): Promise<{ senders: SenderOption[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) throw APIError.permissionDenied("support access required");
+
+    const { FROM_ADDRESSES, FROM_KEYS } = await import("../email/email");
+    const senders: SenderOption[] = FROM_KEYS.map(k => {
+      const full = FROM_ADDRESSES[k];
+      const match = full.match(/^(.*?)\s*<([^>]+)>$/);
+      const label = match ? match[1].trim() : full;
+      const address = match ? match[2].trim() : full;
+      return { key: k, address, label };
+    });
+    return { senders };
   }
 );
 
