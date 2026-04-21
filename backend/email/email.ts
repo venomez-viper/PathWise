@@ -28,12 +28,13 @@ function escapeHtml(str: string): string {
 export const sendEmail = api(
   { expose: false },
   async ({
-    to, subject, html, cc, messageId, inReplyTo, references,
+    to, subject, html, cc, replyTo, messageId, inReplyTo, references,
   }: {
     to: string | string[];
     subject: string;
     html: string;
     cc?: string[];
+    replyTo?: string;
     messageId?: string;
     inReplyTo?: string;
     references?: string;
@@ -43,7 +44,7 @@ export const sendEmail = api(
       const headers: Record<string, string> = {
         "List-Unsubscribe": "<mailto:hello@pathwise.fit?subject=Unsubscribe>",
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-        "Reply-To": "hello@pathwise.fit",
+        "Reply-To": replyTo ?? "hello@pathwise.fit",
       };
       if (messageId) headers["Message-ID"] = messageId;
       if (inReplyTo) headers["In-Reply-To"] = inReplyTo;

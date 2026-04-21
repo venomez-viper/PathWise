@@ -232,6 +232,9 @@ export const adminReplyToTicket = api(
     await sendEmail({
       to: toList.length === 1 ? toList[0] : toList,
       cc: ccList.length > 0 ? ccList : undefined,
+      // Route replies to the Resend Inbound subdomain so user reply-backs
+      // are captured automatically by the /webhooks/resend/inbound handler.
+      replyTo: "reply@support.pathwise.fit",
       messageId,
       inReplyTo,
       references,
