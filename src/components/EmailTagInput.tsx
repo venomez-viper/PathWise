@@ -55,7 +55,7 @@ export function EmailTagInput({
           <span key={tag} style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '2px 8px 2px 10px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 500,
-            background: '#6245a418', color: '#6245a4', whiteSpace: 'nowrap',
+            background: '#8b4f2c18', color: '#8b4f2c', whiteSpace: 'nowrap',
           }}>
             {tag}
             <button
@@ -63,7 +63,7 @@ export function EmailTagInput({
               onClick={e => { e.stopPropagation(); onChange(tags.filter(t => t !== tag)); }}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: 0, color: '#6245a4', lineHeight: 1, display: 'flex',
+                padding: 0, color: '#8b4f2c', lineHeight: 1, display: 'flex',
               }}
             >
               <X size={12} />

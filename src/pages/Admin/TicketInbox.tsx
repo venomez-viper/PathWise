@@ -260,7 +260,17 @@ export function TicketInbox() {
         message: composeMessage.trim(),
         from: composeFrom,
       });
-      alert(`Sent to ${res.sent} of ${composeTo.length} recipients.`);
+      if (res.failures && res.failures.length > 0) {
+        const lines = res.failures.map(f => `  • ${f.to}: ${f.error}`).join('\n');
+        alert(
+          `Sent to ${res.sent} of ${composeTo.length} recipients.\n\n` +
+          `${res.failures.length} failed:\n${lines}\n\n` +
+          `If the error mentions "domain" or "from address", check the Resend dashboard — ` +
+          `the ${composeFrom}@pathwise.fit sender may not be verified yet.`,
+        );
+      } else {
+        alert(`Sent to ${res.sent} of ${composeTo.length} recipients.`);
+      }
       setComposeOpen(false);
       setComposeTo([]);
       setComposeCc([]);
@@ -441,7 +451,7 @@ export function TicketInbox() {
               style={{
                 flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 padding: '6px 12px', borderRadius: 999, border: 'none',
-                background: '#6245a4', color: '#fff',
+                background: '#8b4f2c', color: '#fff',
                 fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
               }}
             >
@@ -456,7 +466,7 @@ export function TicketInbox() {
                 style={{
                   padding: '4px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700,
                   border: '1px solid var(--outline-variant)', cursor: 'pointer',
-                  background: filter === f ? '#6245a4' : 'var(--surface-container)',
+                  background: filter === f ? '#8b4f2c' : 'var(--surface-container)',
                   color: filter === f ? '#fff' : 'var(--on-surface-variant)',
                 }}
               >
@@ -495,7 +505,7 @@ export function TicketInbox() {
                   onClick={() => setSelectedId(t.id)}
                   style={{
                     padding: '0.85rem 1rem', cursor: 'pointer',
-                    borderLeft: isActive ? '3px solid #6245a4' : '3px solid transparent',
+                    borderLeft: isActive ? '3px solid #8b4f2c' : '3px solid transparent',
                     background: isActive ? 'var(--surface-container-high)' : 'transparent',
                     borderBottom: '1px solid var(--outline-variant)',
                     transition: 'background 0.12s',
@@ -507,7 +517,7 @@ export function TicketInbox() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
                       {t.unread && (
                         <span style={{
-                          width: 8, height: 8, borderRadius: '50%', background: '#6245a4', flexShrink: 0,
+                          width: 8, height: 8, borderRadius: '50%', background: '#8b4f2c', flexShrink: 0,
                         }} />
                       )}
                       {t.initiatedBy === 'agent' && (
@@ -516,7 +526,7 @@ export function TicketInbox() {
                           style={{
                             display: 'inline-flex', alignItems: 'center',
                             width: 16, height: 16, flexShrink: 0,
-                            borderRadius: 999, background: '#6245a418', color: '#6245a4',
+                            borderRadius: 999, background: '#8b4f2c18', color: '#8b4f2c',
                             justifyContent: 'center',
                           }}
                         >
@@ -637,7 +647,7 @@ export function TicketInbox() {
               {selected.initiatedBy === 'agent' ? (
                 <div style={{
                   marginBottom: '1rem', padding: '8px 12px',
-                  borderRadius: 12, background: '#6245a418', color: '#6245a4',
+                  borderRadius: 12, background: '#8b4f2c18', color: '#8b4f2c',
                   fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex',
                   alignItems: 'center', gap: 6,
                 }}>
@@ -687,7 +697,7 @@ export function TicketInbox() {
                       </div>
                       <div style={{
                         padding: '0.75rem 1rem', borderRadius: 14,
-                        background: r.direction === 'admin' ? '#6245a4' : 'var(--surface-container)',
+                        background: r.direction === 'admin' ? '#8b4f2c' : 'var(--surface-container)',
                         color: r.direction === 'admin' ? '#fff' : 'var(--on-surface)',
                         fontSize: '0.88rem', lineHeight: 1.6, whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
@@ -808,7 +818,7 @@ export function TicketInbox() {
                         disabled={savingSignature}
                         style={{
                           padding: '0.4rem 0.9rem', borderRadius: 999, border: 'none',
-                          background: '#6245a4', color: '#fff',
+                          background: '#8b4f2c', color: '#fff',
                           fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
                           display: 'flex', alignItems: 'center', gap: 4,
                           opacity: savingSignature ? 0.5 : 1,
@@ -941,7 +951,7 @@ export function TicketInbox() {
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                     padding: '0.55rem 1.1rem', borderRadius: 999, border: 'none',
-                    background: '#6245a4', color: '#fff', fontSize: '0.82rem', fontWeight: 700,
+                    background: '#8b4f2c', color: '#fff', fontSize: '0.82rem', fontWeight: 700,
                     cursor: 'pointer', opacity: sending || !draft.trim() ? 0.5 : 1,
                   }}
                 >
@@ -1129,7 +1139,7 @@ function SnippetsPopover(props: PopoverProps) {
                 onClick={props.onManage}
                 style={{
                   padding: '5px 12px', borderRadius: 999, border: 'none',
-                  background: '#6245a4', color: '#fff',
+                  background: '#8b4f2c', color: '#fff',
                   fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
                 }}
               >
@@ -1234,7 +1244,7 @@ function ComposeModal(p: ComposeProps) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <PenSquare size={16} style={{ color: '#6245a4' }} />
+            <PenSquare size={16} style={{ color: '#8b4f2c' }} />
             <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
               New email
             </span>
@@ -1382,7 +1392,7 @@ function ComposeModal(p: ComposeProps) {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 padding: '0.5rem 1.1rem', borderRadius: 999, border: 'none',
-                background: '#6245a4', color: '#fff',
+                background: '#8b4f2c', color: '#fff',
                 fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer',
                 opacity: p.sending || p.to.length === 0 || !p.subject.trim() || !p.message.trim() ? 0.5 : 1,
               }}
@@ -1433,7 +1443,7 @@ function SnippetsManageModal(p: ManageProps) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Bookmark size={16} style={{ color: '#6245a4' }} />
+            <Bookmark size={16} style={{ color: '#8b4f2c' }} />
             <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
               Your snippets
             </span>
@@ -1467,7 +1477,7 @@ function SnippetsManageModal(p: ManageProps) {
                 onClick={p.onNew}
                 style={{
                   width: '100%', padding: '6px 10px', borderRadius: 999, border: 'none',
-                  background: '#6245a4', color: '#fff',
+                  background: '#8b4f2c', color: '#fff',
                   fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}
@@ -1488,7 +1498,7 @@ function SnippetsManageModal(p: ManageProps) {
                     onClick={() => p.onEdit(s)}
                     style={{
                       padding: '0.6rem 0.8rem', cursor: 'pointer',
-                      borderLeft: active ? '3px solid #6245a4' : '3px solid transparent',
+                      borderLeft: active ? '3px solid #8b4f2c' : '3px solid transparent',
                       background: active ? 'var(--surface-container-high)' : 'transparent',
                       borderBottom: '1px solid var(--outline-variant)',
                     }}
@@ -1565,7 +1575,7 @@ function SnippetsManageModal(p: ManageProps) {
                 disabled={p.saving || !p.title.trim() || !p.body.trim()}
                 style={{
                   padding: '0.5rem 1.1rem', borderRadius: 999, border: 'none',
-                  background: '#6245a4', color: '#fff',
+                  background: '#8b4f2c', color: '#fff',
                   fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer',
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   opacity: p.saving || !p.title.trim() || !p.body.trim() ? 0.5 : 1,

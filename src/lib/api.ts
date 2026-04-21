@@ -211,7 +211,7 @@ export const admin = {
   markTicketRead: (ticketId: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}/read`, { method: 'POST' }),
   composeEmail: (data: { to: string[]; cc?: string[]; subject: string; message: string; from?: string }) =>
-    request<{ success: boolean; sent: number; ticketIds: string[] }>('/admin/compose-email', { method: 'POST', body: JSON.stringify(data) }),
+    request<{ success: boolean; sent: number; ticketIds: string[]; failures: Array<{ to: string; error: string }> }>('/admin/compose-email', { method: 'POST', body: JSON.stringify(data) }),
   listSenders: () =>
     request<{ senders: Array<{ key: string; address: string; label: string }> }>('/admin/senders'),
   previewCompose: (data: { subject: string; message: string }) =>
