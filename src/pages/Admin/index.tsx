@@ -536,23 +536,19 @@ function EmailComposeModal({
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Additional To + CC — only for reply mode */}
-            {isReply && (
-              <>
-                <EmailTagInput
-                  label="Add recipients (To)"
-                  tags={additionalTo}
-                  onChange={setAdditionalTo}
-                  placeholder="Add email addresses..."
-                />
-                <EmailTagInput
-                  label="CC"
-                  tags={cc}
-                  onChange={setCc}
-                  placeholder="Add CC addresses..."
-                />
-              </>
-            )}
+            {/* Additional To + CC */}
+            <EmailTagInput
+              label={isReply ? 'Add more recipients (To)' : 'Additional recipients (To)'}
+              tags={additionalTo}
+              onChange={setAdditionalTo}
+              placeholder="Add email addresses..."
+            />
+            <EmailTagInput
+              label="CC"
+              tags={cc}
+              onChange={setCc}
+              placeholder="Add CC addresses..."
+            />
 
             {/* Subject */}
             <div>
