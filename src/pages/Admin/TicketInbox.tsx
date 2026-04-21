@@ -67,6 +67,10 @@ export function TicketInbox() {
   const [replyAdditionalTo, setReplyAdditionalTo] = useState<string[]>([]);
   const [replyCc, setReplyCc] = useState<string[]>([]);
   const [replyRecipientsOpen, setReplyRecipientsOpen] = useState(false);
+  const [replyEditedHtml, setReplyEditedHtml] = useState<string | null>(null);
+  const [replyEditMode, setReplyEditMode] = useState(false);
+  const [composeEditedHtml, setComposeEditedHtml] = useState<string | null>(null);
+  const [composeEditMode, setComposeEditMode] = useState(false);
   const [senders, setSenders] = useState<Array<{ key: string; address: string; label: string }>>([]);
   const [composeFrom, setComposeFrom] = useState<string>('support');
   const [replyFrom, setReplyFrom] = useState<string>('support');
@@ -259,6 +263,7 @@ export function TicketInbox() {
         subject: composeSubject.trim(),
         message: composeMessage.trim(),
         from: composeFrom,
+        rawHtml: composeEditedHtml ?? undefined,
       });
       if (res.failures && res.failures.length > 0) {
         const lines = res.failures.map(f => `  • ${f.to}: ${f.error}`).join('\n');
@@ -278,6 +283,8 @@ export function TicketInbox() {
       setComposeMessage('');
       setComposePreviewHtml('');
       setComposePreviewOpen(false);
+      setComposeEditedHtml(null);
+      setComposeEditMode(false);
       await loadList();
       if (res.ticketIds.length > 0) setSelectedId(res.ticketIds[0]);
     } catch (err) {
@@ -346,11 +353,14 @@ export function TicketInbox() {
         additionalTo: replyAdditionalTo.length > 0 ? replyAdditionalTo : undefined,
         cc: replyCc.length > 0 ? replyCc : undefined,
         from: replyFrom,
+        rawHtml: replyEditedHtml ?? undefined,
       });
       setDraft('');
       setReplyAdditionalTo([]);
       setReplyCc([]);
       setReplyRecipientsOpen(false);
+      setReplyEditedHtml(null);
+      setReplyEditMode(false);
       await loadThread(selectedId);
       setTickets(prev => prev.map(t => t.id === selectedId
         ? {
@@ -399,7 +409,16 @@ export function TicketInbox() {
   // Close preview when draft changes (prevents showing stale preview)
   useEffect(() => {
     if (showPreview) setShowPreview(false);
+    setReplyEditedHtml(null);
+    setReplyEditMode(false);
   }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset compose edit state when message/subject changes so the send
+  // payload stays in sync with what the agent is actually editing.
+  useEffect(() => {
+    setComposeEditedHtml(null);
+    setComposeEditMode(false);
+  }, [composeMessage, composeSubject]);
 
   const handleDelete = async (id: string) => {
     if (!isAdmin) {
@@ -845,38 +864,102 @@ export function TicketInbox() {
                   </button>
                 )}
               </div>
-              {showPreview && previewHtml && (
-                <div style={{
-                  marginBottom: 10, border: '1px solid var(--outline-variant)', borderRadius: 14,
-                  overflow: 'hidden', background: '#f4f4f7',
-                }}>
+              {showPreview && previewHtml && (() => {
+                const activeHtml = replyEditedHtml ?? previewHtml;
+                return (
                   <div style={{
-                    padding: '8px 12px', fontSize: '0.72rem', fontWeight: 700,
-                    textTransform: 'uppercase', letterSpacing: '0.06em',
-                    color: 'var(--on-surface-variant)',
-                    background: 'var(--surface-container)',
-                    borderBottom: '1px solid var(--outline-variant)',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    marginBottom: 10, border: '1px solid var(--outline-variant)', borderRadius: 14,
+                    overflow: 'hidden', background: '#f4f4f7',
                   }}>
-                    <span>Preview · how {selected.name || selected.email} will see it</span>
-                    <span style={{
-                      textTransform: 'none', fontWeight: 600, fontSize: '0.75rem',
+                    <div style={{
+                      padding: '8px 12px', fontSize: '0.72rem', fontWeight: 700,
+                      textTransform: 'uppercase', letterSpacing: '0.06em',
                       color: 'var(--on-surface-variant)',
+                      background: 'var(--surface-container)',
+                      borderBottom: '1px solid var(--outline-variant)',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
                     }}>
-                      Subject: {previewSubject}
-                    </span>
+                      <span>
+                        {replyEditMode ? 'Editing HTML' : 'Preview · how '}
+                        {!replyEditMode && (selected.name || selected.email)}
+                        {!replyEditMode && ' will see it'}
+                        {replyEditedHtml && !replyEditMode && (
+                          <span style={{
+                            marginLeft: 8, padding: '1px 8px', borderRadius: 999,
+                            background: '#8b4f2c18', color: '#8b4f2c', fontSize: '0.65rem',
+                          }}>edited</span>
+                        )}
+                      </span>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <span style={{
+                          textTransform: 'none', fontWeight: 600, fontSize: '0.75rem',
+                          color: 'var(--on-surface-variant)',
+                        }}>
+                          {previewSubject}
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (!replyEditMode) {
+                              setReplyEditedHtml(replyEditedHtml ?? previewHtml);
+                              setReplyEditMode(true);
+                            } else {
+                              setReplyEditMode(false);
+                            }
+                          }}
+                          style={{
+                            padding: '3px 10px', borderRadius: 999,
+                            border: '1px solid var(--outline-variant)',
+                            background: replyEditMode ? '#8b4f2c' : 'var(--surface)',
+                            color: replyEditMode ? '#fff' : 'var(--on-surface)',
+                            fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer',
+                            textTransform: 'none', letterSpacing: 0,
+                          }}
+                        >
+                          {replyEditMode ? 'Back to preview' : 'Edit HTML'}
+                        </button>
+                        {replyEditedHtml && (
+                          <button
+                            onClick={() => { setReplyEditedHtml(null); setReplyEditMode(false); }}
+                            style={{
+                              padding: '3px 10px', borderRadius: 999,
+                              border: '1px solid var(--outline-variant)',
+                              background: 'var(--surface)', color: 'var(--on-surface-variant)',
+                              fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer',
+                              textTransform: 'none', letterSpacing: 0,
+                            }}
+                            title="Discard HTML edits, regenerate from message"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {replyEditMode ? (
+                      <textarea
+                        value={replyEditedHtml ?? ''}
+                        onChange={e => setReplyEditedHtml(e.target.value)}
+                        spellCheck={false}
+                        style={{
+                          width: '100%', height: 320, border: 'none', outline: 'none',
+                          padding: '12px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                          fontSize: '0.75rem', lineHeight: 1.5, resize: 'vertical', display: 'block',
+                          background: '#1e1e1e', color: '#e6e6e6',
+                        }}
+                      />
+                    ) : (
+                      <iframe
+                        title="Email preview"
+                        srcDoc={activeHtml}
+                        sandbox=""
+                        style={{
+                          width: '100%', height: 320, border: 'none', display: 'block',
+                          background: '#f4f4f7',
+                        }}
+                      />
+                    )}
                   </div>
-                  <iframe
-                    title="Email preview"
-                    srcDoc={previewHtml}
-                    sandbox=""
-                    style={{
-                      width: '100%', height: 320, border: 'none', display: 'block',
-                      background: '#f4f4f7',
-                    }}
-                  />
-                </div>
-              )}
+                );
+              })()}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                 <textarea
                   ref={draftRef}
@@ -974,6 +1057,10 @@ export function TicketInbox() {
           sending={composeSending}
           previewOpen={composePreviewOpen}
           previewHtml={composePreviewHtml}
+          editedHtml={composeEditedHtml}
+          editMode={composeEditMode}
+          onEditedHtmlChange={setComposeEditedHtml}
+          onEditModeChange={setComposeEditMode}
           snippetsButton={
             <div style={{ position: 'relative' }}>
               <button
@@ -1211,12 +1298,16 @@ type ComposeProps = {
   sending: boolean;
   previewOpen: boolean;
   previewHtml: string;
+  editedHtml: string | null;
+  editMode: boolean;
   snippetsButton: React.ReactNode;
   onToChange: (v: string[]) => void;
   onCcChange: (v: string[]) => void;
   onFromChange: (v: string) => void;
   onSubjectChange: (v: string) => void;
   onMessageChange: (v: string) => void;
+  onEditedHtmlChange: (v: string | null) => void;
+  onEditModeChange: (v: boolean) => void;
   onTogglePreview: () => void;
   onSend: () => void;
   onClose: () => void;
@@ -1350,15 +1441,74 @@ function ComposeModal(p: ComposeProps) {
                 color: 'var(--on-surface-variant)',
                 background: 'var(--surface-container)',
                 borderBottom: '1px solid var(--outline-variant)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
               }}>
-                Preview
+                <span>
+                  {p.editMode ? 'Editing HTML' : 'Preview'}
+                  {p.editedHtml && !p.editMode && (
+                    <span style={{
+                      marginLeft: 8, padding: '1px 8px', borderRadius: 999,
+                      background: '#8b4f2c18', color: '#8b4f2c', fontSize: '0.65rem',
+                    }}>edited</span>
+                  )}
+                </span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    onClick={() => {
+                      if (!p.editMode) {
+                        p.onEditedHtmlChange(p.editedHtml ?? p.previewHtml);
+                        p.onEditModeChange(true);
+                      } else {
+                        p.onEditModeChange(false);
+                      }
+                    }}
+                    style={{
+                      padding: '3px 10px', borderRadius: 999,
+                      border: '1px solid var(--outline-variant)',
+                      background: p.editMode ? '#8b4f2c' : 'var(--surface)',
+                      color: p.editMode ? '#fff' : 'var(--on-surface)',
+                      fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
+                      textTransform: 'none', letterSpacing: 0,
+                    }}
+                  >
+                    {p.editMode ? 'Back to preview' : 'Edit HTML'}
+                  </button>
+                  {p.editedHtml && (
+                    <button
+                      onClick={() => { p.onEditedHtmlChange(null); p.onEditModeChange(false); }}
+                      style={{
+                        padding: '3px 10px', borderRadius: 999,
+                        border: '1px solid var(--outline-variant)',
+                        background: 'var(--surface)', color: 'var(--on-surface-variant)',
+                        fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
+                        textTransform: 'none', letterSpacing: 0,
+                      }}
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
               </div>
-              <iframe
-                title="Compose preview"
-                srcDoc={p.previewHtml}
-                sandbox=""
-                style={{ width: '100%', height: 260, border: 'none', display: 'block', background: '#f4f4f7' }}
-              />
+              {p.editMode ? (
+                <textarea
+                  value={p.editedHtml ?? ''}
+                  onChange={e => p.onEditedHtmlChange(e.target.value)}
+                  spellCheck={false}
+                  style={{
+                    width: '100%', height: 260, border: 'none', outline: 'none',
+                    padding: '12px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                    fontSize: '0.75rem', lineHeight: 1.5, resize: 'vertical', display: 'block',
+                    background: '#1e1e1e', color: '#e6e6e6',
+                  }}
+                />
+              ) : (
+                <iframe
+                  title="Compose preview"
+                  srcDoc={p.editedHtml ?? p.previewHtml}
+                  sandbox=""
+                  style={{ width: '100%', height: 260, border: 'none', display: 'block', background: '#f4f4f7' }}
+                />
+              )}
             </div>
           )}
         </div>

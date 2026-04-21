@@ -200,7 +200,7 @@ export const admin = {
     request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteTicket: (ticketId: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'DELETE' }),
-  replyToTicket: (ticketId: string, data: { subject: string; message: string; additionalTo?: string[]; cc?: string[]; from?: string }) =>
+  replyToTicket: (ticketId: string, data: { subject: string; message: string; additionalTo?: string[]; cc?: string[]; from?: string; rawHtml?: string }) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}/reply`, { method: 'POST', body: JSON.stringify(data) }),
   broadcastEmail: (data: { subject: string; message: string; targetEmails?: string[] }) =>
     request<{ success: boolean; sent: number }>('/admin/broadcast-email', { method: 'POST', body: JSON.stringify(data) }),
@@ -210,7 +210,7 @@ export const admin = {
     request<{ subject: string; html: string }>(`/admin/tickets/${ticketId}/reply/preview`, { method: 'POST', body: JSON.stringify(data) }),
   markTicketRead: (ticketId: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}/read`, { method: 'POST' }),
-  composeEmail: (data: { to: string[]; cc?: string[]; subject: string; message: string; from?: string }) =>
+  composeEmail: (data: { to: string[]; cc?: string[]; subject: string; message: string; from?: string; rawHtml?: string }) =>
     request<{ success: boolean; sent: number; ticketIds: string[]; failures: Array<{ to: string; error: string }> }>('/admin/compose-email', { method: 'POST', body: JSON.stringify(data) }),
   listSenders: () =>
     request<{ senders: Array<{ key: string; address: string; label: string }> }>('/admin/senders'),
