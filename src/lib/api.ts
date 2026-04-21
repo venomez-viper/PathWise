@@ -195,7 +195,7 @@ export const admin = {
   getCertificateStatus: () => request<{ userIds: string[] }>('/admin/certificate-status'),
   getLastActive: () => request<{ users: { userId: string; lastActiveDate: string | null }[] }>('/admin/last-active'),
   getAnalytics: () => request<{ totalAssessments: number; topCareers: { title: string; count: number }[] }>('/admin/analytics'),
-  getTickets: () => request<{ tickets: any[] }>('/admin/tickets'),
+  getTickets: () => request<{ tickets: AdminTicket[] }>('/admin/tickets'),
   updateTicket: (ticketId: string, status: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteTicket: (ticketId: string) =>
@@ -204,7 +204,33 @@ export const admin = {
     request<{ success: boolean }>(`/admin/tickets/${ticketId}/reply`, { method: 'POST', body: JSON.stringify(data) }),
   broadcastEmail: (data: { subject: string; message: string; targetEmails?: string[] }) =>
     request<{ success: boolean; sent: number }>('/admin/broadcast-email', { method: 'POST', body: JSON.stringify(data) }),
+  getTicketThread: (ticketId: string) =>
+    request<{ replies: Array<{ id: string; direction: 'admin' | 'user'; authorEmail: string; authorName: string | null; body: string; createdAt: string }> }>(`/admin/tickets/${ticketId}/thread`),
+  markTicketRead: (ticketId: string) =>
+    request<{ success: boolean }>(`/admin/tickets/${ticketId}/read`, { method: 'POST' }),
+  listRoles: () =>
+    request<{ entries: Array<{ email: string; role: 'admin' | 'support_agent'; addedByEmail: string | null; addedAt: string; isBootstrap: boolean; hasAccount: boolean; userName: string | null }> }>('/admin/roles'),
+  addRole: (email: string, role: 'admin' | 'support_agent') =>
+    request<{ success: boolean }>('/admin/roles', { method: 'POST', body: JSON.stringify({ email, role }) }),
+  removeRole: (email: string, role: 'admin' | 'support_agent') =>
+    request<{ success: boolean }>(`/admin/roles?email=${encodeURIComponent(email)}&role=${role}`, { method: 'DELETE' }),
 };
+
+export type AdminTicket = {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'open' | 'in_progress' | 'closed';
+  createdAt: string;
+  lastActivityAt: string;
+  unread: boolean;
+  replyCount: number;
+};
+
+export const getMyAccess = () =>
+  request<{ isAdmin: boolean; isSupportAgent: boolean; canAccessTickets: boolean }>('/auth/me/access');
 
 // --- Tickets ---
 export const tickets = {
