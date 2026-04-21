@@ -466,88 +466,153 @@ export function TicketInbox() {
       <div className="panel" style={{
         borderRadius: '1.5rem', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
-        <div style={{ padding: '0.9rem 1rem', borderBottom: '1px solid var(--outline-variant)' }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-            <div style={{ position: 'relative', flex: 1 }}>
-              <Search size={14} style={{
-                position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
-                color: 'var(--on-surface-variant)',
-              }} />
-              <input
-                placeholder="Search tickets"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={{
-                  width: '100%', padding: '7px 10px 7px 30px', borderRadius: 999,
-                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                  color: 'var(--on-surface)', fontSize: '0.82rem', outline: 'none',
-                }}
-              />
+        <div style={{ padding: '0.95rem 1rem 0.8rem', borderBottom: '1px solid var(--outline-variant)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
+              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
+                Inbox
+              </span>
+              {unreadCount > 0 && (
+                <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', fontWeight: 600 }}>
+                  {unreadCount} unread
+                </span>
+              )}
             </div>
-            <button
-              onClick={() => setComposeOpen(true)}
-              title="New email"
-              style={{
-                flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                padding: '6px 12px', borderRadius: 999, border: 'none',
-                background: '#8b4f2c', color: '#fff',
-                fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
-              }}
-            >
-              <PenSquare size={13} /> Compose
-            </button>
-            <button
-              onClick={async () => {
-                await loadList();
-                if (selectedId) await loadThread(selectedId);
-              }}
-              disabled={loading || threadLoading}
-              title="Refresh inbox"
-              style={{
-                flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--outline-variant)',
-                background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
-                cursor: (loading || threadLoading) ? 'default' : 'pointer', padding: 0,
-                opacity: (loading || threadLoading) ? 0.6 : 1,
-              }}
-            >
-              <RefreshCw
-                size={14}
-                style={{
-                  animation: (loading || threadLoading) ? 'spin 0.9s linear infinite' : 'none',
-                }}
-              />
-            </button>
-            <button
-              onClick={() => { setDebugOpen(true); loadDebugLog(); }}
-              title="Inbound webhook activity"
-              style={{
-                flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--outline-variant)',
-                background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
-                cursor: 'pointer', padding: 0,
-              }}
-            >
-              <Activity size={14} />
-            </button>
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {(['all', 'unread', 'open', 'in_progress', 'closed'] as Filter[]).map(f => (
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
               <button
-                key={f}
-                onClick={() => setFilter(f)}
+                onClick={async () => {
+                  await loadList();
+                  if (selectedId) await loadThread(selectedId);
+                }}
+                disabled={loading || threadLoading}
+                aria-label="Refresh inbox"
+                title="Refresh inbox"
                 style={{
-                  padding: '4px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700,
-                  border: '1px solid var(--outline-variant)', cursor: 'pointer',
-                  background: filter === f ? '#8b4f2c' : 'var(--surface-container)',
-                  color: filter === f ? '#fff' : 'var(--on-surface-variant)',
+                  flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 32, borderRadius: 10, border: '1px solid transparent',
+                  background: 'transparent', color: 'var(--on-surface-variant)',
+                  cursor: (loading || threadLoading) ? 'default' : 'pointer', padding: 0,
+                  opacity: (loading || threadLoading) ? 0.5 : 0.85, transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { if (!loading && !threadLoading) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; } }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = loading || threadLoading ? '0.5' : '0.85'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
+              >
+                <RefreshCw
+                  size={14}
+                  style={{ animation: (loading || threadLoading) ? 'spin 0.9s linear infinite' : 'none' }}
+                />
+              </button>
+              <button
+                onClick={() => { setDebugOpen(true); loadDebugLog(); }}
+                aria-label="Inbound webhook activity"
+                title="Inbound webhook activity"
+                style={{
+                  flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 32, borderRadius: 10, border: '1px solid transparent',
+                  background: 'transparent', color: 'var(--on-surface-variant)',
+                  cursor: 'pointer', padding: 0, opacity: 0.85, transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '0.85'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
+              >
+                <Activity size={14} />
+              </button>
+              <div style={{ width: 1, height: 20, background: 'var(--outline-variant)', margin: '0 4px' }} />
+              <button
+                onClick={() => setComposeOpen(true)}
+                aria-label="Compose new email"
+                title="New email"
+                style={{
+                  flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  height: 32, padding: '0 14px', borderRadius: 10, border: 'none',
+                  background: '#8b4f2c', color: '#fff',
+                  fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+                  boxShadow: '0 1px 2px rgba(139,79,44,0.25), 0 1px 3px rgba(139,79,44,0.18)',
+                  transition: 'background 0.15s, box-shadow 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#723f22'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(139,79,44,0.3), 0 2px 8px rgba(139,79,44,0.22)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#8b4f2c'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(139,79,44,0.25), 0 1px 3px rgba(139,79,44,0.18)'; }}
+              >
+                <PenSquare size={13} /> Compose
+              </button>
+            </div>
+          </div>
+          <div style={{ position: 'relative', marginBottom: 12 }}>
+            <Search size={15} style={{
+              position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+              color: 'var(--on-surface-variant)', opacity: 0.7, pointerEvents: 'none',
+            }} />
+            <input
+              placeholder="Search by name, email, or subject"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onFocus={e => {
+                e.currentTarget.style.borderColor = '#8b4f2c';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(139,79,44,0.12)';
+              }}
+              onBlur={e => {
+                e.currentTarget.style.borderColor = 'var(--outline-variant)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+              style={{
+                width: '100%', padding: '9px 36px 9px 36px', borderRadius: 12,
+                border: '1px solid var(--outline-variant)', background: 'var(--surface-container-low, var(--surface-container))',
+                color: 'var(--on-surface)', fontSize: '0.85rem', outline: 'none',
+                transition: 'border 0.15s, box-shadow 0.15s',
+              }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                title="Clear"
+                style={{
+                  position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                  width: 18, height: 18, padding: 0, borderRadius: '50%', border: 'none',
+                  background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer',
                 }}
               >
-                {f === 'unread' && unreadCount > 0
-                  ? `Unread (${unreadCount})`
-                  : FILTER_LABEL[f]}
+                <X size={10} />
               </button>
-            ))}
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {(['all', 'unread', 'open', 'in_progress', 'closed'] as Filter[]).map(f => {
+              const active = filter === f;
+              const showBadge = f === 'unread' && unreadCount > 0;
+              return (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  style={{
+                    padding: '4px 11px', borderRadius: 999,
+                    fontSize: '0.72rem', fontWeight: 700,
+                    border: active ? '1px solid transparent' : '1px solid var(--outline-variant)',
+                    cursor: 'pointer',
+                    background: active ? '#8b4f2c' : 'transparent',
+                    color: active ? '#fff' : 'var(--on-surface-variant)',
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    transition: 'all 0.12s',
+                    boxShadow: active ? '0 1px 2px rgba(139,79,44,0.2)' : 'none',
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--surface-container)'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  {FILTER_LABEL[f]}
+                  {showBadge && (
+                    <span style={{
+                      padding: '0 6px', borderRadius: 999, fontSize: '0.65rem',
+                      background: active ? 'rgba(255,255,255,0.25)' : '#8b4f2c',
+                      color: active ? '#fff' : '#fff', fontWeight: 800, minWidth: 16,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -687,19 +752,10 @@ export function TicketInbox() {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <select
-                  value={selected.status}
-                  onChange={e => handleStatusChange(selected.id, e.target.value as StatusKey)}
-                  style={{
-                    padding: '4px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 600,
-                    border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                    color: 'var(--on-surface)', cursor: 'pointer', outline: 'none',
-                  }}
-                >
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="closed">Closed</option>
-                </select>
+                <StatusPicker
+                  value={selected.status as StatusKey}
+                  onChange={next => handleStatusChange(selected.id, next)}
+                />
                 <button
                   onClick={() => handleDelete(selected.id)}
                   style={{
@@ -1828,6 +1884,91 @@ const DECISION_STYLE: Record<string, { bg: string; color: string; label: string 
   'secret-missing':    { bg: '#fee2e2', color: '#991b1b', label: 'Webhook secret missing' },
   'internal-error':    { bg: '#fee2e2', color: '#991b1b', label: 'Internal error (see reason)' },
 };
+
+function StatusPicker({
+  value, onChange,
+}: {
+  value: StatusKey;
+  onChange: (next: StatusKey) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [open]);
+
+  const current = STATUS_COLORS[value] ?? STATUS_COLORS.open;
+  const options: StatusKey[] = ['open', 'in_progress', 'closed'];
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '4px 10px 4px 12px', borderRadius: 999,
+          fontSize: '0.72rem', fontWeight: 700,
+          border: '1px solid transparent',
+          background: current.bg, color: current.color,
+          cursor: 'pointer', outline: 'none',
+          transition: 'filter 0.12s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(0.96)'; }}
+        onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
+      >
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%', background: current.color, opacity: 0.85,
+        }} />
+        {current.label}
+        <ChevronDown size={11} style={{ opacity: 0.75, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', right: 0, minWidth: 140,
+          background: 'var(--surface)', border: '1px solid var(--outline-variant)',
+          borderRadius: 12, overflow: 'hidden',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 30,
+        }}>
+          {options.map(opt => {
+            const sc = STATUS_COLORS[opt];
+            const active = opt === value;
+            return (
+              <button
+                key={opt}
+                onClick={() => { onChange(opt); setOpen(false); }}
+                style={{
+                  width: '100%', textAlign: 'left', padding: '8px 12px',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  border: 'none', background: active ? 'var(--surface-container)' : 'transparent',
+                  color: 'var(--on-surface)', fontSize: '0.78rem', fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = active ? 'var(--surface-container)' : 'transparent'; }}
+              >
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%', background: sc.color, flexShrink: 0,
+                }} />
+                <span style={{ flex: 1 }}>{sc.label}</span>
+                {active && <Check size={12} style={{ color: '#8b4f2c' }} />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function InboundDebugModal({
   entries, loading, onRefresh, onClose,
