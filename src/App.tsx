@@ -46,6 +46,7 @@ const SettingsPage = lazy(() => import('./pages/Settings'));
 const Progress         = lazy(() => import('./pages/Progress'));
 const Onboarding       = lazy(() => import('./pages/Onboarding'));
 const SupportPage      = lazy(() => import('./pages/Support'));
+const SupportInboxPage = lazy(() => import('./pages/SupportInbox'));
 const CertificatePage  = lazy(() => import('./pages/Certificate'));
 const Assessment       = lazy(() => import('./pages/Assessment'));
 const AssessmentV2     = lazy(() => import('./pages/AssessmentV2'));
@@ -213,6 +214,7 @@ export default function App() {
             <Route path="focus"         element={<Suspense fallback={<PageLoader />}><FocusMode /></Suspense>} />
             <Route path="journal"       element={<Suspense fallback={<PageLoader />}><CareerJournal /></Suspense>} />
             <Route path="admin"         element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
+            <Route path="inbox"         element={<Suspense fallback={<PageLoader />}><SupportInboxPage /></Suspense>} />
             <Route path="whats-new"     element={<Suspense fallback={<PageLoader />}><WhatsNewAppPage /></Suspense>} />
             <Route path="pro"          element={<Suspense fallback={<PageLoader />}><ProPage /></Suspense>} />
           </Route>

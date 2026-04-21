@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Flame, Award, FileText, HelpCircle, Search, Shield, Bell, Crosshair, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Compass, CheckSquare, BarChart2, Settings, LogOut, Sparkles, ClipboardList, Flame, Award, FileText, HelpCircle, Search, Shield, Bell, Crosshair, BookOpen, Inbox } from 'lucide-react';
 import Logo from './ui/Logo';
 import { Panda } from './panda';
-import { tokenStore } from '../lib/api';
+import { tokenStore, getMyAccess } from '../lib/api';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
@@ -29,6 +30,19 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
+  const [access, setAccess] = useState<{ isAdmin: boolean; canAccessTickets: boolean }>({
+    isAdmin: false,
+    canAccessTickets: false,
+  });
+
+  useEffect(() => {
+    let alive = true;
+    getMyAccess()
+      .then(res => { if (alive) setAccess({ isAdmin: res.isAdmin, canAccessTickets: res.canAccessTickets }); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
   const handleLogout = () => {
     tokenStore.clear();
     window.location.href = '/logout';
@@ -71,7 +85,17 @@ export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
             )}
           </NavLink>
         ))}
-        {['akashagakash@gmail.com', 'eaintkphyu98@gmail.com'].includes(user.email) && (
+        {access.canAccessTickets && (
+          <NavLink
+            to="/app/inbox"
+            className={({ isActive }) => `sidebar__link${isActive ? ' active' : ''}`}
+            onClick={onClose}
+          >
+            <Inbox size={17} />
+            <span>Inbox</span>
+          </NavLink>
+        )}
+        {access.isAdmin && (
           <NavLink
             to="/app/admin"
             className={({ isActive }) => `sidebar__link${isActive ? ' active' : ''}`}
