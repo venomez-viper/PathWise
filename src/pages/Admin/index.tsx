@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { admin as adminApi } from '../../lib/api';
+import { TicketInbox } from './TicketInbox';
+import { TeamRoles } from './TeamRoles';
 
 const ADMIN_EMAILS = ['akashagakash@gmail.com', 'eaintkphyu98@gmail.com'];
 
@@ -40,7 +42,7 @@ interface UserDetail {
 
 type SortKey = 'name' | 'email' | 'plan' | 'createdAt' | 'assessment' | 'tasks';
 type SortDir = 'asc' | 'desc';
-type TabKey = 'users' | 'analytics' | 'system' | 'tickets';
+type TabKey = 'users' | 'analytics' | 'system' | 'team' | 'tickets';
 
 /* ─────────── User Detail Panel ─────────── */
 
@@ -1321,10 +1323,16 @@ export default function AdminPage() {
         <button style={tabStyle(activeTab === 'system')} onClick={() => setActiveTab('system')}>
           <Monitor size={14} style={{ verticalAlign: '-2px', marginRight: 6 }} />System
         </button>
+        <button style={tabStyle(activeTab === 'team')} onClick={() => setActiveTab('team')}>
+          <Shield size={14} style={{ verticalAlign: '-2px', marginRight: 6 }} />Team
+        </button>
         <button style={tabStyle(activeTab === 'tickets')} onClick={() => setActiveTab('tickets')}>
-          <MessageSquare size={14} style={{ verticalAlign: '-2px', marginRight: 6 }} />Tickets{ticketsList.length > 0 ? ` (${ticketsList.length})` : ''}
+          <MessageSquare size={14} style={{ verticalAlign: '-2px', marginRight: 6 }} />Tickets
         </button>
       </div>
+
+      {/* ─── Team Tab ─── */}
+      {activeTab === 'team' && <TeamRoles />}
 
       {/* ─── Users Tab ─── */}
       {activeTab === 'users' && (

@@ -206,6 +206,8 @@ export const admin = {
     request<{ success: boolean; sent: number }>('/admin/broadcast-email', { method: 'POST', body: JSON.stringify(data) }),
   getTicketThread: (ticketId: string) =>
     request<{ replies: Array<{ id: string; direction: 'admin' | 'user'; authorEmail: string; authorName: string | null; body: string; createdAt: string }> }>(`/admin/tickets/${ticketId}/thread`),
+  previewTicketReply: (ticketId: string, data: { subject: string; message: string }) =>
+    request<{ subject: string; html: string }>(`/admin/tickets/${ticketId}/reply/preview`, { method: 'POST', body: JSON.stringify(data) }),
   markTicketRead: (ticketId: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}/read`, { method: 'POST' }),
   listRoles: () =>

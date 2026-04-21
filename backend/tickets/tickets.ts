@@ -164,11 +164,13 @@ interface ReplyToTicketParams {
 
 export const adminReplyToTicket = api(
   { expose: true, method: "POST", path: "/admin/tickets/:ticketId/reply", auth: true },
-  async (params: ReplyToTicketParams): Promise<{ success: boolean }> => {
+  async (params: ReplyToTicketParams): Promise<{ success: boolean; replyId: string }> => {
     const { userID } = getAuthData<AuthData>()!;
-    const { isAdmin } = await checkAdmin({ userID });
-    if (!isAdmin) {
-      throw APIError.permissionDenied("admin access required");
+    RateLimits.ticketReply("reply:" + userID);
+
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) {
+      throw APIError.permissionDenied("support access required");
     }
 
     if (!params.subject?.trim()) throw APIError.invalidArgument("subject is required");
@@ -181,6 +183,40 @@ export const adminReplyToTicket = api(
     `;
     if (!ticket) throw APIError.notFound("ticket not found");
 
+    const { getUserEmail } = await import("../auth/auth");
+    const authorEmail = (await getUserEmail({ userID })).email ?? "admin@pathwise.fit";
+
+    const replyId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const messageId = `<ticket-${params.ticketId}-${replyId}@pathwise.fit>`;
+    const originalMessageId = `<ticket-${params.ticketId}-original@pathwise.fit>`;
+
+    // Build References chain from prior messages for proper Gmail threading
+    const priorIds: string[] = [originalMessageId];
+    const priorRows = db.query`
+      SELECT message_id FROM ticket_replies
+      WHERE ticket_id = ${params.ticketId} AND message_id IS NOT NULL
+      ORDER BY created_at ASC
+    `;
+    for await (const r of priorRows) {
+      if (r.message_id) priorIds.push(r.message_id);
+    }
+    const inReplyTo = priorIds[priorIds.length - 1];
+    const references = priorIds.join(" ");
+
+    // Store the reply in the thread table
+    await db.exec`
+      INSERT INTO ticket_replies (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
+      VALUES (${replyId}, ${params.ticketId}, 'admin', ${authorEmail}, 'PathWise Support', ${params.message}, ${messageId}, ${inReplyTo}, ${now})
+    `;
+    await db.exec`
+      UPDATE tickets
+      SET last_activity_at = ${now},
+          unread = 0,
+          status = CASE WHEN status = 'open' THEN 'in_progress' ELSE status END
+      WHERE id = ${params.ticketId}
+    `;
+
     const { sendEmail, adminReplyEmail } = await import("../email/email");
     const emailContent = adminReplyEmail(ticket.name, params.subject, params.message);
 
@@ -188,9 +224,16 @@ export const adminReplyToTicket = api(
     const toList = [ticket.email, ...(params.additionalTo ?? [])].filter(Boolean);
     const ccList = (params.cc ?? []).filter(Boolean);
 
-    await sendEmail({ to: toList.length === 1 ? toList[0] : toList, cc: ccList.length > 0 ? ccList : undefined, ...emailContent });
+    await sendEmail({
+      to: toList.length === 1 ? toList[0] : toList,
+      cc: ccList.length > 0 ? ccList : undefined,
+      messageId,
+      inReplyTo,
+      references,
+      ...emailContent,
+    });
 
-    return { success: true };
+    return { success: true, replyId };
   }
 );
 
@@ -215,79 +258,34 @@ export const adminDeleteTicket = api(
     return { success: true };
   }
 );
-// ── Admin Reply to Ticket ────────────────────────────────────────────────────
+// ── Admin Preview Ticket Reply (renders email HTML without sending) ───────────
 
-interface ReplyTicketParams {
+interface PreviewTicketReplyParams {
   ticketId: string;
-  body: string;
+  subject: string;
+  message: string;
 }
 
-export const adminReplyTicket = api(
-  { expose: true, method: "POST", path: "/admin/tickets/:ticketId/reply", auth: true },
-  async (params: ReplyTicketParams): Promise<{ success: boolean; replyId: string }> => {
+export const adminPreviewTicketReply = api(
+  { expose: true, method: "POST", path: "/admin/tickets/:ticketId/reply/preview", auth: true },
+  async (params: PreviewTicketReplyParams): Promise<{ subject: string; html: string }> => {
     const { userID } = getAuthData<AuthData>()!;
-    RateLimits.ticketReply("reply:" + userID);
-
     const { canAccessTickets } = await checkSupportAccess({ userID });
     if (!canAccessTickets) {
       throw APIError.permissionDenied("support access required");
     }
+    if (!params.subject?.trim()) throw APIError.invalidArgument("subject is required");
+    if (!params.message?.trim()) throw APIError.invalidArgument("message is required");
+    if (params.subject.length > 500) throw APIError.invalidArgument("subject too long");
+    if (params.message.length > 10000) throw APIError.invalidArgument("message too long");
 
-    if (!params.body || !params.body.trim()) {
-      throw APIError.invalidArgument("body is required");
-    }
-    if (params.body.length > 10000) {
-      throw APIError.invalidArgument("body too long");
-    }
-
-    const ticket = await db.queryRow`
-      SELECT id, name, email, subject FROM tickets WHERE id = ${params.ticketId}
+    const ticket = await db.queryRow<{ name: string }>`
+      SELECT name FROM tickets WHERE id = ${params.ticketId}
     `;
     if (!ticket) throw APIError.notFound("ticket not found");
 
-    const { getUserEmail } = await import("../auth/auth");
-    const authorEmail = (await getUserEmail({ userID })).email ?? "admin@pathwise.fit";
-
-    const replyId = crypto.randomUUID();
-    const now = new Date().toISOString();
-    const messageId = `<ticket-${params.ticketId}-${replyId}@pathwise.fit>`;
-    const originalMessageId = `<ticket-${params.ticketId}-original@pathwise.fit>`;
-
-    // Build References chain from prior messages for Gmail threading
-    const priorIds: string[] = [originalMessageId];
-    const priorRows = db.query`
-      SELECT message_id FROM ticket_replies
-      WHERE ticket_id = ${params.ticketId} AND message_id IS NOT NULL
-      ORDER BY created_at ASC
-    `;
-    for await (const r of priorRows) {
-      if (r.message_id) priorIds.push(r.message_id);
-    }
-    const inReplyTo = priorIds[priorIds.length - 1];
-    const references = priorIds.join(" ");
-
-    await db.exec`
-      INSERT INTO ticket_replies (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
-      VALUES (${replyId}, ${params.ticketId}, 'admin', ${authorEmail}, 'PathWise Support', ${params.body}, ${messageId}, ${inReplyTo}, ${now})
-    `;
-    await db.exec`
-      UPDATE tickets
-      SET last_activity_at = ${now},
-          unread = 0,
-          status = CASE WHEN status = 'open' THEN 'in_progress' ELSE status END
-      WHERE id = ${params.ticketId}
-    `;
-
-    // Send the email (best-effort — don't fail the API call if email fails)
-    try {
-      const { sendEmail, ticketReplyEmail } = await import("../email/email");
-      const tmpl = ticketReplyEmail(ticket.name, "PathWise Support", ticket.subject ?? "", params.body);
-      await sendEmail({ to: ticket.email, ...tmpl, messageId, inReplyTo, references });
-    } catch (err) {
-      console.error("Ticket reply email failed:", err instanceof Error ? err.message : "unknown");
-    }
-
-    return { success: true, replyId };
+    const { adminReplyEmail } = await import("../email/email");
+    return adminReplyEmail(ticket.name, params.subject, params.message);
   }
 );
 
