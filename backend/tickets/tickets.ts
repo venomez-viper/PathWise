@@ -148,6 +148,8 @@ interface ReplyToTicketParams {
   ticketId: string;
   subject: string;
   message: string;
+  additionalTo?: string[];
+  cc?: string[];
 }
 
 export const adminReplyToTicket = api(
@@ -170,8 +172,13 @@ export const adminReplyToTicket = api(
     if (!ticket) throw APIError.notFound("ticket not found");
 
     const { sendEmail, adminReplyEmail } = await import("../email/email");
-    const email = adminReplyEmail(ticket.name, params.subject, params.message);
-    await sendEmail({ to: ticket.email, ...email });
+    const emailContent = adminReplyEmail(ticket.name, params.subject, params.message);
+
+    // Build To list: primary ticket email + any additional addresses
+    const toList = [ticket.email, ...(params.additionalTo ?? [])].filter(Boolean);
+    const ccList = (params.cc ?? []).filter(Boolean);
+
+    await sendEmail({ to: toList.length === 1 ? toList[0] : toList, cc: ccList.length > 0 ? ccList : undefined, ...emailContent });
 
     return { success: true };
   }

@@ -353,6 +353,86 @@ interface BroadcastTarget {
 
 type ComposeModal = ComposeTarget | BroadcastTarget;
 
+function EmailTagInput({
+  label,
+  tags,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  tags: string[];
+  onChange: (tags: string[]) => void;
+  placeholder: string;
+}) {
+  const [input, setInput] = useState('');
+
+  const addTag = (raw: string) => {
+    const email = raw.trim().toLowerCase();
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !tags.includes(email)) {
+      onChange([...tags, email]);
+    }
+    setInput('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+      e.preventDefault();
+      addTag(input);
+    } else if (e.key === 'Backspace' && !input && tags.length > 0) {
+      onChange(tags.slice(0, -1));
+    }
+  };
+
+  return (
+    <div>
+      <label style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>
+        {label}
+      </label>
+      <div
+        style={{
+          display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center',
+          padding: '0.5rem 0.75rem', borderRadius: '0.75rem', minHeight: 42,
+          border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+          cursor: 'text',
+        }}
+        onClick={e => (e.currentTarget.querySelector('input') as HTMLInputElement)?.focus()}
+      >
+        {tags.map(tag => (
+          <span key={tag} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            padding: '2px 8px 2px 10px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 500,
+            background: '#6245a418', color: '#6245a4', whiteSpace: 'nowrap',
+          }}>
+            {tag}
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onChange(tags.filter(t => t !== tag)); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#6245a4', lineHeight: 1, display: 'flex' }}
+            >
+              <X size={12} />
+            </button>
+          </span>
+        ))}
+        <input
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={() => addTag(input)}
+          placeholder={tags.length === 0 ? placeholder : ''}
+          style={{
+            flex: 1, minWidth: 140, border: 'none', outline: 'none', background: 'transparent',
+            fontSize: '0.88rem', color: 'var(--on-surface)', padding: '2px 0',
+          }}
+        />
+      </div>
+      <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>
+        Press Enter, comma, or Space after each email address
+      </p>
+    </div>
+  );
+}
+
 function EmailComposeModal({
   target,
   onClose,
@@ -365,6 +445,8 @@ function EmailComposeModal({
     isReply ? `Re: ${(target as ComposeTarget).originalSubject || 'Your support request'}` : ''
   );
   const [message, setMessage] = useState('');
+  const [additionalTo, setAdditionalTo] = useState<string[]>([]);
+  const [cc, setCc] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
@@ -384,7 +466,11 @@ function EmailComposeModal({
     setError('');
     try {
       if (isReply) {
-        await adminApi.replyToTicket((target as ComposeTarget).ticketId, { subject, message });
+        await adminApi.replyToTicket((target as ComposeTarget).ticketId, {
+          subject, message,
+          additionalTo: additionalTo.length > 0 ? additionalTo : undefined,
+          cc: cc.length > 0 ? cc : undefined,
+        });
       } else {
         await adminApi.broadcastEmail({ subject, message });
       }
@@ -397,6 +483,16 @@ function EmailComposeModal({
     }
   };
 
+  const labelStyle: React.CSSProperties = {
+    fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase',
+    letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6,
+  };
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '0.65rem 0.875rem', borderRadius: '0.75rem',
+    border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+    color: 'var(--on-surface)', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+  };
+
   return (
     <>
       <div
@@ -405,10 +501,11 @@ function EmailComposeModal({
       />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        zIndex: 2001, width: '100%', maxWidth: 560,
+        zIndex: 2001, width: '100%', maxWidth: 580,
         background: 'var(--surface)', borderRadius: '1.5rem',
         boxShadow: '0 24px 64px rgba(0,0,0,0.25)', padding: '2rem',
         animation: 'fadeIn 0.15s ease',
+        maxHeight: '90vh', overflowY: 'auto',
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
@@ -439,39 +536,47 @@ function EmailComposeModal({
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Additional To + CC — only for reply mode */}
+            {isReply && (
+              <>
+                <EmailTagInput
+                  label="Add recipients (To)"
+                  tags={additionalTo}
+                  onChange={setAdditionalTo}
+                  placeholder="Add email addresses..."
+                />
+                <EmailTagInput
+                  label="CC"
+                  tags={cc}
+                  onChange={setCc}
+                  placeholder="Add CC addresses..."
+                />
+              </>
+            )}
+
             {/* Subject */}
             <div>
-              <label style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>
-                Subject
-              </label>
+              <label style={labelStyle}>Subject</label>
               <input
                 type="text"
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
                 placeholder="Email subject..."
-                style={{
-                  width: '100%', padding: '0.65rem 0.875rem', borderRadius: '0.75rem',
-                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                  color: 'var(--on-surface)', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
-                }}
+                style={inputStyle}
               />
             </div>
 
             {/* Message */}
             <div>
-              <label style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>
-                Message
-              </label>
+              <label style={labelStyle}>Message</label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Write your message..."
                 rows={8}
                 style={{
-                  width: '100%', padding: '0.75rem 0.875rem', borderRadius: '0.75rem',
-                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                  color: 'var(--on-surface)', fontSize: '0.9rem', outline: 'none',
-                  resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.65, boxSizing: 'border-box',
+                  ...inputStyle,
+                  resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.65,
                 }}
               />
             </div>

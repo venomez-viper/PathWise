@@ -27,12 +27,13 @@ function escapeHtml(str: string): string {
 
 export const sendEmail = api(
   { expose: false },
-  async ({ to, subject, html }: { to: string; subject: string; html: string }): Promise<{ success: boolean }> => {
+  async ({ to, subject, html, cc }: { to: string | string[]; subject: string; html: string; cc?: string[] }): Promise<{ success: boolean }> => {
     try {
       const resend = getResend();
       await resend.emails.send({
         from: FROM_EMAIL,
         to,
+        ...(cc && cc.length > 0 ? { cc } : {}),
         subject,
         html,
         headers: {
