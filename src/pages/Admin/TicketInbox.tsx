@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { admin as adminApi, type AdminTicket, type Snippet, getMySignature, updateMySignature, getMyAccess } from '../../lib/api';
-import { Send, Trash2, Search, Inbox, Eye, EyeOff, Pencil, Check, PenSquare, X, Bookmark, Plus, ChevronDown } from 'lucide-react';
+import { Send, Trash2, Search, Inbox, Eye, EyeOff, Pencil, Check, PenSquare, X, Bookmark, Plus, ChevronDown, Activity, RefreshCw } from 'lucide-react';
 import { EmailTagInput } from '../../components/EmailTagInput';
 
 type ThreadReply = {
@@ -88,6 +88,14 @@ export function TicketInbox() {
   const [snippetsLoading, setSnippetsLoading] = useState(false);
   const [snippetFilter, setSnippetFilter] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [debugEntries, setDebugEntries] = useState<Array<{
+    id: string; receivedAt: string; decision: string;
+    fromEmail: string | null; toAddresses: string[];
+    subject: string | null; reason: string | null;
+    hasSvixHeaders: boolean; resendEmailId: string | null;
+  }>>([]);
+  const [debugLoading, setDebugLoading] = useState(false);
 
   const selected = useMemo(
     () => tickets.find(t => t.id === selectedId) ?? null,
@@ -140,6 +148,18 @@ export function TicketInbox() {
   useEffect(() => {
     getMyAccess().then(res => setIsAdmin(!!res.isAdmin)).catch(() => {});
   }, []);
+
+  const loadDebugLog = async () => {
+    setDebugLoading(true);
+    try {
+      const res = await adminApi.listInboundLog();
+      setDebugEntries(res.entries ?? []);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to load inbound log.');
+    } finally {
+      setDebugLoading(false);
+    }
+  };
 
   useEffect(() => {
     adminApi.listSenders()
@@ -475,6 +495,18 @@ export function TicketInbox() {
               }}
             >
               <PenSquare size={13} /> Compose
+            </button>
+            <button
+              onClick={() => { setDebugOpen(true); loadDebugLog(); }}
+              title="Inbound webhook activity"
+              style={{
+                flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--outline-variant)',
+                background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
+                cursor: 'pointer', padding: 0,
+              }}
+            >
+              <Activity size={14} />
             </button>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1107,6 +1139,15 @@ export function TicketInbox() {
         />
       )}
 
+      {debugOpen && (
+        <InboundDebugModal
+          entries={debugEntries}
+          loading={debugLoading}
+          onRefresh={loadDebugLog}
+          onClose={() => setDebugOpen(false)}
+        />
+      )}
+
       {snippetsManageOpen && (
         <SnippetsManageModal
           snippets={snippets}
@@ -1735,6 +1776,165 @@ function SnippetsManageModal(p: ManageProps) {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type DebugEntry = {
+  id: string; receivedAt: string; decision: string;
+  fromEmail: string | null; toAddresses: string[];
+  subject: string | null; reason: string | null;
+  hasSvixHeaders: boolean; resendEmailId: string | null;
+};
+
+const DECISION_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+  'ok':                { bg: '#dcfce7', color: '#166534', label: 'Threaded reply' },
+  'ok-new':            { bg: '#dcfce7', color: '#166534', label: 'New ticket' },
+  'no-match':          { bg: '#fef3c7', color: '#92400e', label: 'No match / dropped' },
+  'duplicate':         { bg: '#e5e7eb', color: '#374151', label: 'Duplicate (ignored)' },
+  'auth-failed':       { bg: '#fee2e2', color: '#991b1b', label: 'SPF/DKIM failed' },
+  'suspicious':        { bg: '#fee2e2', color: '#991b1b', label: 'Suspicious content' },
+  'empty-body':        { bg: '#fef3c7', color: '#92400e', label: 'Empty body' },
+  'fetch-failed':      { bg: '#fee2e2', color: '#991b1b', label: 'Fetch failed' },
+  'no-sender':         { bg: '#fef3c7', color: '#92400e', label: 'No sender' },
+  'rate-limited':      { bg: '#fef3c7', color: '#92400e', label: 'Rate limited' },
+  'ignored-non-event': { bg: '#e5e7eb', color: '#374151', label: 'Non-event payload' },
+  'invalid-signature': { bg: '#fee2e2', color: '#991b1b', label: 'Invalid signature' },
+  'missing-headers':   { bg: '#fee2e2', color: '#991b1b', label: 'Missing svix headers' },
+  'secret-missing':    { bg: '#fee2e2', color: '#991b1b', label: 'Webhook secret missing' },
+  'internal-error':    { bg: '#fee2e2', color: '#991b1b', label: 'Internal error (see reason)' },
+};
+
+function InboundDebugModal({
+  entries, loading, onRefresh, onClose,
+}: {
+  entries: DebugEntry[];
+  loading: boolean;
+  onRefresh: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(15,15,25,0.55)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 105, padding: 16,
+      }}
+    >
+      <div style={{
+        width: '100%', maxWidth: 780, maxHeight: '85vh',
+        background: 'var(--surface)', border: '1px solid var(--outline-variant)',
+        borderRadius: 18, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+      }}>
+        <div style={{
+          padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--outline-variant)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <Activity size={16} style={{ color: '#8b4f2c' }} />
+            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
+              Inbound webhook log
+            </span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
+              Every call from Resend, newest first. Refresh after sending a test email.
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={onRefresh}
+              disabled={loading}
+              title="Refresh"
+              style={{
+                width: 28, height: 28, padding: 0, display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
+                border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+                color: 'var(--on-surface-variant)', cursor: 'pointer',
+                opacity: loading ? 0.5 : 1,
+              }}
+            >
+              <RefreshCw size={13} />
+            </button>
+            <button
+              onClick={onClose}
+              title="Close"
+              style={{
+                width: 28, height: 28, padding: 0, display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
+                border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+                color: 'var(--on-surface-variant)', cursor: 'pointer',
+              }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem' }}>
+          {loading ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.85rem' }}>
+              Loading…
+            </div>
+          ) : entries.length === 0 ? (
+            <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--on-surface-variant)' }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--on-surface)', marginBottom: 6 }}>
+                No webhook calls recorded yet.
+              </div>
+              <div style={{ fontSize: '0.82rem', maxWidth: 480, margin: '0 auto', lineHeight: 1.55 }}>
+                If you've sent a test email and nothing shows here, Resend isn't calling the webhook.
+                Check the Resend dashboard → Inbound → Routes and confirm a route fires <code>email.received</code>
+                at <code>/webhooks/resend/inbound</code>.
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {entries.map(e => {
+                const style = DECISION_STYLE[e.decision] ?? { bg: '#e5e7eb', color: '#374151', label: e.decision };
+                return (
+                  <div key={e.id} style={{
+                    padding: '0.7rem 0.9rem', borderRadius: 12,
+                    border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{
+                        padding: '1px 10px', borderRadius: 999, fontSize: '0.7rem', fontWeight: 700,
+                        background: style.bg, color: style.color,
+                      }}>
+                        {style.label}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
+                        {new Date(e.receivedAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--on-surface)', marginBottom: 2 }}>
+                      <strong>From:</strong> {e.fromEmail ?? '—'}
+                      {'  '}
+                      <strong>To:</strong> {e.toAddresses.length > 0 ? e.toAddresses.join(', ') : '—'}
+                    </div>
+                    {e.subject && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', marginBottom: 2 }}>
+                        <strong>Subject:</strong> {e.subject}
+                      </div>
+                    )}
+                    {e.reason && (
+                      <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>
+                        <strong>Reason:</strong> {e.reason}
+                      </div>
+                    )}
+                    {e.resendEmailId && (
+                      <div style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', marginTop: 4 }}>
+                        Resend id: <code>{e.resendEmailId}</code>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

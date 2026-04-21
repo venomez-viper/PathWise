@@ -214,6 +214,13 @@ export const admin = {
     request<{ success: boolean; sent: number; ticketIds: string[]; failures: Array<{ to: string; error: string }> }>('/admin/compose-email', { method: 'POST', body: JSON.stringify(data) }),
   listSenders: () =>
     request<{ senders: Array<{ key: string; address: string; label: string }> }>('/admin/senders'),
+  listInboundLog: () =>
+    request<{ entries: Array<{
+      id: string; receivedAt: string; decision: string;
+      fromEmail: string | null; toAddresses: string[];
+      subject: string | null; reason: string | null;
+      hasSvixHeaders: boolean; resendEmailId: string | null;
+    }> }>('/admin/inbound-log'),
   previewCompose: (data: { subject: string; message: string }) =>
     request<{ subject: string; html: string }>('/admin/compose-email/preview', { method: 'POST', body: JSON.stringify(data) }),
   listRoles: () =>

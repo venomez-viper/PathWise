@@ -52,6 +52,31 @@ function extractInboundRecipient(toList: string[] | undefined): string | null {
   return null;
 }
 
+async function logDebug(entry: {
+  decision: string;
+  fromEmail?: string | null;
+  to?: string[] | null;
+  subject?: string | null;
+  reason?: string | null;
+  hasSvixHeaders?: boolean;
+  resendEmailId?: string | null;
+}): Promise<void> {
+  try {
+    await db.exec`
+      INSERT INTO inbound_debug_log
+        (id, received_at, decision, from_email, to_addresses_json, subject, reason, has_svix_headers, resend_email_id)
+      VALUES
+        (${crypto.randomUUID()}, ${new Date().toISOString()}, ${entry.decision},
+         ${entry.fromEmail ?? null}, ${entry.to ? JSON.stringify(entry.to) : null},
+         ${entry.subject ?? null}, ${entry.reason ?? null},
+         ${entry.hasSvixHeaders ? 1 : 0}, ${entry.resendEmailId ?? null})
+    `;
+  } catch (err) {
+    // Don't let log failures break the webhook response
+    console.error("Inbound: failed to write debug log", err instanceof Error ? err.message : err);
+  }
+}
+
 interface InboundPayload {
   type?: string;
   data?: {
@@ -68,6 +93,36 @@ function parseFrom(from: string): { email: string; name: string | null } {
   if (!match) return { email: from.trim().toLowerCase(), name: null };
   const name = (match[1] ?? "").trim() || null;
   return { email: match[2].trim().toLowerCase(), name };
+}
+
+function stripQuotedReply(body: string): string {
+  let result = body;
+
+  // Gmail: "On Tue, Apr 21, 2026 at 4:31 PM [name] <email> wrote:"
+  const gmailMatch = result.search(/\n[\s\-_]*On\s+.+wrote:\s*\n/i);
+  if (gmailMatch >= 0) result = result.slice(0, gmailMatch);
+
+  // Outlook: "----- Original Message -----"
+  const outlookMatch = result.search(/\n-{3,}\s*Original Message\s*-{3,}/i);
+  if (outlookMatch >= 0) result = result.slice(0, outlookMatch);
+
+  // Outlook classic: "From: ... \n Sent: ... \n To:"
+  const outlookFrom = result.search(/\nFrom:\s+.+\n(Sent|Date):\s+.+\nTo:\s+/i);
+  if (outlookFrom >= 0) result = result.slice(0, outlookFrom);
+
+  // Apple Mail: "On [date] at [time], [name] wrote:"  (already covered by gmail pattern)
+
+  // Drop trailing quoted lines (starting with ">") and blank lines
+  const lines = result.split("\n");
+  while (lines.length > 0) {
+    const last = lines[lines.length - 1].trim();
+    if (last === "" || /^>+/.test(last) || /^\s*>/.test(lines[lines.length - 1])) {
+      lines.pop();
+    } else {
+      break;
+    }
+  }
+  return lines.join("\n").trim();
 }
 
 function stripHtmlToText(html: string): string {
@@ -118,6 +173,7 @@ function failedAuthenticationResults(headers: Record<string, string>): boolean {
 export const ticketInboundWebhook = api.raw(
   { expose: true, method: "POST", path: "/webhooks/resend/inbound", auth: false },
   async (req, resp) => {
+    try {
     // 1. Read raw body with size cap
     const chunks: Buffer[] = [];
     let total = 0;
@@ -134,15 +190,18 @@ export const ticketInboundWebhook = api.raw(
     const svixId = (req.headers["svix-id"] as string | undefined) ?? "";
     const svixTimestamp = (req.headers["svix-timestamp"] as string | undefined) ?? "";
     const svixSignature = (req.headers["svix-signature"] as string | undefined) ?? "";
+    const hasSvixHeaders = !!(svixId && svixTimestamp && svixSignature);
 
     let secretValue: string;
     try {
       secretValue = webhookSecret();
     } catch {
       console.error("Inbound: ResendWebhookSecret not configured");
+      await logDebug({ decision: "secret-missing", hasSvixHeaders });
       resp.writeHead(500); resp.end("webhook secret missing"); return;
     }
-    if (!svixId || !svixTimestamp || !svixSignature) {
+    if (!hasSvixHeaders) {
+      await logDebug({ decision: "missing-headers", hasSvixHeaders: false });
       resp.writeHead(400); resp.end("missing signature headers"); return;
     }
 
@@ -155,11 +214,17 @@ export const ticketInboundWebhook = api.raw(
         webhookSecret: secretValue,
       });
     } catch {
+      await logDebug({ decision: "invalid-signature", hasSvixHeaders: true });
       resp.writeHead(400); resp.end("invalid signature"); return;
     }
 
     const payload = verified as InboundPayload;
     if (payload?.type !== "email.received" || !payload.data?.email_id) {
+      await logDebug({
+        decision: "ignored-non-event",
+        reason: `type=${payload?.type ?? "?"}`,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("ignored"); return;
     }
 
@@ -167,17 +232,42 @@ export const ticketInboundWebhook = api.raw(
     const existing = await db.queryRow`
       SELECT id FROM ticket_replies WHERE resend_email_id = ${payload.data.email_id}
     `;
-    if (existing) { resp.writeHead(200); resp.end("duplicate"); return; }
+    if (existing) {
+      await logDebug({
+        decision: "duplicate",
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
+      resp.writeHead(200); resp.end("duplicate"); return;
+    }
 
     // 4. Parse sender + rate limit
     const fromRaw = payload.data.from ?? "";
     const { email: fromEmail, name: fromName } = parseFrom(fromRaw);
-    if (!fromEmail) { resp.writeHead(200); resp.end("no-sender"); return; }
+    if (!fromEmail) {
+      await logDebug({
+        decision: "no-sender",
+        to: payload.data.to,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
+      resp.writeHead(200); resp.end("no-sender"); return;
+    }
 
     try {
       RateLimits.inboundSender("inbound:" + fromEmail);
     } catch {
       console.warn("Inbound: rate-limited sender", { fromEmail });
+      await logDebug({
+        decision: "rate-limited",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("rate-limited"); return;
     }
 
@@ -199,6 +289,14 @@ export const ticketInboundWebhook = api.raw(
         email_id: payload.data.email_id,
         err: err instanceof Error ? err.message : "unknown",
       });
+      await logDebug({
+        decision: "fetch-failed",
+        fromEmail,
+        to: payload.data.to,
+        resendEmailId: payload.data.email_id,
+        reason: err instanceof Error ? err.message : "unknown",
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("fetch-failed"); return;
     }
 
@@ -207,6 +305,14 @@ export const ticketInboundWebhook = api.raw(
     // 6. Reject unauthenticated senders (SPF/DKIM/DMARC failures)
     if (failedAuthenticationResults(headers)) {
       console.warn("Inbound: dropped — failed authentication", { fromEmail });
+      await logDebug({
+        decision: "auth-failed",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("auth-failed"); return;
     }
 
@@ -217,14 +323,35 @@ export const ticketInboundWebhook = api.raw(
     } else if (email.html && email.html.trim()) {
       body = stripHtmlToText(email.html);
     } else {
+      await logDebug({
+        decision: "empty-body",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("empty-body"); return;
     }
     body = body.slice(0, MAX_BODY_CHARS).trim();
+    // Drop quoted reply history (Gmail "On X wrote:", Outlook separators,
+    // leading `>` quoted lines) so the thread shows just the fresh reply.
+    const trimmed = stripQuotedReply(body);
+    if (trimmed.length > 0) body = trimmed;
 
     // 8. Malicious-content checks
     const check = isMalicious(body);
     if (check.bad) {
       console.warn("Inbound: dropped suspicious content", { fromEmail, reason: check.reason });
+      await logDebug({
+        decision: "suspicious",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        reason: check.reason,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("suspicious"); return;
     }
 
@@ -264,6 +391,15 @@ export const ticketInboundWebhook = api.raw(
           fromEmail, to: payload.data.to, subject: payload.data.subject,
           email_id: payload.data.email_id,
         });
+        await logDebug({
+          decision: "no-match",
+          fromEmail,
+          to: payload.data.to,
+          subject: payload.data.subject,
+          resendEmailId: payload.data.email_id,
+          reason: "recipient not in allow-list",
+          hasSvixHeaders: true,
+        });
         resp.writeHead(200); resp.end("no-match"); return;
       }
       ticketId = crypto.randomUUID();
@@ -299,6 +435,26 @@ export const ticketInboundWebhook = api.raw(
       `;
     }
 
+    await logDebug({
+      decision: createdNew ? "ok-new" : "ok",
+      fromEmail,
+      to: payload.data.to,
+      subject: payload.data.subject,
+      resendEmailId: payload.data.email_id,
+      hasSvixHeaders: true,
+    });
     resp.writeHead(200); resp.end(createdNew ? "ok-new" : "ok");
+    } catch (err) {
+      // Never 500 Resend — that triggers retries and doesn't help diagnosis.
+      // Log the exact error to the debug table so it's visible in the inbox.
+      const msg = err instanceof Error ? `${err.message}${err.stack ? "\n" + err.stack : ""}` : String(err);
+      console.error("Inbound: uncaught error", msg);
+      await logDebug({
+        decision: "internal-error",
+        reason: msg.slice(0, 2000),
+        hasSvixHeaders: false,
+      }).catch(() => {});
+      try { resp.writeHead(200); resp.end("internal-error"); } catch {}
+    }
   }
 );

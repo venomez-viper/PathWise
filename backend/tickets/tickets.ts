@@ -440,21 +440,47 @@ export const adminComposeEmail = api(
       const nameFromEmail = to.split("@")[0] || to;
 
       // Create a tracked ticket so replies thread back into the inbox.
-      await db.exec`
-        INSERT INTO tickets
-          (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
-        VALUES
-          (${ticketId}, ${nameFromEmail}, ${to}, ${trimmedSubject}, ${messageWithSignature},
-           'open', ${now}, 0, ${now}, 'agent')
-      `;
-      await db.exec`
-        INSERT INTO ticket_replies
-          (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
-        VALUES
-          (${replyId}, ${ticketId}, 'admin', ${authorEmail}, 'PathWise Support',
-           ${messageWithSignature}, ${messageId}, NULL, ${now})
-      `;
-      ticketIds.push(ticketId);
+      // Wrapped because if a migration hasn't applied (missing column), this
+      // INSERT throws and Promise.allSettled would silently eat it, leaving
+      // the agent confused about why their compose didn't create a ticket.
+      try {
+        try {
+          await db.exec`
+            INSERT INTO tickets
+              (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
+            VALUES
+              (${ticketId}, ${nameFromEmail}, ${to}, ${trimmedSubject}, ${messageWithSignature},
+               'open', ${now}, 0, ${now}, 'agent')
+          `;
+        } catch (errWithCol) {
+          // Fall back to pre-migration-4 schema so compose still tracks
+          // the ticket (as 'user'-initiated) until the column lands.
+          const colMsg = errWithCol instanceof Error ? errWithCol.message : String(errWithCol);
+          if (/initiated_by/i.test(colMsg) || /column.*does not exist/i.test(colMsg)) {
+            await db.exec`
+              INSERT INTO tickets
+                (id, name, email, subject, message, status, created_at, unread, last_activity_at)
+              VALUES
+                (${ticketId}, ${nameFromEmail}, ${to}, ${trimmedSubject}, ${messageWithSignature},
+                 'open', ${now}, 0, ${now})
+            `;
+          } else {
+            throw errWithCol;
+          }
+        }
+        await db.exec`
+          INSERT INTO ticket_replies
+            (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
+          VALUES
+            (${replyId}, ${ticketId}, 'admin', ${authorEmail}, 'PathWise Support',
+             ${messageWithSignature}, ${messageId}, NULL, ${now})
+        `;
+        ticketIds.push(ticketId);
+      } catch (dbErr) {
+        const msg = dbErr instanceof Error ? dbErr.message : "unknown db error";
+        failures.push({ to, error: `ticket create failed: ${msg}` });
+        return; // don't send if we can't track it
+      }
 
       const res = await sendEmail({
         to,
@@ -495,6 +521,56 @@ export const adminPreviewCompose = api(
 
     const { adminBroadcastEmail } = await import("../email/email");
     return adminBroadcastEmail(subject, messageWithSignature);
+  }
+);
+
+// ── Admin Inbound Debug Log ──────────────────────────────────────────────────
+
+interface InboundDebugEntry {
+  id: string;
+  receivedAt: string;
+  decision: string;
+  fromEmail: string | null;
+  toAddresses: string[];
+  subject: string | null;
+  reason: string | null;
+  hasSvixHeaders: boolean;
+  resendEmailId: string | null;
+}
+
+export const adminListInboundLog = api(
+  { expose: true, method: "GET", path: "/admin/inbound-log", auth: true },
+  async (): Promise<{ entries: InboundDebugEntry[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) throw APIError.permissionDenied("support access required");
+
+    const entries: InboundDebugEntry[] = [];
+    const rows = db.query`
+      SELECT id, received_at, decision, from_email, to_addresses_json,
+             subject, reason, has_svix_headers, resend_email_id
+      FROM inbound_debug_log
+      ORDER BY received_at DESC
+      LIMIT 50
+    `;
+    for await (const row of rows) {
+      let to: string[] = [];
+      if (row.to_addresses_json) {
+        try { to = JSON.parse(row.to_addresses_json); } catch { to = []; }
+      }
+      entries.push({
+        id: row.id,
+        receivedAt: row.received_at,
+        decision: row.decision,
+        fromEmail: row.from_email,
+        toAddresses: to,
+        subject: row.subject,
+        reason: row.reason,
+        hasSvixHeaders: Boolean(row.has_svix_headers),
+        resendEmailId: row.resend_email_id,
+      });
+    }
+    return { entries };
   }
 );
 
