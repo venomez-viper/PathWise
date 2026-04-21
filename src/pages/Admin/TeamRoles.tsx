@@ -117,7 +117,14 @@ export function TeamRoles() {
       ) : (
         <>
           <Section title="Admins" icon={<Shield size={14} />} entries={admins} onRemove={handleRemove} />
-          <Section title="Support Agents" icon={<Headphones size={14} />} entries={agents} onRemove={handleRemove} />
+          <Section
+            title="Support Agents"
+            icon={<Headphones size={14} />}
+            entries={agents}
+            onRemove={handleRemove}
+            emptyIllustration="/panda/panda-explorer.png"
+            emptyMessage="No support agents yet — invite a teammate by email above."
+          />
         </>
       )}
     </div>
@@ -125,12 +132,14 @@ export function TeamRoles() {
 }
 
 function Section({
-  title, icon, entries, onRemove,
+  title, icon, entries, onRemove, emptyIllustration, emptyMessage,
 }: {
   title: string;
   icon: React.ReactNode;
   entries: RoleEntry[];
   onRemove: (email: string, role: Role) => void;
+  emptyIllustration?: string;
+  emptyMessage?: string;
 }) {
   return (
     <div style={{ marginBottom: '1.25rem' }}>
@@ -142,8 +151,19 @@ function Section({
         {icon}<span>{title} ({entries.length})</span>
       </div>
       {entries.length === 0 ? (
-        <div className="panel" style={{ borderRadius: '1.25rem', padding: '1rem', color: 'var(--on-surface-variant)', fontSize: '0.85rem' }}>
-          None yet.
+        <div className="panel" style={{
+          borderRadius: '1.25rem', padding: '1.25rem',
+          color: 'var(--on-surface-variant)', fontSize: '0.85rem',
+          display: 'flex', alignItems: 'center', gap: 14,
+        }}>
+          {emptyIllustration && (
+            <img
+              src={emptyIllustration}
+              alt=""
+              style={{ width: 72, height: 72, objectFit: 'contain', flexShrink: 0 }}
+            />
+          )}
+          <div>{emptyMessage ?? 'None yet.'}</div>
         </div>
       ) : (
         <div className="panel" style={{ borderRadius: '1.25rem', padding: 0, overflow: 'hidden' }}>

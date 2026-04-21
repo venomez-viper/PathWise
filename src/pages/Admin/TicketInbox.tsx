@@ -235,8 +235,15 @@ export function TicketInbox() {
             </div>
           ) : visibleTickets.length === 0 ? (
             <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--on-surface-variant)' }}>
-              <Inbox size={32} style={{ opacity: 0.4, marginBottom: 8 }} />
-              <div style={{ fontSize: '0.85rem' }}>No tickets match this filter.</div>
+              <img
+                src="/panda/panda-sleepy.png"
+                alt=""
+                style={{ width: 96, height: 96, opacity: 0.85, marginBottom: 8, display: 'inline-block' }}
+              />
+              <div style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <Inbox size={14} />
+                <span>All quiet — no tickets match this filter.</span>
+              </div>
             </div>
           ) : (
             visibleTickets.map(t => {
@@ -306,10 +313,22 @@ export function TicketInbox() {
       }}>
         {!selected ? (
           <div style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--on-surface-variant)',
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            color: 'var(--on-surface-variant)', gap: 12, padding: '2rem',
           }}>
-            Select a ticket to view the conversation.
+            <img
+              src="/panda/panda-waving.png"
+              alt=""
+              style={{ width: 160, height: 160, objectFit: 'contain' }}
+            />
+            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--on-surface)' }}>
+              Pick a ticket to start chatting
+            </div>
+            <div style={{ fontSize: '0.82rem', maxWidth: 320, textAlign: 'center' }}>
+              Pandas are standing by. Every reply ships as a branded PathWise email —
+              hit Preview to see it before sending.
+            </div>
           </div>
         ) : (
           <>
