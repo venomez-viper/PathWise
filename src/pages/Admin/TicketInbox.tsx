@@ -1432,7 +1432,135 @@ type ComposeProps = {
   onClose: () => void;
 };
 
+const FIELD_LABEL_STYLE: React.CSSProperties = {
+  fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+  letterSpacing: '0.08em', color: 'var(--on-surface-variant)',
+};
+
+function polishedInputStyle(focused: boolean): React.CSSProperties {
+  return {
+    padding: '10px 14px', borderRadius: 12,
+    border: `1px solid ${focused ? '#8b4f2c' : 'var(--outline-variant)'}`,
+    background: 'var(--surface-container-low, var(--surface-container))',
+    color: 'var(--on-surface)', fontSize: '0.9rem', outline: 'none',
+    boxShadow: focused ? '0 0 0 3px rgba(139,79,44,0.12)' : 'none',
+    transition: 'border 0.15s, box-shadow 0.15s',
+    fontFamily: 'inherit',
+  };
+}
+
+function FromPicker({
+  value, senders, onChange,
+}: {
+  value: string;
+  senders: Array<{ key: string; address: string; label: string }>;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [open]);
+
+  const current = senders.find(s => s.key === value);
+  const currentLabel = current ? current.label : 'PathWise';
+  const currentAddress = current ? current.address : 'hello@pathwise.fit';
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', textAlign: 'left',
+          padding: '10px 14px', borderRadius: 12,
+          border: `1px solid ${open ? '#8b4f2c' : 'var(--outline-variant)'}`,
+          background: 'var(--surface-container-low, var(--surface-container))',
+          color: 'var(--on-surface)',
+          display: 'inline-flex', alignItems: 'center', gap: 10,
+          cursor: 'pointer', outline: 'none',
+          boxShadow: open ? '0 0 0 3px rgba(139,79,44,0.12)' : 'none',
+          transition: 'border 0.15s, box-shadow 0.15s',
+        }}
+      >
+        <span style={{
+          width: 8, height: 8, borderRadius: '50%', background: '#8b4f2c', flexShrink: 0,
+        }} />
+        <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+          <span style={{ fontSize: '0.88rem', fontWeight: 600, lineHeight: 1.2 }}>
+            {currentLabel}
+          </span>
+          <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', lineHeight: 1.2 }}>
+            {currentAddress}
+          </span>
+        </span>
+        <ChevronDown size={14} style={{ opacity: 0.6, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0 }} />
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+          background: 'var(--surface)', border: '1px solid var(--outline-variant)',
+          borderRadius: 12, overflow: 'hidden',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 110,
+        }}>
+          {senders.length === 0 ? (
+            <div style={{ padding: '10px 14px', fontSize: '0.82rem', color: 'var(--on-surface-variant)' }}>
+              No senders configured.
+            </div>
+          ) : senders.map(s => {
+            const active = s.key === value;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => { onChange(s.key); setOpen(false); }}
+                style={{
+                  width: '100%', textAlign: 'left',
+                  padding: '10px 14px',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  border: 'none', background: active ? 'var(--surface-container)' : 'transparent',
+                  color: 'var(--on-surface)', cursor: 'pointer',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = active ? 'var(--surface-container)' : 'transparent'; }}
+              >
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%', background: '#8b4f2c', flexShrink: 0, opacity: active ? 1 : 0.5,
+                }} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.25 }}>
+                    {s.label}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', lineHeight: 1.25 }}>
+                    {s.address}
+                  </div>
+                </span>
+                {active && <Check size={13} style={{ color: '#8b4f2c', flexShrink: 0 }} />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ComposeModal(p: ComposeProps) {
+  const [subjectFocused, setSubjectFocused] = useState(false);
+  const [messageFocused, setMessageFocused] = useState(false);
+  const canSend = !p.sending && p.to.length > 0 && !!p.subject.trim() && !!p.message.trim();
+  const canPreview = !!p.subject.trim() && !!p.message.trim();
+
   return (
     <div
       onMouseDown={e => { if (e.target === e.currentTarget) p.onClose(); }}
@@ -1443,67 +1571,70 @@ function ComposeModal(p: ComposeProps) {
       }}
     >
       <div style={{
-        width: '100%', maxWidth: 640, maxHeight: '90vh',
+        width: '100%', maxWidth: 680, maxHeight: '92vh',
         background: 'var(--surface)', border: '1px solid var(--outline-variant)',
-        borderRadius: 18, overflow: 'hidden',
+        borderRadius: 20, overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+        boxShadow: '0 24px 60px rgba(15,15,25,0.28)',
       }}>
+        {/* Header */}
         <div style={{
-          padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--outline-variant)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '1rem 1.25rem 0.9rem', borderBottom: '1px solid var(--outline-variant)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <PenSquare size={16} style={{ color: '#8b4f2c' }} />
-            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
-              New email
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 10,
+              background: '#8b4f2c18', color: '#8b4f2c',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <PenSquare size={15} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--on-surface)', lineHeight: 1.25 }}>
+                New email
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--on-surface-variant)', lineHeight: 1.3, marginTop: 2 }}>
+                Each recipient gets a tracked ticket so replies thread back here.
+              </div>
+            </div>
           </div>
           <button
             onClick={p.onClose}
+            aria-label="Close compose"
             title="Close"
             style={{
-              width: 28, height: 28, padding: 0, display: 'inline-flex',
-              alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
-              border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-              color: 'var(--on-surface-variant)', cursor: 'pointer',
+              width: 32, height: 32, padding: 0, flexShrink: 0,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 10, border: '1px solid transparent',
+              background: 'transparent', color: 'var(--on-surface-variant)',
+              cursor: 'pointer', opacity: 0.75, transition: 'all 0.15s',
             }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '0.75'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
           >
             <X size={14} />
           </button>
         </div>
 
-        <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{
-              fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.08em', color: 'var(--on-surface-variant)',
-            }}>From</span>
-            <select
+        {/* Body */}
+        <div style={{ padding: '1rem 1.25rem 0.5rem', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span style={FIELD_LABEL_STYLE}>From</span>
+            <FromPicker
               value={p.fromKey}
-              onChange={e => p.onFromChange(e.target.value)}
-              style={{
-                padding: '0.55rem 0.9rem', borderRadius: 12,
-                border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                color: 'var(--on-surface)', fontSize: '0.88rem', outline: 'none',
-              }}
-            >
-              {p.senders.length === 0 ? (
-                <option value="">PathWise &lt;hello@pathwise.fit&gt;</option>
-              ) : p.senders.map(s => (
-                <option key={s.key} value={s.key}>
-                  {s.label} &lt;{s.address}&gt;
-                </option>
-              ))}
-            </select>
-          </label>
+              senders={p.senders}
+              onChange={p.onFromChange}
+            />
+          </div>
 
           <EmailTagInput
             label="To"
             tags={p.to}
             onChange={p.onToChange}
             placeholder="name@example.com"
-            helperText="Enter, comma, or Space adds an address. Max 10. A tracked open ticket is created per recipient so replies land back here."
+            helperText="Enter, comma, or Space to add. Max 10 recipients per send."
           />
 
           <EmailTagInput
@@ -1513,62 +1644,72 @@ function ComposeModal(p: ComposeProps) {
             placeholder="Add CC addresses…"
           />
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{
-              fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.06em', color: 'var(--on-surface-variant)',
-            }}>Subject</span>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span style={FIELD_LABEL_STYLE}>Subject</span>
             <input
               value={p.subject}
               onChange={e => p.onSubjectChange(e.target.value)}
+              onFocus={() => setSubjectFocused(true)}
+              onBlur={() => setSubjectFocused(false)}
               placeholder="What's this about?"
-              style={{
-                padding: '0.55rem 0.9rem', borderRadius: 12,
-                border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                color: 'var(--on-surface)', fontSize: '0.88rem', outline: 'none',
-              }}
+              style={polishedInputStyle(subjectFocused)}
             />
           </label>
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{
-              fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.06em', color: 'var(--on-surface-variant)',
-            }}>Message</span>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span style={FIELD_LABEL_STYLE}>Message</span>
             <textarea
               value={p.message}
               onChange={e => p.onMessageChange(e.target.value)}
+              onFocus={() => setMessageFocused(true)}
+              onBlur={() => setMessageFocused(false)}
               placeholder="Write your message…"
-              rows={8}
+              rows={9}
               style={{
-                padding: '0.7rem 0.9rem', borderRadius: 12,
-                border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                color: 'var(--on-surface)', fontSize: '0.88rem', lineHeight: 1.55,
-                resize: 'vertical', outline: 'none', fontFamily: 'inherit',
+                ...polishedInputStyle(messageFocused),
+                lineHeight: 1.6,
+                resize: 'vertical',
+                minHeight: 160,
               }}
             />
           </label>
 
           {p.previewOpen && p.previewHtml && (
             <div style={{
-              border: '1px solid var(--outline-variant)', borderRadius: 12,
+              border: '1px solid var(--outline-variant)', borderRadius: 14,
               overflow: 'hidden', background: '#f4f4f7',
             }}>
               <div style={{
-                padding: '6px 10px', fontSize: '0.7rem', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-                color: 'var(--on-surface-variant)',
-                background: 'var(--surface-container)',
+                padding: '10px 14px', fontSize: '0.72rem', fontWeight: 700,
+                letterSpacing: '0.04em',
+                color: 'var(--on-surface)',
+                background: 'var(--surface-container-low, var(--surface-container))',
                 borderBottom: '1px solid var(--outline-variant)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
               }}>
-                <span>
-                  {p.editMode ? 'Editing HTML' : 'Preview'}
-                  {p.editedHtml && !p.editMode && (
-                    <span style={{
-                      marginLeft: 8, padding: '1px 8px', borderRadius: 999,
-                      background: '#8b4f2c18', color: '#8b4f2c', fontSize: '0.65rem',
-                    }}>edited</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  {p.editMode ? (
+                    <>
+                      <span style={{
+                        padding: '2px 8px', borderRadius: 999,
+                        background: '#8b4f2c', color: '#fff', fontSize: '0.65rem', letterSpacing: '0.06em',
+                      }}>HTML</span>
+                      <span style={{ color: 'var(--on-surface-variant)', textTransform: 'none', fontWeight: 600 }}>
+                        Editing source
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye size={13} style={{ color: 'var(--on-surface-variant)' }} />
+                      <span style={{ textTransform: 'none', fontWeight: 600 }}>Preview</span>
+                      {p.editedHtml && (
+                        <span style={{
+                          padding: '1px 8px', borderRadius: 999,
+                          background: '#8b4f2c18', color: '#8b4f2c', fontSize: '0.65rem',
+                          textTransform: 'uppercase', letterSpacing: '0.06em',
+                        }}>edited</span>
+                      )}
+                    </>
                   )}
                 </span>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -1582,11 +1723,11 @@ function ComposeModal(p: ComposeProps) {
                       }
                     }}
                     style={{
-                      padding: '3px 10px', borderRadius: 999,
-                      border: '1px solid var(--outline-variant)',
+                      padding: '4px 12px', borderRadius: 999,
+                      border: p.editMode ? '1px solid transparent' : '1px solid var(--outline-variant)',
                       background: p.editMode ? '#8b4f2c' : 'var(--surface)',
                       color: p.editMode ? '#fff' : 'var(--on-surface)',
-                      fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
+                      fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
                       textTransform: 'none', letterSpacing: 0,
                     }}
                   >
@@ -1596,10 +1737,10 @@ function ComposeModal(p: ComposeProps) {
                     <button
                       onClick={() => { p.onEditedHtmlChange(null); p.onEditModeChange(false); }}
                       style={{
-                        padding: '3px 10px', borderRadius: 999,
+                        padding: '4px 12px', borderRadius: 999,
                         border: '1px solid var(--outline-variant)',
                         background: 'var(--surface)', color: 'var(--on-surface-variant)',
-                        fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
+                        fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
                         textTransform: 'none', letterSpacing: 0,
                       }}
                     >
@@ -1614,10 +1755,10 @@ function ComposeModal(p: ComposeProps) {
                   onChange={e => p.onEditedHtmlChange(e.target.value)}
                   spellCheck={false}
                   style={{
-                    width: '100%', height: 260, border: 'none', outline: 'none',
-                    padding: '12px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                    fontSize: '0.75rem', lineHeight: 1.5, resize: 'vertical', display: 'block',
-                    background: '#1e1e1e', color: '#e6e6e6',
+                    width: '100%', height: 280, border: 'none', outline: 'none',
+                    padding: '14px 16px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                    fontSize: '0.76rem', lineHeight: 1.55, resize: 'vertical', display: 'block',
+                    background: '#14141b', color: '#e6e6f0',
                   }}
                 />
               ) : (
@@ -1625,46 +1766,60 @@ function ComposeModal(p: ComposeProps) {
                   title="Compose preview"
                   srcDoc={p.editedHtml ?? p.previewHtml}
                   sandbox=""
-                  style={{ width: '100%', height: 260, border: 'none', display: 'block', background: '#f4f4f7' }}
+                  style={{ width: '100%', height: 280, border: 'none', display: 'block', background: '#f4f4f7' }}
                 />
               )}
             </div>
           )}
         </div>
 
+        {/* Footer */}
         <div style={{
-          padding: '0.85rem 1.25rem', borderTop: '1px solid var(--outline-variant)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '0.9rem 1.25rem',
+          borderTop: '1px solid var(--outline-variant)',
+          background: 'var(--surface-container-low, var(--surface))',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
           flexWrap: 'wrap',
         }}>
           {p.snippetsButton}
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={p.onTogglePreview}
-              disabled={!p.subject.trim() || !p.message.trim()}
+              disabled={!canPreview}
+              aria-label="Toggle preview"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '0.5rem 0.9rem', borderRadius: 999,
+                height: 36, padding: '0 14px', borderRadius: 10,
                 border: '1px solid var(--outline-variant)',
-                background: p.previewOpen ? 'var(--surface-container-high)' : 'var(--surface-container)',
+                background: p.previewOpen ? 'var(--surface-container-high)' : 'transparent',
                 color: 'var(--on-surface)',
-                fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                opacity: !p.subject.trim() || !p.message.trim() ? 0.5 : 1,
+                fontSize: '0.82rem', fontWeight: 600,
+                cursor: canPreview ? 'pointer' : 'not-allowed',
+                opacity: canPreview ? 1 : 0.5,
+                transition: 'background 0.15s',
               }}
+              onMouseEnter={e => { if (canPreview && !p.previewOpen) e.currentTarget.style.background = 'var(--surface-container)'; }}
+              onMouseLeave={e => { if (canPreview && !p.previewOpen) e.currentTarget.style.background = 'transparent'; }}
             >
               {p.previewOpen ? <EyeOff size={14} /> : <Eye size={14} />}
               {p.previewOpen ? 'Hide' : 'Preview'}
             </button>
             <button
               onClick={p.onSend}
-              disabled={p.sending || p.to.length === 0 || !p.subject.trim() || !p.message.trim()}
+              disabled={!canSend}
+              aria-label="Send email"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '0.5rem 1.1rem', borderRadius: 999, border: 'none',
+                height: 36, padding: '0 18px', borderRadius: 10, border: 'none',
                 background: '#8b4f2c', color: '#fff',
-                fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer',
-                opacity: p.sending || p.to.length === 0 || !p.subject.trim() || !p.message.trim() ? 0.5 : 1,
+                fontSize: '0.82rem', fontWeight: 700,
+                cursor: canSend ? 'pointer' : 'not-allowed',
+                opacity: canSend ? 1 : 0.5,
+                boxShadow: canSend ? '0 1px 2px rgba(139,79,44,0.28), 0 2px 6px rgba(139,79,44,0.2)' : 'none',
+                transition: 'background 0.15s, box-shadow 0.15s',
               }}
+              onMouseEnter={e => { if (canSend) { e.currentTarget.style.background = '#723f22'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(139,79,44,0.3), 0 4px 10px rgba(139,79,44,0.24)'; } }}
+              onMouseLeave={e => { if (canSend) { e.currentTarget.style.background = '#8b4f2c'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(139,79,44,0.28), 0 2px 6px rgba(139,79,44,0.2)'; } }}
             >
               <Send size={14} /> {p.sending ? 'Sending…' : 'Send'}
             </button>
