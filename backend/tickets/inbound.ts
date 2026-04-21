@@ -95,6 +95,36 @@ function parseFrom(from: string): { email: string; name: string | null } {
   return { email: match[2].trim().toLowerCase(), name };
 }
 
+function stripQuotedReply(body: string): string {
+  let result = body;
+
+  // Gmail: "On Tue, Apr 21, 2026 at 4:31 PM [name] <email> wrote:"
+  const gmailMatch = result.search(/\n[\s\-_]*On\s+.+wrote:\s*\n/i);
+  if (gmailMatch >= 0) result = result.slice(0, gmailMatch);
+
+  // Outlook: "----- Original Message -----"
+  const outlookMatch = result.search(/\n-{3,}\s*Original Message\s*-{3,}/i);
+  if (outlookMatch >= 0) result = result.slice(0, outlookMatch);
+
+  // Outlook classic: "From: ... \n Sent: ... \n To:"
+  const outlookFrom = result.search(/\nFrom:\s+.+\n(Sent|Date):\s+.+\nTo:\s+/i);
+  if (outlookFrom >= 0) result = result.slice(0, outlookFrom);
+
+  // Apple Mail: "On [date] at [time], [name] wrote:"  (already covered by gmail pattern)
+
+  // Drop trailing quoted lines (starting with ">") and blank lines
+  const lines = result.split("\n");
+  while (lines.length > 0) {
+    const last = lines[lines.length - 1].trim();
+    if (last === "" || /^>+/.test(last) || /^\s*>/.test(lines[lines.length - 1])) {
+      lines.pop();
+    } else {
+      break;
+    }
+  }
+  return lines.join("\n").trim();
+}
+
 function stripHtmlToText(html: string): string {
   return html
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, " ")
@@ -143,6 +173,7 @@ function failedAuthenticationResults(headers: Record<string, string>): boolean {
 export const ticketInboundWebhook = api.raw(
   { expose: true, method: "POST", path: "/webhooks/resend/inbound", auth: false },
   async (req, resp) => {
+    try {
     // 1. Read raw body with size cap
     const chunks: Buffer[] = [];
     let total = 0;
@@ -303,6 +334,10 @@ export const ticketInboundWebhook = api.raw(
       resp.writeHead(200); resp.end("empty-body"); return;
     }
     body = body.slice(0, MAX_BODY_CHARS).trim();
+    // Drop quoted reply history (Gmail "On X wrote:", Outlook separators,
+    // leading `>` quoted lines) so the thread shows just the fresh reply.
+    const trimmed = stripQuotedReply(body);
+    if (trimmed.length > 0) body = trimmed;
 
     // 8. Malicious-content checks
     const check = isMalicious(body);
@@ -409,5 +444,17 @@ export const ticketInboundWebhook = api.raw(
       hasSvixHeaders: true,
     });
     resp.writeHead(200); resp.end(createdNew ? "ok-new" : "ok");
+    } catch (err) {
+      // Never 500 Resend — that triggers retries and doesn't help diagnosis.
+      // Log the exact error to the debug table so it's visible in the inbox.
+      const msg = err instanceof Error ? `${err.message}${err.stack ? "\n" + err.stack : ""}` : String(err);
+      console.error("Inbound: uncaught error", msg);
+      await logDebug({
+        decision: "internal-error",
+        reason: msg.slice(0, 2000),
+        hasSvixHeaders: false,
+      }).catch(() => {});
+      try { resp.writeHead(200); resp.end("internal-error"); } catch {}
+    }
   }
 );

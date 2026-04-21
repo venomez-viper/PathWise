@@ -440,21 +440,47 @@ export const adminComposeEmail = api(
       const nameFromEmail = to.split("@")[0] || to;
 
       // Create a tracked ticket so replies thread back into the inbox.
-      await db.exec`
-        INSERT INTO tickets
-          (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
-        VALUES
-          (${ticketId}, ${nameFromEmail}, ${to}, ${trimmedSubject}, ${messageWithSignature},
-           'open', ${now}, 0, ${now}, 'agent')
-      `;
-      await db.exec`
-        INSERT INTO ticket_replies
-          (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
-        VALUES
-          (${replyId}, ${ticketId}, 'admin', ${authorEmail}, 'PathWise Support',
-           ${messageWithSignature}, ${messageId}, NULL, ${now})
-      `;
-      ticketIds.push(ticketId);
+      // Wrapped because if a migration hasn't applied (missing column), this
+      // INSERT throws and Promise.allSettled would silently eat it, leaving
+      // the agent confused about why their compose didn't create a ticket.
+      try {
+        try {
+          await db.exec`
+            INSERT INTO tickets
+              (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
+            VALUES
+              (${ticketId}, ${nameFromEmail}, ${to}, ${trimmedSubject}, ${messageWithSignature},
+               'open', ${now}, 0, ${now}, 'agent')
+          `;
+        } catch (errWithCol) {
+          // Fall back to pre-migration-4 schema so compose still tracks
+          // the ticket (as 'user'-initiated) until the column lands.
+          const colMsg = errWithCol instanceof Error ? errWithCol.message : String(errWithCol);
+          if (/initiated_by/i.test(colMsg) || /column.*does not exist/i.test(colMsg)) {
+            await db.exec`
+              INSERT INTO tickets
+                (id, name, email, subject, message, status, created_at, unread, last_activity_at)
+              VALUES
+                (${ticketId}, ${nameFromEmail}, ${to}, ${trimmedSubject}, ${messageWithSignature},
+                 'open', ${now}, 0, ${now})
+            `;
+          } else {
+            throw errWithCol;
+          }
+        }
+        await db.exec`
+          INSERT INTO ticket_replies
+            (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
+          VALUES
+            (${replyId}, ${ticketId}, 'admin', ${authorEmail}, 'PathWise Support',
+             ${messageWithSignature}, ${messageId}, NULL, ${now})
+        `;
+        ticketIds.push(ticketId);
+      } catch (dbErr) {
+        const msg = dbErr instanceof Error ? dbErr.message : "unknown db error";
+        failures.push({ to, error: `ticket create failed: ${msg}` });
+        return; // don't send if we can't track it
+      }
 
       const res = await sendEmail({
         to,

@@ -1804,6 +1804,7 @@ const DECISION_STYLE: Record<string, { bg: string; color: string; label: string 
   'invalid-signature': { bg: '#fee2e2', color: '#991b1b', label: 'Invalid signature' },
   'missing-headers':   { bg: '#fee2e2', color: '#991b1b', label: 'Missing svix headers' },
   'secret-missing':    { bg: '#fee2e2', color: '#991b1b', label: 'Webhook secret missing' },
+  'internal-error':    { bg: '#fee2e2', color: '#991b1b', label: 'Internal error (see reason)' },
 };
 
 function InboundDebugModal({
