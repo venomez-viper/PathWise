@@ -561,12 +561,13 @@ export function TicketInbox() {
                   value={draft}
                   onChange={e => setDraft(e.target.value)}
                   onKeyDown={e => {
-                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    // Enter = send, Shift+Enter = newline (Slack-style)
+                    if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       handleSend();
                     }
                   }}
-                  placeholder="Write a reply… (⌘/Ctrl+Enter to send)"
+                  placeholder="Write a reply… (Enter to send, Shift+Enter for new line)"
                   rows={2}
                   style={{
                     flex: 1, padding: '0.6rem 0.9rem', borderRadius: 14,
