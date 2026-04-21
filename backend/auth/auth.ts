@@ -533,7 +533,33 @@ export const checkAdmin = api(
   { expose: false },
   async ({ userID }: { userID: string }): Promise<{ isAdmin: boolean }> => {
     const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
-    return { isAdmin: !!row && ADMIN_EMAILS.includes(row.email) };
+    if (!row) return { isAdmin: false };
+    if (ADMIN_EMAILS.includes(row.email)) return { isAdmin: true };
+    const granted = await db.queryRow`
+      SELECT 1 FROM user_roles WHERE email = ${row.email} AND role = 'admin'
+    `;
+    return { isAdmin: !!granted };
+  }
+);
+
+// ── Support Access Check (internal, callable from other services) ─────────────
+
+export const checkSupportAccess = api(
+  { expose: false },
+  async ({ userID }: { userID: string }): Promise<{ canAccessTickets: boolean; isAdmin: boolean; isSupportAgent: boolean }> => {
+    const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
+    if (!row) return { canAccessTickets: false, isAdmin: false, isSupportAgent: false };
+    const email = row.email as string;
+    const isBootstrapAdmin = ADMIN_EMAILS.includes(email);
+    const grantedAdmin = !isBootstrapAdmin && !!(await db.queryRow`
+      SELECT 1 FROM user_roles WHERE email = ${email} AND role = 'admin'
+    `);
+    const grantedSupport = !!(await db.queryRow`
+      SELECT 1 FROM user_roles WHERE email = ${email} AND role = 'support_agent'
+    `);
+    const isAdmin = isBootstrapAdmin || grantedAdmin;
+    const isSupportAgent = grantedSupport;
+    return { canAccessTickets: isAdmin || isSupportAgent, isAdmin, isSupportAgent };
   }
 );
 
