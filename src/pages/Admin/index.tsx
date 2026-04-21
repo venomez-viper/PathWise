@@ -338,20 +338,16 @@ function UserDetailPanel({
 
 /* ─────────── Email Compose Modal ─────────── */
 
-interface ComposeTarget {
-  type: 'reply';
-  ticketId: string;
-  recipientName: string;
-  recipientEmail: string;
-  originalSubject: string;
-}
-
-interface BroadcastTarget {
-  type: 'broadcast';
+interface ComposeModal {
+  initialMode: 'reply' | 'broadcast';
+  reply?: {
+    ticketId: string;
+    recipientName: string;
+    recipientEmail: string;
+    originalSubject: string;
+  };
   users: { id: string; name: string; email: string; plan: string }[];
 }
-
-type ComposeModal = ComposeTarget | BroadcastTarget;
 
 function EmailTagInput({
   label,
@@ -433,26 +429,17 @@ function EmailTagInput({
   );
 }
 
-function EmailComposeModal({
-  target,
-  onClose,
-}: {
-  target: ComposeModal;
-  onClose: () => void;
-}) {
-  const isReply = target.type === 'reply';
-  const broadcastUsers = isReply ? [] : (target as BroadcastTarget).users;
+function EmailComposeModal({ target, onClose }: { target: ComposeModal; onClose: () => void }) {
+  const [mode, setMode] = useState<'reply' | 'broadcast'>(target.initialMode);
+  const isReply = mode === 'reply';
 
   const [subject, setSubject] = useState(
-    isReply ? `Re: ${(target as ComposeTarget).originalSubject || 'Your support request'}` : ''
+    target.reply ? `Re: ${target.reply.originalSubject || 'Your support request'}` : ''
   );
   const [message, setMessage] = useState('');
   const [additionalTo, setAdditionalTo] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
-  // Broadcast: track selected user IDs (default = all selected)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(broadcastUsers.map(u => u.id))
-  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(target.users.map(u => u.id)));
   const [userSearch, setUserSearch] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -465,49 +452,51 @@ function EmailComposeModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  // Reset subject when toggling mode
+  useEffect(() => {
+    if (isReply && target.reply) {
+      setSubject(`Re: ${target.reply.originalSubject || 'Your support request'}`);
+    } else {
+      setSubject('');
+    }
+    setError('');
+  }, [mode]);
+
   const filteredUsers = useMemo(() =>
-    broadcastUsers.filter(u =>
+    target.users.filter(u =>
       !userSearch.trim() ||
       u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
       u.email.toLowerCase().includes(userSearch.toLowerCase())
-    ), [broadcastUsers, userSearch]);
+    ), [target.users, userSearch]);
 
   const allFilteredSelected = filteredUsers.length > 0 && filteredUsers.every(u => selectedIds.has(u.id));
 
-  const toggleUser = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
+  const toggleUser = (id: string) => setSelectedIds(prev => {
+    const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next;
+  });
 
-  const toggleAllFiltered = () => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (allFilteredSelected) {
-        filteredUsers.forEach(u => next.delete(u.id));
-      } else {
-        filteredUsers.forEach(u => next.add(u.id));
-      }
-      return next;
-    });
-  };
+  const toggleAllFiltered = () => setSelectedIds(prev => {
+    const next = new Set(prev);
+    if (allFilteredSelected) filteredUsers.forEach(u => next.delete(u.id));
+    else filteredUsers.forEach(u => next.add(u.id));
+    return next;
+  });
 
   const handleSend = async () => {
     if (!subject.trim() || !message.trim()) { setError('Subject and message are required.'); return; }
+    if (isReply && !target.reply) { setError('No ticket selected for reply.'); return; }
     if (!isReply && selectedIds.size === 0) { setError('Select at least one recipient.'); return; }
     setSending(true); setError('');
     try {
-      if (isReply) {
-        await adminApi.replyToTicket((target as ComposeTarget).ticketId, {
+      if (isReply && target.reply) {
+        await adminApi.replyToTicket(target.reply.ticketId, {
           subject, message,
           additionalTo: additionalTo.length > 0 ? additionalTo : undefined,
           cc: cc.length > 0 ? cc : undefined,
         });
-        setSentCount(1);
+        setSentCount(1 + additionalTo.length);
       } else {
-        const targetEmails = broadcastUsers.filter(u => selectedIds.has(u.id)).map(u => u.email);
+        const targetEmails = target.users.filter(u => selectedIds.has(u.id)).map(u => u.email);
         const res = await adminApi.broadcastEmail({ subject, message, targetEmails });
         setSentCount(res.sent);
       }
@@ -515,173 +504,378 @@ function EmailComposeModal({
       setTimeout(onClose, 2200);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send email.');
-    } finally {
-      setSending(false);
-    }
+    } finally { setSending(false); }
   };
 
-  const labelStyle: React.CSSProperties = {
-    fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase',
-    letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6,
-  };
-  const inputStyle: React.CSSProperties = {
+  const inp: React.CSSProperties = {
     width: '100%', padding: '0.65rem 0.875rem', borderRadius: '0.75rem',
     border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
     color: 'var(--on-surface)', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
   };
+  const lbl: React.CSSProperties = {
+    fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase',
+    letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6,
+  };
 
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 2000, backdropFilter: 'blur(2px)' }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 2000, backdropFilter: 'blur(3px)' }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        zIndex: 2001, width: '100%', maxWidth: 620,
-        background: 'var(--surface)', borderRadius: '1.5rem',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.25)', padding: '2rem',
-        animation: 'fadeIn 0.15s ease', maxHeight: '92vh', overflowY: 'auto',
+        zIndex: 2001, width: '100%', maxWidth: 640,
+        background: 'var(--surface)', borderRadius: '1.75rem',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.28)', padding: 0,
+        animation: 'fadeIn 0.15s ease', maxHeight: '92vh', display: 'flex', flexDirection: 'column',
       }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#6245a418', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Mail size={18} color="#6245a4" />
-            </div>
-            <div>
-              <p style={{ fontWeight: 700, fontSize: '1rem', margin: 0 }}>
-                {isReply ? 'Reply to Ticket' : 'Send Email'}
-              </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', margin: 0 }}>
-                {isReply
-                  ? `${(target as ComposeTarget).recipientName} · ${(target as ComposeTarget).recipientEmail}`
-                  : `${selectedIds.size} of ${broadcastUsers.length} users selected`}
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 4 }}>
-            <X size={20} />
-          </button>
-        </div>
-
-        {sent ? (
-          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <CheckCircle2 size={52} color="#22c55e" style={{ marginBottom: '0.75rem' }} />
-            <p style={{ fontWeight: 700, fontSize: '1.15rem', margin: '0 0 4px' }}>Email sent!</p>
-            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.85rem', margin: 0 }}>
-              Delivered to {sentCount} {sentCount === 1 ? 'recipient' : 'recipients'}
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-
-            {/* ── Broadcast: user picker ── */}
-            {!isReply && (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <label style={labelStyle}>Recipients</label>
-                  <button
-                    onClick={toggleAllFiltered}
-                    style={{ fontSize: '0.75rem', fontWeight: 600, color: '#6245a4', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  >
-                    {allFilteredSelected ? 'Deselect all' : 'Select all'}
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  value={userSearch}
-                  onChange={e => setUserSearch(e.target.value)}
-                  placeholder="Search users..."
-                  style={{ ...inputStyle, marginBottom: 8 }}
-                />
-                <div style={{
-                  maxHeight: 200, overflowY: 'auto', border: '1px solid var(--outline-variant)',
-                  borderRadius: '0.75rem', background: 'var(--surface-container)',
-                }}>
-                  {filteredUsers.length === 0 ? (
-                    <p style={{ padding: '1rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.82rem', margin: 0 }}>No users found</p>
-                  ) : filteredUsers.map((u, i) => (
-                    <label key={u.id} style={{
-                      display: 'flex', alignItems: 'center', gap: 10, padding: '0.55rem 0.875rem',
-                      cursor: 'pointer', borderBottom: i < filteredUsers.length - 1 ? '1px solid var(--outline-variant)' : 'none',
-                      background: selectedIds.has(u.id) ? '#6245a408' : 'transparent',
-                    }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(u.id)}
-                        onChange={() => toggleUser(u.id)}
-                        style={{ accentColor: '#6245a4', width: 15, height: 15, flexShrink: 0 }}
-                      />
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
-                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
-                      </div>
-                      <span style={{
-                        marginLeft: 'auto', flexShrink: 0, fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px',
-                        borderRadius: '999px', background: u.plan === 'premium' ? '#7c3aed18' : '#6b728018',
-                        color: u.plan === 'premium' ? '#7c3aed' : '#6b7280',
-                      }}>{u.plan}</span>
-                    </label>
-                  ))}
-                </div>
-                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>
-                  {selectedIds.size} recipient{selectedIds.size !== 1 ? 's' : ''} selected
-                </p>
+        {/* ── Modal header ── */}
+        <div style={{ padding: '1.5rem 1.75rem 0', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px #6245a440' }}>
+                <Mail size={18} color="#fff" />
               </div>
-            )}
-
-            {/* ── Reply: To + CC tag inputs ── */}
-            {isReply && (
-              <>
-                <EmailTagInput label="Add recipients (To)" tags={additionalTo} onChange={setAdditionalTo} placeholder="Add email addresses..." />
-                <EmailTagInput label="CC" tags={cc} onChange={setCc} placeholder="Add CC addresses..." />
-              </>
-            )}
-
-            {/* Subject */}
-            <div>
-              <label style={labelStyle}>Subject</label>
-              <input type="text" value={subject} onChange={e => setSubject(e.target.value)} placeholder="Email subject..." style={inputStyle} />
+              <p style={{ fontWeight: 800, fontSize: '1.05rem', margin: 0, color: 'var(--on-surface)' }}>Compose Email</p>
             </div>
+            <button onClick={onClose} style={{ background: 'var(--surface-container)', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 6, borderRadius: '50%', display: 'flex' }}>
+              <X size={18} />
+            </button>
+          </div>
 
-            {/* Message */}
-            <div>
-              <label style={labelStyle}>Message</label>
-              <textarea
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder="Write your message..."
-                rows={7}
-                style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.65 }}
-              />
-              <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>
-                Sent as a branded PathWise HTML email with logo and footer
-              </p>
-            </div>
-
-            {error && <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: 0 }}>{error}</p>}
-
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button onClick={onClose} style={{ padding: '0.6rem 1.25rem', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 600, background: 'none', border: '1px solid var(--outline-variant)', color: 'var(--on-surface)', cursor: 'pointer' }}>
-                Cancel
-              </button>
+          {/* ── Mode toggle ── */}
+          <div style={{ display: 'flex', background: 'var(--surface-container)', borderRadius: '0.75rem', padding: 4, gap: 4, marginBottom: '1.25rem' }}>
+            {(['reply', 'broadcast'] as const).map(m => (
               <button
-                onClick={handleSend}
-                disabled={sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0)}
+                key={m}
+                onClick={() => setMode(m)}
+                disabled={m === 'reply' && !target.reply}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '0.6rem 1.5rem', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 700,
-                  background: '#6245a4', color: '#fff', border: 'none',
-                  cursor: sending ? 'not-allowed' : 'pointer',
-                  opacity: sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0) ? 0.6 : 1,
+                  flex: 1, padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none',
+                  fontSize: '0.82rem', fontWeight: 700, cursor: m === 'reply' && !target.reply ? 'not-allowed' : 'pointer',
+                  background: mode === m ? 'var(--surface)' : 'transparent',
+                  color: mode === m ? '#6245a4' : 'var(--on-surface-variant)',
+                  boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.15s',
+                  opacity: m === 'reply' && !target.reply ? 0.4 : 1,
                 }}
               >
-                <Send size={14} />
-                {sending ? 'Sending...' : `Send to ${isReply ? (1 + additionalTo.length) : selectedIds.size}`}
+                {m === 'reply'
+                  ? target.reply ? `Reply to ${target.reply.recipientName.split(' ')[0]}` : 'Reply (no ticket)'
+                  : `Broadcast · ${selectedIds.size} users`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Body ── */}
+        <div style={{ overflowY: 'auto', padding: '0 1.75rem 1.75rem', flex: 1 }}>
+          {sent ? (
+            <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+              <CheckCircle2 size={56} color="#22c55e" style={{ marginBottom: '0.75rem' }} />
+              <p style={{ fontWeight: 800, fontSize: '1.2rem', margin: '0 0 6px' }}>Sent!</p>
+              <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.88rem', margin: 0 }}>
+                Delivered to {sentCount} {sentCount === 1 ? 'recipient' : 'recipients'}
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+              {/* ── Reply context chip ── */}
+              {isReply && target.reply && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 0.875rem', background: '#6245a408', borderRadius: '0.75rem', border: '1px solid #6245a420' }}>
+                  <MessageSquare size={14} color="#6245a4" />
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, color: '#6245a4' }}>{target.reply.recipientName}</p>
+                    <p style={{ margin: 0, fontSize: '0.73rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{target.reply.recipientEmail}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Reply: To + CC ── */}
+              {isReply && (
+                <>
+                  <EmailTagInput label="Add recipients (To)" tags={additionalTo} onChange={setAdditionalTo} placeholder="Add email addresses..." />
+                  <EmailTagInput label="CC" tags={cc} onChange={setCc} placeholder="Add CC addresses..." />
+                </>
+              )}
+
+              {/* ── Broadcast: user picker ── */}
+              {!isReply && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <label style={lbl}>Recipients</label>
+                    <button onClick={toggleAllFiltered} style={{ fontSize: '0.75rem', fontWeight: 600, color: '#6245a4', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      {allFilteredSelected ? 'Deselect all' : 'Select all'}
+                    </button>
+                  </div>
+                  <input type="text" value={userSearch} onChange={e => setUserSearch(e.target.value)} placeholder="Search users..." style={{ ...inp, marginBottom: 8 }} />
+                  <div style={{ maxHeight: 180, overflowY: 'auto', border: '1px solid var(--outline-variant)', borderRadius: '0.75rem', background: 'var(--surface-container)' }}>
+                    {filteredUsers.length === 0
+                      ? <p style={{ padding: '1rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.82rem', margin: 0 }}>No users found</p>
+                      : filteredUsers.map((u, i) => (
+                        <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.5rem 0.875rem', cursor: 'pointer', borderBottom: i < filteredUsers.length - 1 ? '1px solid var(--outline-variant)' : 'none', background: selectedIds.has(u.id) ? '#6245a408' : 'transparent' }}>
+                          <input type="checkbox" checked={selectedIds.has(u.id)} onChange={() => toggleUser(u.id)} style={{ accentColor: '#6245a4', width: 15, height: 15, flexShrink: 0 }} />
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <p style={{ margin: 0, fontSize: '0.83rem', fontWeight: 600, color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
+                            <p style={{ margin: 0, fontSize: '0.73rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
+                          </div>
+                          <span style={{ flexShrink: 0, fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px', borderRadius: '999px', background: u.plan === 'premium' ? '#7c3aed18' : '#6b728018', color: u.plan === 'premium' ? '#7c3aed' : '#6b7280' }}>{u.plan}</span>
+                        </label>
+                      ))}
+                  </div>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>{selectedIds.size} of {target.users.length} recipients selected</p>
+                </div>
+              )}
+
+              {/* Subject */}
+              <div>
+                <label style={lbl}>Subject</label>
+                <input type="text" value={subject} onChange={e => setSubject(e.target.value)} placeholder="Email subject..." style={inp} />
+              </div>
+
+              {/* Message */}
+              <div>
+                <label style={lbl}>Message</label>
+                <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Write your message here..." rows={7}
+                  style={{ ...inp, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7 }} />
+                <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>Sent as branded PathWise HTML email · logo, signature &amp; footer included</p>
+              </div>
+
+              {error && <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: 0 }}>{error}</p>}
+
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: 4 }}>
+                <button onClick={onClose} style={{ padding: '0.65rem 1.25rem', borderRadius: '999px', fontSize: '0.83rem', fontWeight: 600, background: 'none', border: '1px solid var(--outline-variant)', color: 'var(--on-surface)', cursor: 'pointer' }}>Cancel</button>
+                <button
+                  onClick={handleSend}
+                  disabled={sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '0.65rem 1.5rem', borderRadius: '999px',
+                    fontSize: '0.83rem', fontWeight: 700, background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', border: 'none',
+                    cursor: sending ? 'not-allowed' : 'pointer', boxShadow: '0 2px 8px #6245a440',
+                    opacity: sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0) ? 0.55 : 1,
+                  }}
+                >
+                  <Send size={14} />
+                  {sending ? 'Sending...' : `Send${isReply ? '' : ` to ${selectedIds.size}`}`}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ─────────── Tickets Panel ─────────── */
+
+interface TicketsPanelProps {
+  tickets: any[];
+  loading: boolean;
+  expandedTicket: string | null;
+  setExpandedTicket: (id: string | null) => void;
+  statusColors: Record<string, { bg: string; color: string }>;
+  formatDate: (d: string) => string;
+  onStatusChange: (ticketId: string, status: string) => void;
+  onDelete: (ticketId: string) => void;
+  onReply: (ticket: any) => void;
+  onBroadcast: () => void;
+}
+
+function TicketsPanel({
+  tickets, loading, expandedTicket, setExpandedTicket,
+  statusColors, formatDate, onStatusChange, onDelete, onReply, onBroadcast,
+}: TicketsPanelProps) {
+  const [filter, setFilter] = useState<'all' | 'open' | 'in_progress' | 'closed'>('all');
+  const [composeAny, setComposeAny] = useState(false);
+  const [anyTo, setAnyTo] = useState('');
+  const [anySubject, setAnySubject] = useState('');
+  const [anyMsg, setAnyMsg] = useState('');
+  const [anySending, setAnySending] = useState(false);
+  const [anyErr, setAnyErr] = useState('');
+  const [anySuccess, setAnySuccess] = useState(false);
+
+  const filtered = tickets.filter(t => filter === 'all' || t.status === filter);
+  const selected = expandedTicket ? tickets.find(t => t.id === expandedTicket) : null;
+
+  const statusLabel: Record<string, string> = { open: 'Open', in_progress: 'In Progress', closed: 'Closed' };
+
+  const cardStyle: React.CSSProperties = {
+    background: 'var(--surface-container)',
+    border: '1px solid var(--outline-variant)',
+    borderRadius: 12,
+    overflow: 'hidden',
+  };
+
+  const handleSendAny = async () => {
+    const emails = anyTo.split(',').map(e => e.trim()).filter(Boolean);
+    if (!emails.length || !anySubject.trim() || !anyMsg.trim()) return;
+    setAnySending(true); setAnyErr(''); setAnySuccess(false);
+    try {
+      const { admin: adminApi2 } = await import('../../lib/api');
+      await adminApi2.broadcastEmail({ subject: anySubject.trim(), message: anyMsg.trim(), targetEmails: emails });
+      setAnySuccess(true);
+      setTimeout(() => { setComposeAny(false); setAnyTo(''); setAnySubject(''); setAnyMsg(''); setAnySuccess(false); }, 1500);
+    } catch (e) {
+      setAnyErr(e instanceof Error ? e.message : 'Failed to send.');
+    } finally {
+      setAnySending(false);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+      {/* Left: ticket list */}
+      <div style={{ flex: '0 0 340px', minWidth: 0 }}>
+        {/* Toolbar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 4, background: 'var(--surface-container)', border: '1px solid var(--outline-variant)', borderRadius: 8, padding: 3 }}>
+            {(['all', 'open', 'in_progress', 'closed'] as const).map(f => (
+              <button key={f} onClick={() => setFilter(f)} style={{
+                padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer',
+                background: filter === f ? 'var(--primary)' : 'transparent',
+                color: filter === f ? '#fff' : 'var(--on-surface-variant)',
+              }}>
+                {f === 'all' ? 'All' : f === 'in_progress' ? 'In Progress' : f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+            <button onClick={() => setComposeAny(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--on-surface)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+              <Mail size={13} /> Email Anyone
+            </button>
+            <button onClick={onBroadcast} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+              <Send size={13} /> Broadcast
+            </button>
+          </div>
+        </div>
+
+        {/* Ticket list */}
+        <div style={{ ...cardStyle, maxHeight: 600, overflowY: 'auto' }}>
+          {loading ? (
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.88rem' }}>Loading tickets…</div>
+          ) : filtered.length === 0 ? (
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.88rem' }}>No tickets</div>
+          ) : (
+            filtered.map((t, i) => {
+              const sc = statusColors[t.status] ?? { bg: '#f3f4f6', color: '#6b7280' };
+              const isActive = expandedTicket === t.id;
+              return (
+                <div key={t.id}
+                  onClick={() => setExpandedTicket(isActive ? null : t.id)}
+                  style={{
+                    padding: '14px 16px', cursor: 'pointer',
+                    borderBottom: i < filtered.length - 1 ? '1px solid var(--outline-variant)' : 'none',
+                    background: isActive ? 'var(--primary)08' : 'transparent',
+                    borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{t.name}</span>
+                        <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px', borderRadius: 999, background: sc.bg, color: sc.color, flexShrink: 0 }}>{statusLabel[t.status] ?? t.status}</span>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.subject || t.message?.slice(0, 60)}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', marginTop: 3, opacity: 0.7 }}>{t.email} · {t.createdAt ? formatDate(t.createdAt) : ''}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Right: ticket detail */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {composeAny ? (
+          <div style={{ ...cardStyle, padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Mail size={18} color="var(--primary)" />
+                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--on-surface)' }}>Email Anyone</span>
+              </div>
+              <button onClick={() => setComposeAny(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)' }}><X size={18} /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>To (comma-separated)</label>
+                <input value={anyTo} onChange={e => setAnyTo(e.target.value)} placeholder="user@example.com, another@example.com"
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.85rem', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Subject</label>
+                <input value={anySubject} onChange={e => setAnySubject(e.target.value)} placeholder="Email subject…"
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.85rem', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Message</label>
+                <textarea value={anyMsg} onChange={e => setAnyMsg(e.target.value)} placeholder="Write your message…" rows={7}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.85rem', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7 }} />
+              </div>
+              {anyErr && <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: 0 }}>{anyErr}</p>}
+              {anySuccess && <p style={{ color: '#16a34a', fontSize: '0.82rem', margin: 0 }}>Email sent!</p>}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={() => setComposeAny(false)} style={{ padding: '8px 18px', borderRadius: 999, border: '1px solid var(--outline-variant)', background: 'none', color: 'var(--on-surface)', fontSize: '0.83rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleSendAny} disabled={anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim()}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.83rem', fontWeight: 700, cursor: anySending ? 'not-allowed' : 'pointer', opacity: anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim() ? 0.55 : 1 }}>
+                  <Send size={14} />{anySending ? 'Sending…' : 'Send'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : selected ? (
+          <div style={{ ...cardStyle, padding: 28 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--on-surface)' }}>{selected.subject || '(No subject)'}</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 9px', borderRadius: 999, background: statusColors[selected.status]?.bg ?? '#f3f4f6', color: statusColors[selected.status]?.color ?? '#6b7280' }}>
+                    {statusLabel[selected.status] ?? selected.status}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)' }}>
+                  From <strong>{selected.name}</strong> · <a href={`mailto:${selected.email}`} style={{ color: 'var(--primary)' }}>{selected.email}</a> · {selected.createdAt ? formatDate(selected.createdAt) : ''}
+                </div>
+              </div>
+              <button onClick={() => setExpandedTicket(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 4 }}><X size={18} /></button>
+            </div>
+
+            {/* Message body */}
+            <div style={{ padding: '16px 20px', background: 'var(--surface)', borderRadius: 10, border: '1px solid var(--outline-variant)', fontSize: '0.88rem', color: 'var(--on-surface)', lineHeight: 1.75, whiteSpace: 'pre-wrap', marginBottom: 20 }}>
+              {selected.message}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button onClick={() => onReply(selected)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+                <Mail size={14} /> Reply
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', fontWeight: 600 }}>Status:</span>
+                <select value={selected.status} onChange={e => onStatusChange(selected.id, e.target.value)}
+                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--on-surface)', fontSize: '0.82rem', cursor: 'pointer' }}>
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+              <button onClick={() => onDelete(selected.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 999, border: '1px solid #fecaca', background: '#fff5f5', color: '#dc2626', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', marginLeft: 'auto' }}>
+                <Trash2 size={13} /> Delete
               </button>
             </div>
+          </div>
+        ) : (
+          <div style={{ ...cardStyle, padding: 48, textAlign: 'center' }}>
+            <MessageSquare size={40} style={{ color: 'var(--on-surface-variant)', opacity: 0.3, marginBottom: 12 }} />
+            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem', margin: 0 }}>Select a ticket to view details</p>
+            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.78rem', margin: '6px 0 0', opacity: 0.7 }}>or use Broadcast to email all users</p>
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1451,150 +1645,18 @@ export default function AdminPage() {
 
       {/* ─── Tickets Tab ─── */}
       {activeTab === 'tickets' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-            <button
-              onClick={() => setComposeModal({ type: 'broadcast', users })}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 600,
-                background: '#6245a4', color: '#fff', border: 'none', cursor: 'pointer',
-              }}
-            >
-              <Mail size={14} />
-              Email All Users
-            </button>
-          </div>
-          {ticketsLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-              <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            </div>
-          ) : ticketsList.length === 0 ? (
-            <div className="panel" style={{ borderRadius: '2rem', padding: '3rem', textAlign: 'center' }}>
-              <MessageSquare size={40} color="var(--on-surface-variant)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>No tickets yet.</p>
-            </div>
-          ) : (
-            <div className="panel" style={{ borderRadius: '2rem', padding: 0, overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Status</th>
-                    <th style={thStyle}>Name</th>
-                    <th style={thStyle}>Email</th>
-                    <th style={thStyle}>Subject</th>
-                    <th style={thStyle}>Date</th>
-                    <th style={{ ...thStyle, cursor: 'default' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ticketsList.map((ticket: any, idx: number) => {
-                    const sc = statusColors[ticket.status] ?? statusColors.open;
-                    const isExpanded = expandedTicket === ticket.id;
-                    return (
-                      <>
-                        <tr
-                          key={ticket.id}
-                          onClick={() => setExpandedTicket(isExpanded ? null : ticket.id)}
-                          style={{
-                            background: idx % 2 === 0 ? 'transparent' : 'var(--surface-container)',
-                            cursor: 'pointer',
-                            transition: 'background 0.15s',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container-high)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? 'transparent' : 'var(--surface-container)'; }}
-                        >
-                          <td style={tdStyle}>
-                            <span style={{
-                              display: 'inline-block', padding: '2px 10px', borderRadius: '999px',
-                              fontSize: '0.72rem', fontWeight: 700,
-                              background: sc.bg, color: sc.color,
-                            }}>
-                              {(ticket.status ?? 'open').replace('_', ' ')}
-                            </span>
-                          </td>
-                          <td style={{ ...tdStyle, fontWeight: 600 }}>{ticket.name || '--'}</td>
-                          <td style={{ ...tdStyle, color: 'var(--on-surface-variant)' }}>{ticket.email}</td>
-                          <td style={{ ...tdStyle, color: 'var(--on-surface-variant)' }}>{ticket.subject || '--'}</td>
-                          <td style={{ ...tdStyle, color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                            {ticket.createdAt ? formatDate(ticket.createdAt) : '--'}
-                          </td>
-                          <td style={tdStyle} onClick={e => e.stopPropagation()}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <select
-                                value={ticket.status ?? 'open'}
-                                onChange={e => handleTicketStatusChange(ticket.id, e.target.value)}
-                                style={{
-                                  padding: '4px 8px', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 600,
-                                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                                  color: 'var(--on-surface)', cursor: 'pointer', outline: 'none',
-                                }}
-                              >
-                                <option value="open">Open</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="closed">Closed</option>
-                              </select>
-                              <button
-                                onClick={() => setComposeModal({
-                                  type: 'reply',
-                                  ticketId: ticket.id,
-                                  recipientName: ticket.name,
-                                  recipientEmail: ticket.email,
-                                  originalSubject: ticket.subject,
-                                })}
-                                title="Reply by email"
-                                style={{
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  width: 28, height: 28, borderRadius: '50%',
-                                  background: 'none', border: '1px solid #6245a444', color: '#6245a4',
-                                  cursor: 'pointer', padding: 0,
-                                }}
-                              >
-                                <Mail size={13} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteTicket(ticket.id)}
-                                style={{
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  width: 28, height: 28, borderRadius: '50%',
-                                  background: 'none', border: '1px solid #ef444444', color: '#ef4444',
-                                  cursor: 'pointer', padding: 0,
-                                }}
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        {isExpanded && (
-                          <tr key={`${ticket.id}-msg`}>
-                            <td colSpan={6} style={{
-                              padding: '1rem 1.5rem', background: 'var(--surface-container-low)',
-                              borderBottom: '1px solid var(--outline-variant)',
-                            }}>
-                              <p style={{
-                                fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
-                                letterSpacing: '0.08em', color: 'var(--on-surface-variant)', marginBottom: '0.5rem',
-                              }}>
-                                Message
-                              </p>
-                              <p style={{
-                                fontSize: '0.85rem', color: 'var(--on-surface)', lineHeight: 1.6,
-                                whiteSpace: 'pre-wrap', margin: 0,
-                              }}>
-                                {ticket.message}
-                              </p>
-                            </td>
-                          </tr>
-                        )}
-                      </>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <TicketsPanel
+          tickets={ticketsList}
+          loading={ticketsLoading}
+          expandedTicket={expandedTicket}
+          setExpandedTicket={setExpandedTicket}
+          statusColors={statusColors}
+          formatDate={formatDate}
+          onStatusChange={handleTicketStatusChange}
+          onDelete={handleDeleteTicket}
+          onReply={(t: any) => setComposeModal({ initialMode: 'reply', reply: { ticketId: t.id, recipientName: t.name, recipientEmail: t.email, originalSubject: t.subject }, users })}
+          onBroadcast={() => setComposeModal({ initialMode: 'broadcast', users })}
+        />
       )}
 
       {/* Email Compose Modal */}
