@@ -102,4 +102,7 @@ export const RateLimits = {
 
   /** Inbound email per sender: 20 per hour per from-address */
   inboundSender: (key: string) => checkRateLimit(key, 20, 3_600_000),
+
+  /** Inbound email global ceiling: 500 new-ticket creations per hour across all senders */
+  inboundGlobal: (key: string) => checkRateLimit(key, 500, 3_600_000),
 };

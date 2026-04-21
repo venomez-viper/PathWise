@@ -42,6 +42,15 @@ const INBOUND_ACCEPTED_ADDRESSES = new Set([
   "reply@support.pathwise.fit",
 ]);
 
+function categorizeInboundError(msg: string): string {
+  if (/constraint|foreign key|violates/i.test(msg)) return "db-constraint";
+  if (/column.*does not exist|schema/i.test(msg)) return "db-schema";
+  if (/duplicate key/i.test(msg)) return "db-duplicate";
+  if (/connection|timeout|ECONN/i.test(msg)) return "db-connection";
+  if (/rate/i.test(msg)) return "rate-limited";
+  return "internal-error";
+}
+
 function extractInboundRecipient(toList: string[] | undefined): string | null {
   if (!toList) return null;
   for (const raw of toList) {
@@ -136,6 +145,17 @@ function stripHtmlToText(html: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    // Decode HTML numeric entities so obfuscated payloads don't slip through.
+    // The stored body is always rendered as text (whiteSpace: pre-wrap),
+    // never as HTML, but we decode anyway for defense in depth.
+    .replace(/&#x([0-9a-f]{1,6});/gi, (_, hex) => {
+      const code = parseInt(hex, 16);
+      return code > 0 && code < 0x110000 ? String.fromCodePoint(code) : "";
+    })
+    .replace(/&#(\d{1,7});/g, (_, num) => {
+      const code = parseInt(num, 10);
+      return code > 0 && code < 0x110000 ? String.fromCodePoint(code) : "";
+    })
     .replace(/[ \t]+/g, " ")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
@@ -412,6 +432,25 @@ export const ticketInboundWebhook = api.raw(
         });
         resp.writeHead(200); resp.end("no-match"); return;
       }
+      // Aggregate-volume brake: even with per-sender limits, a botnet
+      // rotating From addresses could flood the inbox with new tickets.
+      // 500 new tickets/hour across all senders is plenty for real support
+      // traffic and catches anything spammy.
+      try {
+        RateLimits.inboundGlobal("inbound:global");
+      } catch {
+        console.warn("Inbound: global new-ticket rate limit hit", { fromEmail });
+        await logDebug({
+          decision: "rate-limited",
+          fromEmail,
+          to: payload.data.to,
+          subject: payload.data.subject,
+          resendEmailId: payload.data.email_id,
+          reason: "global new-ticket ceiling",
+          hasSvixHeaders: true,
+        });
+        resp.writeHead(200); resp.end("rate-limited"); return;
+      }
       ticketId = crypto.randomUUID();
       const subject = (payload.data.subject ?? "").slice(0, 500) || null;
       const name = fromName ?? fromEmail.split("@")[0];
@@ -472,12 +511,18 @@ export const ticketInboundWebhook = api.raw(
     resp.writeHead(200); resp.end(createdNew ? "ok-new" : "ok");
     } catch (err) {
       // Never 500 Resend — that triggers retries and doesn't help diagnosis.
-      // Log the exact error to the debug table so it's visible in the inbox.
-      const msg = err instanceof Error ? `${err.message}${err.stack ? "\n" + err.stack : ""}` : String(err);
-      console.error("Inbound: uncaught error", msg);
+      // Log the full error (including stack) server-side for on-call, but
+      // only persist a short generic category to the debug log so any
+      // DB/constraint/schema details don't leak through the agent-visible
+      // inbox debug panel.
+      const fullMsg = err instanceof Error ? `${err.message}\n${err.stack ?? ""}` : String(err);
+      console.error("Inbound: uncaught error", fullMsg);
+      const safeReason = err instanceof Error
+        ? categorizeInboundError(err.message).slice(0, 200)
+        : "internal-error";
       await logDebug({
         decision: "internal-error",
-        reason: msg.slice(0, 2000),
+        reason: safeReason,
         hasSvixHeaders: false,
       }).catch(() => {});
       try { resp.writeHead(200); resp.end("internal-error"); } catch {}
