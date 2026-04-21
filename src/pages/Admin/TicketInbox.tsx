@@ -456,6 +456,13 @@ export function TicketInbox() {
   };
 
   const unreadCount = tickets.filter(t => t.unread).length;
+  const filterCounts: Record<Filter, number> = {
+    all: tickets.length,
+    unread: unreadCount,
+    open: tickets.filter(t => t.status === 'open').length,
+    in_progress: tickets.filter(t => t.status === 'in_progress').length,
+    closed: tickets.filter(t => t.status === 'closed').length,
+  };
 
   return (
     <div style={{
@@ -577,37 +584,69 @@ export function TicketInbox() {
               </button>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div
+            role="tablist"
+            aria-label="Ticket filter"
+            style={{
+              display: 'flex', padding: 3, borderRadius: 12,
+              background: 'var(--surface-container-low, var(--surface-container))',
+              border: '1px solid var(--outline-variant)',
+              gap: 2, overflow: 'hidden',
+            }}
+          >
             {(['all', 'unread', 'open', 'in_progress', 'closed'] as Filter[]).map(f => {
               const active = filter === f;
-              const showBadge = f === 'unread' && unreadCount > 0;
+              const count = filterCounts[f];
+              const isUnreadWithBadge = f === 'unread' && unreadCount > 0 && !active;
               return (
                 <button
                   key={f}
+                  role="tab"
+                  aria-selected={active}
                   onClick={() => setFilter(f)}
                   style={{
-                    padding: '4px 11px', borderRadius: 999,
-                    fontSize: '0.72rem', fontWeight: 700,
-                    border: active ? '1px solid transparent' : '1px solid var(--outline-variant)',
+                    flex: 1, minWidth: 0,
+                    padding: '5px 4px', borderRadius: 9, border: 'none',
                     cursor: 'pointer',
-                    background: active ? '#8b4f2c' : 'transparent',
-                    color: active ? '#fff' : 'var(--on-surface-variant)',
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    transition: 'all 0.12s',
-                    boxShadow: active ? '0 1px 2px rgba(139,79,44,0.2)' : 'none',
+                    background: active ? '#fff' : 'transparent',
+                    color: active ? '#8b4f2c' : 'var(--on-surface-variant)',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                    fontSize: '0.7rem', fontWeight: active ? 700 : 600,
+                    transition: 'background 0.15s, color 0.15s, box-shadow 0.15s',
+                    boxShadow: active ? '0 1px 2px rgba(15,15,25,0.08), 0 0 0 1px rgba(139,79,44,0.1)' : 'none',
+                    whiteSpace: 'nowrap',
                   }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--surface-container)'; }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                  onMouseEnter={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'var(--surface)';
+                      e.currentTarget.style.color = 'var(--on-surface)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'var(--on-surface-variant)';
+                    }
+                  }}
                 >
-                  {FILTER_LABEL[f]}
-                  {showBadge && (
+                  <span>{f === 'in_progress' ? 'Active' : FILTER_LABEL[f]}</span>
+                  {count > 0 && (
                     <span style={{
-                      padding: '0 6px', borderRadius: 999, fontSize: '0.65rem',
-                      background: active ? 'rgba(255,255,255,0.25)' : '#8b4f2c',
-                      color: active ? '#fff' : '#fff', fontWeight: 800, minWidth: 16,
+                      fontSize: '0.62rem',
+                      fontWeight: 700,
+                      padding: '0 5px',
+                      minWidth: 16,
+                      height: 14,
+                      borderRadius: 999,
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      background: isUnreadWithBadge
+                        ? '#8b4f2c'
+                        : (active ? '#8b4f2c18' : 'var(--surface-container-high, rgba(0,0,0,0.06))'),
+                      color: isUnreadWithBadge
+                        ? '#fff'
+                        : (active ? '#8b4f2c' : 'var(--on-surface-variant)'),
                     }}>
-                      {unreadCount}
+                      {count > 99 ? '99+' : count}
                     </span>
                   )}
                 </button>
@@ -1846,6 +1885,10 @@ type ManageProps = {
 };
 
 function SnippetsManageModal(p: ManageProps) {
+  const [titleFocused, setTitleFocused] = useState(false);
+  const [bodyFocused, setBodyFocused] = useState(false);
+  const canSave = !p.saving && !!p.title.trim() && !!p.body.trim();
+
   return (
     <div
       onMouseDown={e => { if (e.target === e.currentTarget) p.onClose(); }}
@@ -1856,154 +1899,208 @@ function SnippetsManageModal(p: ManageProps) {
       }}
     >
       <div style={{
-        width: '100%', maxWidth: 720, maxHeight: '85vh',
+        width: '100%', maxWidth: 760, maxHeight: '88vh',
         background: 'var(--surface)', border: '1px solid var(--outline-variant)',
-        borderRadius: 18, overflow: 'hidden',
+        borderRadius: 20, overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+        boxShadow: '0 24px 60px rgba(15,15,25,0.28)',
       }}>
+        {/* Header */}
         <div style={{
-          padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--outline-variant)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '1rem 1.25rem 0.9rem', borderBottom: '1px solid var(--outline-variant)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Bookmark size={16} style={{ color: '#8b4f2c' }} />
-            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
-              Your snippets
-            </span>
-            <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
-              Only you can see or edit these.
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 10,
+              background: '#8b4f2c18', color: '#8b4f2c',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Bookmark size={15} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--on-surface)', lineHeight: 1.25 }}>
+                Your snippets
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--on-surface-variant)', lineHeight: 1.3, marginTop: 2 }}>
+                Canned replies only you can see. Pick from the inbox composer to insert instantly.
+              </div>
+            </div>
           </div>
           <button
             onClick={p.onClose}
+            aria-label="Close snippets"
             title="Close"
             style={{
-              width: 28, height: 28, padding: 0, display: 'inline-flex',
-              alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
-              border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-              color: 'var(--on-surface-variant)', cursor: 'pointer',
+              width: 32, height: 32, padding: 0, flexShrink: 0,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 10, border: '1px solid transparent',
+              background: 'transparent', color: 'var(--on-surface-variant)',
+              cursor: 'pointer', opacity: 0.75, transition: 'all 0.15s',
             }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '0.75'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
           >
             <X size={14} />
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', flex: 1, overflow: 'hidden' }}>
           {/* Left: list */}
           <div style={{
             borderRight: '1px solid var(--outline-variant)',
             overflowY: 'auto',
             background: 'var(--surface-container-low, var(--surface))',
+            display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{ padding: '0.6rem 0.8rem', borderBottom: '1px solid var(--outline-variant)' }}>
+            <div style={{ padding: '0.75rem 0.9rem', borderBottom: '1px solid var(--outline-variant)' }}>
               <button
                 onClick={p.onNew}
                 style={{
-                  width: '100%', padding: '6px 10px', borderRadius: 999, border: 'none',
+                  width: '100%', height: 34, padding: '0 12px', borderRadius: 10, border: 'none',
                   background: '#8b4f2c', color: '#fff',
                   fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  boxShadow: '0 1px 2px rgba(139,79,44,0.25), 0 1px 3px rgba(139,79,44,0.18)',
+                  transition: 'background 0.15s, box-shadow 0.15s',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#723f22'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#8b4f2c'; }}
               >
-                <Plus size={12} /> New snippet
+                <Plus size={13} /> New snippet
               </button>
             </div>
             {p.snippets.length === 0 ? (
-              <div style={{ padding: '1rem', color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-                No snippets yet. Create your first one on the right.
+              <div style={{
+                padding: '1.5rem 1rem', color: 'var(--on-surface-variant)',
+                fontSize: '0.82rem', textAlign: 'center', lineHeight: 1.5,
+              }}>
+                No snippets yet.
+                <div style={{ marginTop: 4, fontSize: '0.75rem', opacity: 0.8 }}>
+                  Create your first on the right.
+                </div>
               </div>
             ) : (
-              p.snippets.map(s => {
-                const active = p.editingId === s.id;
-                return (
-                  <div
-                    key={s.id}
-                    onClick={() => p.onEdit(s)}
-                    style={{
-                      padding: '0.6rem 0.8rem', cursor: 'pointer',
-                      borderLeft: active ? '3px solid #8b4f2c' : '3px solid transparent',
-                      background: active ? 'var(--surface-container-high)' : 'transparent',
-                      borderBottom: '1px solid var(--outline-variant)',
-                    }}
-                  >
-                    <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)', marginBottom: 2 }}>
-                      {s.title}
-                    </div>
-                    <div style={{
-                      fontSize: '0.72rem', color: 'var(--on-surface-variant)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {s.body.replace(/\s+/g, ' ')}
-                    </div>
-                  </div>
-                );
-              })
+              <div style={{ padding: '0.4rem 0', flex: 1 }}>
+                {p.snippets.map(s => {
+                  const active = p.editingId === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => p.onEdit(s)}
+                      style={{
+                        width: '100%', textAlign: 'left',
+                        padding: '0.65rem 0.9rem 0.65rem calc(0.9rem - 3px)',
+                        cursor: 'pointer',
+                        borderLeft: active ? '3px solid #8b4f2c' : '3px solid transparent',
+                        background: active ? 'var(--surface-container-high)' : 'transparent',
+                        borderTop: 'none', borderRight: 'none', borderBottom: 'none',
+                        transition: 'background 0.12s',
+                      }}
+                      onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--surface-container)'; }}
+                      onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <div style={{
+                        fontSize: '0.82rem', fontWeight: 600,
+                        color: active ? 'var(--on-surface)' : 'var(--on-surface)', marginBottom: 3,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {s.title}
+                      </div>
+                      <div style={{
+                        fontSize: '0.72rem', color: 'var(--on-surface-variant)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {s.body.replace(/\s+/g, ' ')}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
 
           {/* Right: editor */}
-          <div style={{ padding: '1rem 1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span style={{
-                fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.06em', color: 'var(--on-surface-variant)',
-              }}>Title</span>
+          <div style={{ padding: '1.1rem 1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <span style={FIELD_LABEL_STYLE}>Title</span>
               <input
                 value={p.title}
                 onChange={e => p.onTitleChange(e.target.value)}
+                onFocus={() => setTitleFocused(true)}
+                onBlur={() => setTitleFocused(false)}
                 placeholder="e.g. Reset password instructions"
                 maxLength={80}
-                style={{
-                  padding: '0.55rem 0.9rem', borderRadius: 12,
-                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                  color: 'var(--on-surface)', fontSize: '0.88rem', outline: 'none',
-                }}
+                style={polishedInputStyle(titleFocused)}
               />
+              <div style={{
+                fontSize: '0.68rem', color: 'var(--on-surface-variant)', opacity: 0.7,
+                textAlign: 'right',
+              }}>
+                {p.title.length}/80
+              </div>
             </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-              <span style={{
-                fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.06em', color: 'var(--on-surface-variant)',
-              }}>Body</span>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+              <span style={FIELD_LABEL_STYLE}>Body</span>
               <textarea
                 value={p.body}
                 onChange={e => p.onBodyChange(e.target.value)}
+                onFocus={() => setBodyFocused(true)}
+                onBlur={() => setBodyFocused(false)}
                 placeholder="The text that gets inserted when you pick this snippet."
                 rows={10}
                 maxLength={4000}
                 style={{
-                  padding: '0.7rem 0.9rem', borderRadius: 12,
-                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                  color: 'var(--on-surface)', fontSize: '0.88rem', lineHeight: 1.55,
-                  resize: 'vertical', outline: 'none', fontFamily: 'inherit', minHeight: 180,
+                  ...polishedInputStyle(bodyFocused),
+                  lineHeight: 1.6, resize: 'vertical', minHeight: 200,
                 }}
               />
+              <div style={{
+                fontSize: '0.68rem', color: 'var(--on-surface-variant)', opacity: 0.7,
+                textAlign: 'right',
+              }}>
+                {p.body.length}/4000
+              </div>
             </label>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', gap: 8,
+              paddingTop: 4, borderTop: '1px solid var(--outline-variant)',
+              marginTop: 'auto',
+            }}>
               {p.editingId ? (
                 <button
                   onClick={() => p.onDelete(p.editingId!)}
+                  aria-label="Delete snippet"
                   style={{
-                    padding: '0.5rem 0.9rem', borderRadius: 999,
-                    border: '1px solid #ef444444', background: 'none',
-                    color: '#ef4444', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
                     display: 'inline-flex', alignItems: 'center', gap: 6,
+                    height: 36, padding: '0 14px', borderRadius: 10,
+                    border: '1px solid rgba(239,68,68,0.3)', background: 'transparent',
+                    color: '#ef4444', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                    transition: 'background 0.15s, border 0.15s',
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
                 >
                   <Trash2 size={13} /> Delete
                 </button>
               ) : <span />}
               <button
                 onClick={p.onSave}
-                disabled={p.saving || !p.title.trim() || !p.body.trim()}
+                disabled={!canSave}
+                aria-label={p.editingId ? 'Save changes' : 'Create snippet'}
                 style={{
-                  padding: '0.5rem 1.1rem', borderRadius: 999, border: 'none',
-                  background: '#8b4f2c', color: '#fff',
-                  fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer',
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  opacity: p.saving || !p.title.trim() || !p.body.trim() ? 0.5 : 1,
+                  height: 36, padding: '0 18px', borderRadius: 10, border: 'none',
+                  background: '#8b4f2c', color: '#fff',
+                  fontSize: '0.82rem', fontWeight: 700,
+                  cursor: canSave ? 'pointer' : 'not-allowed',
+                  opacity: canSave ? 1 : 0.5,
+                  boxShadow: canSave ? '0 1px 2px rgba(139,79,44,0.28), 0 2px 6px rgba(139,79,44,0.2)' : 'none',
+                  transition: 'background 0.15s, box-shadow 0.15s',
                 }}
+                onMouseEnter={e => { if (canSave) { e.currentTarget.style.background = '#723f22'; } }}
+                onMouseLeave={e => { if (canSave) { e.currentTarget.style.background = '#8b4f2c'; } }}
               >
                 <Check size={13} /> {p.saving ? 'Saving…' : (p.editingId ? 'Save changes' : 'Create snippet')}
               </button>
@@ -2133,6 +2230,17 @@ function InboundDebugModal({
   onRefresh: () => void;
   onClose: () => void;
 }) {
+  const counts = entries.reduce<Record<string, number>>((acc, e) => {
+    const bucket = (e.decision === 'ok' || e.decision === 'ok-new') ? 'ok'
+      : (e.decision === 'no-match' || e.decision === 'duplicate' || e.decision === 'ignored-non-event') ? 'dropped'
+      : 'error';
+    acc[bucket] = (acc[bucket] ?? 0) + 1;
+    return acc;
+  }, {});
+  const ok = counts.ok ?? 0;
+  const dropped = counts.dropped ?? 0;
+  const errored = counts.error ?? 0;
+
   return (
     <div
       onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
@@ -2143,54 +2251,104 @@ function InboundDebugModal({
       }}
     >
       <div style={{
-        width: '100%', maxWidth: 780, maxHeight: '85vh',
+        width: '100%', maxWidth: 820, maxHeight: '88vh',
         background: 'var(--surface)', border: '1px solid var(--outline-variant)',
-        borderRadius: 18, overflow: 'hidden',
+        borderRadius: 20, overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+        boxShadow: '0 24px 60px rgba(15,15,25,0.28)',
       }}>
+        {/* Header */}
         <div style={{
-          padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--outline-variant)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '1rem 1.25rem 0.9rem', borderBottom: '1px solid var(--outline-variant)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <Activity size={16} style={{ color: '#8b4f2c' }} />
-            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
-              Inbound webhook log
-            </span>
-            <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
-              Every call from Resend, newest first. Refresh after sending a test email.
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 10,
+              background: '#8b4f2c18', color: '#8b4f2c',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Activity size={15} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--on-surface)', lineHeight: 1.25 }}>
+                Inbound webhook log
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--on-surface-variant)', lineHeight: 1.3, marginTop: 2 }}>
+                Every call from Resend, newest first. Refresh after sending a test email.
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
             <button
               onClick={onRefresh}
               disabled={loading}
+              aria-label="Refresh inbound log"
               title="Refresh"
               style={{
-                width: 28, height: 28, padding: 0, display: 'inline-flex',
-                alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
-                border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                color: 'var(--on-surface-variant)', cursor: 'pointer',
-                opacity: loading ? 0.5 : 1,
+                width: 32, height: 32, padding: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 10, border: '1px solid transparent',
+                background: 'transparent', color: 'var(--on-surface-variant)',
+                cursor: loading ? 'default' : 'pointer',
+                opacity: loading ? 0.5 : 0.85, transition: 'all 0.15s',
               }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; } }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = loading ? '0.5' : '0.85'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
             >
-              <RefreshCw size={13} />
+              <RefreshCw
+                size={14}
+                style={{ animation: loading ? 'spin 0.9s linear infinite' : 'none' }}
+              />
             </button>
             <button
               onClick={onClose}
+              aria-label="Close log"
               title="Close"
               style={{
-                width: 28, height: 28, padding: 0, display: 'inline-flex',
-                alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
-                border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                color: 'var(--on-surface-variant)', cursor: 'pointer',
+                width: 32, height: 32, padding: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 10, border: '1px solid transparent',
+                background: 'transparent', color: 'var(--on-surface-variant)',
+                cursor: 'pointer', opacity: 0.85, transition: 'all 0.15s',
               }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '0.85'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
             >
               <X size={14} />
             </button>
           </div>
         </div>
+
+        {/* Summary bar */}
+        {entries.length > 0 && (
+          <div style={{
+            padding: '0.65rem 1.25rem', borderBottom: '1px solid var(--outline-variant)',
+            background: 'var(--surface-container-low, var(--surface))',
+            display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap',
+            fontSize: '0.75rem',
+          }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+              <span style={{ color: 'var(--on-surface)', fontWeight: 600 }}>{ok}</span>
+              <span style={{ color: 'var(--on-surface-variant)' }}>accepted</span>
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} />
+              <span style={{ color: 'var(--on-surface)', fontWeight: 600 }}>{dropped}</span>
+              <span style={{ color: 'var(--on-surface-variant)' }}>dropped</span>
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} />
+              <span style={{ color: 'var(--on-surface)', fontWeight: 600 }}>{errored}</span>
+              <span style={{ color: 'var(--on-surface-variant)' }}>errored</span>
+            </span>
+            <span style={{ marginLeft: 'auto', color: 'var(--on-surface-variant)' }}>
+              Last {entries.length} events
+            </span>
+          </div>
+        )}
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem' }}>
           {loading ? (
@@ -2198,14 +2356,30 @@ function InboundDebugModal({
               Loading…
             </div>
           ) : entries.length === 0 ? (
-            <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--on-surface-variant)' }}>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--on-surface)', marginBottom: 6 }}>
+            <div style={{
+              padding: '3rem 1rem 2.5rem', textAlign: 'center', color: 'var(--on-surface-variant)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+            }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: '50%',
+                background: 'var(--surface-container)',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--on-surface-variant)', opacity: 0.7,
+              }}>
+                <Activity size={24} />
+              </div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--on-surface)' }}>
                 No webhook calls recorded yet.
               </div>
-              <div style={{ fontSize: '0.82rem', maxWidth: 480, margin: '0 auto', lineHeight: 1.55 }}>
+              <div style={{ fontSize: '0.82rem', maxWidth: 480, lineHeight: 1.55 }}>
                 If you've sent a test email and nothing shows here, Resend isn't calling the webhook.
-                Check the Resend dashboard → Inbound → Routes and confirm a route fires <code>email.received</code>
-                at <code>/webhooks/resend/inbound</code>.
+                Check the Resend dashboard → Inbound → Routes and confirm a route fires <code style={{
+                  padding: '1px 5px', borderRadius: 4, background: 'var(--surface-container)',
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.78rem',
+                }}>email.received</code> at <code style={{
+                  padding: '1px 5px', borderRadius: 4, background: 'var(--surface-container)',
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.78rem',
+                }}>/webhooks/resend/inbound</code>.
               </div>
             </div>
           ) : (
@@ -2214,38 +2388,59 @@ function InboundDebugModal({
                 const style = DECISION_STYLE[e.decision] ?? { bg: '#e5e7eb', color: '#374151', label: e.decision };
                 return (
                   <div key={e.id} style={{
-                    padding: '0.7rem 0.9rem', borderRadius: 12,
-                    border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    padding: '0.85rem 1rem', borderRadius: 14,
+                    border: '1px solid var(--outline-variant)',
+                    background: 'var(--surface-container-low, var(--surface-container))',
+                    transition: 'border 0.12s, box-shadow 0.12s',
+                  }}
+                  onMouseEnter={el => { el.currentTarget.style.borderColor = 'rgba(139,79,44,0.25)'; }}
+                  onMouseLeave={el => { el.currentTarget.style.borderColor = 'var(--outline-variant)'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                       <span style={{
-                        padding: '1px 10px', borderRadius: 999, fontSize: '0.7rem', fontWeight: 700,
+                        padding: '2px 10px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 700,
                         background: style.bg, color: style.color,
+                        letterSpacing: '0.03em',
                       }}>
                         {style.label}
                       </span>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)' }}>
                         {new Date(e.receivedAt).toLocaleString()}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--on-surface)', marginBottom: 2 }}>
-                      <strong>From:</strong> {e.fromEmail ?? '—'}
-                      {'  '}
-                      <strong>To:</strong> {e.toAddresses.length > 0 ? e.toAddresses.join(', ') : '—'}
+                    <div style={{
+                      fontSize: '0.82rem', color: 'var(--on-surface)', marginBottom: 2,
+                      display: 'flex', flexWrap: 'wrap', gap: 12,
+                    }}>
+                      <span>
+                        <span style={{ color: 'var(--on-surface-variant)', fontWeight: 500 }}>From </span>
+                        <span style={{ fontWeight: 600 }}>{e.fromEmail ?? '—'}</span>
+                      </span>
+                      <span>
+                        <span style={{ color: 'var(--on-surface-variant)', fontWeight: 500 }}>To </span>
+                        <span style={{ fontWeight: 600 }}>{e.toAddresses.length > 0 ? e.toAddresses.join(', ') : '—'}</span>
+                      </span>
                     </div>
                     {e.subject && (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', marginBottom: 2 }}>
-                        <strong>Subject:</strong> {e.subject}
+                      <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', marginTop: 4 }}>
+                        <span style={{ fontWeight: 500 }}>Subject: </span>
+                        <span style={{ color: 'var(--on-surface)' }}>{e.subject}</span>
                       </div>
                     )}
                     {e.reason && (
-                      <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>
-                        <strong>Reason:</strong> {e.reason}
+                      <div style={{
+                        fontSize: '0.75rem', color: 'var(--on-surface-variant)', marginTop: 6,
+                        padding: '6px 10px', borderRadius: 8,
+                        background: 'var(--surface-container)',
+                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                        lineHeight: 1.5, wordBreak: 'break-word',
+                      }}>
+                        {e.reason}
                       </div>
                     )}
                     {e.resendEmailId && (
-                      <div style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', marginTop: 4 }}>
-                        Resend id: <code>{e.resendEmailId}</code>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', marginTop: 6, opacity: 0.7 }}>
+                        Resend id: <code style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{e.resendEmailId}</code>
                       </div>
                     )}
                   </div>
