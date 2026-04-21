@@ -27,21 +27,37 @@ function escapeHtml(str: string): string {
 
 export const sendEmail = api(
   { expose: false },
-  async ({ to, subject, html, cc }: { to: string | string[]; subject: string; html: string; cc?: string[] }): Promise<{ success: boolean }> => {
+  async ({
+    to, subject, html, cc, messageId, inReplyTo, references,
+  }: {
+    to: string | string[];
+    subject: string;
+    html: string;
+    cc?: string[];
+    messageId?: string;
+    inReplyTo?: string;
+    references?: string;
+  }): Promise<{ success: boolean; messageId?: string; resendId?: string }> => {
     try {
       const resend = getResend();
-      await resend.emails.send({
+      const headers: Record<string, string> = {
+        "List-Unsubscribe": "<mailto:hello@pathwise.fit?subject=Unsubscribe>",
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        "Reply-To": "hello@pathwise.fit",
+      };
+      if (messageId) headers["Message-ID"] = messageId;
+      if (inReplyTo) headers["In-Reply-To"] = inReplyTo;
+      if (references) headers["References"] = references;
+
+      const res = await resend.emails.send({
         from: FROM_EMAIL,
         to,
         ...(cc && cc.length > 0 ? { cc } : {}),
         subject,
         html,
-        headers: {
-          "List-Unsubscribe": "<mailto:hello@pathwise.fit?subject=Unsubscribe>",
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-        },
+        headers,
       });
-      return { success: true };
+      return { success: true, messageId, resendId: res?.data?.id };
     } catch (err) {
       console.error("Email send failed:", { to, subject, error: err instanceof Error ? err.message : "unknown" });
       return { success: false };
@@ -303,6 +319,28 @@ export function adminBroadcastEmail(
           </td>
         </tr>
       </table>
+    `),
+  };
+}
+
+export function ticketReplyEmail(
+  recipientName: string,
+  adminName: string,
+  subject: string,
+  body: string,
+): { subject: string; html: string } {
+  const safeName = escapeHtml(recipientName || "there");
+  const safeAdmin = escapeHtml(adminName || "PathWise Support");
+  const safeBody = escapeHtml(body).replace(/\n/g, "<br>");
+  const safeSubject = subject ? `Re: ${escapeHtml(subject)}` : "Re: Your PathWise support request";
+
+  return {
+    subject: safeSubject,
+    html: layout(`
+      <p style="margin:0 0 16px;font-size:16px;color:#1a1a2e;">Hi ${safeName},</p>
+      <div style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#333;">${safeBody}</div>
+      <p style="margin:24px 0 0;font-size:14px;color:#666;">— ${safeAdmin}<br>PathWise Support</p>
+      <p style="margin:16px 0 0;font-size:12px;color:#999;">Just reply to this email — we'll see it in your ticket.</p>
     `),
   };
 }

@@ -33,6 +33,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.21.0',
+    date: 'April 21, 2026',
+    title: 'Support inbox + Team Roles',
+    tag: 'feature',
+    description: 'Admin Tickets becomes a real support inbox with two-way replies, and admins can now grant teammates support-agent access to just the inbox.',
+    highlights: [
+      'Two-pane ticket inbox with unread indicators, search, and status filters',
+      'Reply to tickets inline — replies thread properly in the customer\'s email client',
+      'User replies to support emails automatically appear in the ticket thread',
+      'Team Roles console: grant support-agent access by email (no full admin console)',
+      'Standalone /support route for support agents — inbox only, nothing else',
+    ],
+  },
+  {
     version: '0.20.0',
     date: 'April 17, 2026',
     title: 'Career Journal — write, dictate, reflect',
