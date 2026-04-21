@@ -397,13 +397,13 @@ function EmailTagInput({
           <span key={tag} style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '2px 8px 2px 10px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 500,
-            background: '#6245a418', color: '#6245a4', whiteSpace: 'nowrap',
+            background: '#7B553518', color: '#7B5535', whiteSpace: 'nowrap',
           }}>
             {tag}
             <button
               type="button"
               onClick={e => { e.stopPropagation(); onChange(tags.filter(t => t !== tag)); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#6245a4', lineHeight: 1, display: 'flex' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#7B5535', lineHeight: 1, display: 'flex' }}
             >
               <X size={12} />
             </button>
@@ -531,7 +531,7 @@ function EmailComposeModal({ target, onClose }: { target: ComposeModal; onClose:
         <div style={{ padding: '1.5rem 1.75rem 0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px #6245a440' }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#7B5535,#C49A6C)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px #7B553540' }}>
                 <Mail size={18} color="#fff" />
               </div>
               <p style={{ fontWeight: 800, fontSize: '1.05rem', margin: 0, color: 'var(--on-surface)' }}>Compose Email</p>
@@ -552,7 +552,7 @@ function EmailComposeModal({ target, onClose }: { target: ComposeModal; onClose:
                   flex: 1, padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none',
                   fontSize: '0.82rem', fontWeight: 700, cursor: m === 'reply' && !target.reply ? 'not-allowed' : 'pointer',
                   background: mode === m ? 'var(--surface)' : 'transparent',
-                  color: mode === m ? '#6245a4' : 'var(--on-surface-variant)',
+                  color: mode === m ? '#7B5535' : 'var(--on-surface-variant)',
                   boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
                   transition: 'all 0.15s',
                   opacity: m === 'reply' && !target.reply ? 0.4 : 1,
@@ -581,10 +581,10 @@ function EmailComposeModal({ target, onClose }: { target: ComposeModal; onClose:
 
               {/* ── Reply context chip ── */}
               {isReply && target.reply && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 0.875rem', background: '#6245a408', borderRadius: '0.75rem', border: '1px solid #6245a420' }}>
-                  <MessageSquare size={14} color="#6245a4" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 0.875rem', background: '#7B553508', borderRadius: '0.75rem', border: '1px solid #7B553520' }}>
+                  <MessageSquare size={14} color="#7B5535" />
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, color: '#6245a4' }}>{target.reply.recipientName}</p>
+                    <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, color: '#7B5535' }}>{target.reply.recipientName}</p>
                     <p style={{ margin: 0, fontSize: '0.73rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{target.reply.recipientEmail}</p>
                   </div>
                 </div>
@@ -603,7 +603,7 @@ function EmailComposeModal({ target, onClose }: { target: ComposeModal; onClose:
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                     <label style={lbl}>Recipients</label>
-                    <button onClick={toggleAllFiltered} style={{ fontSize: '0.75rem', fontWeight: 600, color: '#6245a4', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    <button onClick={toggleAllFiltered} style={{ fontSize: '0.75rem', fontWeight: 600, color: '#7B5535', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                       {allFilteredSelected ? 'Deselect all' : 'Select all'}
                     </button>
                   </div>
@@ -612,8 +612,8 @@ function EmailComposeModal({ target, onClose }: { target: ComposeModal; onClose:
                     {filteredUsers.length === 0
                       ? <p style={{ padding: '1rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.82rem', margin: 0 }}>No users found</p>
                       : filteredUsers.map((u, i) => (
-                        <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.5rem 0.875rem', cursor: 'pointer', borderBottom: i < filteredUsers.length - 1 ? '1px solid var(--outline-variant)' : 'none', background: selectedIds.has(u.id) ? '#6245a408' : 'transparent' }}>
-                          <input type="checkbox" checked={selectedIds.has(u.id)} onChange={() => toggleUser(u.id)} style={{ accentColor: '#6245a4', width: 15, height: 15, flexShrink: 0 }} />
+                        <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.5rem 0.875rem', cursor: 'pointer', borderBottom: i < filteredUsers.length - 1 ? '1px solid var(--outline-variant)' : 'none', background: selectedIds.has(u.id) ? '#7B553508' : 'transparent' }}>
+                          <input type="checkbox" checked={selectedIds.has(u.id)} onChange={() => toggleUser(u.id)} style={{ accentColor: '#7B5535', width: 15, height: 15, flexShrink: 0 }} />
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <p style={{ margin: 0, fontSize: '0.83rem', fontWeight: 600, color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
                             <p style={{ margin: 0, fontSize: '0.73rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
@@ -649,8 +649,8 @@ function EmailComposeModal({ target, onClose }: { target: ComposeModal; onClose:
                   disabled={sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '0.65rem 1.5rem', borderRadius: '999px',
-                    fontSize: '0.83rem', fontWeight: 700, background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', border: 'none',
-                    cursor: sending ? 'not-allowed' : 'pointer', boxShadow: '0 2px 8px #6245a440',
+                    fontSize: '0.83rem', fontWeight: 700, background: 'linear-gradient(135deg,#7B5535,#C49A6C)', color: '#fff', border: 'none',
+                    cursor: sending ? 'not-allowed' : 'pointer', boxShadow: '0 2px 8px #7B553540',
                     opacity: sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0) ? 0.55 : 1,
                   }}
                 >
@@ -673,7 +673,6 @@ interface TicketsPanelProps {
   loading: boolean;
   expandedTicket: string | null;
   setExpandedTicket: (id: string | null) => void;
-  statusColors: Record<string, { bg: string; color: string }>;
   formatDate: (d: string) => string;
   onStatusChange: (ticketId: string, status: string) => void;
   onDelete: (ticketId: string) => void;
@@ -683,7 +682,7 @@ interface TicketsPanelProps {
 
 function TicketsPanel({
   tickets, loading, expandedTicket, setExpandedTicket,
-  statusColors, formatDate, onStatusChange, onDelete, onReply, onBroadcast,
+  formatDate, onStatusChange, onDelete, onReply, onBroadcast,
 }: TicketsPanelProps) {
   const [filter, setFilter] = useState<'all' | 'open' | 'in_progress' | 'closed'>('all');
   const [composeAny, setComposeAny] = useState(false);
@@ -707,7 +706,7 @@ function TicketsPanel({
   tickets.forEach(t => { if (t.status in counts) (counts as any)[t.status]++; });
 
   const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  const avatarColors = ['#6245a4', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+  const avatarColors = ['#7B5535', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#C49A6C', '#ec4899'];
   const getAvatarColor = (name: string) => avatarColors[name.charCodeAt(0) % avatarColors.length];
 
   const inp: React.CSSProperties = {
@@ -744,7 +743,7 @@ function TicketsPanel({
             <Mail size={14} /> Email Anyone
           </button>
           <button onClick={onBroadcast}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 12px #6245a430' }}>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#7B5535,#C49A6C)', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 12px #7B553530' }}>
             <Send size={14} /> Broadcast
           </button>
         </div>
@@ -755,7 +754,7 @@ function TicketsPanel({
             <button key={f} onClick={() => setFilter(f)} style={{
               flex: 1, padding: '6px 4px', borderRadius: 7, border: 'none', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer',
               background: filter === f ? '#fff' : 'transparent',
-              color: filter === f ? '#6245a4' : 'var(--on-surface-variant)',
+              color: filter === f ? '#7B5535' : 'var(--on-surface-variant)',
               boxShadow: filter === f ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
               transition: 'all 0.15s',
             }}>
@@ -768,7 +767,7 @@ function TicketsPanel({
         <div style={{ background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 14, overflow: 'hidden', maxHeight: 540, overflowY: 'auto' }}>
           {loading ? (
             <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid var(--outline-variant)', borderTopColor: '#6245a4', margin: '0 auto 12px', animation: 'spin 0.8s linear infinite' }} />
+              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid var(--outline-variant)', borderTopColor: '#7B5535', margin: '0 auto 12px', animation: 'spin 0.8s linear infinite' }} />
               <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.85rem', margin: 0 }}>Loading tickets…</p>
             </div>
           ) : filtered.length === 0 ? (
@@ -785,8 +784,8 @@ function TicketsPanel({
                   style={{
                     padding: '14px 16px', cursor: 'pointer',
                     borderBottom: i < filtered.length - 1 ? '1px solid var(--outline-variant)' : 'none',
-                    background: isActive ? 'linear-gradient(90deg,#6245a408,#8b5cf605)' : 'transparent',
-                    borderLeft: isActive ? '3px solid #6245a4' : '3px solid transparent',
+                    background: isActive ? 'linear-gradient(90deg,#7B553508,#C49A6C05)' : 'transparent',
+                    borderLeft: isActive ? '3px solid #7B5535' : '3px solid transparent',
                     transition: 'all 0.15s',
                     display: 'flex', gap: 12, alignItems: 'flex-start',
                   }}
@@ -821,7 +820,7 @@ function TicketsPanel({
           <div style={{ background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 16, overflow: 'hidden' }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#7B5535,#C49A6C)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Mail size={16} color="#fff" />
                 </div>
                 <div>
@@ -852,7 +851,7 @@ function TicketsPanel({
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: 4 }}>
                 <button onClick={() => setComposeAny(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '1.5px solid var(--outline-variant)', background: 'none', color: 'var(--on-surface)', fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer' }}>Discard</button>
                 <button onClick={handleSendAny} disabled={anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim()}
-                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 24px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.84rem', fontWeight: 700, cursor: anySending ? 'not-allowed' : 'pointer', boxShadow: '0 2px 12px #6245a430', opacity: anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim() ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 24px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#7B5535,#C49A6C)', color: '#fff', fontSize: '0.84rem', fontWeight: 700, cursor: anySending ? 'not-allowed' : 'pointer', boxShadow: '0 2px 12px #7B553530', opacity: anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim() ? 0.5 : 1, transition: 'opacity 0.15s' }}>
                   <Send size={14} />{anySending ? 'Sending…' : 'Send Email'}
                 </button>
               </div>
@@ -880,7 +879,7 @@ function TicketsPanel({
                   <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)' }}>
                     <strong style={{ color: 'var(--on-surface)' }}>{selected.name}</strong>
                     {' · '}
-                    <a href={`mailto:${selected.email}`} style={{ color: '#6245a4', textDecoration: 'none' }}>{selected.email}</a>
+                    <a href={`mailto:${selected.email}`} style={{ color: '#7B5535', textDecoration: 'none' }}>{selected.email}</a>
                     {selected.createdAt ? ` · ${formatDate(selected.createdAt)}` : ''}
                   </div>
                 </div>
@@ -898,7 +897,7 @@ function TicketsPanel({
             {/* Actions bar */}
             <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <button onClick={() => onReply(selected)}
-                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 22px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.84rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 10px #6245a428' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 22px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#7B5535,#C49A6C)', color: '#fff', fontSize: '0.84rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 10px #7B553528' }}>
                 <Mail size={14} /> Reply
               </button>
 
@@ -928,8 +927,8 @@ function TicketsPanel({
         ) : (
           /* Empty state */
           <div style={{ background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 420, padding: 48, textAlign: 'center' }}>
-            <div style={{ width: 64, height: 64, borderRadius: 18, background: 'linear-gradient(135deg,#6245a415,#8b5cf610)', border: '1.5px solid var(--outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-              <MessageSquare size={28} color="#6245a4" style={{ opacity: 0.5 }} />
+            <div style={{ width: 64, height: 64, borderRadius: 18, background: 'linear-gradient(135deg,#7B553515,#C49A6C10)', border: '1.5px solid var(--outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <MessageSquare size={28} color="#7B5535" style={{ opacity: 0.5 }} />
             </div>
             <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--on-surface)', marginBottom: 6 }}>No ticket selected</div>
             <div style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, maxWidth: 260, marginBottom: 24 }}>
@@ -939,7 +938,7 @@ function TicketsPanel({
               <button onClick={() => setComposeAny(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 10, border: '1.5px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
                 <Mail size={14} /> Email Anyone
               </button>
-              <button onClick={onBroadcast} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={onBroadcast} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#7B5535,#C49A6C)', color: '#fff', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
                 <Send size={14} /> Broadcast to All
               </button>
             </div>
@@ -1239,7 +1238,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#7B5535', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     );
   }
@@ -1293,7 +1292,7 @@ export default function AdminPage() {
   });
 
   return (
-    <div className="page">
+    <div className="page admin-zen">
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -1341,7 +1340,7 @@ export default function AdminPage() {
               { label: 'Total Users', value: totalUsers, icon: Users, color: 'var(--primary)' },
               { label: 'With Assessment', value: withAssessment, icon: CheckCircle2, color: '#22c55e' },
               { label: 'Total Tasks', value: totalTasks, icon: BarChart3, color: '#3b82f6' },
-              { label: 'Completed Tasks', value: completedTasks, icon: CheckCircle2, color: '#8b5cf6' },
+              { label: 'Completed Tasks', value: completedTasks, icon: CheckCircle2, color: '#C49A6C' },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="panel" style={{ borderRadius: '2rem', padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.75rem' }}>
@@ -1586,7 +1585,7 @@ export default function AdminPage() {
         <div>
           {analyticsLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-              <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#7B5535', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
             </div>
           ) : (
             <>
@@ -1623,7 +1622,7 @@ export default function AdminPage() {
                           <div style={{ flex: 1, height: 24, background: 'var(--surface-container)', borderRadius: '999px', overflow: 'hidden' }}>
                             <div style={{
                               width: `${pct}%`, height: '100%', borderRadius: '999px',
-                              background: 'linear-gradient(90deg, var(--primary), #8b5cf6)',
+                              background: 'linear-gradient(90deg, var(--primary), #C49A6C)',
                               transition: 'width 0.5s ease',
                               minWidth: pct > 0 ? 24 : 0,
                             }} />
@@ -1721,7 +1720,6 @@ export default function AdminPage() {
           loading={ticketsLoading}
           expandedTicket={expandedTicket}
           setExpandedTicket={setExpandedTicket}
-          statusColors={statusColors}
           formatDate={formatDate}
           onStatusChange={handleTicketStatusChange}
           onDelete={handleDeleteTicket}
@@ -1752,6 +1750,7 @@ export default function AdminPage() {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .admin-zen { --primary: #7B5535; --primary-dark: #5C3D20; --primary-light: #C49A6C; --primary-container: #A0714A; --primary-fixed: #F5EDE4; }
       `}</style>
     </div>
   );
