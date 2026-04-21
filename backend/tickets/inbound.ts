@@ -380,7 +380,17 @@ export const ticketInboundWebhook = api.raw(
       if (row) ticketId = row.id;
     }
 
-    // 9b. No existing match — create a new ticket if the email was addressed
+    // 9b. Verify the matched ticketId actually exists. A sentinel in the
+    // Message-ID can reference a UUID whose ticket was never created (e.g.
+    // the outbound compose INSERT failed silently before the fallback shipped,
+    // but the email still went out with the sentinel). Falling through lets
+    // us create a fresh ticket from the reply body instead of FK-crashing.
+    if (ticketId) {
+      const exists = await db.queryRow`SELECT id FROM tickets WHERE id = ${ticketId}`;
+      if (!exists) ticketId = null;
+    }
+
+    // 9c. No existing match — create a new ticket if the email was addressed
     // to one of our support mailboxes. Otherwise drop.
     const now = new Date().toISOString();
     let createdNew = false;
@@ -405,13 +415,29 @@ export const ticketInboundWebhook = api.raw(
       ticketId = crypto.randomUUID();
       const subject = (payload.data.subject ?? "").slice(0, 500) || null;
       const name = fromName ?? fromEmail.split("@")[0];
-      await db.exec`
-        INSERT INTO tickets
-          (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
-        VALUES
-          (${ticketId}, ${name}, ${fromEmail}, ${subject}, ${body},
-           'open', ${now}, 1, ${now}, 'user')
-      `;
+      try {
+        await db.exec`
+          INSERT INTO tickets
+            (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
+          VALUES
+            (${ticketId}, ${name}, ${fromEmail}, ${subject}, ${body},
+             'open', ${now}, 1, ${now}, 'user')
+        `;
+      } catch (errWithCol) {
+        // Fallback when migration 4 hasn't applied in the target DB yet.
+        const colMsg = errWithCol instanceof Error ? errWithCol.message : String(errWithCol);
+        if (/initiated_by/i.test(colMsg) || /column.*does not exist/i.test(colMsg)) {
+          await db.exec`
+            INSERT INTO tickets
+              (id, name, email, subject, message, status, created_at, unread, last_activity_at)
+            VALUES
+              (${ticketId}, ${name}, ${fromEmail}, ${subject}, ${body},
+               'open', ${now}, 1, ${now})
+          `;
+        } else {
+          throw errWithCol;
+        }
+      }
       createdNew = true;
     }
 
