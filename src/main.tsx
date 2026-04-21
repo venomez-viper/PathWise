@@ -1,6 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
+
+// Stale cached index.html may reference old chunk hashes after a new deployment.
+// Reload once so the browser fetches the new index.html with correct asset URLs.
+window.addEventListener('vite:preloadError', () => {
+  window.location.reload()
+})
 import './index.css'
 import App from './App.tsx'
 
