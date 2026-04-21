@@ -497,6 +497,28 @@ export function TicketInbox() {
               <PenSquare size={13} /> Compose
             </button>
             <button
+              onClick={async () => {
+                await loadList();
+                if (selectedId) await loadThread(selectedId);
+              }}
+              disabled={loading || threadLoading}
+              title="Refresh inbox"
+              style={{
+                flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--outline-variant)',
+                background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
+                cursor: (loading || threadLoading) ? 'default' : 'pointer', padding: 0,
+                opacity: (loading || threadLoading) ? 0.6 : 1,
+              }}
+            >
+              <RefreshCw
+                size={14}
+                style={{
+                  animation: (loading || threadLoading) ? 'spin 0.9s linear infinite' : 'none',
+                }}
+              />
+            </button>
+            <button
               onClick={() => { setDebugOpen(true); loadDebugLog(); }}
               title="Inbound webhook activity"
               style={{
