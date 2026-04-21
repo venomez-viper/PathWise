@@ -52,6 +52,31 @@ function extractInboundRecipient(toList: string[] | undefined): string | null {
   return null;
 }
 
+async function logDebug(entry: {
+  decision: string;
+  fromEmail?: string | null;
+  to?: string[] | null;
+  subject?: string | null;
+  reason?: string | null;
+  hasSvixHeaders?: boolean;
+  resendEmailId?: string | null;
+}): Promise<void> {
+  try {
+    await db.exec`
+      INSERT INTO inbound_debug_log
+        (id, received_at, decision, from_email, to_addresses_json, subject, reason, has_svix_headers, resend_email_id)
+      VALUES
+        (${crypto.randomUUID()}, ${new Date().toISOString()}, ${entry.decision},
+         ${entry.fromEmail ?? null}, ${entry.to ? JSON.stringify(entry.to) : null},
+         ${entry.subject ?? null}, ${entry.reason ?? null},
+         ${entry.hasSvixHeaders ? 1 : 0}, ${entry.resendEmailId ?? null})
+    `;
+  } catch (err) {
+    // Don't let log failures break the webhook response
+    console.error("Inbound: failed to write debug log", err instanceof Error ? err.message : err);
+  }
+}
+
 interface InboundPayload {
   type?: string;
   data?: {
@@ -134,15 +159,18 @@ export const ticketInboundWebhook = api.raw(
     const svixId = (req.headers["svix-id"] as string | undefined) ?? "";
     const svixTimestamp = (req.headers["svix-timestamp"] as string | undefined) ?? "";
     const svixSignature = (req.headers["svix-signature"] as string | undefined) ?? "";
+    const hasSvixHeaders = !!(svixId && svixTimestamp && svixSignature);
 
     let secretValue: string;
     try {
       secretValue = webhookSecret();
     } catch {
       console.error("Inbound: ResendWebhookSecret not configured");
+      await logDebug({ decision: "secret-missing", hasSvixHeaders });
       resp.writeHead(500); resp.end("webhook secret missing"); return;
     }
-    if (!svixId || !svixTimestamp || !svixSignature) {
+    if (!hasSvixHeaders) {
+      await logDebug({ decision: "missing-headers", hasSvixHeaders: false });
       resp.writeHead(400); resp.end("missing signature headers"); return;
     }
 
@@ -155,11 +183,17 @@ export const ticketInboundWebhook = api.raw(
         webhookSecret: secretValue,
       });
     } catch {
+      await logDebug({ decision: "invalid-signature", hasSvixHeaders: true });
       resp.writeHead(400); resp.end("invalid signature"); return;
     }
 
     const payload = verified as InboundPayload;
     if (payload?.type !== "email.received" || !payload.data?.email_id) {
+      await logDebug({
+        decision: "ignored-non-event",
+        reason: `type=${payload?.type ?? "?"}`,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("ignored"); return;
     }
 
@@ -167,17 +201,42 @@ export const ticketInboundWebhook = api.raw(
     const existing = await db.queryRow`
       SELECT id FROM ticket_replies WHERE resend_email_id = ${payload.data.email_id}
     `;
-    if (existing) { resp.writeHead(200); resp.end("duplicate"); return; }
+    if (existing) {
+      await logDebug({
+        decision: "duplicate",
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
+      resp.writeHead(200); resp.end("duplicate"); return;
+    }
 
     // 4. Parse sender + rate limit
     const fromRaw = payload.data.from ?? "";
     const { email: fromEmail, name: fromName } = parseFrom(fromRaw);
-    if (!fromEmail) { resp.writeHead(200); resp.end("no-sender"); return; }
+    if (!fromEmail) {
+      await logDebug({
+        decision: "no-sender",
+        to: payload.data.to,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
+      resp.writeHead(200); resp.end("no-sender"); return;
+    }
 
     try {
       RateLimits.inboundSender("inbound:" + fromEmail);
     } catch {
       console.warn("Inbound: rate-limited sender", { fromEmail });
+      await logDebug({
+        decision: "rate-limited",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("rate-limited"); return;
     }
 
@@ -199,6 +258,14 @@ export const ticketInboundWebhook = api.raw(
         email_id: payload.data.email_id,
         err: err instanceof Error ? err.message : "unknown",
       });
+      await logDebug({
+        decision: "fetch-failed",
+        fromEmail,
+        to: payload.data.to,
+        resendEmailId: payload.data.email_id,
+        reason: err instanceof Error ? err.message : "unknown",
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("fetch-failed"); return;
     }
 
@@ -207,6 +274,14 @@ export const ticketInboundWebhook = api.raw(
     // 6. Reject unauthenticated senders (SPF/DKIM/DMARC failures)
     if (failedAuthenticationResults(headers)) {
       console.warn("Inbound: dropped — failed authentication", { fromEmail });
+      await logDebug({
+        decision: "auth-failed",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("auth-failed"); return;
     }
 
@@ -217,6 +292,14 @@ export const ticketInboundWebhook = api.raw(
     } else if (email.html && email.html.trim()) {
       body = stripHtmlToText(email.html);
     } else {
+      await logDebug({
+        decision: "empty-body",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("empty-body"); return;
     }
     body = body.slice(0, MAX_BODY_CHARS).trim();
@@ -225,6 +308,15 @@ export const ticketInboundWebhook = api.raw(
     const check = isMalicious(body);
     if (check.bad) {
       console.warn("Inbound: dropped suspicious content", { fromEmail, reason: check.reason });
+      await logDebug({
+        decision: "suspicious",
+        fromEmail,
+        to: payload.data.to,
+        subject: payload.data.subject,
+        resendEmailId: payload.data.email_id,
+        reason: check.reason,
+        hasSvixHeaders: true,
+      });
       resp.writeHead(200); resp.end("suspicious"); return;
     }
 
@@ -264,6 +356,15 @@ export const ticketInboundWebhook = api.raw(
           fromEmail, to: payload.data.to, subject: payload.data.subject,
           email_id: payload.data.email_id,
         });
+        await logDebug({
+          decision: "no-match",
+          fromEmail,
+          to: payload.data.to,
+          subject: payload.data.subject,
+          resendEmailId: payload.data.email_id,
+          reason: "recipient not in allow-list",
+          hasSvixHeaders: true,
+        });
         resp.writeHead(200); resp.end("no-match"); return;
       }
       ticketId = crypto.randomUUID();
@@ -299,6 +400,14 @@ export const ticketInboundWebhook = api.raw(
       `;
     }
 
+    await logDebug({
+      decision: createdNew ? "ok-new" : "ok",
+      fromEmail,
+      to: payload.data.to,
+      subject: payload.data.subject,
+      resendEmailId: payload.data.email_id,
+      hasSvixHeaders: true,
+    });
     resp.writeHead(200); resp.end(createdNew ? "ok-new" : "ok");
   }
 );

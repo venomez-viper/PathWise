@@ -498,6 +498,56 @@ export const adminPreviewCompose = api(
   }
 );
 
+// ── Admin Inbound Debug Log ──────────────────────────────────────────────────
+
+interface InboundDebugEntry {
+  id: string;
+  receivedAt: string;
+  decision: string;
+  fromEmail: string | null;
+  toAddresses: string[];
+  subject: string | null;
+  reason: string | null;
+  hasSvixHeaders: boolean;
+  resendEmailId: string | null;
+}
+
+export const adminListInboundLog = api(
+  { expose: true, method: "GET", path: "/admin/inbound-log", auth: true },
+  async (): Promise<{ entries: InboundDebugEntry[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) throw APIError.permissionDenied("support access required");
+
+    const entries: InboundDebugEntry[] = [];
+    const rows = db.query`
+      SELECT id, received_at, decision, from_email, to_addresses_json,
+             subject, reason, has_svix_headers, resend_email_id
+      FROM inbound_debug_log
+      ORDER BY received_at DESC
+      LIMIT 50
+    `;
+    for await (const row of rows) {
+      let to: string[] = [];
+      if (row.to_addresses_json) {
+        try { to = JSON.parse(row.to_addresses_json); } catch { to = []; }
+      }
+      entries.push({
+        id: row.id,
+        receivedAt: row.received_at,
+        decision: row.decision,
+        fromEmail: row.from_email,
+        toAddresses: to,
+        subject: row.subject,
+        reason: row.reason,
+        hasSvixHeaders: Boolean(row.has_svix_headers),
+        resendEmailId: row.resend_email_id,
+      });
+    }
+    return { entries };
+  }
+);
+
 // ── Admin List Sender Addresses ──────────────────────────────────────────────
 
 interface SenderOption {
