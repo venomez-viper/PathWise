@@ -200,6 +200,10 @@ export const admin = {
     request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteTicket: (ticketId: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'DELETE' }),
+  replyToTicket: (ticketId: string, data: { subject: string; message: string }) =>
+    request<{ success: boolean }>(`/admin/tickets/${ticketId}/reply`, { method: 'POST', body: JSON.stringify(data) }),
+  broadcastEmail: (data: { subject: string; message: string }) =>
+    request<{ success: boolean; sent: number }>('/admin/broadcast-email', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // --- Tickets ---

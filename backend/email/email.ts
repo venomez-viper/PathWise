@@ -218,6 +218,45 @@ export function adminTicketNotificationEmail(
   };
 }
 
+export function adminReplyEmail(
+  recipientName: string,
+  subject: string,
+  message: string
+): { subject: string; html: string } {
+  const firstName = escapeHtml(recipientName.split(" ")[0]);
+  const escapedMessage = escapeHtml(message).replace(/\n/g, "<br>");
+  return {
+    subject: escapeHtml(subject),
+    html: layout(`
+      ${h1("Message from the PathWise team")}
+      ${p(`Hi ${firstName},`)}
+      <div style="padding: 20px; background: #f9fafb; border-radius: 8px; border-left: 3px solid ${BRAND_COLOR}; font-size: 15px; color: #374151; line-height: 1.65; margin: 0 0 24px;">
+        ${escapedMessage}
+      </div>
+      ${p('Reply to this email or reach us at <a href="mailto:hello@pathwise.fit" style="color: ' + BRAND_COLOR + ';">hello@pathwise.fit</a>.')}
+    `),
+  };
+}
+
+export function adminBroadcastEmail(
+  subject: string,
+  message: string
+): { subject: string; html: string } {
+  const escapedMessage = escapeHtml(message).replace(/\n/g, "<br>");
+  return {
+    subject: escapeHtml(subject),
+    html: layout(`
+      <div style="font-size: 15px; color: #374151; line-height: 1.65;">
+        ${escapedMessage}
+      </div>
+      <div style="margin-top: 24px;">
+        ${button("Open PathWise", "https://pathwise.fit/app")}
+      </div>
+      ${p('Questions? Contact us at <a href="mailto:hello@pathwise.fit" style="color: ' + BRAND_COLOR + ';">hello@pathwise.fit</a>.')}
+    `),
+  };
+}
+
 export function passwordResetEmail(resetUrl: string): { subject: string; html: string } {
   return {
     subject: "Reset your PathWise password",

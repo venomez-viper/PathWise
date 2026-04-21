@@ -671,6 +671,39 @@ export const getProfileSettings = api(
   }
 );
 
+// ── Admin Broadcast Email ─────────────────────────────────────────────────────
+
+export const adminBroadcastEmail = api(
+  { expose: true, method: "POST", path: "/admin/broadcast-email", auth: true },
+  async ({ subject, message }: { subject: string; message: string }): Promise<{ success: boolean; sent: number }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    await requireAdmin(userID);
+
+    if (!subject?.trim()) throw APIError.invalidArgument("subject is required");
+    if (!message?.trim()) throw APIError.invalidArgument("message is required");
+    if (subject.length > 500) throw APIError.invalidArgument("subject too long");
+    if (message.length > 10000) throw APIError.invalidArgument("message too long");
+
+    const emails: string[] = [];
+    const rows = db.query`SELECT email FROM users ORDER BY created_at ASC`;
+    for await (const row of rows) {
+      emails.push(row.email);
+    }
+
+    const { sendEmail, adminBroadcastEmail: buildEmail } = await import("../email/email");
+    const emailContent = buildEmail(subject, message);
+
+    let sent = 0;
+    // Send in batches of 10 to avoid overwhelming Resend
+    for (let i = 0; i < emails.length; i += 10) {
+      const batch = emails.slice(i, i + 10);
+      await Promise.allSettled(batch.map(to => sendEmail({ to, ...emailContent }).then(r => { if (r.success) sent++; })));
+    }
+
+    return { success: true, sent };
+  }
+);
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 function issueToken(userId: string): string {

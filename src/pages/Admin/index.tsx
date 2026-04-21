@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Shield, Users, Trash2, Search, BarChart3, CheckCircle2, AlertTriangle,
   X, Download, ExternalLink, Copy, Monitor, ChevronDown, MessageSquare,
+  Mail, Send,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { admin as adminApi } from '../../lib/api';
@@ -335,6 +336,181 @@ function UserDetailPanel({
   );
 }
 
+/* ─────────── Email Compose Modal ─────────── */
+
+interface ComposeTarget {
+  type: 'reply';
+  ticketId: string;
+  recipientName: string;
+  recipientEmail: string;
+  originalSubject: string;
+}
+
+interface BroadcastTarget {
+  type: 'broadcast';
+  userCount: number;
+}
+
+type ComposeModal = ComposeTarget | BroadcastTarget;
+
+function EmailComposeModal({
+  target,
+  onClose,
+}: {
+  target: ComposeModal;
+  onClose: () => void;
+}) {
+  const isReply = target.type === 'reply';
+  const [subject, setSubject] = useState(
+    isReply ? `Re: ${(target as ComposeTarget).originalSubject || 'Your support request'}` : ''
+  );
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const handleSend = async () => {
+    if (!subject.trim() || !message.trim()) {
+      setError('Subject and message are required.');
+      return;
+    }
+    setSending(true);
+    setError('');
+    try {
+      if (isReply) {
+        await adminApi.replyToTicket((target as ComposeTarget).ticketId, { subject, message });
+      } else {
+        await adminApi.broadcastEmail({ subject, message });
+      }
+      setSent(true);
+      setTimeout(onClose, 1800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send email.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 2000, backdropFilter: 'blur(2px)' }}
+      />
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+        zIndex: 2001, width: '100%', maxWidth: 560,
+        background: 'var(--surface)', borderRadius: '1.5rem',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.25)', padding: '2rem',
+        animation: 'fadeIn 0.15s ease',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#6245a418', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Mail size={18} color="#6245a4" />
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: '1rem', margin: 0 }}>
+                {isReply ? 'Reply to Ticket' : 'Email All Users'}
+              </p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', margin: 0 }}>
+                {isReply
+                  ? `To: ${(target as ComposeTarget).recipientName} <${(target as ComposeTarget).recipientEmail}>`
+                  : `To: All ${(target as BroadcastTarget).userCount} signed-up users`}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 4 }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {sent ? (
+          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+            <CheckCircle2 size={48} color="#22c55e" style={{ marginBottom: '0.75rem' }} />
+            <p style={{ fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>Email sent!</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Subject */}
+            <div>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>
+                Subject
+              </label>
+              <input
+                type="text"
+                value={subject}
+                onChange={e => setSubject(e.target.value)}
+                placeholder="Email subject..."
+                style={{
+                  width: '100%', padding: '0.65rem 0.875rem', borderRadius: '0.75rem',
+                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+                  color: 'var(--on-surface)', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            {/* Message */}
+            <div>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>
+                Message
+              </label>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                placeholder="Write your message..."
+                rows={8}
+                style={{
+                  width: '100%', padding: '0.75rem 0.875rem', borderRadius: '0.75rem',
+                  border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+                  color: 'var(--on-surface)', fontSize: '0.9rem', outline: 'none',
+                  resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.65, boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            {error && (
+              <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: 0 }}>{error}</p>
+            )}
+
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '0.6rem 1.25rem', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 600,
+                  background: 'none', border: '1px solid var(--outline-variant)', color: 'var(--on-surface)', cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSend}
+                disabled={sending || !subject.trim() || !message.trim()}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '0.6rem 1.5rem', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 700,
+                  background: '#6245a4', color: '#fff', border: 'none', cursor: sending ? 'not-allowed' : 'pointer',
+                  opacity: sending || !subject.trim() || !message.trim() ? 0.6 : 1,
+                }}
+              >
+                <Send size={14} />
+                {sending ? 'Sending...' : 'Send Email'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 /* ─────────── Main Admin Page ─────────── */
 
 export default function AdminPage() {
@@ -363,6 +539,7 @@ export default function AdminPage() {
   const [ticketsList, setTicketsList] = useState<any[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+  const [composeModal, setComposeModal] = useState<ComposeModal | null>(null);
 
   useEffect(() => {
     if (!ADMIN_EMAILS.includes(user?.email ?? '')) return;
@@ -1101,6 +1278,19 @@ export default function AdminPage() {
       {/* ─── Tickets Tab ─── */}
       {activeTab === 'tickets' && (
         <div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <button
+              onClick={() => setComposeModal({ type: 'broadcast', userCount: users.length })}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 600,
+                background: '#6245a4', color: '#fff', border: 'none', cursor: 'pointer',
+              }}
+            >
+              <Mail size={14} />
+              Email All Users
+            </button>
+          </div>
           {ticketsLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
               <div style={{ width: 32, height: 32, border: '3px solid rgba(98,69,164,0.2)', borderTopColor: '#6245a4', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
@@ -1171,6 +1361,24 @@ export default function AdminPage() {
                                 <option value="closed">Closed</option>
                               </select>
                               <button
+                                onClick={() => setComposeModal({
+                                  type: 'reply',
+                                  ticketId: ticket.id,
+                                  recipientName: ticket.name,
+                                  recipientEmail: ticket.email,
+                                  originalSubject: ticket.subject,
+                                })}
+                                title="Reply by email"
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  width: 28, height: 28, borderRadius: '50%',
+                                  background: 'none', border: '1px solid #6245a444', color: '#6245a4',
+                                  cursor: 'pointer', padding: 0,
+                                }}
+                              >
+                                <Mail size={13} />
+                              </button>
+                              <button
                                 onClick={() => handleDeleteTicket(ticket.id)}
                                 style={{
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1213,6 +1421,11 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Email Compose Modal */}
+      {composeModal && (
+        <EmailComposeModal target={composeModal} onClose={() => setComposeModal(null)} />
       )}
 
       {/* User Detail Panel */}

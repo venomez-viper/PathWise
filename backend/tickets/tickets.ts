@@ -142,6 +142,41 @@ export const adminUpdateTicket = api(
   }
 );
 
+// ── Admin Reply to Ticket ─────────────────────────────────────────────────────
+
+interface ReplyToTicketParams {
+  ticketId: string;
+  subject: string;
+  message: string;
+}
+
+export const adminReplyToTicket = api(
+  { expose: true, method: "POST", path: "/admin/tickets/:ticketId/reply", auth: true },
+  async (params: ReplyToTicketParams): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { isAdmin } = await checkAdmin({ userID });
+    if (!isAdmin) {
+      throw APIError.permissionDenied("admin access required");
+    }
+
+    if (!params.subject?.trim()) throw APIError.invalidArgument("subject is required");
+    if (!params.message?.trim()) throw APIError.invalidArgument("message is required");
+    if (params.subject.length > 500) throw APIError.invalidArgument("subject too long");
+    if (params.message.length > 10000) throw APIError.invalidArgument("message too long");
+
+    const ticket = await db.queryRow<{ name: string; email: string }>`
+      SELECT name, email FROM tickets WHERE id = ${params.ticketId}
+    `;
+    if (!ticket) throw APIError.notFound("ticket not found");
+
+    const { sendEmail, adminReplyEmail } = await import("../email/email");
+    const email = adminReplyEmail(ticket.name, params.subject, params.message);
+    await sendEmail({ to: ticket.email, ...email });
+
+    return { success: true };
+  }
+);
+
 // ── Admin Delete Ticket ───────────────────────────────────────────────────────
 
 export const adminDeleteTicket = api(
