@@ -1194,6 +1194,61 @@ export default function AssessmentV2() {
           {renderOptions()}
         </div>
       </div>
+
+      {/* Navigation buttons */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
+        <button
+          onClick={goBack}
+          aria-label="Previous question"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 44, height: 44, borderRadius: '50%',
+            border: `2px solid ${phaseAccent}44`,
+            background: 'var(--surface)',
+            color: phaseAccent,
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = phaseAccent;
+            (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)';
+            (e.currentTarget as HTMLButtonElement).style.color = phaseAccent;
+          }}
+        >
+          <ArrowLeft size={18} />
+        </button>
+
+        <span style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', fontWeight: 500, minWidth: 60, textAlign: 'center' }}>
+          {currentQuestion + 1} / {phase.questions.length}
+        </span>
+
+        <button
+          onClick={goNext}
+          aria-label="Next question"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 44, height: 44, borderRadius: '50%',
+            border: `2px solid ${phaseAccent}44`,
+            background: 'var(--surface)',
+            color: phaseAccent,
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = phaseAccent;
+            (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)';
+            (e.currentTarget as HTMLButtonElement).style.color = phaseAccent;
+          }}
+        >
+          <ArrowRight size={18} />
+        </button>
+      </div>
     </div>
   );
 }
