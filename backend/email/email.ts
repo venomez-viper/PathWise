@@ -57,7 +57,7 @@ export const sendEmail = api(
     inReplyTo?: string;
     references?: string;
     from?: string;
-  }): Promise<{ success: boolean; messageId?: string; resendId?: string }> => {
+  }): Promise<{ success: boolean; messageId?: string; resendId?: string; error?: string }> => {
     try {
       const resend = getResend();
       const headers: Record<string, string> = {
@@ -77,10 +77,16 @@ export const sendEmail = api(
         html,
         headers,
       });
+      if (res.error) {
+        const errMsg = res.error.message || res.error.name || "Resend rejected the send";
+        console.error("Email send failed (Resend error):", { to, subject, from: resolveFromAddress(from), error: errMsg });
+        return { success: false, error: errMsg };
+      }
       return { success: true, messageId, resendId: res?.data?.id };
     } catch (err) {
-      console.error("Email send failed:", { to, subject, error: err instanceof Error ? err.message : "unknown" });
-      return { success: false };
+      const errMsg = err instanceof Error ? err.message : "unknown";
+      console.error("Email send failed:", { to, subject, from: resolveFromAddress(from), error: errMsg });
+      return { success: false, error: errMsg };
     }
   }
 );

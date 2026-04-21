@@ -362,9 +362,14 @@ interface ComposeEmailParams {
   from?: string;
 }
 
+interface ComposeFailure {
+  to: string;
+  error: string;
+}
+
 export const adminComposeEmail = api(
   { expose: true, method: "POST", path: "/admin/compose-email", auth: true },
-  async (params: ComposeEmailParams): Promise<{ success: boolean; sent: number; ticketIds: string[] }> => {
+  async (params: ComposeEmailParams): Promise<{ success: boolean; sent: number; ticketIds: string[]; failures: ComposeFailure[] }> => {
     const { userID } = getAuthData<AuthData>()!;
     RateLimits.ticketReply("compose:" + userID);
 
@@ -410,6 +415,7 @@ export const adminComposeEmail = api(
     const trimmedSubject = params.subject.trim();
 
     const ticketIds: string[] = [];
+    const failures: ComposeFailure[] = [];
     let sent = 0;
 
     await Promise.allSettled(toList.map(async to => {
@@ -445,10 +451,14 @@ export const adminComposeEmail = api(
         references: messageId,
         from: params.from,
       });
-      if (res.success) sent++;
+      if (res.success) {
+        sent++;
+      } else {
+        failures.push({ to, error: res.error ?? "unknown error" });
+      }
     }));
 
-    return { success: true, sent, ticketIds };
+    return { success: true, sent, ticketIds, failures };
   }
 );
 
