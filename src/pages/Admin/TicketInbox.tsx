@@ -826,10 +826,13 @@ export function TicketInbox() {
                 <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
                   <div style={{ maxWidth: '75%' }}>
                     <div style={{
-                      fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-                      letterSpacing: '0.06em', color: 'var(--on-surface-variant)', marginBottom: 4,
+                      fontSize: '0.74rem', fontWeight: 600,
+                      color: 'var(--on-surface-variant)', marginBottom: 4,
                     }}>
-                      {selected.name || selected.email} · {formatWhen(selected.createdAt)}
+                      <span style={{ color: 'var(--on-surface)' }}>
+                        {selected.name || selected.email}
+                      </span>
+                      <span style={{ opacity: 0.6 }}> · {formatWhen(selected.createdAt)}</span>
                     </div>
                     <div style={{
                       padding: '0.75rem 1rem', borderRadius: 14,
@@ -856,12 +859,14 @@ export function TicketInbox() {
                   }}>
                     <div style={{ maxWidth: '75%' }}>
                       <div style={{
-                        fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-                        letterSpacing: '0.06em', color: 'var(--on-surface-variant)', marginBottom: 4,
+                        fontSize: '0.74rem', fontWeight: 600,
+                        color: 'var(--on-surface-variant)', marginBottom: 4,
                         textAlign: r.direction === 'admin' ? 'right' : 'left',
                       }}>
-                        {r.direction === 'admin' ? 'You' : (r.authorName || r.authorEmail)}
-                        {' '}· {formatWhen(r.createdAt)}
+                        <span style={{ color: 'var(--on-surface)' }}>
+                          {r.direction === 'admin' ? 'You' : (r.authorName || r.authorEmail)}
+                        </span>
+                        <span style={{ opacity: 0.6 }}> · {formatWhen(r.createdAt)}</span>
                       </div>
                       <div style={{
                         padding: '0.75rem 1rem', borderRadius: 14,
@@ -878,88 +883,20 @@ export function TicketInbox() {
               )}
             </div>
 
-            <div style={{ padding: '0.9rem 1.25rem', borderTop: '1px solid var(--outline-variant)' }}>
-              <div style={{ marginBottom: 8 }}>
-                <button
-                  onClick={() => setReplyRecipientsOpen(o => !o)}
-                  aria-expanded={replyRecipientsOpen}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    height: 28, padding: '0 12px', borderRadius: 999,
-                    border: '1px solid var(--outline-variant)',
-                    background: replyAdditionalTo.length + replyCc.length > 0
-                      ? '#8b4f2c18' : 'transparent',
-                    color: replyAdditionalTo.length + replyCc.length > 0
-                      ? '#8b4f2c' : 'var(--on-surface-variant)',
-                    fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
-                    transition: 'background 0.15s, color 0.15s',
-                  }}
-                  onMouseEnter={e => {
-                    if (replyAdditionalTo.length + replyCc.length === 0) {
-                      e.currentTarget.style.background = 'var(--surface-container)';
-                      e.currentTarget.style.color = 'var(--on-surface)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (replyAdditionalTo.length + replyCc.length === 0) {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = 'var(--on-surface-variant)';
-                    }
-                  }}
-                >
-                  <ChevronDown
-                    size={11}
-                    style={{ transform: replyRecipientsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
-                  />
-                  {replyAdditionalTo.length + replyCc.length > 0
-                    ? <>Recipients · +{replyAdditionalTo.length} to, {replyCc.length} cc</>
-                    : 'Add CC or more recipients'}
-                </button>
-                {replyRecipientsOpen && (
-                  <div style={{
-                    marginTop: 8, padding: '0.75rem 0.85rem',
-                    borderRadius: 12, border: '1px solid var(--outline-variant)',
-                    background: 'var(--surface-container)',
-                    display: 'flex', flexDirection: 'column', gap: 10,
-                  }}>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <span style={{
-                        fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase',
-                        letterSpacing: '0.08em', color: 'var(--on-surface-variant)',
-                      }}>From</span>
-                      <select
-                        value={replyFrom}
-                        onChange={e => setReplyFrom(e.target.value)}
-                        style={{
-                          padding: '0.5rem 0.8rem', borderRadius: 10,
-                          border: '1px solid var(--outline-variant)', background: 'var(--surface)',
-                          color: 'var(--on-surface)', fontSize: '0.82rem', outline: 'none',
-                        }}
-                      >
-                        {senders.length === 0 ? (
-                          <option value="">PathWise &lt;hello@pathwise.fit&gt;</option>
-                        ) : senders.map(s => (
-                          <option key={s.key} value={s.key}>
-                            {s.label} &lt;{s.address}&gt;
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <EmailTagInput
-                      label="Additional To"
-                      tags={replyAdditionalTo}
-                      onChange={setReplyAdditionalTo}
-                      placeholder="Add more recipients…"
-                    />
-                    <EmailTagInput
-                      label="CC"
-                      tags={replyCc}
-                      onChange={setReplyCc}
-                      placeholder="Add CC addresses…"
-                    />
-                  </div>
-                )}
-              </div>
+            <div style={{ padding: '0.9rem 1.25rem 0', borderTop: '1px solid var(--outline-variant)' }}>
+              <ReplyRecipientsPanel
+                open={replyRecipientsOpen}
+                onToggle={() => setReplyRecipientsOpen(o => !o)}
+                primaryName={selected.name}
+                primaryEmail={selected.email}
+                fromKey={replyFrom}
+                onFromChange={setReplyFrom}
+                senders={senders}
+                additionalTo={replyAdditionalTo}
+                onAdditionalToChange={setReplyAdditionalTo}
+                cc={replyCc}
+                onCcChange={setReplyCc}
+              />
               <SignatureBar
                 scope="reply"
                 signature={signature}
@@ -2214,6 +2151,208 @@ const DECISION_STYLE: Record<string, { bg: string; color: string; label: string 
   'secret-missing':    { bg: '#fee2e2', color: '#991b1b', label: 'Webhook secret missing' },
   'internal-error':    { bg: '#fee2e2', color: '#991b1b', label: 'Internal error (see reason)' },
 };
+
+function ReplyRecipientsPanel({
+  open, onToggle,
+  primaryName, primaryEmail,
+  fromKey, onFromChange, senders,
+  additionalTo, onAdditionalToChange,
+  cc, onCcChange,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  primaryName: string;
+  primaryEmail: string;
+  fromKey: string;
+  onFromChange: (v: string) => void;
+  senders: Array<{ key: string; address: string; label: string }>;
+  additionalTo: string[];
+  onAdditionalToChange: (v: string[]) => void;
+  cc: string[];
+  onCcChange: (v: string[]) => void;
+}) {
+  const currentSender = senders.find(s => s.key === fromKey);
+  const fromLabel = currentSender?.label ?? 'PathWise';
+  const fromAddress = currentSender?.address ?? 'hello@pathwise.fit';
+  const extraCount = additionalTo.length + cc.length;
+
+  return (
+    <div style={{
+      marginBottom: 12,
+      border: '1px solid var(--outline-variant)',
+      borderRadius: 14,
+      background: 'var(--surface-container-low, var(--surface-container))',
+      overflow: 'hidden',
+    }}>
+      {/* Summary header — always visible, shows the active From + To pills */}
+      <button
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-label="Toggle recipients panel"
+        style={{
+          width: '100%', padding: '12px 14px',
+          border: 'none', background: 'transparent', cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', gap: 6, textAlign: 'left',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => { if (!open) e.currentTarget.style.background = 'var(--surface-container)'; }}
+        onMouseLeave={e => { if (!open) e.currentTarget.style.background = 'transparent'; }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem' }}>
+          <span style={{
+            color: 'var(--on-surface-variant)', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.65rem',
+            minWidth: 36,
+          }}>From</span>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0,
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%', background: '#8b4f2c', flexShrink: 0,
+            }} />
+            <span style={{ color: 'var(--on-surface)', fontWeight: 600 }}>{fromLabel}</span>
+            <span style={{ color: 'var(--on-surface-variant)' }}>·</span>
+            <span style={{ color: 'var(--on-surface-variant)', fontSize: '0.72rem' }}>{fromAddress}</span>
+          </span>
+          <ChevronDown
+            size={13}
+            style={{
+              marginLeft: 'auto', color: 'var(--on-surface-variant)',
+              transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s',
+              flexShrink: 0,
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', flexWrap: 'wrap' }}>
+          <span style={{
+            color: 'var(--on-surface-variant)', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.65rem',
+            minWidth: 36,
+          }}>To</span>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '2px 10px 2px 8px', borderRadius: 999,
+            background: 'var(--surface)', border: '1px solid var(--outline-variant)',
+            color: 'var(--on-surface)', fontSize: '0.74rem', fontWeight: 600,
+            maxWidth: '100%', minWidth: 0,
+          }}>
+            <span style={{
+              width: 14, height: 14, borderRadius: '50%',
+              background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '0.62rem', fontWeight: 700, flexShrink: 0,
+            }}>
+              {primaryName.charAt(0).toUpperCase() || '?'}
+            </span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {primaryEmail}
+            </span>
+          </span>
+          {additionalTo.slice(0, 2).map(e => (
+            <span key={e} style={{
+              padding: '2px 10px', borderRadius: 999,
+              background: '#8b4f2c18', color: '#8b4f2c',
+              fontSize: '0.72rem', fontWeight: 600,
+              maxWidth: 200,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {e}
+            </span>
+          ))}
+          {additionalTo.length > 2 && (
+            <span style={{
+              padding: '2px 8px', borderRadius: 999,
+              color: 'var(--on-surface-variant)', fontSize: '0.7rem', fontWeight: 600,
+            }}>
+              +{additionalTo.length - 2}
+            </span>
+          )}
+        </div>
+        {cc.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', flexWrap: 'wrap' }}>
+            <span style={{
+              color: 'var(--on-surface-variant)', fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.65rem',
+              minWidth: 36,
+            }}>Cc</span>
+            {cc.slice(0, 3).map(e => (
+              <span key={e} style={{
+                padding: '2px 10px', borderRadius: 999,
+                background: 'var(--surface)', border: '1px solid var(--outline-variant)',
+                color: 'var(--on-surface)', fontSize: '0.72rem', fontWeight: 600,
+                maxWidth: 180,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {e}
+              </span>
+            ))}
+            {cc.length > 3 && (
+              <span style={{
+                padding: '2px 8px', borderRadius: 999,
+                color: 'var(--on-surface-variant)', fontSize: '0.7rem', fontWeight: 600,
+              }}>
+                +{cc.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+        {!open && extraCount === 0 && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            marginTop: 2,
+            fontSize: '0.7rem', color: '#8b4f2c', fontWeight: 600,
+          }}>
+            <Plus size={11} /> Add CC or more recipients
+          </div>
+        )}
+      </button>
+
+      {/* Expanded editor */}
+      {open && (
+        <div style={{
+          padding: '4px 14px 14px',
+          borderTop: '1px solid var(--outline-variant)',
+          display: 'flex', flexDirection: 'column', gap: 14,
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 12 }}>
+            <span style={FIELD_LABEL_STYLE}>From</span>
+            <FromPicker value={fromKey} senders={senders} onChange={onFromChange} />
+          </div>
+
+          <EmailTagInput
+            label="Additional To"
+            tags={additionalTo}
+            onChange={onAdditionalToChange}
+            placeholder="Add more recipients…"
+            helperText={`Primary recipient (${primaryEmail}) is always included. Max 10 additional.`}
+          />
+
+          <EmailTagInput
+            label="CC"
+            tags={cc}
+            onChange={onCcChange}
+            placeholder="Add CC addresses…"
+          />
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={onToggle}
+              style={{
+                height: 32, padding: '0 14px', borderRadius: 9, border: 'none',
+                background: '#8b4f2c', color: '#fff',
+                fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                boxShadow: '0 1px 2px rgba(139,79,44,0.25)',
+              }}
+            >
+              <Check size={12} /> Done
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SignatureBar({
   scope, signature, editing, draft, saving,
