@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { admin as adminApi } from '../../lib/api';
-import { TicketInbox } from './TicketInbox';
 import { TeamRoles } from './TeamRoles';
 
 const ADMIN_EMAILS = ['akashagakash@gmail.com', 'eaintkphyu98@gmail.com'];
