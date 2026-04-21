@@ -882,14 +882,29 @@ export function TicketInbox() {
               <div style={{ marginBottom: 8 }}>
                 <button
                   onClick={() => setReplyRecipientsOpen(o => !o)}
+                  aria-expanded={replyRecipientsOpen}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '3px 10px', borderRadius: 999,
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    height: 28, padding: '0 12px', borderRadius: 999,
                     border: '1px solid var(--outline-variant)',
                     background: replyAdditionalTo.length + replyCc.length > 0
-                      ? 'var(--surface-container-high)' : 'var(--surface-container)',
-                    color: 'var(--on-surface-variant)',
+                      ? '#8b4f2c18' : 'transparent',
+                    color: replyAdditionalTo.length + replyCc.length > 0
+                      ? '#8b4f2c' : 'var(--on-surface-variant)',
                     fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                    transition: 'background 0.15s, color 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    if (replyAdditionalTo.length + replyCc.length === 0) {
+                      e.currentTarget.style.background = 'var(--surface-container)';
+                      e.currentTarget.style.color = 'var(--on-surface)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (replyAdditionalTo.length + replyCc.length === 0) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'var(--on-surface-variant)';
+                    }
                   }}
                 >
                   <ChevronDown
@@ -897,7 +912,7 @@ export function TicketInbox() {
                     style={{ transform: replyRecipientsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
                   />
                   {replyAdditionalTo.length + replyCc.length > 0
-                    ? `Recipients · +${replyAdditionalTo.length} To, ${replyCc.length} CC`
+                    ? <>Recipients · +{replyAdditionalTo.length} to, {replyCc.length} cc</>
                     : 'Add CC or more recipients'}
                 </button>
                 {replyRecipientsOpen && (
@@ -945,74 +960,17 @@ export function TicketInbox() {
                   </div>
                 )}
               </div>
-              {/* Signature chip + inline editor */}
-              <div style={{ marginBottom: 8, fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
-                {editingSignature ? (
-                  <div style={{
-                    padding: '0.6rem 0.8rem', borderRadius: 12,
-                    border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
-                  }}>
-                    <div style={{
-                      fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-                      letterSpacing: '0.06em', color: 'var(--on-surface-variant)', marginBottom: 6,
-                    }}>
-                      Your signature (appended to every reply)
-                    </div>
-                    <textarea
-                      value={signatureDraft}
-                      onChange={e => setSignatureDraft(e.target.value.slice(0, 1000))}
-                      placeholder={'e.g.\nAlex\nPathWise Support'}
-                      rows={3}
-                      style={{
-                        width: '100%', padding: '0.5rem 0.7rem', borderRadius: 10,
-                        border: '1px solid var(--outline-variant)', background: 'var(--surface)',
-                        color: 'var(--on-surface)', fontSize: '0.85rem', lineHeight: 1.5,
-                        resize: 'vertical', outline: 'none', fontFamily: 'inherit',
-                      }}
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 6 }}>
-                      <button
-                        onClick={() => { setSignatureDraft(signature); setEditingSignature(false); }}
-                        style={{
-                          padding: '0.4rem 0.8rem', borderRadius: 999, border: '1px solid var(--outline-variant)',
-                          background: 'var(--surface)', color: 'var(--on-surface-variant)',
-                          fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleSaveSignature}
-                        disabled={savingSignature}
-                        style={{
-                          padding: '0.4rem 0.9rem', borderRadius: 999, border: 'none',
-                          background: '#8b4f2c', color: '#fff',
-                          fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: 4,
-                          opacity: savingSignature ? 0.5 : 1,
-                        }}
-                      >
-                        <Check size={12} /> {savingSignature ? 'Saving…' : 'Save'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setEditingSignature(true)}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      padding: '3px 10px', borderRadius: 999,
-                      border: '1px solid var(--outline-variant)',
-                      background: signature ? 'var(--surface-container-high)' : 'var(--surface-container)',
-                      color: 'var(--on-surface-variant)', fontSize: '0.72rem', fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Pencil size={11} />
-                    {signature ? `Signature: ${signature.split('\n')[0].slice(0, 40)}${signature.length > 40 ? '…' : ''}` : 'Add your signature'}
-                  </button>
-                )}
-              </div>
+              <SignatureBar
+                scope="reply"
+                signature={signature}
+                editing={editingSignature}
+                draft={signatureDraft}
+                saving={savingSignature}
+                onDraftChange={setSignatureDraft}
+                onEdit={() => setEditingSignature(true)}
+                onCancel={() => { setSignatureDraft(signature); setEditingSignature(false); }}
+                onSave={handleSaveSignature}
+              />
               {showPreview && previewHtml && (() => {
                 const activeHtml = replyEditedHtml ?? previewHtml;
                 return (
@@ -1134,14 +1092,18 @@ export function TicketInbox() {
                   <button
                     onClick={() => setSnippetsPickerOpen(o => o === 'reply' ? null : 'reply')}
                     title="Insert snippet"
+                    aria-label="Insert snippet"
                     style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                      padding: '0.55rem 0.9rem', borderRadius: 999,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      height: 36, padding: '0 14px', borderRadius: 10,
                       border: '1px solid var(--outline-variant)',
-                      background: snippetsPickerOpen === 'reply' ? 'var(--surface-container-high)' : 'var(--surface-container)',
+                      background: snippetsPickerOpen === 'reply' ? 'var(--surface-container-high)' : 'transparent',
                       color: 'var(--on-surface)',
                       fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                      transition: 'background 0.15s',
                     }}
+                    onMouseEnter={e => { if (snippetsPickerOpen !== 'reply') e.currentTarget.style.background = 'var(--surface-container)'; }}
+                    onMouseLeave={e => { if (snippetsPickerOpen !== 'reply') e.currentTarget.style.background = 'transparent'; }}
                   >
                     <Bookmark size={14} /> Snippets
                   </button>
@@ -1208,20 +1170,32 @@ export function TicketInbox() {
           previewHtml={composePreviewHtml}
           editedHtml={composeEditedHtml}
           editMode={composeEditMode}
+          signature={signature}
+          signatureDraft={signatureDraft}
+          signatureEditing={editingSignature}
+          signatureSaving={savingSignature}
           onEditedHtmlChange={setComposeEditedHtml}
           onEditModeChange={setComposeEditMode}
+          onSignatureDraftChange={setSignatureDraft}
+          onSignatureEdit={() => setEditingSignature(true)}
+          onSignatureCancel={() => { setSignatureDraft(signature); setEditingSignature(false); }}
+          onSignatureSave={handleSaveSignature}
           snippetsButton={
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setSnippetsPickerOpen(o => o === 'compose' ? null : 'compose')}
                 title="Insert snippet"
+                aria-label="Insert snippet"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '0.5rem 0.9rem', borderRadius: 999,
+                  height: 36, padding: '0 14px', borderRadius: 10,
                   border: '1px solid var(--outline-variant)',
-                  background: snippetsPickerOpen === 'compose' ? 'var(--surface-container-high)' : 'var(--surface-container)',
+                  background: snippetsPickerOpen === 'compose' ? 'var(--surface-container-high)' : 'transparent',
                   color: 'var(--on-surface)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                  transition: 'background 0.15s',
                 }}
+                onMouseEnter={e => { if (snippetsPickerOpen !== 'compose') e.currentTarget.style.background = 'var(--surface-container)'; }}
+                onMouseLeave={e => { if (snippetsPickerOpen !== 'compose') e.currentTarget.style.background = 'transparent'; }}
               >
                 <Bookmark size={14} /> Snippets
               </button>
@@ -1300,14 +1274,21 @@ type PopoverProps = {
 
 function SnippetsPopover(props: PopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [filterFocused, setFilterFocused] = useState(false);
+
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) props.onClose();
     };
     const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') props.onClose(); };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onEsc);
+    // Defer registration to next tick so the click that opened the popover
+    // doesn't immediately close it on some React 19 batching paths.
+    const id = requestAnimationFrame(() => {
+      document.addEventListener('mousedown', onDocClick);
+      document.addEventListener('keydown', onEsc);
+    });
     return () => {
+      cancelAnimationFrame(id);
       document.removeEventListener('mousedown', onDocClick);
       document.removeEventListener('keydown', onEsc);
     };
@@ -1320,126 +1301,169 @@ function SnippetsPopover(props: PopoverProps) {
         position: 'absolute',
         bottom: 'calc(100% + 8px)',
         right: 0,
-        width: 320,
-        maxHeight: 380,
+        width: 340,
+        maxHeight: 400,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--surface)',
         border: '1px solid var(--outline-variant)',
         borderRadius: 14,
-        boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-        zIndex: 50,
+        boxShadow: '0 16px 40px rgba(15,15,25,0.18), 0 2px 6px rgba(15,15,25,0.08)',
+        zIndex: 200,
       }}
     >
+      {/* Header */}
       <div style={{
-        padding: '0.55rem 0.7rem', borderBottom: '1px solid var(--outline-variant)',
-        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '10px 12px', borderBottom: '1px solid var(--outline-variant)',
+        display: 'flex', alignItems: 'center', gap: 8,
+        background: 'var(--surface-container-low, var(--surface))',
       }}>
-        <Bookmark size={13} style={{ color: 'var(--on-surface-variant)' }} />
+        <div style={{
+          width: 22, height: 22, borderRadius: 7, flexShrink: 0,
+          background: '#8b4f2c18', color: '#8b4f2c',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Bookmark size={12} />
+        </div>
         <span style={{
-          fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '0.06em', color: 'var(--on-surface-variant)', flex: 1,
+          fontSize: '0.78rem', fontWeight: 700, color: 'var(--on-surface)', flex: 1,
         }}>
           Your snippets
         </span>
         <button
           onClick={props.onManage}
-          style={{
-            padding: '2px 8px', fontSize: '0.7rem', fontWeight: 600,
-            borderRadius: 999, border: '1px solid var(--outline-variant)',
-            background: 'var(--surface-container)', color: 'var(--on-surface)',
-            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
-          }}
           title="Manage snippets"
+          style={{
+            padding: '3px 10px', fontSize: '0.7rem', fontWeight: 600,
+            borderRadius: 8, border: '1px solid var(--outline-variant)',
+            background: 'transparent', color: 'var(--on-surface)',
+            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
+            transition: 'background 0.12s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
         >
-          <Plus size={10} /> New
+          <Plus size={11} /> New
         </button>
       </div>
+
+      {/* Filter */}
       {props.total > 0 && (
-        <div style={{ padding: '0.5rem 0.6rem', borderBottom: '1px solid var(--outline-variant)' }}>
+        <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--outline-variant)' }}>
           <input
             autoFocus
-            placeholder="Filter snippets"
+            placeholder="Search by title or body"
             value={props.filter}
             onChange={e => props.onFilterChange(e.target.value)}
+            onFocus={() => setFilterFocused(true)}
+            onBlur={() => setFilterFocused(false)}
             style={{
-              width: '100%', padding: '5px 10px', borderRadius: 999,
-              border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+              width: '100%', padding: '6px 12px', borderRadius: 9,
+              border: `1px solid ${filterFocused ? '#8b4f2c' : 'var(--outline-variant)'}`,
+              background: 'var(--surface-container)',
               color: 'var(--on-surface)', fontSize: '0.78rem', outline: 'none',
+              boxShadow: filterFocused ? '0 0 0 3px rgba(139,79,44,0.12)' : 'none',
+              transition: 'border 0.15s, box-shadow 0.15s',
             }}
           />
         </div>
       )}
+
+      {/* Body */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {props.loading ? (
-          <div style={{ padding: '1.25rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-            Loading…
+          <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
+            Loading snippets…
           </div>
         ) : props.total === 0 ? (
-          <div style={{ padding: '1.25rem 1rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-            No snippets yet.
-            <div style={{ marginTop: 8 }}>
-              <button
-                onClick={props.onManage}
-                style={{
-                  padding: '5px 12px', borderRadius: 999, border: 'none',
-                  background: '#8b4f2c', color: '#fff',
-                  fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
-                }}
-              >
-                Create your first snippet
-              </button>
+          <div style={{
+            padding: '1.5rem 1rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.8rem',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+          }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'var(--surface-container)', color: 'var(--on-surface-variant)', opacity: 0.6,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Bookmark size={16} />
             </div>
-          </div>
-        ) : props.snippets.length === 0 ? (
-          <div style={{ padding: '1.25rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
-            No matches for "{props.filter}".
-          </div>
-        ) : (
-          props.snippets.map(s => (
-            <div
-              key={s.id}
+            <div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)', marginBottom: 2 }}>
+                No snippets yet
+              </div>
+              <div style={{ fontSize: '0.72rem', lineHeight: 1.5 }}>
+                Save canned replies to insert them here with one click.
+              </div>
+            </div>
+            <button
+              onClick={props.onManage}
               style={{
-                padding: '0.6rem 0.8rem', borderBottom: '1px solid var(--outline-variant)',
-                display: 'flex', gap: 8, alignItems: 'flex-start',
+                height: 30, padding: '0 14px', borderRadius: 9, border: 'none',
+                background: '#8b4f2c', color: '#fff',
+                fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 1px 2px rgba(139,79,44,0.25)',
+                display: 'inline-flex', alignItems: 'center', gap: 5,
               }}
             >
-              <button
-                onClick={() => props.onPick(s)}
+              <Plus size={11} /> Create first snippet
+            </button>
+          </div>
+        ) : props.snippets.length === 0 ? (
+          <div style={{ padding: '1.5rem 1rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.8rem' }}>
+            No matches for &ldquo;{props.filter}&rdquo;.
+          </div>
+        ) : (
+          <div style={{ padding: '4px 0' }}>
+            {props.snippets.map(s => (
+              <div
+                key={s.id}
                 style={{
-                  flex: 1, textAlign: 'left', background: 'none', border: 'none',
-                  padding: 0, cursor: 'pointer', color: 'var(--on-surface)',
+                  padding: '8px 12px',
+                  display: 'flex', gap: 8, alignItems: 'flex-start',
+                  transition: 'background 0.12s',
                 }}
-                title="Insert into message"
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
               >
-                <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 2 }}>
-                  {s.title}
-                </div>
-                <div style={{
-                  fontSize: '0.72rem', color: 'var(--on-surface-variant)',
-                  overflow: 'hidden', textOverflow: 'ellipsis',
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                  whiteSpace: 'pre-wrap',
-                }}>
-                  {s.body}
-                </div>
-              </button>
-              <button
-                onClick={() => props.onEdit(s)}
-                title="Edit snippet"
-                style={{
-                  flexShrink: 0, width: 24, height: 24, padding: 0,
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: '50%', border: '1px solid var(--outline-variant)',
-                  background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
-                  cursor: 'pointer',
-                }}
-              >
-                <Pencil size={11} />
-              </button>
-            </div>
-          ))
+                <button
+                  onClick={() => props.onPick(s)}
+                  style={{
+                    flex: 1, textAlign: 'left', background: 'none', border: 'none',
+                    padding: 0, cursor: 'pointer', color: 'var(--on-surface)',
+                  }}
+                  title="Insert into message"
+                >
+                  <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 2, lineHeight: 1.3 }}>
+                    {s.title}
+                  </div>
+                  <div style={{
+                    fontSize: '0.72rem', color: 'var(--on-surface-variant)', lineHeight: 1.4,
+                    overflow: 'hidden',
+                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {s.body}
+                  </div>
+                </button>
+                <button
+                  onClick={() => props.onEdit(s)}
+                  title="Edit snippet"
+                  style={{
+                    flexShrink: 0, width: 26, height: 26, padding: 0,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 7, border: '1px solid transparent',
+                    background: 'transparent', color: 'var(--on-surface-variant)',
+                    cursor: 'pointer', transition: 'all 0.12s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--outline-variant)'; e.currentTarget.style.color = '#8b4f2c'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--on-surface-variant)'; }}
+                >
+                  <Pencil size={11} />
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -1458,6 +1482,10 @@ type ComposeProps = {
   previewHtml: string;
   editedHtml: string | null;
   editMode: boolean;
+  signature: string;
+  signatureDraft: string;
+  signatureEditing: boolean;
+  signatureSaving: boolean;
   snippetsButton: React.ReactNode;
   onToChange: (v: string[]) => void;
   onCcChange: (v: string[]) => void;
@@ -1466,6 +1494,10 @@ type ComposeProps = {
   onMessageChange: (v: string) => void;
   onEditedHtmlChange: (v: string | null) => void;
   onEditModeChange: (v: boolean) => void;
+  onSignatureDraftChange: (v: string) => void;
+  onSignatureEdit: () => void;
+  onSignatureCancel: () => void;
+  onSignatureSave: () => void;
   onTogglePreview: () => void;
   onSend: () => void;
   onClose: () => void;
@@ -1712,6 +1744,18 @@ function ComposeModal(p: ComposeProps) {
               }}
             />
           </label>
+
+          <SignatureBar
+            scope="compose"
+            signature={p.signature}
+            editing={p.signatureEditing}
+            draft={p.signatureDraft}
+            saving={p.signatureSaving}
+            onDraftChange={p.onSignatureDraftChange}
+            onEdit={p.onSignatureEdit}
+            onCancel={p.onSignatureCancel}
+            onSave={p.onSignatureSave}
+          />
 
           {p.previewOpen && p.previewHtml && (
             <div style={{
@@ -2136,6 +2180,176 @@ const DECISION_STYLE: Record<string, { bg: string; color: string; label: string 
   'secret-missing':    { bg: '#fee2e2', color: '#991b1b', label: 'Webhook secret missing' },
   'internal-error':    { bg: '#fee2e2', color: '#991b1b', label: 'Internal error (see reason)' },
 };
+
+function SignatureBar({
+  scope, signature, editing, draft, saving,
+  onDraftChange, onEdit, onCancel, onSave,
+}: {
+  scope: 'reply' | 'compose';
+  signature: string;
+  editing: boolean;
+  draft: string;
+  saving: boolean;
+  onDraftChange: (v: string) => void;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  const [focused, setFocused] = useState(false);
+  const preview = signature.trim();
+  const firstLine = preview ? preview.split('\n')[0] : '';
+  const helperText = scope === 'reply'
+    ? 'Appended to every ticket reply you send.'
+    : 'Appended to every compose email you send.';
+
+  if (editing) {
+    return (
+      <div style={{
+        marginBottom: 10, padding: '12px 14px', borderRadius: 14,
+        border: '1px solid var(--outline-variant)', background: 'var(--surface-container-low, var(--surface-container))',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,
+        }}>
+          <div style={{
+            width: 24, height: 24, borderRadius: 8, flexShrink: 0,
+            background: '#8b4f2c18', color: '#8b4f2c',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Pencil size={12} />
+          </div>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--on-surface)' }}>
+            Your signature
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)' }}>
+            {helperText}
+          </div>
+        </div>
+        <textarea
+          value={draft}
+          onChange={e => onDraftChange(e.target.value.slice(0, 1000))}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder={'e.g.\nAlex\nPathWise Support'}
+          rows={3}
+          style={{
+            ...polishedInputStyle(focused),
+            fontSize: '0.85rem', lineHeight: 1.55, resize: 'vertical',
+          }}
+        />
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 8,
+        }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', opacity: 0.7 }}>
+            {draft.length}/1000
+          </span>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={onCancel}
+              style={{
+                height: 32, padding: '0 12px', borderRadius: 9,
+                border: '1px solid var(--outline-variant)',
+                background: 'transparent', color: 'var(--on-surface-variant)',
+                fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSave}
+              disabled={saving}
+              style={{
+                height: 32, padding: '0 14px', borderRadius: 9, border: 'none',
+                background: '#8b4f2c', color: '#fff',
+                fontSize: '0.78rem', fontWeight: 700,
+                cursor: saving ? 'default' : 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                opacity: saving ? 0.6 : 1,
+                boxShadow: saving ? 'none' : '0 1px 2px rgba(139,79,44,0.25)',
+              }}
+            >
+              <Check size={12} /> {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!preview) {
+    return (
+      <button
+        onClick={onEdit}
+        style={{
+          marginBottom: 8, display: 'inline-flex', alignItems: 'center', gap: 6,
+          height: 28, padding: '0 12px', borderRadius: 999,
+          border: '1px dashed var(--outline-variant)',
+          background: 'transparent', color: 'var(--on-surface-variant)',
+          fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer',
+          transition: 'background 0.15s, border 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.borderStyle = 'solid'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderStyle = 'dashed'; }}
+      >
+        <Plus size={11} /> Add your signature
+      </button>
+    );
+  }
+
+  return (
+    <div style={{
+      marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+    }}>
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        padding: '5px 10px 5px 8px', borderRadius: 999,
+        border: '1px solid var(--outline-variant)',
+        background: 'var(--surface-container)',
+        color: 'var(--on-surface)', fontSize: '0.74rem', fontWeight: 600,
+        maxWidth: '100%', minWidth: 0,
+      }}>
+        <span style={{
+          width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+          background: '#8b4f2c18', color: '#8b4f2c',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Pencil size={9} />
+        </span>
+        <span style={{
+          color: 'var(--on-surface-variant)', fontWeight: 500, fontSize: '0.68rem',
+          textTransform: 'uppercase', letterSpacing: '0.04em',
+        }}>
+          Signature
+        </span>
+        <span style={{
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          maxWidth: 220,
+        }}>
+          {firstLine || '(empty)'}
+          {preview.includes('\n') && <span style={{ opacity: 0.5 }}> · +{preview.split('\n').length - 1} line{preview.split('\n').length - 1 === 1 ? '' : 's'}</span>}
+        </span>
+      </div>
+      <button
+        onClick={onEdit}
+        title="Edit signature"
+        style={{
+          height: 24, padding: '0 10px', borderRadius: 999,
+          border: '1px solid transparent', background: 'transparent',
+          color: 'var(--on-surface-variant)', fontSize: '0.7rem', fontWeight: 600,
+          cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
+          transition: 'background 0.15s, color 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = '#8b4f2c'; e.currentTarget.style.background = '#8b4f2c0f'; }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'var(--on-surface-variant)'; e.currentTarget.style.background = 'transparent'; }}
+      >
+        Edit
+      </button>
+    </div>
+  );
+}
 
 function StatusPicker({
   value, onChange,
