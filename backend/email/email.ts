@@ -219,22 +219,54 @@ export function adminTicketNotificationEmail(
   };
 }
 
+function renderMessageBody(message: string): string {
+  // Render message as HTML: preserve line breaks, linkify URLs, allow safe inline tags
+  return message
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n\n+/g, '</p><p style="margin: 0 0 16px; font-size: 15px; color: #374151; line-height: 1.65;">')
+    .replace(/\n/g, "<br>")
+    .replace(
+      /(https?:\/\/[^\s<>"]+)/g,
+      `<a href="$1" style="color: ${BRAND_COLOR}; text-decoration: underline;">$1</a>`
+    );
+}
+
 export function adminReplyEmail(
   recipientName: string,
   subject: string,
   message: string
 ): { subject: string; html: string } {
   const firstName = escapeHtml(recipientName.split(" ")[0]);
-  const escapedMessage = escapeHtml(message).replace(/\n/g, "<br>");
+  const bodyHtml = renderMessageBody(message);
   return {
     subject: escapeHtml(subject),
     html: layout(`
-      ${h1("Message from the PathWise team")}
-      ${p(`Hi ${firstName},`)}
-      <div style="padding: 20px; background: #f9fafb; border-radius: 8px; border-left: 3px solid ${BRAND_COLOR}; font-size: 15px; color: #374151; line-height: 1.65; margin: 0 0 24px;">
-        ${escapedMessage}
-      </div>
-      ${p('Reply to this email or reach us at <a href="mailto:hello@pathwise.fit" style="color: ' + BRAND_COLOR + ';">hello@pathwise.fit</a>.')}
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 8px;">
+        <tr>
+          <td style="padding: 0 0 4px;">
+            <span style="display: inline-block; padding: 4px 12px; background: ${BRAND_COLOR}18; color: ${BRAND_COLOR}; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px;">PathWise Team</span>
+          </td>
+        </tr>
+      </table>
+
+      ${h1(`Hi ${firstName},`)}
+
+      <p style="margin: 0 0 16px; font-size: 15px; color: #374151; line-height: 1.65;">
+        ${bodyHtml}
+      </p>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 28px 0 24px; border-top: 1px solid #eaeaef;">
+        <tr>
+          <td style="padding: 20px 0 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
+            <strong style="color: #374151;">The PathWise Team</strong><br>
+            <a href="mailto:hello@pathwise.fit" style="color: ${BRAND_COLOR};">hello@pathwise.fit</a>
+            &nbsp;&middot;&nbsp;
+            <a href="https://pathwise.fit" style="color: ${BRAND_COLOR};">pathwise.fit</a>
+          </td>
+        </tr>
+      </table>
     `),
   };
 }
@@ -243,17 +275,34 @@ export function adminBroadcastEmail(
   subject: string,
   message: string
 ): { subject: string; html: string } {
-  const escapedMessage = escapeHtml(message).replace(/\n/g, "<br>");
+  const bodyHtml = renderMessageBody(message);
   return {
     subject: escapeHtml(subject),
     html: layout(`
-      <div style="font-size: 15px; color: #374151; line-height: 1.65;">
-        ${escapedMessage}
-      </div>
-      <div style="margin-top: 24px;">
-        ${button("Open PathWise", "https://pathwise.fit/app")}
-      </div>
-      ${p('Questions? Contact us at <a href="mailto:hello@pathwise.fit" style="color: ' + BRAND_COLOR + ';">hello@pathwise.fit</a>.')}
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 8px;">
+        <tr>
+          <td style="padding: 0 0 4px;">
+            <span style="display: inline-block; padding: 4px 12px; background: ${BRAND_COLOR}18; color: ${BRAND_COLOR}; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px;">PathWise Team</span>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin: 0 0 20px; font-size: 15px; color: #374151; line-height: 1.65;">
+        ${bodyHtml}
+      </p>
+
+      ${button("Open PathWise", "https://pathwise.fit/app")}
+
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 8px 0 0; border-top: 1px solid #eaeaef;">
+        <tr>
+          <td style="padding: 20px 0 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
+            <strong style="color: #374151;">The PathWise Team</strong><br>
+            <a href="mailto:hello@pathwise.fit" style="color: ${BRAND_COLOR};">hello@pathwise.fit</a>
+            &nbsp;&middot;&nbsp;
+            <a href="https://pathwise.fit" style="color: ${BRAND_COLOR};">pathwise.fit</a>
+          </td>
+        </tr>
+      </table>
     `),
   };
 }

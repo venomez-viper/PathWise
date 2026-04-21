@@ -348,7 +348,7 @@ interface ComposeTarget {
 
 interface BroadcastTarget {
   type: 'broadcast';
-  userCount: number;
+  users: { id: string; name: string; email: string; plan: string }[];
 }
 
 type ComposeModal = ComposeTarget | BroadcastTarget;
@@ -441,14 +441,22 @@ function EmailComposeModal({
   onClose: () => void;
 }) {
   const isReply = target.type === 'reply';
+  const broadcastUsers = isReply ? [] : (target as BroadcastTarget).users;
+
   const [subject, setSubject] = useState(
     isReply ? `Re: ${(target as ComposeTarget).originalSubject || 'Your support request'}` : ''
   );
   const [message, setMessage] = useState('');
   const [additionalTo, setAdditionalTo] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
+  // Broadcast: track selected user IDs (default = all selected)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(broadcastUsers.map(u => u.id))
+  );
+  const [userSearch, setUserSearch] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [sentCount, setSentCount] = useState(0);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -457,13 +465,39 @@ function EmailComposeModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  const filteredUsers = useMemo(() =>
+    broadcastUsers.filter(u =>
+      !userSearch.trim() ||
+      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.email.toLowerCase().includes(userSearch.toLowerCase())
+    ), [broadcastUsers, userSearch]);
+
+  const allFilteredSelected = filteredUsers.length > 0 && filteredUsers.every(u => selectedIds.has(u.id));
+
+  const toggleUser = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllFiltered = () => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allFilteredSelected) {
+        filteredUsers.forEach(u => next.delete(u.id));
+      } else {
+        filteredUsers.forEach(u => next.add(u.id));
+      }
+      return next;
+    });
+  };
+
   const handleSend = async () => {
-    if (!subject.trim() || !message.trim()) {
-      setError('Subject and message are required.');
-      return;
-    }
-    setSending(true);
-    setError('');
+    if (!subject.trim() || !message.trim()) { setError('Subject and message are required.'); return; }
+    if (!isReply && selectedIds.size === 0) { setError('Select at least one recipient.'); return; }
+    setSending(true); setError('');
     try {
       if (isReply) {
         await adminApi.replyToTicket((target as ComposeTarget).ticketId, {
@@ -471,11 +505,14 @@ function EmailComposeModal({
           additionalTo: additionalTo.length > 0 ? additionalTo : undefined,
           cc: cc.length > 0 ? cc : undefined,
         });
+        setSentCount(1);
       } else {
-        await adminApi.broadcastEmail({ subject, message });
+        const targetEmails = broadcastUsers.filter(u => selectedIds.has(u.id)).map(u => u.email);
+        const res = await adminApi.broadcastEmail({ subject, message, targetEmails });
+        setSentCount(res.sent);
       }
       setSent(true);
-      setTimeout(onClose, 1800);
+      setTimeout(onClose, 2200);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send email.');
     } finally {
@@ -495,17 +532,13 @@ function EmailComposeModal({
 
   return (
     <>
-      <div
-        onClick={onClose}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 2000, backdropFilter: 'blur(2px)' }}
-      />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 2000, backdropFilter: 'blur(2px)' }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        zIndex: 2001, width: '100%', maxWidth: 580,
+        zIndex: 2001, width: '100%', maxWidth: 620,
         background: 'var(--surface)', borderRadius: '1.5rem',
         boxShadow: '0 24px 64px rgba(0,0,0,0.25)', padding: '2rem',
-        animation: 'fadeIn 0.15s ease',
-        maxHeight: '90vh', overflowY: 'auto',
+        animation: 'fadeIn 0.15s ease', maxHeight: '92vh', overflowY: 'auto',
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
@@ -515,12 +548,12 @@ function EmailComposeModal({
             </div>
             <div>
               <p style={{ fontWeight: 700, fontSize: '1rem', margin: 0 }}>
-                {isReply ? 'Reply to Ticket' : 'Email All Users'}
+                {isReply ? 'Reply to Ticket' : 'Send Email'}
               </p>
               <p style={{ fontSize: '0.75rem', color: 'var(--on-surface-variant)', margin: 0 }}>
                 {isReply
-                  ? `To: ${(target as ComposeTarget).recipientName} <${(target as ComposeTarget).recipientEmail}>`
-                  : `To: All ${(target as BroadcastTarget).userCount} signed-up users`}
+                  ? `${(target as ComposeTarget).recipientName} · ${(target as ComposeTarget).recipientEmail}`
+                  : `${selectedIds.size} of ${broadcastUsers.length} users selected`}
               </p>
             </div>
           </div>
@@ -531,35 +564,82 @@ function EmailComposeModal({
 
         {sent ? (
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <CheckCircle2 size={48} color="#22c55e" style={{ marginBottom: '0.75rem' }} />
-            <p style={{ fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>Email sent!</p>
+            <CheckCircle2 size={52} color="#22c55e" style={{ marginBottom: '0.75rem' }} />
+            <p style={{ fontWeight: 700, fontSize: '1.15rem', margin: '0 0 4px' }}>Email sent!</p>
+            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.85rem', margin: 0 }}>
+              Delivered to {sentCount} {sentCount === 1 ? 'recipient' : 'recipients'}
+            </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Additional To + CC */}
-            <EmailTagInput
-              label={isReply ? 'Add more recipients (To)' : 'Additional recipients (To)'}
-              tags={additionalTo}
-              onChange={setAdditionalTo}
-              placeholder="Add email addresses..."
-            />
-            <EmailTagInput
-              label="CC"
-              tags={cc}
-              onChange={setCc}
-              placeholder="Add CC addresses..."
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+
+            {/* ── Broadcast: user picker ── */}
+            {!isReply && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <label style={labelStyle}>Recipients</label>
+                  <button
+                    onClick={toggleAllFiltered}
+                    style={{ fontSize: '0.75rem', fontWeight: 600, color: '#6245a4', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    {allFilteredSelected ? 'Deselect all' : 'Select all'}
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={userSearch}
+                  onChange={e => setUserSearch(e.target.value)}
+                  placeholder="Search users..."
+                  style={{ ...inputStyle, marginBottom: 8 }}
+                />
+                <div style={{
+                  maxHeight: 200, overflowY: 'auto', border: '1px solid var(--outline-variant)',
+                  borderRadius: '0.75rem', background: 'var(--surface-container)',
+                }}>
+                  {filteredUsers.length === 0 ? (
+                    <p style={{ padding: '1rem', textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.82rem', margin: 0 }}>No users found</p>
+                  ) : filteredUsers.map((u, i) => (
+                    <label key={u.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '0.55rem 0.875rem',
+                      cursor: 'pointer', borderBottom: i < filteredUsers.length - 1 ? '1px solid var(--outline-variant)' : 'none',
+                      background: selectedIds.has(u.id) ? '#6245a408' : 'transparent',
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(u.id)}
+                        onChange={() => toggleUser(u.id)}
+                        style={{ accentColor: '#6245a4', width: 15, height: 15, flexShrink: 0 }}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</p>
+                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
+                      </div>
+                      <span style={{
+                        marginLeft: 'auto', flexShrink: 0, fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px',
+                        borderRadius: '999px', background: u.plan === 'premium' ? '#7c3aed18' : '#6b728018',
+                        color: u.plan === 'premium' ? '#7c3aed' : '#6b7280',
+                      }}>{u.plan}</span>
+                    </label>
+                  ))}
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>
+                  {selectedIds.size} recipient{selectedIds.size !== 1 ? 's' : ''} selected
+                </p>
+              </div>
+            )}
+
+            {/* ── Reply: To + CC tag inputs ── */}
+            {isReply && (
+              <>
+                <EmailTagInput label="Add recipients (To)" tags={additionalTo} onChange={setAdditionalTo} placeholder="Add email addresses..." />
+                <EmailTagInput label="CC" tags={cc} onChange={setCc} placeholder="Add CC addresses..." />
+              </>
+            )}
 
             {/* Subject */}
             <div>
               <label style={labelStyle}>Subject</label>
-              <input
-                type="text"
-                value={subject}
-                onChange={e => setSubject(e.target.value)}
-                placeholder="Email subject..."
-                style={inputStyle}
-              />
+              <input type="text" value={subject} onChange={e => setSubject(e.target.value)} placeholder="Email subject..." style={inputStyle} />
             </div>
 
             {/* Message */}
@@ -569,40 +649,33 @@ function EmailComposeModal({
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Write your message..."
-                rows={8}
-                style={{
-                  ...inputStyle,
-                  resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.65,
-                }}
+                rows={7}
+                style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.65 }}
               />
+              <p style={{ fontSize: '0.7rem', color: 'var(--on-surface-variant)', margin: '4px 0 0' }}>
+                Sent as a branded PathWise HTML email with logo and footer
+              </p>
             </div>
 
-            {error && (
-              <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: 0 }}>{error}</p>
-            )}
+            {error && <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: 0 }}>{error}</p>}
 
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button
-                onClick={onClose}
-                style={{
-                  padding: '0.6rem 1.25rem', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 600,
-                  background: 'none', border: '1px solid var(--outline-variant)', color: 'var(--on-surface)', cursor: 'pointer',
-                }}
-              >
+              <button onClick={onClose} style={{ padding: '0.6rem 1.25rem', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 600, background: 'none', border: '1px solid var(--outline-variant)', color: 'var(--on-surface)', cursor: 'pointer' }}>
                 Cancel
               </button>
               <button
                 onClick={handleSend}
-                disabled={sending || !subject.trim() || !message.trim()}
+                disabled={sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   padding: '0.6rem 1.5rem', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 700,
-                  background: '#6245a4', color: '#fff', border: 'none', cursor: sending ? 'not-allowed' : 'pointer',
-                  opacity: sending || !subject.trim() || !message.trim() ? 0.6 : 1,
+                  background: '#6245a4', color: '#fff', border: 'none',
+                  cursor: sending ? 'not-allowed' : 'pointer',
+                  opacity: sending || !subject.trim() || !message.trim() || (!isReply && selectedIds.size === 0) ? 0.6 : 1,
                 }}
               >
                 <Send size={14} />
-                {sending ? 'Sending...' : 'Send Email'}
+                {sending ? 'Sending...' : `Send to ${isReply ? (1 + additionalTo.length) : selectedIds.size}`}
               </button>
             </div>
           </div>
@@ -1381,7 +1454,7 @@ export default function AdminPage() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
             <button
-              onClick={() => setComposeModal({ type: 'broadcast', userCount: users.length })}
+              onClick={() => setComposeModal({ type: 'broadcast', users })}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 600,
