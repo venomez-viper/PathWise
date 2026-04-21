@@ -29,19 +29,31 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+const BOOTSTRAP_ADMIN_EMAILS = ['akashagakash@gmail.com', 'eaintkphyu98@gmail.com'];
+
 export default function Sidebar({ user, open = false, onClose }: SidebarProps) {
+  const isBootstrapAdmin = BOOTSTRAP_ADMIN_EMAILS.includes(user.email);
+  // Start with bootstrap-admin derived from email so the Admin link shows
+  // instantly on page load (even before /auth/me/access finishes or if it's
+  // not yet deployed). Upgrade with backend result once it arrives.
   const [access, setAccess] = useState<{ isAdmin: boolean; canAccessTickets: boolean }>({
-    isAdmin: false,
-    canAccessTickets: false,
+    isAdmin: isBootstrapAdmin,
+    canAccessTickets: isBootstrapAdmin,
   });
 
   useEffect(() => {
     let alive = true;
     getMyAccess()
-      .then(res => { if (alive) setAccess({ isAdmin: res.isAdmin, canAccessTickets: res.canAccessTickets }); })
+      .then(res => {
+        if (!alive) return;
+        setAccess({
+          isAdmin: res.isAdmin || isBootstrapAdmin,
+          canAccessTickets: res.canAccessTickets || isBootstrapAdmin,
+        });
+      })
       .catch(() => {});
     return () => { alive = false; };
-  }, []);
+  }, [isBootstrapAdmin]);
 
   const handleLogout = () => {
     tokenStore.clear();
