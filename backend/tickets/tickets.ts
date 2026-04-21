@@ -164,6 +164,7 @@ interface ReplyToTicketParams {
   additionalTo?: string[];
   cc?: string[];
   from?: string;
+  rawHtml?: string;
 }
 
 export const adminReplyToTicket = api(
@@ -230,7 +231,12 @@ export const adminReplyToTicket = api(
     if (params.from && !(FROM_KEYS as string[]).includes(params.from)) {
       throw APIError.invalidArgument(`invalid from address: ${params.from}`);
     }
-    const emailContent = adminReplyEmail(params.subject, messageWithSignature);
+    if (params.rawHtml && params.rawHtml.length > 200000) {
+      throw APIError.invalidArgument("rawHtml too long (max 200KB)");
+    }
+    const emailContent = params.rawHtml
+      ? { subject: params.subject, html: params.rawHtml }
+      : adminReplyEmail(params.subject, messageWithSignature);
 
     // Build To list: primary ticket email + any additional addresses
     const toList = [ticket.email, ...(params.additionalTo ?? [])].filter(Boolean);
@@ -360,6 +366,9 @@ interface ComposeEmailParams {
   subject: string;
   message: string;
   from?: string;
+  // Optional: agent-edited HTML. If present, this exact HTML is sent instead
+  // of rendering the `message` plaintext through adminBroadcastEmail.
+  rawHtml?: string;
 }
 
 interface ComposeFailure {
@@ -400,6 +409,9 @@ export const adminComposeEmail = api(
     if (!params.message?.trim()) throw APIError.invalidArgument("message is required");
     if (params.subject.length > 500) throw APIError.invalidArgument("subject too long");
     if (params.message.length > 10000) throw APIError.invalidArgument("message too long");
+    if (params.rawHtml && params.rawHtml.length > 200000) {
+      throw APIError.invalidArgument("rawHtml too long (max 200KB)");
+    }
 
     const { getUserEmail } = await import("../auth/auth");
     const { getSignatureForUser } = await import("../auth/roles");
@@ -411,7 +423,9 @@ export const adminComposeEmail = api(
     if (params.from && !(FROM_KEYS as string[]).includes(params.from)) {
       throw APIError.invalidArgument(`invalid from address: ${params.from}`);
     }
-    const emailContent = adminBroadcastEmail(params.subject, messageWithSignature);
+    const emailContent = params.rawHtml
+      ? { subject: params.subject, html: params.rawHtml }
+      : adminBroadcastEmail(params.subject, messageWithSignature);
     const trimmedSubject = params.subject.trim();
 
     const ticketIds: string[] = [];
