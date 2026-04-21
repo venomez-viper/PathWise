@@ -697,13 +697,24 @@ function TicketsPanel({
   const filtered = tickets.filter(t => filter === 'all' || t.status === filter);
   const selected = expandedTicket ? tickets.find(t => t.id === expandedTicket) : null;
 
-  const statusLabel: Record<string, string> = { open: 'Open', in_progress: 'In Progress', closed: 'Closed' };
+  const statusMeta: Record<string, { label: string; bg: string; color: string; dot: string }> = {
+    open:        { label: 'Open',        bg: '#fef2f2', color: '#dc2626', dot: '#dc2626' },
+    in_progress: { label: 'In Progress', bg: '#fffbeb', color: '#b45309', dot: '#f59e0b' },
+    closed:      { label: 'Closed',      bg: '#f0fdf4', color: '#15803d', dot: '#22c55e' },
+  };
 
-  const cardStyle: React.CSSProperties = {
-    background: 'var(--surface-container)',
-    border: '1px solid var(--outline-variant)',
-    borderRadius: 12,
-    overflow: 'hidden',
+  const counts = { all: tickets.length, open: 0, in_progress: 0, closed: 0 };
+  tickets.forEach(t => { if (t.status in counts) (counts as any)[t.status]++; });
+
+  const getInitials = (name: string) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  const avatarColors = ['#6245a4', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+  const getAvatarColor = (name: string) => avatarColors[name.charCodeAt(0) % avatarColors.length];
+
+  const inp: React.CSSProperties = {
+    width: '100%', padding: '10px 14px', borderRadius: 10,
+    border: '1.5px solid var(--outline-variant)', background: 'var(--surface)',
+    color: 'var(--on-surface)', fontSize: '0.875rem', boxSizing: 'border-box',
+    outline: 'none', transition: 'border-color 0.15s',
   };
 
   const handleSendAny = async () => {
@@ -714,71 +725,87 @@ function TicketsPanel({
       const { admin: adminApi2 } = await import('../../lib/api');
       await adminApi2.broadcastEmail({ subject: anySubject.trim(), message: anyMsg.trim(), targetEmails: emails });
       setAnySuccess(true);
-      setTimeout(() => { setComposeAny(false); setAnyTo(''); setAnySubject(''); setAnyMsg(''); setAnySuccess(false); }, 1500);
+      setTimeout(() => { setComposeAny(false); setAnyTo(''); setAnySubject(''); setAnyMsg(''); setAnySuccess(false); }, 1800);
     } catch (e) {
       setAnyErr(e instanceof Error ? e.message : 'Failed to send.');
-    } finally {
-      setAnySending(false);
-    }
+    } finally { setAnySending(false); }
   };
 
   return (
-    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-      {/* Left: ticket list */}
-      <div style={{ flex: '0 0 340px', minWidth: 0 }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 4, background: 'var(--surface-container)', border: '1px solid var(--outline-variant)', borderRadius: 8, padding: 3 }}>
-            {(['all', 'open', 'in_progress', 'closed'] as const).map(f => (
-              <button key={f} onClick={() => setFilter(f)} style={{
-                padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer',
-                background: filter === f ? 'var(--primary)' : 'transparent',
-                color: filter === f ? '#fff' : 'var(--on-surface-variant)',
-              }}>
-                {f === 'all' ? 'All' : f === 'in_progress' ? 'In Progress' : f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
-          </div>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-            <button onClick={() => setComposeAny(true)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--on-surface)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
-              <Mail size={13} /> Email Anyone
+    <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 20, alignItems: 'flex-start', minHeight: 520 }}>
+
+      {/* ── Left column ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+        {/* Action buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <button onClick={() => { setComposeAny(true); setExpandedTicket(null); }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: 10, border: '1.5px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--on-surface)', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>
+            <Mail size={14} /> Email Anyone
+          </button>
+          <button onClick={onBroadcast}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 12px #6245a430' }}>
+            <Send size={14} /> Broadcast
+          </button>
+        </div>
+
+        {/* Filter tabs */}
+        <div style={{ display: 'flex', gap: 2, background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 10, padding: 4 }}>
+          {(['all', 'open', 'in_progress', 'closed'] as const).map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{
+              flex: 1, padding: '6px 4px', borderRadius: 7, border: 'none', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer',
+              background: filter === f ? '#fff' : 'transparent',
+              color: filter === f ? '#6245a4' : 'var(--on-surface-variant)',
+              boxShadow: filter === f ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s',
+            }}>
+              {f === 'all' ? `All ${counts.all}` : f === 'in_progress' ? `Progress ${counts.in_progress}` : `${f.charAt(0).toUpperCase() + f.slice(1)} ${(counts as any)[f]}`}
             </button>
-            <button onClick={onBroadcast} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
-              <Send size={13} /> Broadcast
-            </button>
-          </div>
+          ))}
         </div>
 
         {/* Ticket list */}
-        <div style={{ ...cardStyle, maxHeight: 600, overflowY: 'auto' }}>
+        <div style={{ background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 14, overflow: 'hidden', maxHeight: 540, overflowY: 'auto' }}>
           {loading ? (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.88rem' }}>Loading tickets…</div>
+            <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid var(--outline-variant)', borderTopColor: '#6245a4', margin: '0 auto 12px', animation: 'spin 0.8s linear infinite' }} />
+              <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.85rem', margin: 0 }}>Loading tickets…</p>
+            </div>
           ) : filtered.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--on-surface-variant)', fontSize: '0.88rem' }}>No tickets</div>
+            <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+              <MessageSquare size={32} style={{ color: 'var(--on-surface-variant)', opacity: 0.25, marginBottom: 10 }} />
+              <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.85rem', margin: 0 }}>No tickets found</p>
+            </div>
           ) : (
             filtered.map((t, i) => {
-              const sc = statusColors[t.status] ?? { bg: '#f3f4f6', color: '#6b7280' };
+              const sm = statusMeta[t.status] ?? { label: t.status, bg: '#f3f4f6', color: '#6b7280', dot: '#9ca3af' };
               const isActive = expandedTicket === t.id;
               return (
-                <div key={t.id}
-                  onClick={() => setExpandedTicket(isActive ? null : t.id)}
+                <div key={t.id} onClick={() => setExpandedTicket(isActive ? null : t.id)}
                   style={{
                     padding: '14px 16px', cursor: 'pointer',
                     borderBottom: i < filtered.length - 1 ? '1px solid var(--outline-variant)' : 'none',
-                    background: isActive ? 'var(--primary)08' : 'transparent',
-                    borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
+                    background: isActive ? 'linear-gradient(90deg,#6245a408,#8b5cf605)' : 'transparent',
+                    borderLeft: isActive ? '3px solid #6245a4' : '3px solid transparent',
                     transition: 'all 0.15s',
+                    display: 'flex', gap: 12, alignItems: 'flex-start',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{t.name}</span>
-                        <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px', borderRadius: 999, background: sc.bg, color: sc.color, flexShrink: 0 }}>{statusLabel[t.status] ?? t.status}</span>
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.subject || t.message?.slice(0, 60)}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)', marginTop: 3, opacity: 0.7 }}>{t.email} · {t.createdAt ? formatDate(t.createdAt) : ''}</div>
+                  {/* Avatar */}
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: getAvatarColor(t.name ?? ''), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.72rem', fontWeight: 800, color: '#fff', letterSpacing: 0.5 }}>
+                    {getInitials(t.name ?? '?')}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.855rem', color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>{t.name}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.66rem', fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: sm.bg, color: sm.color, flexShrink: 0 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: sm.dot, display: 'inline-block' }} />
+                        {sm.label}
+                      </span>
                     </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{t.subject || '(No subject)'}</div>
+                    <div style={{ fontSize: '0.71rem', color: 'var(--on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.message?.slice(0, 55)}{(t.message?.length ?? 0) > 55 ? '…' : ''}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', marginTop: 4, opacity: 0.6 }}>{t.createdAt ? formatDate(t.createdAt) : ''}</div>
                   </div>
                 </div>
               );
@@ -787,91 +814,135 @@ function TicketsPanel({
         </div>
       </div>
 
-      {/* Right: ticket detail */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {/* ── Right column ── */}
+      <div style={{ minWidth: 0 }}>
         {composeAny ? (
-          <div style={{ ...cardStyle, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Mail size={18} color="var(--primary)" />
-                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--on-surface)' }}>Email Anyone</span>
+          /* Email Anyone compose */
+          <div style={{ background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 16, overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Mail size={16} color="#fff" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--on-surface)' }}>New Email</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>Send to any email address</div>
+                </div>
               </div>
-              <button onClick={() => setComposeAny(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)' }}><X size={18} /></button>
+              <button onClick={() => setComposeAny(false)} style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--on-surface-variant)' }}><X size={15} /></button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>To (comma-separated)</label>
-                <input value={anyTo} onChange={e => setAnyTo(e.target.value)} placeholder="user@example.com, another@example.com"
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.85rem', boxSizing: 'border-box' }} />
+                <label style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>To</label>
+                <input value={anyTo} onChange={e => setAnyTo(e.target.value)} placeholder="email@example.com, another@example.com" style={inp} />
+                <div style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', marginTop: 4 }}>Separate multiple addresses with commas</div>
               </div>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Subject</label>
-                <input value={anySubject} onChange={e => setAnySubject(e.target.value)} placeholder="Email subject…"
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.85rem', boxSizing: 'border-box' }} />
+                <label style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Subject</label>
+                <input value={anySubject} onChange={e => setAnySubject(e.target.value)} placeholder="What's this email about?" style={inp} />
               </div>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6 }}>Message</label>
-                <textarea value={anyMsg} onChange={e => setAnyMsg(e.target.value)} placeholder="Write your message…" rows={7}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.85rem', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7 }} />
+                <label style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--on-surface-variant)', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Message</label>
+                <textarea value={anyMsg} onChange={e => setAnyMsg(e.target.value)} placeholder="Write your message here…" rows={8}
+                  style={{ ...inp, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.75 }} />
+                <div style={{ fontSize: '0.68rem', color: 'var(--on-surface-variant)', marginTop: 4 }}>Sent as branded PathWise email with logo & signature</div>
               </div>
-              {anyErr && <p style={{ color: '#ef4444', fontSize: '0.82rem', margin: 0 }}>{anyErr}</p>}
-              {anySuccess && <p style={{ color: '#16a34a', fontSize: '0.82rem', margin: 0 }}>Email sent!</p>}
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button onClick={() => setComposeAny(false)} style={{ padding: '8px 18px', borderRadius: 999, border: '1px solid var(--outline-variant)', background: 'none', color: 'var(--on-surface)', fontSize: '0.83rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+              {anyErr && <div style={{ padding: '10px 14px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontSize: '0.82rem' }}>{anyErr}</div>}
+              {anySuccess && <div style={{ padding: '10px 14px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#15803d', fontSize: '0.82rem', fontWeight: 600 }}>Email sent successfully!</div>}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: 4 }}>
+                <button onClick={() => setComposeAny(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '1.5px solid var(--outline-variant)', background: 'none', color: 'var(--on-surface)', fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer' }}>Discard</button>
                 <button onClick={handleSendAny} disabled={anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim()}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.83rem', fontWeight: 700, cursor: anySending ? 'not-allowed' : 'pointer', opacity: anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim() ? 0.55 : 1 }}>
-                  <Send size={14} />{anySending ? 'Sending…' : 'Send'}
+                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 24px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.84rem', fontWeight: 700, cursor: anySending ? 'not-allowed' : 'pointer', boxShadow: '0 2px 12px #6245a430', opacity: anySending || !anyTo.trim() || !anySubject.trim() || !anyMsg.trim() ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+                  <Send size={14} />{anySending ? 'Sending…' : 'Send Email'}
                 </button>
               </div>
             </div>
           </div>
+
         ) : selected ? (
-          <div style={{ ...cardStyle, padding: 28 }}>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--on-surface)' }}>{selected.subject || '(No subject)'}</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 9px', borderRadius: 999, background: statusColors[selected.status]?.bg ?? '#f3f4f6', color: statusColors[selected.status]?.color ?? '#6b7280' }}>
-                    {statusLabel[selected.status] ?? selected.status}
-                  </span>
+          /* Ticket detail */
+          <div style={{ background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 16, overflow: 'hidden' }}>
+            {/* Detail header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--outline-variant)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: getAvatarColor(selected.name ?? ''), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.85rem', fontWeight: 800, color: '#fff', letterSpacing: 0.5 }}>
+                  {getInitials(selected.name ?? '?')}
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)' }}>
-                  From <strong>{selected.name}</strong> · <a href={`mailto:${selected.email}`} style={{ color: 'var(--primary)' }}>{selected.email}</a> · {selected.createdAt ? formatDate(selected.createdAt) : ''}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                    <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--on-surface)' }}>{selected.subject || '(No subject)'}</span>
+                    {(() => { const sm = statusMeta[selected.status] ?? { label: selected.status, bg: '#f3f4f6', color: '#6b7280', dot: '#9ca3af' }; return (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: sm.bg, color: sm.color }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: sm.dot }} />{sm.label}
+                      </span>
+                    ); })()}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)' }}>
+                    <strong style={{ color: 'var(--on-surface)' }}>{selected.name}</strong>
+                    {' · '}
+                    <a href={`mailto:${selected.email}`} style={{ color: '#6245a4', textDecoration: 'none' }}>{selected.email}</a>
+                    {selected.createdAt ? ` · ${formatDate(selected.createdAt)}` : ''}
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setExpandedTicket(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)', padding: 4 }}><X size={18} /></button>
+              <button onClick={() => setExpandedTicket(null)} style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--on-surface-variant)', flexShrink: 0 }}><X size={15} /></button>
             </div>
 
             {/* Message body */}
-            <div style={{ padding: '16px 20px', background: 'var(--surface)', borderRadius: 10, border: '1px solid var(--outline-variant)', fontSize: '0.88rem', color: 'var(--on-surface)', lineHeight: 1.75, whiteSpace: 'pre-wrap', marginBottom: 20 }}>
-              {selected.message}
+            <div style={{ padding: '24px', borderBottom: '1px solid var(--outline-variant)' }}>
+              <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--outline-variant)', padding: '20px 24px', fontSize: '0.9rem', color: 'var(--on-surface)', lineHeight: 1.8, whiteSpace: 'pre-wrap', minHeight: 80 }}>
+                {selected.message}
+              </div>
             </div>
 
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button onClick={() => onReply(selected)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+            {/* Actions bar */}
+            <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <button onClick={() => onReply(selected)}
+                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 22px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.84rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 10px #6245a428' }}>
                 <Mail size={14} /> Reply
               </button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', fontWeight: 600 }}>Status:</span>
-                <select value={selected.status} onChange={e => onStatusChange(selected.id, e.target.value)}
-                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--on-surface)', fontSize: '0.82rem', cursor: 'pointer' }}>
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="closed">Closed</option>
-                </select>
+
+              {/* Status pills */}
+              <div style={{ display: 'flex', gap: 6 }}>
+                {(['open', 'in_progress', 'closed'] as const).map(s => {
+                  const sm = statusMeta[s];
+                  const isActive = selected.status === s;
+                  return (
+                    <button key={s} onClick={() => onStatusChange(selected.id, s)}
+                      style={{ padding: '7px 14px', borderRadius: 8, border: isActive ? 'none' : '1.5px solid var(--outline-variant)', background: isActive ? sm.bg : 'transparent', color: isActive ? sm.color : 'var(--on-surface-variant)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>
+                      {sm.label}
+                    </button>
+                  );
+                })}
               </div>
-              <button onClick={() => onDelete(selected.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 999, border: '1px solid #fecaca', background: '#fff5f5', color: '#dc2626', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', marginLeft: 'auto' }}>
-                <Trash2 size={13} /> Delete
-              </button>
+
+              <div style={{ marginLeft: 'auto' }}>
+                <button onClick={() => onDelete(selected.id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 10, border: '1.5px solid #fecaca', background: 'transparent', color: '#dc2626', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}>
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
             </div>
           </div>
+
         ) : (
-          <div style={{ ...cardStyle, padding: 48, textAlign: 'center' }}>
-            <MessageSquare size={40} style={{ color: 'var(--on-surface-variant)', opacity: 0.3, marginBottom: 12 }} />
-            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.9rem', margin: 0 }}>Select a ticket to view details</p>
-            <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.78rem', margin: '6px 0 0', opacity: 0.7 }}>or use Broadcast to email all users</p>
+          /* Empty state */
+          <div style={{ background: 'var(--surface-container)', border: '1.5px solid var(--outline-variant)', borderRadius: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 420, padding: 48, textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, borderRadius: 18, background: 'linear-gradient(135deg,#6245a415,#8b5cf610)', border: '1.5px solid var(--outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <MessageSquare size={28} color="#6245a4" style={{ opacity: 0.5 }} />
+            </div>
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--on-surface)', marginBottom: 6 }}>No ticket selected</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', lineHeight: 1.6, maxWidth: 260, marginBottom: 24 }}>
+              Pick a ticket from the list to read it and reply, or compose a fresh email to anyone.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setComposeAny(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 10, border: '1.5px solid var(--outline-variant)', background: 'var(--surface)', color: 'var(--on-surface)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                <Mail size={14} /> Email Anyone
+              </button>
+              <button onClick={onBroadcast} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#6245a4,#8b5cf6)', color: '#fff', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+                <Send size={14} /> Broadcast to All
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -1679,6 +1750,7 @@ export default function AdminPage() {
       {/* Inline animation keyframes */}
       <style>{`
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
       `}</style>
     </div>
