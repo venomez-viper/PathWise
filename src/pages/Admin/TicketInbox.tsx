@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { admin as adminApi, type AdminTicket } from '../../lib/api';
-import { Send, Trash2, Search, Inbox, Eye, EyeOff } from 'lucide-react';
+import { admin as adminApi, type AdminTicket, getMySignature, updateMySignature } from '../../lib/api';
+import { Send, Trash2, Search, Inbox, Eye, EyeOff, Pencil, Check } from 'lucide-react';
 
 type ThreadReply = {
   id: string;
@@ -44,6 +44,10 @@ export function TicketInbox() {
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [previewSubject, setPreviewSubject] = useState<string>('');
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [signature, setSignature] = useState<string>('');
+  const [editingSignature, setEditingSignature] = useState(false);
+  const [signatureDraft, setSignatureDraft] = useState<string>('');
+  const [savingSignature, setSavingSignature] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -88,6 +92,25 @@ export function TicketInbox() {
   };
 
   useEffect(() => { loadList(); }, []);
+
+  useEffect(() => {
+    getMySignature()
+      .then(res => { setSignature(res.signature ?? ''); setSignatureDraft(res.signature ?? ''); })
+      .catch(() => {});
+  }, []);
+
+  const handleSaveSignature = async () => {
+    setSavingSignature(true);
+    try {
+      await updateMySignature(signatureDraft);
+      setSignature(signatureDraft);
+      setEditingSignature(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to save signature.');
+    } finally {
+      setSavingSignature(false);
+    }
+  };
 
   useEffect(() => {
     if (!selectedId && visibleTickets.length > 0) {
@@ -433,6 +456,74 @@ export function TicketInbox() {
             </div>
 
             <div style={{ padding: '0.9rem 1.25rem', borderTop: '1px solid var(--outline-variant)' }}>
+              {/* Signature chip + inline editor */}
+              <div style={{ marginBottom: 8, fontSize: '0.72rem', color: 'var(--on-surface-variant)' }}>
+                {editingSignature ? (
+                  <div style={{
+                    padding: '0.6rem 0.8rem', borderRadius: 12,
+                    border: '1px solid var(--outline-variant)', background: 'var(--surface-container)',
+                  }}>
+                    <div style={{
+                      fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+                      letterSpacing: '0.06em', color: 'var(--on-surface-variant)', marginBottom: 6,
+                    }}>
+                      Your signature (appended to every reply)
+                    </div>
+                    <textarea
+                      value={signatureDraft}
+                      onChange={e => setSignatureDraft(e.target.value.slice(0, 1000))}
+                      placeholder={'e.g.\n— Alex\nPathWise Support'}
+                      rows={3}
+                      style={{
+                        width: '100%', padding: '0.5rem 0.7rem', borderRadius: 10,
+                        border: '1px solid var(--outline-variant)', background: 'var(--surface)',
+                        color: 'var(--on-surface)', fontSize: '0.85rem', lineHeight: 1.5,
+                        resize: 'vertical', outline: 'none', fontFamily: 'inherit',
+                      }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 6 }}>
+                      <button
+                        onClick={() => { setSignatureDraft(signature); setEditingSignature(false); }}
+                        style={{
+                          padding: '0.4rem 0.8rem', borderRadius: 999, border: '1px solid var(--outline-variant)',
+                          background: 'var(--surface)', color: 'var(--on-surface-variant)',
+                          fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveSignature}
+                        disabled={savingSignature}
+                        style={{
+                          padding: '0.4rem 0.9rem', borderRadius: 999, border: 'none',
+                          background: '#6245a4', color: '#fff',
+                          fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          opacity: savingSignature ? 0.5 : 1,
+                        }}
+                      >
+                        <Check size={12} /> {savingSignature ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingSignature(true)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      padding: '3px 10px', borderRadius: 999,
+                      border: '1px solid var(--outline-variant)',
+                      background: signature ? 'var(--surface-container-high)' : 'var(--surface-container)',
+                      color: 'var(--on-surface-variant)', fontSize: '0.72rem', fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Pencil size={11} />
+                    {signature ? `Signature: ${signature.split('\n')[0].slice(0, 40)}${signature.length > 40 ? '…' : ''}` : 'Add your signature'}
+                  </button>
+                )}
+              </div>
               {showPreview && previewHtml && (
                 <div style={{
                   marginBottom: 10, border: '1px solid var(--outline-variant)', borderRadius: 14,

@@ -134,6 +134,41 @@ export const adminRemoveRole = api(
   }
 );
 
+// ── Email Signature (per-user, for ticket replies) ───────────────────────────
+
+export const getMySignature = api(
+  { expose: true, method: "GET", path: "/auth/me/signature", auth: true },
+  async (): Promise<{ signature: string }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const row = await db.queryRow`SELECT email_signature FROM users WHERE id = ${userID}`;
+    return { signature: row?.email_signature ?? "" };
+  }
+);
+
+export const updateMySignature = api(
+  { expose: true, method: "PATCH", path: "/auth/me/signature", auth: true },
+  async ({ signature }: { signature: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const trimmed = (signature ?? "").trim();
+    if (trimmed.length > 1000) {
+      throw APIError.invalidArgument("signature too long (max 1000 characters)");
+    }
+    await db.exec`
+      UPDATE users SET email_signature = ${trimmed.length > 0 ? trimmed : null} WHERE id = ${userID}
+    `;
+    return { success: true };
+  }
+);
+
+// Internal: fetch a user's signature (used by tickets service when sending replies)
+export const getSignatureForUser = api(
+  { expose: false },
+  async ({ userID }: { userID: string }): Promise<{ signature: string | null }> => {
+    const row = await db.queryRow`SELECT email_signature FROM users WHERE id = ${userID}`;
+    return { signature: row?.email_signature ?? null };
+  }
+);
+
 export const myAccessRoles = api(
   { expose: true, method: "GET", path: "/auth/me/access", auth: true },
   async (): Promise<{ isAdmin: boolean; isSupportAgent: boolean; canAccessTickets: boolean }> => {

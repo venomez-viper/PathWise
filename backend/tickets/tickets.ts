@@ -184,7 +184,12 @@ export const adminReplyToTicket = api(
     if (!ticket) throw APIError.notFound("ticket not found");
 
     const { getUserEmail } = await import("../auth/auth");
+    const { getSignatureForUser } = await import("../auth/roles");
     const authorEmail = (await getUserEmail({ userID })).email ?? "admin@pathwise.fit";
+    const signature = (await getSignatureForUser({ userID })).signature;
+    const messageWithSignature = signature
+      ? `${params.message}\n\n${signature}`
+      : params.message;
 
     const replyId = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -204,10 +209,10 @@ export const adminReplyToTicket = api(
     const inReplyTo = priorIds[priorIds.length - 1];
     const references = priorIds.join(" ");
 
-    // Store the reply in the thread table
+    // Store the reply in the thread table (includes signature so admins see what went out)
     await db.exec`
       INSERT INTO ticket_replies (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
-      VALUES (${replyId}, ${params.ticketId}, 'admin', ${authorEmail}, 'PathWise Support', ${params.message}, ${messageId}, ${inReplyTo}, ${now})
+      VALUES (${replyId}, ${params.ticketId}, 'admin', ${authorEmail}, 'PathWise Support', ${messageWithSignature}, ${messageId}, ${inReplyTo}, ${now})
     `;
     await db.exec`
       UPDATE tickets
@@ -218,7 +223,7 @@ export const adminReplyToTicket = api(
     `;
 
     const { sendEmail, adminReplyEmail } = await import("../email/email");
-    const emailContent = adminReplyEmail(ticket.name, params.subject, params.message);
+    const emailContent = adminReplyEmail(ticket.name, params.subject, messageWithSignature);
 
     // Build To list: primary ticket email + any additional addresses
     const toList = [ticket.email, ...(params.additionalTo ?? [])].filter(Boolean);
@@ -284,8 +289,14 @@ export const adminPreviewTicketReply = api(
     `;
     if (!ticket) throw APIError.notFound("ticket not found");
 
+    const { getSignatureForUser } = await import("../auth/roles");
+    const signature = (await getSignatureForUser({ userID })).signature;
+    const messageWithSignature = signature
+      ? `${params.message}\n\n${signature}`
+      : params.message;
+
     const { adminReplyEmail } = await import("../email/email");
-    return adminReplyEmail(ticket.name, params.subject, params.message);
+    return adminReplyEmail(ticket.name, params.subject, messageWithSignature);
   }
 );
 

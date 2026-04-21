@@ -234,6 +234,12 @@ export type AdminTicket = {
 export const getMyAccess = () =>
   request<{ isAdmin: boolean; isSupportAgent: boolean; canAccessTickets: boolean }>('/auth/me/access');
 
+export const getMySignature = () =>
+  request<{ signature: string }>('/auth/me/signature');
+
+export const updateMySignature = (signature: string) =>
+  request<{ success: boolean }>('/auth/me/signature', { method: 'PATCH', body: JSON.stringify({ signature }) });
+
 // --- Tickets ---
 export const tickets = {
   submit: (data: { name: string; email: string; subject?: string; message: string }) =>
