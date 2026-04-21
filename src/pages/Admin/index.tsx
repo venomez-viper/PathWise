@@ -1058,11 +1058,6 @@ export default function AdminPage() {
     }
   };
 
-  const statusColors: Record<string, { bg: string; color: string }> = {
-    open: { bg: '#fee2e2', color: '#dc2626' },
-    in_progress: { bg: '#fef3c7', color: '#d97706' },
-    closed: { bg: '#dcfce7', color: '#16a34a' },
-  };
 
   const taskStatsMap = useMemo(() => {
     const map: Record<string, TaskStat> = {};
