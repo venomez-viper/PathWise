@@ -96,4 +96,10 @@ export const RateLimits = {
 
   /** Journal read operations: 30 per minute per user */
   journalRead: (key: string) => checkRateLimit(key, 30, 60_000),
+
+  /** Support ticket replies: 20 per minute per admin/agent */
+  ticketReply: (key: string) => checkRateLimit(key, 20, 60_000),
+
+  /** Inbound email per sender: 20 per hour per from-address */
+  inboundSender: (key: string) => checkRateLimit(key, 20, 3_600_000),
 };

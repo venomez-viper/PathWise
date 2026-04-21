@@ -542,6 +542,16 @@ export const checkAdmin = api(
   }
 );
 
+// ── Lookup user email (internal, callable from other services) ───────────────
+
+export const getUserEmail = api(
+  { expose: false },
+  async ({ userID }: { userID: string }): Promise<{ email: string | null }> => {
+    const row = await db.queryRow`SELECT email FROM users WHERE id = ${userID}`;
+    return { email: row?.email ?? null };
+  }
+);
+
 // ── Support Access Check (internal, callable from other services) ─────────────
 
 export const checkSupportAccess = api(

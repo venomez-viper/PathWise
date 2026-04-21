@@ -1,7 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
-import { AuthData, checkAdmin, ADMIN_EMAILS } from "../auth/auth";
+import { AuthData, checkAdmin, checkSupportAccess, ADMIN_EMAILS } from "../auth/auth";
 import { RateLimits } from "../shared/rate-limiter";
 
 const db = new SQLDatabase("tickets", { migrations: "./migrations" });
@@ -75,6 +75,9 @@ interface AdminTicket {
   message: string;
   status: string;
   createdAt: string;
+  lastActivityAt: string;
+  unread: boolean;
+  replyCount: number;
 }
 
 interface AdminTicketsResponse {
@@ -85,15 +88,19 @@ export const adminListTickets = api(
   { expose: true, method: "GET", path: "/admin/tickets", auth: true },
   async (): Promise<AdminTicketsResponse> => {
     const { userID } = getAuthData<AuthData>()!;
-    const { isAdmin } = await checkAdmin({ userID });
-    if (!isAdmin) {
-      throw APIError.permissionDenied("admin access required");
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) {
+      throw APIError.permissionDenied("support access required");
     }
 
     const tickets: AdminTicket[] = [];
     const rows = db.query`
-      SELECT id, name, email, subject, message, status, created_at
-      FROM tickets ORDER BY created_at DESC
+      SELECT
+        t.id, t.name, t.email, t.subject, t.message, t.status, t.created_at,
+        t.unread, COALESCE(t.last_activity_at, t.created_at) AS last_activity_at,
+        (SELECT COUNT(*) FROM ticket_replies r WHERE r.ticket_id = t.id) AS reply_count
+      FROM tickets t
+      ORDER BY COALESCE(t.last_activity_at, t.created_at) DESC
     `;
     for await (const row of rows) {
       tickets.push({
@@ -104,6 +111,9 @@ export const adminListTickets = api(
         message: row.message,
         status: row.status,
         createdAt: row.created_at,
+        lastActivityAt: row.last_activity_at,
+        unread: Boolean(row.unread),
+        replyCount: Number(row.reply_count ?? 0),
       });
     }
     return { tickets };
@@ -121,9 +131,9 @@ export const adminUpdateTicket = api(
   { expose: true, method: "PATCH", path: "/admin/tickets/:ticketId", auth: true },
   async (params: UpdateTicketParams): Promise<{ success: boolean }> => {
     const { userID } = getAuthData<AuthData>()!;
-    const { isAdmin } = await checkAdmin({ userID });
-    if (!isAdmin) {
-      throw APIError.permissionDenied("admin access required");
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) {
+      throw APIError.permissionDenied("support access required");
     }
 
     const validStatuses = ["open", "in_progress", "closed"];
@@ -205,4 +215,136 @@ export const adminDeleteTicket = api(
     return { success: true };
   }
 );
+// ── Admin Reply to Ticket ────────────────────────────────────────────────────
+
+interface ReplyTicketParams {
+  ticketId: string;
+  body: string;
+}
+
+export const adminReplyTicket = api(
+  { expose: true, method: "POST", path: "/admin/tickets/:ticketId/reply", auth: true },
+  async (params: ReplyTicketParams): Promise<{ success: boolean; replyId: string }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    RateLimits.ticketReply("reply:" + userID);
+
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) {
+      throw APIError.permissionDenied("support access required");
+    }
+
+    if (!params.body || !params.body.trim()) {
+      throw APIError.invalidArgument("body is required");
+    }
+    if (params.body.length > 10000) {
+      throw APIError.invalidArgument("body too long");
+    }
+
+    const ticket = await db.queryRow`
+      SELECT id, name, email, subject FROM tickets WHERE id = ${params.ticketId}
+    `;
+    if (!ticket) throw APIError.notFound("ticket not found");
+
+    const { getUserEmail } = await import("../auth/auth");
+    const authorEmail = (await getUserEmail({ userID })).email ?? "admin@pathwise.fit";
+
+    const replyId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const messageId = `<ticket-${params.ticketId}-${replyId}@pathwise.fit>`;
+    const originalMessageId = `<ticket-${params.ticketId}-original@pathwise.fit>`;
+
+    // Build References chain from prior messages for Gmail threading
+    const priorIds: string[] = [originalMessageId];
+    const priorRows = db.query`
+      SELECT message_id FROM ticket_replies
+      WHERE ticket_id = ${params.ticketId} AND message_id IS NOT NULL
+      ORDER BY created_at ASC
+    `;
+    for await (const r of priorRows) {
+      if (r.message_id) priorIds.push(r.message_id);
+    }
+    const inReplyTo = priorIds[priorIds.length - 1];
+    const references = priorIds.join(" ");
+
+    await db.exec`
+      INSERT INTO ticket_replies (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, created_at)
+      VALUES (${replyId}, ${params.ticketId}, 'admin', ${authorEmail}, 'PathWise Support', ${params.body}, ${messageId}, ${inReplyTo}, ${now})
+    `;
+    await db.exec`
+      UPDATE tickets
+      SET last_activity_at = ${now},
+          unread = 0,
+          status = CASE WHEN status = 'open' THEN 'in_progress' ELSE status END
+      WHERE id = ${params.ticketId}
+    `;
+
+    // Send the email (best-effort — don't fail the API call if email fails)
+    try {
+      const { sendEmail, ticketReplyEmail } = await import("../email/email");
+      const tmpl = ticketReplyEmail(ticket.name, "PathWise Support", ticket.subject ?? "", params.body);
+      await sendEmail({ to: ticket.email, ...tmpl, messageId, inReplyTo, references });
+    } catch (err) {
+      console.error("Ticket reply email failed:", err instanceof Error ? err.message : "unknown");
+    }
+
+    return { success: true, replyId };
+  }
+);
+
+// ── Admin Get Ticket Thread ───────────────────────────────────────────────────
+
+interface ThreadReply {
+  id: string;
+  direction: "admin" | "user";
+  authorEmail: string;
+  authorName: string | null;
+  body: string;
+  createdAt: string;
+}
+
+export const adminGetTicketThread = api(
+  { expose: true, method: "GET", path: "/admin/tickets/:ticketId/thread", auth: true },
+  async ({ ticketId }: { ticketId: string }): Promise<{ replies: ThreadReply[] }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) {
+      throw APIError.permissionDenied("support access required");
+    }
+
+    const replies: ThreadReply[] = [];
+    const rows = db.query`
+      SELECT id, direction, author_email, author_name, body, created_at
+      FROM ticket_replies
+      WHERE ticket_id = ${ticketId}
+      ORDER BY created_at ASC
+    `;
+    for await (const row of rows) {
+      replies.push({
+        id: row.id,
+        direction: row.direction as "admin" | "user",
+        authorEmail: row.author_email,
+        authorName: row.author_name,
+        body: row.body,
+        createdAt: row.created_at,
+      });
+    }
+    return { replies };
+  }
+);
+
+// ── Admin Mark Ticket Read ────────────────────────────────────────────────────
+
+export const adminMarkTicketRead = api(
+  { expose: true, method: "POST", path: "/admin/tickets/:ticketId/read", auth: true },
+  async ({ ticketId }: { ticketId: string }): Promise<{ success: boolean }> => {
+    const { userID } = getAuthData<AuthData>()!;
+    const { canAccessTickets } = await checkSupportAccess({ userID });
+    if (!canAccessTickets) {
+      throw APIError.permissionDenied("support access required");
+    }
+    await db.exec`UPDATE tickets SET unread = 0 WHERE id = ${ticketId}`;
+    return { success: true };
+  }
+);
+
 // Trigger Encore redeploy - Wed Apr  8 06:28:34 PM CDT 2026
