@@ -200,7 +200,7 @@ export const admin = {
     request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   deleteTicket: (ticketId: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}`, { method: 'DELETE' }),
-  replyToTicket: (ticketId: string, data: { subject: string; message: string; additionalTo?: string[]; cc?: string[] }) =>
+  replyToTicket: (ticketId: string, data: { subject: string; message: string; additionalTo?: string[]; cc?: string[]; from?: string }) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}/reply`, { method: 'POST', body: JSON.stringify(data) }),
   broadcastEmail: (data: { subject: string; message: string; targetEmails?: string[] }) =>
     request<{ success: boolean; sent: number }>('/admin/broadcast-email', { method: 'POST', body: JSON.stringify(data) }),
@@ -210,12 +210,34 @@ export const admin = {
     request<{ subject: string; html: string }>(`/admin/tickets/${ticketId}/reply/preview`, { method: 'POST', body: JSON.stringify(data) }),
   markTicketRead: (ticketId: string) =>
     request<{ success: boolean }>(`/admin/tickets/${ticketId}/read`, { method: 'POST' }),
+  composeEmail: (data: { to: string[]; cc?: string[]; subject: string; message: string; from?: string }) =>
+    request<{ success: boolean; sent: number; ticketIds: string[] }>('/admin/compose-email', { method: 'POST', body: JSON.stringify(data) }),
+  listSenders: () =>
+    request<{ senders: Array<{ key: string; address: string; label: string }> }>('/admin/senders'),
+  previewCompose: (data: { subject: string; message: string }) =>
+    request<{ subject: string; html: string }>('/admin/compose-email/preview', { method: 'POST', body: JSON.stringify(data) }),
   listRoles: () =>
     request<{ entries: Array<{ email: string; role: 'admin' | 'support_agent'; addedByEmail: string | null; addedAt: string; isBootstrap: boolean; hasAccount: boolean; userName: string | null }> }>('/admin/roles'),
   addRole: (email: string, role: 'admin' | 'support_agent') =>
     request<{ success: boolean }>('/admin/roles', { method: 'POST', body: JSON.stringify({ email, role }) }),
   removeRole: (email: string, role: 'admin' | 'support_agent') =>
     request<{ success: boolean }>(`/admin/roles?email=${encodeURIComponent(email)}&role=${role}`, { method: 'DELETE' }),
+  listSnippets: () =>
+    request<{ snippets: Snippet[] }>('/admin/snippets'),
+  createSnippet: (data: { title: string; body: string }) =>
+    request<Snippet>('/admin/snippets', { method: 'POST', body: JSON.stringify(data) }),
+  updateSnippet: (id: string, data: { title: string; body: string }) =>
+    request<Snippet>(`/admin/snippets/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteSnippet: (id: string) =>
+    request<{ success: boolean }>(`/admin/snippets/${id}`, { method: 'DELETE' }),
+};
+
+export type Snippet = {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type AdminTicket = {
@@ -229,6 +251,7 @@ export type AdminTicket = {
   lastActivityAt: string;
   unread: boolean;
   replyCount: number;
+  initiatedBy: 'user' | 'agent';
 };
 
 export const getMyAccess = () =>

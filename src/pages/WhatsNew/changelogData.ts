@@ -33,6 +33,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.22.0',
+    date: 'April 21, 2026',
+    title: 'Outbox, snippets, and a real sender picker',
+    tag: 'feature',
+    description: 'The support inbox now sends, not just replies: compose to anyone, pick your sender address, insert saved snippets, and have reply-backs thread into the same ticket automatically.',
+    highlights: [
+      'Compose modal: write to any address with To and CC, and every send opens a tracked ticket so reply-backs land here',
+      'Sender picker with four verified mailboxes: hello, onboarding, support, marketing',
+      'Per-agent snippets: save your own canned replies, insert with one click, manage in a side panel',
+      'Reply composer now supports additional recipients and CC',
+      'New "In Progress" filter tab, distinct from Open',
+      'Delete stays visible for support agents but is admin-only: agents see a clear "ask an admin" prompt',
+      'Removed the automatic "Hi {name}" greeting so agents write their own opening',
+    ],
+  },
+  {
     version: '0.21.0',
     date: 'April 21, 2026',
     title: 'Support inbox + Team Roles',

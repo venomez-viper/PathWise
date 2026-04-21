@@ -12,6 +12,24 @@ const FROM_EMAIL = "PathWise <hello@pathwise.fit>";
 const BRAND_COLOR = "#6245a4";
 const BRAND_DARK = "#1a1a2e";
 
+// ── Verified sender mailboxes ──
+// Add/remove addresses here. Every value must be a mailbox you've verified
+// with the email provider (Resend) for pathwise.fit.
+export type FromKey = "hello" | "onboarding" | "support" | "marketing";
+export const FROM_ADDRESSES: Record<FromKey, string> = {
+  hello: "PathWise <hello@pathwise.fit>",
+  onboarding: "PathWise Onboarding <onboarding@pathwise.fit>",
+  support: "PathWise Support <support@pathwise.fit>",
+  marketing: "PathWise Team <marketing@pathwise.fit>",
+};
+export const FROM_KEYS: FromKey[] = ["hello", "onboarding", "support", "marketing"];
+export function resolveFromAddress(key: string | undefined): string {
+  if (key && (FROM_KEYS as string[]).includes(key)) {
+    return FROM_ADDRESSES[key as FromKey];
+  }
+  return FROM_EMAIL;
+}
+
 // ── HTML Escape Function ──
 
 function escapeHtml(str: string): string {
@@ -28,7 +46,7 @@ function escapeHtml(str: string): string {
 export const sendEmail = api(
   { expose: false },
   async ({
-    to, subject, html, cc, replyTo, messageId, inReplyTo, references,
+    to, subject, html, cc, replyTo, messageId, inReplyTo, references, from,
   }: {
     to: string | string[];
     subject: string;
@@ -38,6 +56,7 @@ export const sendEmail = api(
     messageId?: string;
     inReplyTo?: string;
     references?: string;
+    from?: string;
   }): Promise<{ success: boolean; messageId?: string; resendId?: string }> => {
     try {
       const resend = getResend();
@@ -51,7 +70,7 @@ export const sendEmail = api(
       if (references) headers["References"] = references;
 
       const res = await resend.emails.send({
-        from: FROM_EMAIL,
+        from: resolveFromAddress(from),
         to,
         ...(cc && cc.length > 0 ? { cc } : {}),
         subject,
@@ -251,24 +270,20 @@ function renderMessageBody(message: string): string {
 }
 
 export function adminReplyEmail(
-  recipientName: string,
   subject: string,
   message: string
 ): { subject: string; html: string } {
-  const firstName = escapeHtml(recipientName.split(" ")[0]);
   const bodyHtml = renderMessageBody(message);
   return {
     subject: escapeHtml(subject),
     html: layout(`
-      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 8px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 16px;">
         <tr>
           <td style="padding: 0 0 4px;">
             <span style="display: inline-block; padding: 4px 12px; background: ${BRAND_COLOR}18; color: ${BRAND_COLOR}; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px;">PathWise Team</span>
           </td>
         </tr>
       </table>
-
-      ${h1(`Hi ${firstName},`)}
 
       <p style="margin: 0 0 16px; font-size: 15px; color: #374151; line-height: 1.65;">
         ${bodyHtml}
