@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { admin as adminApi, type AdminTicket, type Snippet, getMySignature, updateMySignature, getMyAccess } from '../../lib/api';
 import { Send, Trash2, Search, Inbox, Eye, EyeOff, Pencil, Check, PenSquare, X, Bookmark, Plus, ChevronDown, Activity, RefreshCw } from 'lucide-react';
 import { EmailTagInput } from '../../components/EmailTagInput';
@@ -78,6 +79,8 @@ export function TicketInbox() {
   const [search, setSearch] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
+  const replySnippetsAnchorRef = useRef<HTMLButtonElement | null>(null);
+  const composeSnippetsAnchorRef = useRef<HTMLButtonElement | null>(null);
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [snippetsPickerOpen, setSnippetsPickerOpen] = useState<null | 'reply' | 'compose'>(null);
   const [snippetsManageOpen, setSnippetsManageOpen] = useState(false);
@@ -466,8 +469,8 @@ export function TicketInbox() {
 
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '340px 1fr', gap: '1rem',
-      height: 'calc(100vh - 220px)', minHeight: 520,
+      display: 'grid', gridTemplateColumns: '400px 1fr', gap: '1.25rem',
+      height: 'calc(100vh - 180px)', minHeight: 640,
     }}>
       {/* Left: ticket list */}
       <div className="panel" style={{
@@ -588,16 +591,16 @@ export function TicketInbox() {
             role="tablist"
             aria-label="Ticket filter"
             style={{
-              display: 'flex', padding: 3, borderRadius: 12,
+              display: 'flex', padding: 4, borderRadius: 12,
               background: 'var(--surface-container-low, var(--surface-container))',
               border: '1px solid var(--outline-variant)',
-              gap: 2, overflow: 'hidden',
+              gap: 3,
             }}
           >
             {(['all', 'unread', 'open', 'in_progress', 'closed'] as Filter[]).map(f => {
               const active = filter === f;
               const count = filterCounts[f];
-              const isUnreadWithBadge = f === 'unread' && unreadCount > 0 && !active;
+              const isUnreadHighlight = f === 'unread' && unreadCount > 0 && !active;
               return (
                 <button
                   key={f}
@@ -606,15 +609,14 @@ export function TicketInbox() {
                   onClick={() => setFilter(f)}
                   style={{
                     flex: 1, minWidth: 0,
-                    padding: '5px 4px', borderRadius: 9, border: 'none',
+                    padding: '6px 4px',
+                    borderRadius: 9, border: 'none',
                     cursor: 'pointer',
                     background: active ? '#fff' : 'transparent',
                     color: active ? '#8b4f2c' : 'var(--on-surface-variant)',
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                    fontSize: '0.7rem', fontWeight: active ? 700 : 600,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
                     transition: 'background 0.15s, color 0.15s, box-shadow 0.15s',
-                    boxShadow: active ? '0 1px 2px rgba(15,15,25,0.08), 0 0 0 1px rgba(139,79,44,0.1)' : 'none',
-                    whiteSpace: 'nowrap',
+                    boxShadow: active ? '0 1px 2px rgba(15,15,25,0.08), 0 0 0 1px rgba(139,79,44,0.12)' : 'none',
                   }}
                   onMouseEnter={e => {
                     if (!active) {
@@ -629,26 +631,24 @@ export function TicketInbox() {
                     }
                   }}
                 >
-                  <span>{f === 'in_progress' ? 'Active' : FILTER_LABEL[f]}</span>
-                  {count > 0 && (
-                    <span style={{
-                      fontSize: '0.62rem',
-                      fontWeight: 700,
-                      padding: '0 5px',
-                      minWidth: 16,
-                      height: 14,
-                      borderRadius: 999,
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      background: isUnreadWithBadge
-                        ? '#8b4f2c'
-                        : (active ? '#8b4f2c18' : 'var(--surface-container-high, rgba(0,0,0,0.06))'),
-                      color: isUnreadWithBadge
-                        ? '#fff'
-                        : (active ? '#8b4f2c' : 'var(--on-surface-variant)'),
-                    }}>
-                      {count > 99 ? '99+' : count}
-                    </span>
-                  )}
+                  <span style={{
+                    fontSize: '0.72rem', fontWeight: active ? 700 : 600,
+                    whiteSpace: 'nowrap',
+                    lineHeight: 1.2,
+                  }}>
+                    {f === 'in_progress' ? 'Active' : FILTER_LABEL[f]}
+                  </span>
+                  <span style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    lineHeight: 1.1,
+                    color: isUnreadHighlight
+                      ? '#8b4f2c'
+                      : (active ? '#8b4f2c' : 'var(--on-surface-variant)'),
+                    opacity: count === 0 && !active ? 0.45 : 1,
+                  }}>
+                    {count > 99 ? '99+' : count}
+                  </span>
                 </button>
               );
             })}
@@ -1088,8 +1088,9 @@ export function TicketInbox() {
                     resize: 'vertical', outline: 'none', fontFamily: 'inherit',
                   }}
                 />
-                <div style={{ position: 'relative' }}>
+                <>
                   <button
+                    ref={replySnippetsAnchorRef}
                     onClick={() => setSnippetsPickerOpen(o => o === 'reply' ? null : 'reply')}
                     title="Insert snippet"
                     aria-label="Insert snippet"
@@ -1110,6 +1111,7 @@ export function TicketInbox() {
                   {snippetsPickerOpen === 'reply' && (
                     <SnippetsPopover
                       anchor="reply"
+                      anchorRef={replySnippetsAnchorRef}
                       snippets={filteredSnippets}
                       total={snippets.length}
                       loading={snippetsLoading}
@@ -1121,7 +1123,7 @@ export function TicketInbox() {
                       onClose={() => { setSnippetsPickerOpen(null); setSnippetFilter(''); }}
                     />
                   )}
-                </div>
+                </>
                 <button
                   onClick={handleTogglePreview}
                   disabled={previewLoading || !draft.trim()}
@@ -1181,8 +1183,9 @@ export function TicketInbox() {
           onSignatureCancel={() => { setSignatureDraft(signature); setEditingSignature(false); }}
           onSignatureSave={handleSaveSignature}
           snippetsButton={
-            <div style={{ position: 'relative' }}>
+            <>
               <button
+                ref={composeSnippetsAnchorRef}
                 onClick={() => setSnippetsPickerOpen(o => o === 'compose' ? null : 'compose')}
                 title="Insert snippet"
                 aria-label="Insert snippet"
@@ -1202,6 +1205,7 @@ export function TicketInbox() {
               {snippetsPickerOpen === 'compose' && (
                 <SnippetsPopover
                   anchor="compose"
+                  anchorRef={composeSnippetsAnchorRef}
                   snippets={filteredSnippets}
                   total={snippets.length}
                   loading={snippetsLoading}
@@ -1213,7 +1217,7 @@ export function TicketInbox() {
                   onClose={() => { setSnippetsPickerOpen(null); setSnippetFilter(''); }}
                 />
               )}
-            </div>
+            </>
           }
           onToChange={setComposeTo}
           onCcChange={setComposeCc}
@@ -1261,6 +1265,7 @@ export function TicketInbox() {
 
 type PopoverProps = {
   anchor: 'reply' | 'compose';
+  anchorRef: React.RefObject<HTMLElement | null>;
   snippets: Snippet[];
   total: number;
   loading: boolean;
@@ -1275,14 +1280,39 @@ type PopoverProps = {
 function SnippetsPopover(props: PopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [filterFocused, setFilterFocused] = useState(false);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+
+  // Position the popover above the anchor using fixed coordinates so it can
+  // escape any parent with overflow: hidden (e.g. the Compose modal).
+  useLayoutEffect(() => {
+    const anchor = props.anchorRef.current;
+    if (!anchor) return;
+    const update = () => {
+      const r = anchor.getBoundingClientRect();
+      setPos({
+        top: r.top - 8,
+        right: window.innerWidth - r.right,
+      });
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    };
+  }, [props.anchorRef]);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) props.onClose();
+      const target = e.target as Node;
+      const insidePopover = ref.current?.contains(target);
+      const insideAnchor = props.anchorRef.current?.contains(target);
+      if (!insidePopover && !insideAnchor) props.onClose();
     };
     const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') props.onClose(); };
     // Defer registration to next tick so the click that opened the popover
-    // doesn't immediately close it on some React 19 batching paths.
+    // doesn't immediately close it.
     const id = requestAnimationFrame(() => {
       document.addEventListener('mousedown', onDocClick);
       document.addEventListener('keydown', onEsc);
@@ -1294,13 +1324,16 @@ function SnippetsPopover(props: PopoverProps) {
     };
   }, [props]);
 
-  return (
+  if (!pos) return null;
+
+  return createPortal(
     <div
       ref={ref}
       style={{
-        position: 'absolute',
-        bottom: 'calc(100% + 8px)',
-        right: 0,
+        position: 'fixed',
+        top: pos.top,
+        right: pos.right,
+        transform: 'translateY(-100%)',
         width: 340,
         maxHeight: 400,
         overflow: 'hidden',
@@ -1310,7 +1343,7 @@ function SnippetsPopover(props: PopoverProps) {
         border: '1px solid var(--outline-variant)',
         borderRadius: 14,
         boxShadow: '0 16px 40px rgba(15,15,25,0.18), 0 2px 6px rgba(15,15,25,0.08)',
-        zIndex: 200,
+        zIndex: 2000,
       }}
     >
       {/* Header */}
@@ -1466,7 +1499,8 @@ function SnippetsPopover(props: PopoverProps) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
