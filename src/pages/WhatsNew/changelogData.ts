@@ -40,6 +40,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     description: 'The support inbox now sends, not just replies: compose to anyone, pick your sender address, insert saved snippets, and have reply-backs thread into the same ticket automatically.',
     highlights: [
       'Compose modal: write to any address with To and CC, and every send opens a tracked ticket so reply-backs land here',
+      'Cold emails to support@pathwise.fit (and our other mailboxes) auto-create a new ticket',
       'Sender picker with four verified mailboxes: hello, onboarding, support, marketing',
       'Per-agent snippets: save your own canned replies, insert with one click, manage in a side panel',
       'Reply composer now supports additional recipients and CC',

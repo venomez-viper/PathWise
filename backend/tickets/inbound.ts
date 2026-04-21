@@ -31,6 +31,27 @@ const MAX_BODY_CHARS = 50 * 1024;          // 50 KB stored body cap
 const MAX_URLS_PER_BODY = 50;              // spam signal
 const MAX_NONPRINTABLE_RATIO = 0.2;        // 20% threshold
 
+// Addresses we own. Cold inbound (no ticket match) is only accepted when the
+// email was addressed to one of these — stops random webhook traffic from
+// creating tickets.
+const INBOUND_ACCEPTED_ADDRESSES = new Set([
+  "support@pathwise.fit",
+  "hello@pathwise.fit",
+  "onboarding@pathwise.fit",
+  "marketing@pathwise.fit",
+  "reply@support.pathwise.fit",
+]);
+
+function extractInboundRecipient(toList: string[] | undefined): string | null {
+  if (!toList) return null;
+  for (const raw of toList) {
+    const m = (raw ?? "").match(/<([^>]+)>/) ?? [null, raw ?? ""];
+    const addr = (m[1] ?? "").trim().toLowerCase();
+    if (INBOUND_ACCEPTED_ADDRESSES.has(addr)) return addr;
+  }
+  return null;
+}
+
 interface InboundPayload {
   type?: string;
   data?: {
@@ -232,31 +253,52 @@ export const ticketInboundWebhook = api.raw(
       if (row) ticketId = row.id;
     }
 
+    // 9b. No existing match — create a new ticket if the email was addressed
+    // to one of our support mailboxes. Otherwise drop.
+    const now = new Date().toISOString();
+    let createdNew = false;
     if (!ticketId) {
-      console.warn("Inbound: no matching ticket", {
-        fromEmail, subject: payload.data.subject, email_id: payload.data.email_id,
-      });
-      resp.writeHead(200); resp.end("no-match"); return;
+      const acceptedFor = extractInboundRecipient(payload.data.to);
+      if (!acceptedFor) {
+        console.warn("Inbound: no matching ticket and recipient not in allow-list", {
+          fromEmail, to: payload.data.to, subject: payload.data.subject,
+          email_id: payload.data.email_id,
+        });
+        resp.writeHead(200); resp.end("no-match"); return;
+      }
+      ticketId = crypto.randomUUID();
+      const subject = (payload.data.subject ?? "").slice(0, 500) || null;
+      const name = fromName ?? fromEmail.split("@")[0];
+      await db.exec`
+        INSERT INTO tickets
+          (id, name, email, subject, message, status, created_at, unread, last_activity_at, initiated_by)
+        VALUES
+          (${ticketId}, ${name}, ${fromEmail}, ${subject}, ${body},
+           'open', ${now}, 1, ${now}, 'user')
+      `;
+      createdNew = true;
     }
 
-    // 10. Insert reply + bump ticket state
-    const replyId = crypto.randomUUID();
-    const now = new Date().toISOString();
-    await db.exec`
-      INSERT INTO ticket_replies
-        (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, resend_email_id, created_at)
-      VALUES
-        (${replyId}, ${ticketId}, 'user', ${fromEmail}, ${fromName}, ${body},
-         ${incomingMessageId}, ${inReplyTo}, ${payload.data.email_id}, ${now})
-    `;
-    await db.exec`
-      UPDATE tickets
-      SET unread = 1,
-          last_activity_at = ${now},
-          status = CASE WHEN status = 'closed' THEN 'open' ELSE status END
-      WHERE id = ${ticketId}
-    `;
+    // 10. Insert reply + bump ticket state (skip inserting a duplicate user
+    // reply when we just created the ticket with the body already populated).
+    if (!createdNew) {
+      const replyId = crypto.randomUUID();
+      await db.exec`
+        INSERT INTO ticket_replies
+          (id, ticket_id, direction, author_email, author_name, body, message_id, in_reply_to, resend_email_id, created_at)
+        VALUES
+          (${replyId}, ${ticketId}, 'user', ${fromEmail}, ${fromName}, ${body},
+           ${incomingMessageId}, ${inReplyTo}, ${payload.data.email_id}, ${now})
+      `;
+      await db.exec`
+        UPDATE tickets
+        SET unread = 1,
+            last_activity_at = ${now},
+            status = CASE WHEN status = 'closed' THEN 'open' ELSE status END
+        WHERE id = ${ticketId}
+      `;
+    }
 
-    resp.writeHead(200); resp.end("ok");
+    resp.writeHead(200); resp.end(createdNew ? "ok-new" : "ok");
   }
 );
