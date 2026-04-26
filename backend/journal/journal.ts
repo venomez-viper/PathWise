@@ -156,16 +156,42 @@ export const deleteEntry = api(
     const userID = assertOwnUser(userId);
     RateLimits.journalRead("journal-delete:" + userID);
 
+    // Same response for not-found AND not-owner so the endpoint isn't a
+    // UUID-existence oracle for other users' journal entries.
     const row = await db.queryRow<{ user_id: string }>`
       SELECT user_id FROM journal_entries WHERE id = ${id}
     `;
-    if (!row) throw APIError.notFound("entry not found");
-    if (row.user_id !== userID) throw APIError.permissionDenied("not your entry");
+    if (!row || row.user_id !== userID) {
+      throw APIError.notFound("entry not found");
+    }
 
     await db.exec`DELETE FROM journal_entries WHERE id = ${id}`;
     return { ok: true as const };
   }
 );
+
+/**
+ * Magic-byte audio sniffer. Returns the format name (matching our
+ * allowed-extension set) or null if the buffer doesn't look like any
+ * supported audio format. This is the authoritative content-type check —
+ * the extension hint from the client is advisory only.
+ */
+function sniffAudioFormat(buf: Buffer): string | null {
+  if (buf.length < 12) return null;
+  // WebM / Matroska — starts with EBML header 1A 45 DF A3
+  if (buf[0] === 0x1A && buf[1] === 0x45 && buf[2] === 0xDF && buf[3] === 0xA3) return "webm";
+  // OGG — "OggS"
+  if (buf[0] === 0x4F && buf[1] === 0x67 && buf[2] === 0x67 && buf[3] === 0x53) return "ogg";
+  // MP3 — ID3v2 ("ID3") or sync frame (FF Fx)
+  if (buf[0] === 0x49 && buf[1] === 0x44 && buf[2] === 0x33) return "mp3";
+  if (buf[0] === 0xFF && (buf[1] & 0xE0) === 0xE0) return "mp3";
+  // WAV — "RIFF" .... "WAVE"
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+      buf[8] === 0x57 && buf[9] === 0x41 && buf[10] === 0x56 && buf[11] === 0x45) return "wav";
+  // MP4 / M4A — "ftyp" at byte 4
+  if (buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) return "m4a";
+  return null;
+}
 
 // POST /journal/transcribe
 export interface TranscribeParams {
@@ -187,7 +213,16 @@ export const transcribe = api(
       throw APIError.invalidArgument("audio too large (max 5MB)");
     }
 
-    const safeExt = /^[a-z0-9]+$/i.test(p.extension) ? p.extension : "webm";
+    // Sniff magic bytes so a malicious payload can't be smuggled in via
+    // a forged extension. Also enforce an extension allow-list — generic
+    // [a-z0-9]+ matched anything (e.g. "exe").
+    const sniffed = sniffAudioFormat(buf);
+    if (!sniffed) {
+      throw APIError.invalidArgument("audio format not recognized (allowed: webm, ogg, mp3, wav, m4a)");
+    }
+    const allowedExt = new Set(["webm", "ogg", "oga", "opus", "mp3", "wav", "m4a", "mp4"]);
+    const requested = (p.extension ?? "").toLowerCase();
+    const safeExt = allowedExt.has(requested) ? requested : sniffed;
     const filename = `entry-${randomUUID()}.${safeExt}`;
 
     try {
@@ -289,8 +324,13 @@ export const ask = api(
     if (q.length === 0) throw APIError.invalidArgument("question is empty");
     if (q.length > 500) throw APIError.invalidArgument("question too long");
 
-    const keywords = q.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    const likeClauses = keywords.map(k => `%${k}%`);
+    // Cap keywords + escape LIKE metacharacters so a question like
+    // "%%%%%%%%" can't turn into a wildcard scan that nukes the index.
+    const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
+    const keywords = q.toLowerCase().split(/\s+/)
+      .filter(w => w.length > 3)
+      .slice(0, 8);
+    const likeClauses = keywords.map(k => `%${escapeLike(k)}%`);
 
     const matches: { id: string; body: string; created_at: string }[] = [];
     if (likeClauses.length > 0) {

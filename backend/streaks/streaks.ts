@@ -2,6 +2,7 @@ import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "encore.dev/internal/codegen/auth";
 import { AuthData, checkAdmin } from "../auth/auth";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
+import { RateLimits } from "../shared/rate-limiter";
 
 const db = new SQLDatabase("streaks", { migrations: "./migrations" });
 
@@ -90,6 +91,10 @@ export const recordActivity = api(
   async ({ userId }: { userId: string }): Promise<GetStreakResponse> => {
     const { userID } = getAuthData<AuthData>()!;
     if (userID !== userId) throw APIError.permissionDenied("not your data");
+    // No-op for repeat calls within the same day (the function short-circuits
+    // anyway), but the rate limit prevents a bot from hammering the endpoint
+    // and writing notifications/XP rows in a tight loop.
+    RateLimits.tasks("streak:" + userID);
 
     const today = new Date().toISOString().split("T")[0];
     let row = await db.queryRow`SELECT current_streak, best_streak, last_active_date, consistency_score, total_xp FROM streaks WHERE user_id = ${userId}`;

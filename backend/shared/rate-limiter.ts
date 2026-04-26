@@ -105,4 +105,10 @@ export const RateLimits = {
 
   /** Inbound email global ceiling: 500 new-ticket creations per hour across all senders */
   inboundGlobal: (key: string) => checkRateLimit(key, 500, 3_600_000),
+
+  /** Forgot-password global ceiling: 200 reset emails / hour across all users */
+  forgotGlobal: (key: string) => checkRateLimit(key, 200, 3_600_000),
+
+  /** AI task generation global ceiling: 500 generations / day across all users (Mistral spend cap) */
+  aiGenerateGlobal: (key: string) => checkRateLimit(key, 500, 86_400_000),
 };
