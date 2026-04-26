@@ -298,10 +298,25 @@ export default function ArchetypeShareCard(props: ArchetypeShareCardProps) {
     if (!card) return;
     const win = window.open('', '_blank');
     if (!win) return;
-    win.document.write(`<html><head><title>My Career DNA - PathWise</title>
-      <style>*{margin:0;padding:0;}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f4f4f7;}</style>
-    </head><body>${card.outerHTML}</body></html>`);
-    win.document.close();
+
+    // DOM-construct instead of document.write with string concatenation —
+    // see Certificate/index.tsx for rationale. `cloneNode(true)` carries
+    // the rendered card across without ever round-tripping through HTML
+    // string concat (which would interpret any future user-controlled
+    // markup as live HTML).
+    const doc = win.document;
+    doc.open();
+    doc.close();
+    doc.title = 'My Career DNA - PathWise';
+
+    const styleEl = doc.createElement('style');
+    styleEl.textContent =
+      "*{margin:0;padding:0;}" +
+      "body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f4f4f7;}";
+    doc.head.appendChild(styleEl);
+
+    doc.body.appendChild(card.cloneNode(true));
+
     win.focus();
     setTimeout(() => win.print(), 500);
   };

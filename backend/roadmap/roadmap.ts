@@ -644,3 +644,46 @@ export const adminDeleteUserRoadmap = api(
     return { success: true };
   }
 );
+
+// ── Internal: Purge a user's data from the roadmap DB ────────────────────────
+
+/**
+ * Wipe everything in this service that belongs to `userId`. Called by
+ * `auth.adminDeleteUser` and `auth.deleteAccount` as part of the cross-service
+ * cascade. Best-effort — each delete is isolated so one failure does not
+ * cascade to the rest.
+ *
+ * Order matters: milestones reference roadmaps via FK ON DELETE CASCADE, but
+ * we issue both deletes explicitly for the case where a milestone row was
+ * orphaned (e.g. user_id stamping was inconsistent at insert time).
+ */
+export const purgeUser = api(
+  { expose: false },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean; deleted: Record<string, boolean> }> => {
+    const deleted: Record<string, boolean> = {};
+
+    try {
+      // Milestones do not store user_id — match via the parent roadmap row.
+      const roadmapRow = await db.queryRow<{ id: string }>`
+        SELECT id FROM roadmaps WHERE user_id = ${userId}
+      `;
+      if (roadmapRow) {
+        await db.exec`DELETE FROM milestones WHERE roadmap_id = ${roadmapRow.id}`;
+      }
+      deleted.milestones = true;
+    } catch (err) {
+      console.error("purgeUser(roadmap): milestones delete failed", err instanceof Error ? err.message : err);
+      deleted.milestones = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM roadmaps WHERE user_id = ${userId}`;
+      deleted.roadmaps = true;
+    } catch (err) {
+      console.error("purgeUser(roadmap): roadmaps delete failed", err instanceof Error ? err.message : err);
+      deleted.roadmaps = false;
+    }
+
+    return { success: true, deleted };
+  }
+);

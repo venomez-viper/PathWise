@@ -21,6 +21,7 @@ import { secret } from "encore.dev/config";
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { Resend } from "resend";
 import { RateLimits } from "../shared/rate-limiter";
+import { redactEmail, redactEmailList, truncateSubject } from "../shared/redact";
 
 const db = SQLDatabase.named("tickets");
 const resendKey = secret("ResendAPIKey");
@@ -279,7 +280,7 @@ export const ticketInboundWebhook = api.raw(
     try {
       RateLimits.inboundSender("inbound:" + fromEmail);
     } catch {
-      console.warn("Inbound: rate-limited sender", { fromEmail });
+      console.warn("Inbound: rate-limited sender", { fromEmail: redactEmail(fromEmail) });
       await logDebug({
         decision: "rate-limited",
         fromEmail,
@@ -306,7 +307,10 @@ export const ticketInboundWebhook = api.raw(
       email = got.data;
     } catch (err) {
       console.error("Inbound: failed to fetch email body", {
-        email_id: payload.data.email_id,
+        // email_id is a Resend opaque token; not raw PII but still avoid
+        // logging it in full so a leaked log line can't be used to fetch
+        // the message body via the SDK if creds leak. Truncate.
+        email_id_prefix: payload.data.email_id?.slice(0, 8) ?? "?",
         err: err instanceof Error ? err.message : "unknown",
       });
       await logDebug({
@@ -324,7 +328,7 @@ export const ticketInboundWebhook = api.raw(
 
     // 6. Reject unauthenticated senders (SPF/DKIM/DMARC failures)
     if (failedAuthenticationResults(headers)) {
-      console.warn("Inbound: dropped — failed authentication", { fromEmail });
+      console.warn("Inbound: dropped — failed authentication", { fromEmail: redactEmail(fromEmail) });
       await logDebug({
         decision: "auth-failed",
         fromEmail,
@@ -362,7 +366,7 @@ export const ticketInboundWebhook = api.raw(
     // 8. Malicious-content checks
     const check = isMalicious(body);
     if (check.bad) {
-      console.warn("Inbound: dropped suspicious content", { fromEmail, reason: check.reason });
+      console.warn("Inbound: dropped suspicious content", { fromEmail: redactEmail(fromEmail), reason: check.reason });
       await logDebug({
         decision: "suspicious",
         fromEmail,
@@ -418,8 +422,10 @@ export const ticketInboundWebhook = api.raw(
       const acceptedFor = extractInboundRecipient(payload.data.to);
       if (!acceptedFor) {
         console.warn("Inbound: no matching ticket and recipient not in allow-list", {
-          fromEmail, to: payload.data.to, subject: payload.data.subject,
-          email_id: payload.data.email_id,
+          fromEmail: redactEmail(fromEmail),
+          to: redactEmailList(payload.data.to),
+          subject: truncateSubject(payload.data.subject),
+          email_id_prefix: payload.data.email_id?.slice(0, 8) ?? "?",
         });
         await logDebug({
           decision: "no-match",
@@ -439,7 +445,7 @@ export const ticketInboundWebhook = api.raw(
       try {
         RateLimits.inboundGlobal("inbound:global");
       } catch {
-        console.warn("Inbound: global new-ticket rate limit hit", { fromEmail });
+        console.warn("Inbound: global new-ticket rate limit hit", { fromEmail: redactEmail(fromEmail) });
         await logDebug({
           decision: "rate-limited",
           fromEmail,

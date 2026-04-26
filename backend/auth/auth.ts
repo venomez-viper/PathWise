@@ -66,17 +66,42 @@ export const authHandlerDef = authHandler<AuthParams, AuthData>(
       throw APIError.unauthenticated("missing Bearer token");
     }
     const token = raw.slice(7);
+
+    // Verify signature first; only after the JWT itself is valid do we hit
+    // the DB to confirm the password_version claim is still current. This
+    // ordering means an attacker spraying garbage tokens can't probe the
+    // users table.
+    let payload: jwt.JwtPayload;
     try {
-      const payload = jwt.verify(token, jwtSecret()) as jwt.JwtPayload;
-      if (!payload.sub) throw new Error("no sub");
-      return {
-        userID: payload.sub,
-        isImpersonation: Boolean(payload.isImpersonation),
-        impersonatedBy: typeof payload.impersonatedBy === "string" ? payload.impersonatedBy : null,
-      };
+      payload = jwt.verify(token, jwtSecret()) as jwt.JwtPayload;
     } catch {
       throw APIError.unauthenticated("invalid or expired token");
     }
+    if (!payload.sub || typeof payload.sub !== "string") {
+      throw APIError.unauthenticated("invalid or expired token");
+    }
+
+    // Token-version revocation: every password write bumps the user's
+    // `password_version`; tokens carry the version they were issued
+    // against. A mismatch (or missing claim — pre-rollout tokens) is
+    // treated as revoked. One extra SELECT per request; cheap on an
+    // indexed PK.
+    const tokenVersion = typeof payload.pw_v === "number" ? payload.pw_v : null;
+    const userRow = await db.queryRow<{ password_version: number }>`
+      SELECT password_version FROM users WHERE id = ${payload.sub}
+    `;
+    if (!userRow) {
+      throw APIError.unauthenticated("invalid or expired token");
+    }
+    if (tokenVersion === null || tokenVersion !== userRow.password_version) {
+      throw APIError.unauthenticated("invalid or expired token");
+    }
+
+    return {
+      userID: payload.sub,
+      isImpersonation: Boolean(payload.isImpersonation),
+      impersonatedBy: typeof payload.impersonatedBy === "string" ? payload.impersonatedBy : null,
+    };
   }
 );
 
@@ -105,21 +130,25 @@ export interface SignUpParams {
 export const signup = api(
   { expose: true, method: "POST", path: "/auth/signup", auth: false },
   async (params: SignUpParams): Promise<TokenResponse> => {
-    RateLimits.auth("signup:" + params.email);
+    // Normalize once at the boundary. Every downstream query (existence
+    // check, INSERT, rate-limit key, welcome email) uses the same canonical
+    // form so `Foo@x.com` and `foo@x.com` cannot create separate accounts.
+    const email = (params.email ?? "").trim().toLowerCase();
+    RateLimits.auth("signup:" + email);
     if (params.name.length > 100) throw APIError.invalidArgument("name too long");
-    if (params.email.length > 255) throw APIError.invalidArgument("email too long");
+    if (email.length > 255) throw APIError.invalidArgument("email too long");
     if (params.password.length > 128) throw APIError.invalidArgument("password too long");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(params.email)) {
+    if (!emailRegex.test(email)) {
       throw APIError.invalidArgument("invalid email address");
     }
     if (params.password.length < 8) {
       throw APIError.invalidArgument("password must be at least 8 characters");
     }
 
-    // Check email not already taken
+    // Check email not already taken (case-insensitive — see migration 12).
     const existing = await db.queryRow`
-      SELECT id FROM users WHERE email = ${params.email}
+      SELECT id FROM users WHERE email = ${email}
     `;
     if (existing) {
       throw APIError.alreadyExists("an account with this email already exists");
@@ -131,7 +160,7 @@ export const signup = api(
 
     await db.exec`
       INSERT INTO users (id, name, email, password_hash, plan, created_at, last_login_at)
-      VALUES (${id}, ${params.name}, ${params.email}, ${passwordHash}, 'free', ${now}, ${now})
+      VALUES (${id}, ${params.name}, ${email}, ${passwordHash}, 'free', ${now}, ${now})
     `;
 
     // Send welcome email (fire and forget)
@@ -139,13 +168,14 @@ export const signup = api(
       const { welcomeEmail } = await import("../email/email");
       const { sendEmail } = await import("../email/email");
       const template = welcomeEmail(params.name);
-      await sendEmail({ to: params.email, ...template });
+      await sendEmail({ to: email, ...template });
     } catch {}
 
-    const token = issueToken(id);
+    // Fresh signup → password_version is 1 (column default).
+    const token = issueToken(id, 1);
     return {
       token,
-      user: { id, name: params.name, email: params.email, plan: "free" },
+      user: { id, name: params.name, email, plan: "free" },
     };
   }
 );
@@ -160,16 +190,20 @@ export interface SignInParams {
 export const signin = api(
   { expose: true, method: "POST", path: "/auth/signin", auth: false },
   async (params: SignInParams): Promise<TokenResponse> => {
+    // Normalize at the boundary so the lookup matches regardless of case
+    // and the per-email rate-limit key isn't trivially bypassable by
+    // toggling capitalization.
+    const email = (params.email ?? "").trim().toLowerCase();
     // Per-email AND per-attempt limits both apply. Per-email alone enables
     // an attacker to lock a target out by spamming wrong attempts (DoS);
     // adding a global limit ensures that distributed lockout-spray is
     // throttled too. The legitimate user is still blocked for ~1 minute
     // after their own bad attempts, which is intentional.
-    RateLimits.auth("signin:" + (params.email ?? "").toLowerCase());
+    RateLimits.auth("signin:" + email);
     RateLimits.forgotGlobal("signin:global");
     const row = await db.queryRow`
-      SELECT id, name, email, avatar_url, plan, password_hash
-      FROM users WHERE email = ${params.email}
+      SELECT id, name, email, avatar_url, plan, password_hash, password_version
+      FROM users WHERE email = ${email}
     `;
 
     // Use constant-time comparison to avoid timing attacks
@@ -181,7 +215,7 @@ export const signin = api(
       throw APIError.unauthenticated("invalid email or password");
     }
 
-    const token = issueToken(row.id);
+    const token = issueToken(row.id, row.password_version);
     // Update last login timestamp
     try { await db.exec`UPDATE users SET last_login_at = ${new Date().toISOString()} WHERE id = ${row.id}`; } catch {}
 
@@ -302,7 +336,15 @@ export const changePassword = api(
     if (!match) throw APIError.unauthenticated("current password is incorrect");
 
     const newHash = await bcrypt.hash(params.newPassword, 12);
-    await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${userID}`;
+    // Bump password_version → invalidates every previously-issued JWT for
+    // this user. The current request still completes (the auth handler
+    // already verified before this UPDATE), but the next request needs a
+    // fresh token. Caller is expected to sign in again.
+    await db.exec`
+      UPDATE users
+      SET password_hash = ${newHash}, password_version = password_version + 1
+      WHERE id = ${userID}
+    `;
 
     return { success: true };
   }
@@ -317,10 +359,11 @@ interface ForgotPasswordParams {
 export const forgotPassword = api(
   { expose: true, method: "POST", path: "/auth/forgot-password", auth: false },
   async (params: ForgotPasswordParams): Promise<{ success: boolean }> => {
+    const email = (params.email ?? "").trim().toLowerCase();
     // Two limiters: per-email (slow targeted enumeration) and global
     // (cap total reset emails sent per hour across the platform — a
     // password-reset spray bot can't blow up our Resend bill).
-    RateLimits.auth("forgot:" + (params.email ?? "").toLowerCase());
+    RateLimits.auth("forgot:" + email);
     RateLimits.forgotGlobal("forgot:global");
 
     // Always do the bcrypt + INSERT + email-shape work, even when the
@@ -331,7 +374,7 @@ export const forgotPassword = api(
     const id = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
 
-    const row = await db.queryRow`SELECT id FROM users WHERE email = ${params.email}`;
+    const row = await db.queryRow`SELECT id FROM users WHERE email = ${email}`;
     if (!row) {
       // Discard the bcrypt work; do nothing else. Returning success here
       // is what makes the endpoint enumeration-resistant.
@@ -351,8 +394,8 @@ export const forgotPassword = api(
       const { sendEmail, passwordResetEmail } = await import("../email/email");
       const baseUrl = frontendUrl();
       const resetUrl = `${baseUrl}/reset-password?token=${token}&id=${id}`;
-      const email = passwordResetEmail(resetUrl);
-      await sendEmail({ to: params.email, ...email });
+      const emailContent = passwordResetEmail(resetUrl);
+      await sendEmail({ to: email, ...emailContent });
     } catch (err) {
       console.error("Failed to send reset email:", err);
     }
@@ -411,7 +454,13 @@ export const resetPassword = api(
     if (!claimed) throw REJECT;
 
     const newHash = await bcrypt.hash(params.newPassword, 12);
-    await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${claimed.user_id}`;
+    // Bump password_version on reset for the same reason as changePassword:
+    // any 30-day JWT issued before the reset is now revoked.
+    await db.exec`
+      UPDATE users
+      SET password_hash = ${newHash}, password_version = password_version + 1
+      WHERE id = ${claimed.user_id}
+    `;
 
     // Invalidate every other token for this user, in case multiple were
     // outstanding (forgotPassword above already deletes prior tokens, but
@@ -500,6 +549,8 @@ export const adminListUsers = api(
 export interface DeleteUserResponse {
   success: boolean;
   deletedUserId: string;
+  /** Per-service cascade outcome — true if the service's purgeUser RPC returned success. */
+  purge?: Record<string, boolean>;
 }
 
 export const adminDeleteUser = api(
@@ -524,7 +575,68 @@ export const adminDeleteUser = api(
       throw APIError.invalidArgument("cannot delete an admin user");
     }
 
-    // Delete from users table (user_oauth_providers will cascade if FK exists)
+    // Cross-service cascade: each Encore service has its own SQL DB so FK
+    // CASCADE only protects rows inside the same service. Fan out a purge to
+    // every service that owns user-scoped data. Order matters: dependent rows
+    // (tasks → milestones → roadmaps; tags → entries) come before parents.
+    // Best-effort — log failures, surface them in the response, but never
+    // abort the user-row deletion.
+    const targetEmail = (targetRow.email as string | null) ?? null;
+    const purgeResults: Record<string, boolean> = {};
+    try {
+      const tasksMod = await import("../tasks/tasks");
+      const r = await tasksMod.purgeUser({ userId });
+      purgeResults.tasks = r.success;
+    } catch (err) {
+      console.error("adminDeleteUser: tasks purge failed", err instanceof Error ? err.message : err);
+      purgeResults.tasks = false;
+    }
+    try {
+      const roadmapMod = await import("../roadmap/roadmap");
+      const r = await roadmapMod.purgeUser({ userId });
+      purgeResults.roadmap = r.success;
+    } catch (err) {
+      console.error("adminDeleteUser: roadmap purge failed", err instanceof Error ? err.message : err);
+      purgeResults.roadmap = false;
+    }
+    try {
+      const journalMod = await import("../journal/journal");
+      const r = await journalMod.purgeUser({ userId });
+      purgeResults.journal = r.success;
+    } catch (err) {
+      console.error("adminDeleteUser: journal purge failed", err instanceof Error ? err.message : err);
+      purgeResults.journal = false;
+    }
+    try {
+      const streaksMod = await import("../streaks/streaks");
+      const r = await streaksMod.purgeUser({ userId });
+      purgeResults.streaks = r.success;
+    } catch (err) {
+      console.error("adminDeleteUser: streaks purge failed", err instanceof Error ? err.message : err);
+      purgeResults.streaks = false;
+    }
+    try {
+      const assessmentMod = await import("../assessment/assessment");
+      const r = await assessmentMod.purgeUser({ userId });
+      purgeResults.assessment = r.success;
+    } catch (err) {
+      console.error("adminDeleteUser: assessment purge failed", err instanceof Error ? err.message : err);
+      purgeResults.assessment = false;
+    }
+    try {
+      const ticketsMod = await import("../tickets/tickets");
+      const r = await ticketsMod.purgeUser({ userId, userEmail: targetEmail });
+      purgeResults.tickets = r.success;
+    } catch (err) {
+      console.error("adminDeleteUser: tickets purge failed", err instanceof Error ? err.message : err);
+      purgeResults.tickets = false;
+    }
+
+    // Auth-DB cleanup: password_reset_tokens and oauth providers are local
+    // to this service, so they can be deleted directly.
+    try { await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${userId}`; } catch (err) {
+      console.error("adminDeleteUser: password_reset_tokens delete failed", err instanceof Error ? err.message : err);
+    }
     try { await db.exec`DELETE FROM user_oauth_providers WHERE user_id = ${userId}`; } catch {}
     await db.exec`DELETE FROM users WHERE id = ${userId}`;
 
@@ -532,13 +644,13 @@ export const adminDeleteUser = api(
       await db.exec`
         INSERT INTO admin_audit (id, actor_id, action, target_id, target_type, metadata, created_at)
         VALUES (${crypto.randomUUID()}, ${userID}, 'delete_user', ${userId}, 'user',
-                ${JSON.stringify({ email: targetRow.email })}, ${new Date().toISOString()})
+                ${JSON.stringify({ email: targetRow.email, purge: purgeResults })}, ${new Date().toISOString()})
       `;
     } catch (auditErr) {
       console.warn("adminDeleteUser: audit write failed", auditErr instanceof Error ? auditErr.message : auditErr);
     }
 
-    return { success: true, deletedUserId: userId };
+    return { success: true, deletedUserId: userId, purge: purgeResults } as DeleteUserResponse;
   }
 );
 
@@ -582,7 +694,7 @@ export const adminImpersonate = api(
     refuseImpersonation(auth);
     await requireAdmin(userID);
 
-    const row = await db.queryRow`SELECT id, email FROM users WHERE id = ${userId}`;
+    const row = await db.queryRow`SELECT id, email, password_version FROM users WHERE id = ${userId}`;
     if (!row) throw APIError.notFound("user not found");
 
     // Never impersonate another admin — otherwise two admins fighting could
@@ -598,9 +710,17 @@ export const adminImpersonate = api(
       throw APIError.permissionDenied("cannot impersonate an admin user");
     }
 
-    // Short-lived impersonation token (1 hour, not 30 days)
+    // Short-lived impersonation token (1 hour, not 30 days). Carries the
+    // target user's current password_version — if the user rotates their
+    // password during the impersonation window, the token is revoked along
+    // with every other outstanding session for that user.
     const token = jwt.sign(
-      { sub: userId, impersonatedBy: userID, isImpersonation: true },
+      {
+        sub: userId,
+        pw_v: row.password_version,
+        impersonatedBy: userID,
+        isImpersonation: true,
+      },
       jwtSecret(),
       { expiresIn: "1h" }
     );
@@ -718,7 +838,7 @@ export const checkSupportAccess = api(
 
 export const deleteAccount = api(
   { expose: true, method: "DELETE", path: "/auth/account", auth: true },
-  async (): Promise<{ success: boolean }> => {
+  async (): Promise<{ success: boolean; purge?: Record<string, boolean> }> => {
     const { userID } = getAuthData<AuthData>()!;
 
     // Don't allow admin to self-delete via this endpoint
@@ -728,12 +848,68 @@ export const deleteAccount = api(
       throw APIError.invalidArgument("admin account cannot be deleted from settings");
     }
 
-    // Delete OAuth providers
+    // Cross-service cascade — same fan-out as adminDeleteUser. Each Encore
+    // service owns an isolated SQL DB so FK CASCADE only protects rows
+    // inside the same service.
+    const targetEmail = (row.email as string | null) ?? null;
+    const purgeResults: Record<string, boolean> = {};
+    try {
+      const tasksMod = await import("../tasks/tasks");
+      const r = await tasksMod.purgeUser({ userId: userID });
+      purgeResults.tasks = r.success;
+    } catch (err) {
+      console.error("deleteAccount: tasks purge failed", err instanceof Error ? err.message : err);
+      purgeResults.tasks = false;
+    }
+    try {
+      const roadmapMod = await import("../roadmap/roadmap");
+      const r = await roadmapMod.purgeUser({ userId: userID });
+      purgeResults.roadmap = r.success;
+    } catch (err) {
+      console.error("deleteAccount: roadmap purge failed", err instanceof Error ? err.message : err);
+      purgeResults.roadmap = false;
+    }
+    try {
+      const journalMod = await import("../journal/journal");
+      const r = await journalMod.purgeUser({ userId: userID });
+      purgeResults.journal = r.success;
+    } catch (err) {
+      console.error("deleteAccount: journal purge failed", err instanceof Error ? err.message : err);
+      purgeResults.journal = false;
+    }
+    try {
+      const streaksMod = await import("../streaks/streaks");
+      const r = await streaksMod.purgeUser({ userId: userID });
+      purgeResults.streaks = r.success;
+    } catch (err) {
+      console.error("deleteAccount: streaks purge failed", err instanceof Error ? err.message : err);
+      purgeResults.streaks = false;
+    }
+    try {
+      const assessmentMod = await import("../assessment/assessment");
+      const r = await assessmentMod.purgeUser({ userId: userID });
+      purgeResults.assessment = r.success;
+    } catch (err) {
+      console.error("deleteAccount: assessment purge failed", err instanceof Error ? err.message : err);
+      purgeResults.assessment = false;
+    }
+    try {
+      const ticketsMod = await import("../tickets/tickets");
+      const r = await ticketsMod.purgeUser({ userId: userID, userEmail: targetEmail });
+      purgeResults.tickets = r.success;
+    } catch (err) {
+      console.error("deleteAccount: tickets purge failed", err instanceof Error ? err.message : err);
+      purgeResults.tickets = false;
+    }
+
+    // Auth-DB cleanup
+    try { await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${userID}`; } catch (err) {
+      console.error("deleteAccount: password_reset_tokens delete failed", err instanceof Error ? err.message : err);
+    }
     try { await db.exec`DELETE FROM user_oauth_providers WHERE user_id = ${userID}`; } catch {}
-    // Delete user
     await db.exec`DELETE FROM users WHERE id = ${userID}`;
 
-    return { success: true };
+    return { success: true, purge: purgeResults };
   }
 );
 
@@ -950,6 +1126,9 @@ export const adminBroadcastEmail = api(
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
-function issueToken(userId: string): string {
-  return jwt.sign({ sub: userId }, jwtSecret(), { expiresIn: "30d" });
+function issueToken(userId: string, pwVersion: number): string {
+  // `pw_v` is checked by authHandlerDef on every request. Bumping the
+  // user's `password_version` column instantly revokes every JWT issued
+  // before the bump — see migration 13 + changePassword/resetPassword.
+  return jwt.sign({ sub: userId, pw_v: pwVersion }, jwtSecret(), { expiresIn: "30d" });
 }

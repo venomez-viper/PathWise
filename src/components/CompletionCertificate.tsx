@@ -27,32 +27,39 @@ export default function CompletionCertificate({
     if (!cert) return;
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>PathWise Certificate — ${userName}</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-              margin: 0;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-              background: #f4f4f7;
-              font-family: 'Inter', sans-serif;
-            }
-            @media print {
-              body { background: #fff; }
-              @page { margin: 0.5in; }
-            }
-          </style>
-        </head>
-        <body>${cert.outerHTML}</body>
-      </html>
-    `);
-    printWindow.document.close();
+
+    // DOM-construct the print window. The previous `document.write` with
+    // backtick-interpolated `${userName}` and `${cert.outerHTML}` was
+    // self-XSS today (user controls their own name) and would become
+    // stored XSS the moment any other user-controlled content is rendered
+    // inside the cert. Setting title, creating <style> via textContent,
+    // and cloneNode(true) all keep untrusted strings on the DOM path.
+    const doc = printWindow.document;
+    doc.open();
+    doc.close();
+    doc.title = userName ? `PathWise Certificate — ${userName}` : 'PathWise Certificate';
+
+    const styleEl = doc.createElement('style');
+    styleEl.textContent =
+      "@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');" +
+      "* { margin: 0; padding: 0; box-sizing: border-box; }" +
+      "body {" +
+        "margin: 0;" +
+        "display: flex;" +
+        "justify-content: center;" +
+        "align-items: center;" +
+        "min-height: 100vh;" +
+        "background: #f4f4f7;" +
+        "font-family: 'Inter', sans-serif;" +
+      "}" +
+      "@media print {" +
+        "body { background: #fff; }" +
+        "@page { margin: 0.5in; }" +
+      "}";
+    doc.head.appendChild(styleEl);
+
+    doc.body.appendChild(cert.cloneNode(true));
+
     printWindow.focus();
     printWindow.print();
   };

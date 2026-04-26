@@ -393,3 +393,60 @@ export const adminDeleteUserStreaks = api(
     return { success: true };
   }
 );
+
+// ── Internal: Purge a user's data from the streaks DB ────────────────────────
+
+/**
+ * Wipe everything in this service that belongs to `userId`. Called by
+ * `auth.adminDeleteUser` and `auth.deleteAccount` as part of the cross-service
+ * cascade. Best-effort — each delete is isolated so one failure does not
+ * cascade to the rest.
+ */
+export const purgeUser = api(
+  { expose: false },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean; deleted: Record<string, boolean> }> => {
+    const deleted: Record<string, boolean> = {};
+
+    try {
+      await db.exec`DELETE FROM activity_log WHERE user_id = ${userId}`;
+      deleted.activity_log = true;
+    } catch (err) {
+      console.error("purgeUser(streaks): activity_log delete failed", err instanceof Error ? err.message : err);
+      deleted.activity_log = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM certificates WHERE user_id = ${userId}`;
+      deleted.certificates = true;
+    } catch (err) {
+      console.error("purgeUser(streaks): certificates delete failed", err instanceof Error ? err.message : err);
+      deleted.certificates = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM notifications WHERE user_id = ${userId}`;
+      deleted.notifications = true;
+    } catch (err) {
+      console.error("purgeUser(streaks): notifications delete failed", err instanceof Error ? err.message : err);
+      deleted.notifications = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM achievements WHERE user_id = ${userId}`;
+      deleted.achievements = true;
+    } catch (err) {
+      console.error("purgeUser(streaks): achievements delete failed", err instanceof Error ? err.message : err);
+      deleted.achievements = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM streaks WHERE user_id = ${userId}`;
+      deleted.streaks = true;
+    } catch (err) {
+      console.error("purgeUser(streaks): streaks delete failed", err instanceof Error ? err.message : err);
+      deleted.streaks = false;
+    }
+
+    return { success: true, deleted };
+  }
+);

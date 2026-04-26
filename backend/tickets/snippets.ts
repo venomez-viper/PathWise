@@ -71,20 +71,24 @@ export const createSnippet = api(
     const title = validateTitle(params.title);
     const body = validateBody(params.body);
 
-    const countRow = await db.queryRow<{ c: number }>`
-      SELECT COUNT(*)::int AS c FROM support_snippets WHERE user_id = ${userID}
-    `;
-    if ((countRow?.c ?? 0) >= MAX_SNIPPETS_PER_USER) {
-      throw APIError.resourceExhausted(`snippet limit reached (max ${MAX_SNIPPETS_PER_USER})`);
-    }
-
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    await db.exec`
+    // Atomic insert-with-cap. The previous SELECT-COUNT-then-INSERT pattern
+    // was a TOCTOU race: two concurrent requests could each read N < limit
+    // and both insert, blowing past MAX_SNIPPETS_PER_USER. The conditional
+    // INSERT below evaluates the count and the insert in the same statement
+    // — at most one of two concurrent requests at the boundary can return
+    // a row. RETURNING-empty is the rejection signal.
+    const inserted = await db.queryRow<{ id: string }>`
       INSERT INTO support_snippets (id, user_id, title, body, created_at, updated_at)
-      VALUES (${id}, ${userID}, ${title}, ${body}, ${now}, ${now})
+      SELECT ${id}, ${userID}, ${title}, ${body}, ${now}, ${now}
+      WHERE (SELECT COUNT(*) FROM support_snippets WHERE user_id = ${userID}) < ${MAX_SNIPPETS_PER_USER}
+      RETURNING id
     `;
+    if (!inserted) {
+      throw APIError.resourceExhausted(`snippet limit reached (max ${MAX_SNIPPETS_PER_USER})`);
+    }
 
     return { id, title, body, createdAt: now, updatedAt: now };
   }

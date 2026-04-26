@@ -681,4 +681,64 @@ export const adminMarkTicketRead = api(
   }
 );
 
+// ── Internal: Purge a user's data from the tickets DB ────────────────────────
+
+/**
+ * Wipe everything in this service that is associated with a user. Called by
+ * `auth.adminDeleteUser` and `auth.deleteAccount` as part of the cross-service
+ * cascade (each Encore SQL DB is isolated, so no FK CASCADE saves us here).
+ *
+ * Match strategy:
+ *   - tickets.email = userEmail  → covers public submitTicket flow where the
+ *     ticket was created with no user_id link
+ *   - inbound_debug_log.from_email = userEmail → strip incoming-mail traces
+ *
+ * Best-effort: each statement is wrapped so one schema drift / missing
+ * column / locked row doesn't abort the rest of the purge. Failures are
+ * logged but the call still resolves with `success: true` so the caller
+ * can continue fanning out to other services.
+ */
+export const purgeUser = api(
+  { expose: false },
+  async ({ userId, userEmail }: { userId: string; userEmail: string | null }): Promise<{ success: boolean; deleted: Record<string, boolean> }> => {
+    void userId; // tickets are matched by email, not user_id (public submitTicket)
+    const deleted: Record<string, boolean> = {};
+    const lcEmail = userEmail ? userEmail.trim().toLowerCase() : null;
+
+    if (lcEmail) {
+      try {
+        // ticket_replies cascade automatically via FK ON DELETE CASCADE
+        await db.exec`DELETE FROM tickets WHERE LOWER(email) = ${lcEmail}`;
+        deleted.tickets = true;
+      } catch (err) {
+        console.error("purgeUser(tickets): tickets delete failed", err instanceof Error ? err.message : err);
+        deleted.tickets = false;
+      }
+
+      try {
+        await db.exec`DELETE FROM inbound_debug_log WHERE LOWER(from_email) = ${lcEmail}`;
+        deleted.inbound_debug_log = true;
+      } catch (err) {
+        console.error("purgeUser(tickets): inbound_debug_log delete failed", err instanceof Error ? err.message : err);
+        deleted.inbound_debug_log = false;
+      }
+    } else {
+      deleted.tickets = false;
+      deleted.inbound_debug_log = false;
+    }
+
+    // support_snippets is keyed on user_id (admin/agent table — survives even
+    // if the user record went missing on the auth side).
+    try {
+      await db.exec`DELETE FROM support_snippets WHERE user_id = ${userId}`;
+      deleted.support_snippets = true;
+    } catch (err) {
+      console.error("purgeUser(tickets): support_snippets delete failed", err instanceof Error ? err.message : err);
+      deleted.support_snippets = false;
+    }
+
+    return { success: true, deleted };
+  }
+);
+
 // Trigger Encore redeploy - Tue Apr 21 04:18:00 PM CDT 2026 (inbox outbox v0.22.0)
