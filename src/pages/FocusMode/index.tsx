@@ -27,57 +27,54 @@ const TIMER_PRESETS = [
 // rain.mp3 is currently a short clip — replace at /public/audio/rain.mp3 with
 // a 5+ min track so the loop is inaudible.
 type AmbientGroup = 'nature' | 'spaces' | 'tones';
-type AmbientTone = 'light' | 'dark'; // foreground brightness against the gradient
 type AmbientTrack = {
   id: string; label: string; icon: string; file: string; group: AmbientGroup;
-  /** CSS background applied to the focus-mode page when this track plays. */
+  /** Card-level CSS gradient — used as album-art on the picker. */
   gradient: string;
-  /** 'light' = light text on dark gradient, 'dark' = dark text on light gradient. */
-  tone: AmbientTone;
 };
+
+/** Real photo wallpaper path for an ambient track. The file may or may not
+ *  exist on disk — page CSS falls back to the surface colour if it 404s. */
+function trackWallpaper(id: string): string {
+  return `/wallpapers/${id}.jpg`;
+}
 
 // Gradients are mood-matched to each track. Smoothly transition between
 // them via CSS transition on the page wrapper.
 const AMBIENT_SOUNDS: AmbientTrack[] = [
   // Nature
-  { id: 'rain',       label: 'Soft Rain',     icon: '🌧️', file: '/audio/rain.mp3',        group: 'nature', tone: 'light',
+  { id: 'rain',       label: 'Soft Rain',     icon: '🌧️', file: '/audio/rain.mp3',        group: 'nature',
     gradient: 'radial-gradient(at 20% 0%, #6b8aa8 0%, transparent 55%), radial-gradient(at 80% 100%, #5a738d 0%, transparent 55%), linear-gradient(180deg, #2f4456 0%, #4a6079 100%)' },
-  { id: 'ocean',      label: 'Ocean Waves',   icon: '🌊', file: '/audio/ocean.mp3',       group: 'nature', tone: 'light',
+  { id: 'ocean',      label: 'Ocean Waves',   icon: '🌊', file: '/audio/ocean.mp3',       group: 'nature',
     gradient: 'radial-gradient(at 20% 100%, #2a8a8a 0%, transparent 60%), radial-gradient(at 80% 0%, #5cc4c4 0%, transparent 55%), linear-gradient(180deg, #06384a 0%, #1c6b78 100%)' },
-  { id: 'forest',     label: 'Forest',        icon: '🌿', file: '/audio/forest.mp3',      group: 'nature', tone: 'light',
+  { id: 'forest',     label: 'Forest',        icon: '🌿', file: '/audio/forest.mp3',      group: 'nature',
     gradient: 'radial-gradient(at 30% 20%, #7ba968 0%, transparent 55%), radial-gradient(at 70% 100%, #345a2c 0%, transparent 60%), linear-gradient(180deg, #1f3a18 0%, #4d7a3c 100%)' },
-  { id: 'stream',     label: 'River Stream',  icon: '💧', file: '/audio/stream.mp3',      group: 'nature', tone: 'dark',
+  { id: 'stream',     label: 'River Stream',  icon: '💧', file: '/audio/stream.mp3',      group: 'nature',
     gradient: 'radial-gradient(at 30% 0%, #b6dcd8 0%, transparent 55%), radial-gradient(at 70% 100%, #6ba8a0 0%, transparent 55%), linear-gradient(180deg, #4f8a85 0%, #cfe9e3 100%)' },
-  { id: 'birds',      label: 'Birdsong',      icon: '🐦', file: '/audio/birds.mp3',       group: 'nature', tone: 'dark',
+  { id: 'birds',      label: 'Birdsong',      icon: '🐦', file: '/audio/birds.mp3',       group: 'nature',
     gradient: 'radial-gradient(at 50% 0%, #ffd49a 0%, transparent 55%), radial-gradient(at 20% 100%, #f0a36a 0%, transparent 55%), linear-gradient(180deg, #ffd9a3 0%, #ffb074 100%)' },
-  { id: 'fireplace',  label: 'Fireplace',     icon: '🔥', file: '/audio/fireplace.mp3',   group: 'nature', tone: 'light',
+  { id: 'fireplace',  label: 'Fireplace',     icon: '🔥', file: '/audio/fireplace.mp3',   group: 'nature',
     gradient: 'radial-gradient(at 50% 100%, #ff7a3d 0%, transparent 55%), radial-gradient(at 30% 30%, #b8421a 0%, transparent 55%), linear-gradient(180deg, #2b0d05 0%, #6b240e 100%)' },
-  { id: 'thunder',    label: 'Thunderstorm',  icon: '⛈️', file: '/audio/thunder.mp3',     group: 'nature', tone: 'light',
+  { id: 'thunder',    label: 'Thunderstorm',  icon: '⛈️', file: '/audio/thunder.mp3',     group: 'nature',
     gradient: 'radial-gradient(at 70% 0%, #4b3a6e 0%, transparent 55%), radial-gradient(at 20% 100%, #1f2030 0%, transparent 60%), linear-gradient(180deg, #14152b 0%, #303347 100%)' },
   // Spaces
-  { id: 'cafe',       label: 'Cafe',          icon: '☕', file: '/audio/cafe.mp3',        group: 'spaces', tone: 'light',
+  { id: 'cafe',       label: 'Cafe',          icon: '☕', file: '/audio/cafe.mp3',        group: 'spaces',
     gradient: 'radial-gradient(at 30% 20%, #d4a573 0%, transparent 55%), radial-gradient(at 80% 100%, #6e3f21 0%, transparent 55%), linear-gradient(180deg, #3d2415 0%, #8b5a36 100%)' },
-  { id: 'library',    label: 'Library',       icon: '📚', file: '/audio/library.mp3',    group: 'spaces', tone: 'light',
+  { id: 'library',    label: 'Library',       icon: '📚', file: '/audio/library.mp3',    group: 'spaces',
     gradient: 'radial-gradient(at 20% 0%, #cdb494 0%, transparent 55%), radial-gradient(at 80% 100%, #7a5a3a 0%, transparent 55%), linear-gradient(180deg, #4d3826 0%, #9a7d57 100%)' },
   // Tones & music
-  { id: 'lofi',       label: 'Lo-Fi Beats',   icon: '🎧', file: '/audio/lofi.mp3',        group: 'tones', tone: 'light',
+  { id: 'lofi',       label: 'Lo-Fi Beats',   icon: '🎧', file: '/audio/lofi.mp3',        group: 'tones',
     gradient: 'radial-gradient(at 70% 0%, #ff9aa8 0%, transparent 55%), radial-gradient(at 30% 100%, #6a4ec7 0%, transparent 55%), linear-gradient(180deg, #2b1d4a 0%, #6f47a8 100%)' },
-  { id: 'piano',      label: 'Piano',         icon: '🎹', file: '/audio/piano.mp3',       group: 'tones', tone: 'dark',
+  { id: 'piano',      label: 'Piano',         icon: '🎹', file: '/audio/piano.mp3',       group: 'tones',
     gradient: 'radial-gradient(at 30% 20%, #e9dcf2 0%, transparent 55%), radial-gradient(at 70% 100%, #c1a8d6 0%, transparent 55%), linear-gradient(180deg, #f5ecf6 0%, #d6c2dc 100%)' },
-  { id: 'brown',      label: 'Brown Noise',   icon: '🟫', file: '/audio/brown-noise.mp3', group: 'tones', tone: 'light',
+  { id: 'brown',      label: 'Brown Noise',   icon: '🟫', file: '/audio/brown-noise.mp3', group: 'tones',
     gradient: 'radial-gradient(at 20% 100%, #6b4a2b 0%, transparent 60%), linear-gradient(180deg, #2b1a0e 0%, #553820 100%)' },
-  { id: 'white',      label: 'White Noise',   icon: '⚪', file: '/audio/white-noise.mp3', group: 'tones', tone: 'dark',
+  { id: 'white',      label: 'White Noise',   icon: '⚪', file: '/audio/white-noise.mp3', group: 'tones',
     gradient: 'radial-gradient(at 50% 50%, #ffffff 0%, transparent 60%), linear-gradient(180deg, #d6d8dc 0%, #f3f4f6 100%)' },
 ];
 
-/** Default background when no track is playing. Inherits the page surface. */
-const AMBIENT_IDLE_GRADIENT = 'linear-gradient(180deg, var(--surface) 0%, var(--surface-container-low) 100%)';
-
-const AMBIENT_GROUPS: { id: AmbientGroup; label: string; icon: string }[] = [
-  { id: 'nature', label: 'Nature', icon: '🌿' },
-  { id: 'spaces', label: 'Spaces', icon: '🏛' },
-  { id: 'tones',  label: 'Tones',  icon: '🎧' },
-];
+// (Group metadata stays on each track for filtered views; the coverflow
+// renders all tracks in a single rail so we no longer surface the tabs.)
 
 function AmbientPicker({
   active, volume, onPick, onStop, onVolume,
@@ -88,187 +85,189 @@ function AmbientPicker({
   onStop: () => void;
   onVolume: (v: number) => void;
 }) {
-  const [group, setGroup] = useState<AmbientGroup>(() => {
-    const found = AMBIENT_SOUNDS.find(s => s.id === active);
-    return found?.group ?? 'nature';
-  });
   const isPlaying = active !== 'off';
   const activeTrack = AMBIENT_SOUNDS.find(s => s.id === active);
-  const visible = AMBIENT_SOUNDS.filter(s => s.group === group);
+  const trackRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // Centre the active card whenever the user picks a new one — gives the
+  // iPod-album feel where the chosen track slides to the middle.
+  useEffect(() => {
+    const el = trackRefs.current[active];
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [active]);
 
   return (
     <div style={{
-      width: '100%', maxWidth: 640, marginBottom: '2rem',
-      borderRadius: 'var(--radius-lg, 16px)',
-      border: '1px solid var(--outline-variant)',
-      background: 'var(--surface-container-lowest)',
-      overflow: 'hidden',
+      width: '100%', maxWidth: 720, marginBottom: '2rem',
+      display: 'flex', flexDirection: 'column', gap: 14,
     }}>
-      {/* Header / mini-player */}
+      {/* Now-playing strip */}
       <div style={{
-        padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10,
-        borderBottom: '1px solid var(--outline-variant)',
-        background: isPlaying ? 'rgba(139,79,44,0.06)' : 'var(--surface-container-low)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 12, padding: '0 4px',
       }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-          background: isPlaying ? 'rgba(139,79,44,0.15)' : 'var(--surface-container)',
-          color: isPlaying ? 'var(--copper)' : 'var(--on-surface-variant)',
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {isPlaying ? <Volume2 size={15} /> : <VolumeX size={15} />}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em',
-            textTransform: 'uppercase', color: 'var(--on-surface-variant)',
-            display: 'flex', alignItems: 'center', gap: 6,
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          {isPlaying ? <Volume2 size={14} color="var(--copper)" /> : <VolumeX size={14} color="var(--on-surface-muted)" />}
+          <span style={{
+            fontSize: '0.66rem', fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--on-surface-variant)',
           }}>
-            Ambient sound
-            {isPlaying && (
+            Ambient
+          </span>
+          {isPlaying && activeTrack && (
+            <>
+              <span style={{ color: 'var(--on-surface-variant)' }}>·</span>
               <span style={{
-                width: 6, height: 6, borderRadius: '50%', background: 'var(--copper)',
-                animation: 'spin 1.6s ease-in-out infinite',
-                opacity: 0.85,
-              }} />
-            )}
-          </div>
-          <div style={{
-            fontSize: '0.92rem', fontWeight: 700, color: 'var(--on-surface)', marginTop: 1,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {isPlaying && activeTrack ? `${activeTrack.icon}  ${activeTrack.label}` : 'Silent'}
-          </div>
+                fontSize: '0.84rem', fontWeight: 700, color: 'var(--on-surface)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {activeTrack.label}
+              </span>
+            </>
+          )}
         </div>
         {isPlaying && (
           <button
             onClick={onStop}
             aria-label="Stop ambient sound"
             style={{
-              height: 30, padding: '0 12px', borderRadius: 9,
+              height: 28, padding: '0 12px', borderRadius: 999,
               border: '1px solid var(--outline-variant)',
-              background: 'var(--surface)', color: 'var(--on-surface)',
-              fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              transition: 'background 0.15s',
+              background: 'transparent', color: 'var(--on-surface-variant)',
+              fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+              transition: 'background 0.15s, color 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.color = 'var(--on-surface)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--on-surface-variant)'; }}
           >
             Stop
           </button>
         )}
       </div>
 
-      {/* Group tabs */}
+      {/* Coverflow rail — horizontal scroll-snap of "album" cards. The
+          active card scales up to mimic the iPod Albums centre-stage card
+          while the rest sit a touch smaller. */}
       <div style={{
-        display: 'flex', padding: '8px 8px 0', gap: 4,
-        borderBottom: '1px solid var(--outline-variant)',
+        display: 'flex', gap: 14,
+        padding: '20px 24px 24px',
+        overflowX: 'auto',
+        scrollSnapType: 'x mandatory',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        // Edge fade so the rail feels infinite.
+        maskImage: 'linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent)',
+        WebkitMaskImage: 'linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent)',
       }}>
-        {AMBIENT_GROUPS.map(g => {
-          const on = group === g.id;
-          return (
-            <button
-              key={g.id}
-              onClick={() => setGroup(g.id)}
-              role="tab"
-              aria-selected={on}
-              style={{
-                flex: 1, height: 36, padding: '0 10px',
-                borderRadius: '10px 10px 0 0',
-                border: 'none', borderBottom: on ? '2px solid var(--copper)' : '2px solid transparent',
-                background: on ? 'rgba(139,79,44,0.06)' : 'transparent',
-                color: on ? 'var(--copper)' : 'var(--on-surface-variant)',
-                fontSize: '0.78rem', fontWeight: on ? 700 : 600,
-                cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                transition: 'background 0.15s, color 0.15s',
-              }}
-              onMouseEnter={e => { if (!on) e.currentTarget.style.background = 'var(--surface-container-low)'; }}
-              onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent'; }}
-            >
-              <span aria-hidden="true">{g.icon}</span>{g.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Track grid */}
-      <div style={{
-        padding: 12,
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))',
-        gap: 8,
-      }}>
-        {visible.map(s => {
+        {/* hide WebKit scrollbar */}
+        <style>{`.ambient-rail::-webkit-scrollbar{display:none;}`}</style>
+        {AMBIENT_SOUNDS.map(s => {
           const on = active === s.id;
           return (
             <button
               key={s.id}
+              ref={(el) => { trackRefs.current[s.id] = el; }}
               onClick={() => onPick(s.id)}
               aria-pressed={on}
+              aria-label={s.label}
               style={{
-                aspectRatio: '1 / 1', minHeight: 84,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
-                padding: 8, borderRadius: 12, cursor: 'pointer',
-                border: on ? '1.5px solid var(--copper)' : '1px solid var(--outline-variant)',
-                background: on ? 'rgba(139,79,44,0.08)' : 'var(--surface)',
-                color: on ? 'var(--copper)' : 'var(--on-surface)',
-                fontSize: '0.72rem', fontWeight: on ? 700 : 600,
-                boxShadow: on ? '0 1px 2px rgba(139,79,44,0.18)' : 'none',
-                transition: 'all 0.15s',
+                flex: '0 0 auto',
+                width: on ? 168 : 132,
+                height: on ? 168 : 132,
+                marginTop: on ? 0 : 18,
+                borderRadius: 18,
+                cursor: 'pointer',
+                border: 'none',
+                padding: 0,
                 position: 'relative',
+                overflow: 'hidden',
+                scrollSnapAlign: 'center',
+                backgroundImage: s.gradient,
+                backgroundSize: 'cover',
+                boxShadow: on
+                  ? '0 18px 42px rgba(15,17,30,0.28), 0 4px 10px rgba(15,17,30,0.18), 0 0 0 2px rgba(255,255,255,0.5) inset'
+                  : '0 6px 18px rgba(15,17,30,0.14)',
+                transition: 'width 0.35s ease, height 0.35s ease, margin-top 0.35s ease, box-shadow 0.35s ease',
+                outline: 'none',
               }}
-              onMouseEnter={e => { if (!on) e.currentTarget.style.background = 'var(--surface-container)'; }}
-              onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'var(--surface)'; }}
             >
-              <span style={{ fontSize: '1.4rem', lineHeight: 1 }} aria-hidden="true">{s.icon}</span>
+              {/* glossy highlight (top half lighter) */}
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, height: '50%',
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)',
+                  pointerEvents: 'none',
+                }}
+              />
+              {/* large emoji "album art" */}
               <span style={{
-                textAlign: 'center', lineHeight: 1.2,
-                overflow: 'hidden', textOverflow: 'ellipsis',
-                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                position: 'absolute', inset: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: on ? '3.5rem' : '2.6rem',
+                filter: on ? 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
+                transition: 'font-size 0.35s ease',
+              }} aria-hidden="true">
+                {s.icon}
+              </span>
+              {/* now-playing pulse on the active card */}
+              {on && (
+                <span style={{
+                  position: 'absolute', top: 10, right: 10,
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: '#fff',
+                  boxShadow: '0 0 0 4px rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.6)',
+                  animation: 'spin 1.8s ease-in-out infinite',
+                }} aria-hidden="true" />
+              )}
+              {/* label band */}
+              <span style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                padding: '20px 10px 8px',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%)',
+                color: '#fff',
+                fontSize: on ? '0.78rem' : '0.7rem',
+                fontWeight: 700,
+                textAlign: 'center', letterSpacing: '0.02em',
+                textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                transition: 'font-size 0.35s ease',
               }}>
                 {s.label}
               </span>
-              {on && (
-                <span style={{
-                  position: 'absolute', top: 6, right: 6,
-                  width: 6, height: 6, borderRadius: '50%', background: 'var(--copper)',
-                  boxShadow: '0 0 0 3px rgba(139,79,44,0.18)',
-                }} />
-              )}
             </button>
           );
         })}
       </div>
 
-      {/* Volume slider — only when playing */}
-      {isPlaying && (
-        <div style={{
-          padding: '10px 14px 14px',
-          borderTop: '1px solid var(--outline-variant)',
-          display: 'flex', alignItems: 'center', gap: 10,
-          background: 'var(--surface-container-low)',
+      {/* Volume slider — always visible, subtle when nothing's playing */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '0 8px',
+        opacity: isPlaying ? 1 : 0.55,
+        transition: 'opacity 0.2s',
+      }}>
+        <VolumeX size={13} style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }} />
+        <input
+          type="range" min={0} max={1} step={0.05} value={volume}
+          onChange={e => onVolume(parseFloat(e.target.value))}
+          aria-label="Volume"
+          disabled={!isPlaying}
+          style={{
+            flex: 1, accentColor: 'var(--copper)',
+            cursor: isPlaying ? 'pointer' : 'default',
+          }}
+        />
+        <Volume2 size={13} style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }} />
+        <span style={{
+          fontSize: '0.7rem', fontWeight: 700, color: 'var(--on-surface-variant)',
+          minWidth: 32, textAlign: 'right',
         }}>
-          <VolumeX size={13} style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }} />
-          <input
-            type="range" min={0} max={1} step={0.05} value={volume}
-            onChange={e => onVolume(parseFloat(e.target.value))}
-            aria-label="Volume"
-            style={{
-              flex: 1, accentColor: 'var(--copper)', cursor: 'pointer',
-            }}
-          />
-          <Volume2 size={13} style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }} />
-          <span style={{
-            fontSize: '0.72rem', fontWeight: 700, color: 'var(--on-surface-variant)',
-            minWidth: 32, textAlign: 'right',
-          }}>
-            {Math.round(volume * 100)}%
-          </span>
-        </div>
-      )}
+          {Math.round(volume * 100)}%
+        </span>
+      </div>
     </div>
   );
 }
@@ -331,6 +330,12 @@ export default function FocusMode() {
 
   // Ambient sound (real audio files)
   const [activeSound, setActiveSound] = useState('off');
+  // Wallpaper availability cache. Wallpapers live at /public/wallpapers/<id>.jpg
+  // but the file is optional — so we probe it the first time a track plays
+  // and only swap the page background if it actually loads. While the file
+  // is missing the browser keeps the default surface, so the page never
+  // looks broken or flashes.
+  const [hasWallpaper, setHasWallpaper] = useState<Record<string, boolean>>({});
   const [volume, setVolume] = useState(0.4);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -371,6 +376,21 @@ export default function FocusMode() {
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
+
+  // Probe the wallpaper for the active track, exactly once per track id.
+  // We don't apply the image as the page background until the probe loads,
+  // so a missing file never blanks out the page — it stays on the
+  // default surface.
+  useEffect(() => {
+    if (activeSound === 'off') return;
+    if (hasWallpaper[activeSound] !== undefined) return;
+    const img = new Image();
+    let cancelled = false;
+    img.onload = () => { if (!cancelled) setHasWallpaper(s => ({ ...s, [activeSound]: true })); };
+    img.onerror = () => { if (!cancelled) setHasWallpaper(s => ({ ...s, [activeSound]: false })); };
+    img.src = trackWallpaper(activeSound);
+    return () => { cancelled = true; };
+  }, [activeSound, hasWallpaper]);
 
   // Cleanup on unmount
   useEffect(() => () => stopSound(), [stopSound]);
@@ -545,56 +565,43 @@ export default function FocusMode() {
     );
   }
 
-  // Mood-matched background driven by the active ambient track. Falls back
-  // to the page surface when nothing is playing. We layer the gradient on
-  // top of the surface and dim it via opacity-on-overlay so text legibility
-  // stays solid.
+  // Optional photo wallpaper per active track. The image lives at
+  // /public/wallpapers/<id>.jpg — drop a real photograph there and the
+  // background lights up automatically. While the file is missing, the
+  // browser keeps the default surface, so the page never looks broken or
+  // flashes when a track without a wallpaper is selected.
   const activeTrack = AMBIENT_SOUNDS.find(s => s.id === activeSound);
   const isAmbientActive = activeSound !== 'off' && !!activeTrack;
-
-  // Adaptive foreground tone — let text and chrome stay legible on every
-  // gradient. `light` tracks (dark gradients) → near-white text; `dark`
-  // tracks (light gradients) → near-black text. The wrapper exposes the
-  // value as a `--ambient-fg` CSS variable so descendants can opt in:
-  // `color: 'var(--ambient-fg, var(--on-surface))'`.
-  const ambientTone: AmbientTone = isAmbientActive ? activeTrack.tone : 'dark';
-  const ambientFg = ambientTone === 'light' ? '#f5f7fb' : '#1a1c1f';
-  const ambientFgMuted = ambientTone === 'light' ? 'rgba(245,247,251,0.78)' : 'rgba(26,28,31,0.7)';
-  const scrimGradient = ambientTone === 'light'
-    // Dark tracks → soft dark scrim with bright top fade so dark gradient
-    // breathes and white text retains contrast.
-    ? 'linear-gradient(180deg, rgba(15,17,22,0.18) 0%, rgba(15,17,22,0.34) 100%)'
-    // Light tracks → soft surface scrim so dark text stays readable.
-    : 'linear-gradient(180deg, rgba(238,252,254,0.55) 0%, rgba(238,252,254,0.35) 100%)';
+  const wallpaperUrl = isAmbientActive && hasWallpaper[activeTrack.id]
+    ? trackWallpaper(activeTrack.id)
+    : null;
 
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundImage: isAmbientActive
-        ? `${activeTrack.gradient}, ${AMBIENT_IDLE_GRADIENT}`
-        : AMBIENT_IDLE_GRADIENT,
-      backgroundColor: 'var(--surface)',
+      background: 'var(--surface)',
+      backgroundImage: wallpaperUrl ? `url(${wallpaperUrl})` : 'none',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
-      transition: 'background-image 0.6s ease-in-out, color 0.4s ease-in-out',
+      backgroundRepeat: 'no-repeat',
+      transition: 'background-image 0.5s ease-in-out',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '2rem 1.5rem 4rem',
       position: 'relative',
-      color: ambientFg,
-      // CSS custom properties for descendants that opt in.
-      ['--ambient-fg' as string]: ambientFg,
-      ['--ambient-fg-muted' as string]: ambientFgMuted,
     }}>
-      {/* Surface scrim — adapts to track tone for legibility. */}
-      {isAmbientActive && (
+      {/* Constant readability scrim — only when a wallpaper is showing.
+          Tones the photo down to the surface palette so every UI element
+          retains its designed contrast. No animation, no flashing. */}
+      {wallpaperUrl && (
         <div
           aria-hidden="true"
           style={{
             position: 'fixed', inset: 0, pointerEvents: 'none',
-            background: scrimGradient,
-            backdropFilter: 'blur(2px)',
-            WebkitBackdropFilter: 'blur(2px)',
+            background: 'linear-gradient(180deg, rgba(238,252,254,0.85) 0%, rgba(238,252,254,0.78) 100%)',
+            backdropFilter: 'saturate(0.85) blur(1px)',
+            WebkitBackdropFilter: 'saturate(0.85) blur(1px)',
             zIndex: 0,
-            transition: 'background 0.6s ease-in-out',
           }}
         />
       )}
