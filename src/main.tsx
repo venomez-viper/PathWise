@@ -4,9 +4,20 @@ import * as Sentry from '@sentry/react'
 
 // Stale cached index.html may reference old chunk hashes after a new deployment.
 // Reload once so the browser fetches the new index.html with correct asset URLs.
-window.addEventListener('vite:preloadError', () => {
+//
+// preventDefault() stops the error bubbling to React's ErrorBoundary + Sentry
+// (it's expected behavior, not a bug). The session-storage guard stops an
+// infinite reload loop in the rare case the fresh deploy also can't preload.
+const PRELOAD_RELOAD_FLAG = 'pathwise:preload-reload'
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault()
+  if (sessionStorage.getItem(PRELOAD_RELOAD_FLAG)) return
+  sessionStorage.setItem(PRELOAD_RELOAD_FLAG, '1')
   window.location.reload()
 })
+// Clear the guard once the new bundle has run for ~10s without re-erroring.
+setTimeout(() => sessionStorage.removeItem(PRELOAD_RELOAD_FLAG), 10_000)
+
 import './index.css'
 import App from './App.tsx'
 
@@ -22,6 +33,15 @@ Sentry.init({
   tracesSampleRate: 0.3,
   replaysSessionSampleRate: 0.05,
   replaysOnErrorSampleRate: 1.0,
+  // Drop the noisy chunk/CSS-preload errors that fire whenever a user has
+  // a stale tab across a deploy. We already auto-reload on those, so
+  // they're not actionable bugs.
+  ignoreErrors: [
+    /Unable to preload CSS/i,
+    /Failed to fetch dynamically imported module/i,
+    /Loading chunk \d+ failed/i,
+    /Importing a module script failed/i,
+  ],
   beforeSend(event) {
     // Don't send events in local dev without DSN
     if (!import.meta.env.VITE_SENTRY_DSN) return null;
