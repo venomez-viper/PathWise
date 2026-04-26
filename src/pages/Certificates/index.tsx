@@ -3,6 +3,7 @@ import { Award, Plus, ExternalLink, Share2, Loader2 } from 'lucide-react';
 import { Panda } from '../../components/panda';
 import { useAuth } from '../../lib/auth-context';
 import { certificates as certApi } from '../../lib/api';
+import { safeExternalUrl } from '../../lib/utils';
 import './Certificates.css';
 
 export default function Certificates() {
@@ -101,8 +102,8 @@ export default function Certificates() {
                   {c.issuedDate ? `Issued ${c.issuedDate} · ` : ''}{c.issuer}
                 </p>
                 <div className="certs__card-actions">
-                  {c.url && (
-                    <a href={c.url} target="_blank" rel="noreferrer" className="certs__card-link">
+                  {safeExternalUrl(c.url) && (
+                    <a href={safeExternalUrl(c.url)} target="_blank" rel="noreferrer" className="certs__card-link">
                       <ExternalLink size={12} /> View Certificate
                     </a>
                   )}

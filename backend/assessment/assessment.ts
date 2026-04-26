@@ -870,3 +870,35 @@ export const adminAnalytics = api(
     };
   }
 );
+
+// ── Internal: Purge a user's data from the assessment DB ─────────────────────
+
+/**
+ * Wipe everything in this service that belongs to `userId`. Called by
+ * `auth.adminDeleteUser` and `auth.deleteAccount` as part of the cross-service
+ * cascade. Best-effort — each delete is isolated.
+ */
+export const purgeUser = api(
+  { expose: false },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean; deleted: Record<string, boolean> }> => {
+    const deleted: Record<string, boolean> = {};
+
+    try {
+      await db.exec`DELETE FROM assessment_progress WHERE user_id = ${userId}`;
+      deleted.assessment_progress = true;
+    } catch (err) {
+      console.error("purgeUser(assessment): assessment_progress delete failed", err instanceof Error ? err.message : err);
+      deleted.assessment_progress = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM assessments WHERE user_id = ${userId}`;
+      deleted.assessments = true;
+    } catch (err) {
+      console.error("purgeUser(assessment): assessments delete failed", err instanceof Error ? err.message : err);
+      deleted.assessments = false;
+    }
+
+    return { success: true, deleted };
+  }
+);

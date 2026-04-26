@@ -137,10 +137,28 @@ export default function CertificatePage() {
     if (!cert) return;
     const win = window.open('', '_blank');
     if (!win) return;
-    win.document.write(`<html><head><title>PathWise Certificate - ${user?.name}</title>
-      <style>*{margin:0;padding:0;box-sizing:border-box;}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}@media print{body{background:#fff;}}</style>
-    </head><body>${cert.outerHTML}</body></html>`);
-    win.document.close();
+
+    // Build the print window via DOM APIs instead of document.write with
+    // string concatenation. The previous code interpolated `user?.name`
+    // and `cert.outerHTML` into a raw HTML string — self-XSS today, and
+    // the moment user-controlled fields end up rendered inside the cert
+    // node it becomes stored XSS. Setting `title` (text), creating a
+    // <style> via `textContent`, and `cloneNode(true)` keep every untrusted
+    // value on the safe DOM path.
+    const doc = win.document;
+    doc.open();
+    doc.close();
+    doc.title = user?.name ? `PathWise Certificate - ${user.name}` : 'PathWise Certificate';
+
+    const styleEl = doc.createElement('style');
+    styleEl.textContent =
+      "*{margin:0;padding:0;box-sizing:border-box;}" +
+      "body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f4f4f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}" +
+      "@media print{body{background:#fff;}}";
+    doc.head.appendChild(styleEl);
+
+    doc.body.appendChild(cert.cloneNode(true));
+
     win.focus();
     setTimeout(() => win.print(), 500);
   };

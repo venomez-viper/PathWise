@@ -362,3 +362,59 @@ export const ask = api(
     return { answer: result.answer, citations: result.citations };
   }
 );
+
+// ── Internal: Purge a user's data from the journal DB ────────────────────────
+
+/**
+ * Wipe everything in this service that is associated with `userId`. Called
+ * by `auth.adminDeleteUser` and `auth.deleteAccount` as part of the
+ * cross-service cascade. Best-effort: each delete is wrapped so one failure
+ * does not abort the others.
+ *
+ * Order: journal_tags first (FK dependency on journal_entries cascades, but
+ * we delete by user_id explicitly so any rows whose entry was already orphaned
+ * are still cleaned up), then journal_entries, journal_summaries,
+ * journal_daily_prompts.
+ */
+export const purgeUser = api(
+  { expose: false },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean; deleted: Record<string, boolean> }> => {
+    const deleted: Record<string, boolean> = {};
+
+    try {
+      await db.exec`DELETE FROM journal_tags WHERE user_id = ${userId}`;
+      deleted.journal_tags = true;
+    } catch (err) {
+      console.error("purgeUser(journal): journal_tags delete failed", err instanceof Error ? err.message : err);
+      deleted.journal_tags = false;
+    }
+
+    try {
+      // FK from journal_tags → journal_entries is ON DELETE CASCADE so any
+      // surviving tag rows are wiped here too.
+      await db.exec`DELETE FROM journal_entries WHERE user_id = ${userId}`;
+      deleted.journal_entries = true;
+    } catch (err) {
+      console.error("purgeUser(journal): journal_entries delete failed", err instanceof Error ? err.message : err);
+      deleted.journal_entries = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM journal_summaries WHERE user_id = ${userId}`;
+      deleted.journal_summaries = true;
+    } catch (err) {
+      console.error("purgeUser(journal): journal_summaries delete failed", err instanceof Error ? err.message : err);
+      deleted.journal_summaries = false;
+    }
+
+    try {
+      await db.exec`DELETE FROM journal_daily_prompts WHERE user_id = ${userId}`;
+      deleted.journal_daily_prompts = true;
+    } catch (err) {
+      console.error("purgeUser(journal): journal_daily_prompts delete failed", err instanceof Error ? err.message : err);
+      deleted.journal_daily_prompts = false;
+    }
+
+    return { success: true, deleted };
+  }
+);

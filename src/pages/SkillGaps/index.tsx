@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, AlertTriangle, CheckCircle2, GraduationCap, ArrowRight, Loader2, Target, Sparkles, Code, Users, Briefcase, TrendingUp, Clock } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { assessment as assessmentApi, roadmap as roadmapApi } from '../../lib/api';
+import { safeExternalUrl } from '../../lib/utils';
 
 type SkillGap = { skill: string; importance: 'high' | 'medium' | 'low'; learningResource: string; scoreImpact?: number; learningHours?: number; roi?: number };
 type CareerMatch = { title: string; matchScore: number; description: string };
@@ -437,7 +438,9 @@ export default function SkillGaps() {
                       {gap.learningResource.includes(' - https://') ? (() => {
                         const rIdx = gap.learningResource.lastIndexOf(' - https://');
                         const label = gap.learningResource.slice(0, rIdx);
-                        const url = gap.learningResource.slice(rIdx + 3);
+                        const rawUrl = gap.learningResource.slice(rIdx + 3);
+                        const url = safeExternalUrl(rawUrl);
+                        if (!url) return gap.learningResource;
                         return (
                           <>
                             {label}{' - '}
@@ -710,18 +713,24 @@ export default function SkillGaps() {
                     </p>
 
                     {/* Link */}
-                    <a
-                      href={cert.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 4,
-                        fontSize: '0.8rem', fontWeight: 600, color: '#a78bfa',
-                        marginTop: 4, textDecoration: 'none',
-                      }}
-                    >
-                      View Certificate →
-                    </a>
+                    {(() => {
+                      const certHref = safeExternalUrl(cert.url);
+                      if (!certHref) return null;
+                      return (
+                        <a
+                          href={certHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            fontSize: '0.8rem', fontWeight: 600, color: '#a78bfa',
+                            marginTop: 4, textDecoration: 'none',
+                          }}
+                        >
+                          View Certificate →
+                        </a>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
@@ -878,9 +887,9 @@ function RecommendationCard({ item, accentColor, accentBg }: { item: any; accent
       </p>
 
       {/* Link */}
-      {item.url && (
+      {safeExternalUrl(item.url) && (
         <a
-          href={item.url}
+          href={safeExternalUrl(item.url)}
           target="_blank"
           rel="noopener noreferrer"
           style={{

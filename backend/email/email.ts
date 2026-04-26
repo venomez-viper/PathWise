@@ -1,6 +1,7 @@
 import { api } from "encore.dev/api";
 import { secret } from "encore.dev/config";
 import { Resend } from "resend";
+import { redactEmail, redactEmailList, truncateSubject } from "../shared/redact";
 
 const resendKey = secret("ResendAPIKey");
 
@@ -84,13 +85,18 @@ export const sendEmail = api(
       });
       if (res.error) {
         const errMsg = res.error.message || res.error.name || "Resend rejected the send";
-        console.error("Email send failed (Resend error):", { to, subject, from: resolveFromAddress(from), error: errMsg });
+        // Redact recipient(s) and truncate subject — the Encore dashboard
+        // surfaces these logs to anyone with viewer access; full email
+        // addresses are PII.
+        const redactedTo = Array.isArray(to) ? redactEmailList(to) : redactEmail(to);
+        console.error("Email send failed (Resend error):", { to: redactedTo, subject: truncateSubject(subject), from: resolveFromAddress(from), error: errMsg });
         return { success: false, error: errMsg };
       }
       return { success: true, messageId, resendId: res?.data?.id };
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : "unknown";
-      console.error("Email send failed:", { to, subject, from: resolveFromAddress(from), error: errMsg });
+      const redactedTo = Array.isArray(to) ? redactEmailList(to) : redactEmail(to);
+      console.error("Email send failed:", { to: redactedTo, subject: truncateSubject(subject), from: resolveFromAddress(from), error: errMsg });
       return { success: false, error: errMsg };
     }
   }

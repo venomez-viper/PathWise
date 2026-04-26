@@ -1,0 +1,11 @@
+-- JWT password-change revocation.
+-- Issued JWTs live for 30 days. If a password is rotated (self-service or
+-- via reset link), every existing token for that user remained valid for
+-- the rest of its lifetime — a stolen token survived password rotation,
+-- which is exactly the scenario users rotate to defend against.
+--
+-- We embed the user's `password_version` in every issued JWT (`pw_v` claim)
+-- and bump the column on every password write. The auth handler rejects
+-- tokens whose `pw_v` no longer matches the current row, killing all old
+-- sessions instantly without touching a session store.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_version INT NOT NULL DEFAULT 1;

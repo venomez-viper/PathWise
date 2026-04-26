@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "overrides": {
+    "svix": ">=1.93.0",
+    "uuid": ">=14.0.0",
+    "protobufjs": ">=7.5.5"
+  },
   "dependencies": {
     "@mistralai/mistralai": "^1.15.1",
     "bcryptjs": "^3.0.3",

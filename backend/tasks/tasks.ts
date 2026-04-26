@@ -525,3 +525,24 @@ export const adminDeleteUserTasks = api(
     return { success: true };
   }
 );
+
+// ── Internal: Purge a user's data from the tasks DB ──────────────────────────
+
+/**
+ * Wipe every task belonging to `userId`. Called by `auth.adminDeleteUser`
+ * and `auth.deleteAccount` as part of the cross-service cascade.
+ */
+export const purgeUser = api(
+  { expose: false },
+  async ({ userId }: { userId: string }): Promise<{ success: boolean; deleted: Record<string, boolean> }> => {
+    const deleted: Record<string, boolean> = {};
+    try {
+      await db.exec`DELETE FROM tasks WHERE user_id = ${userId}`;
+      deleted.tasks = true;
+    } catch (err) {
+      console.error("purgeUser(tasks): tasks delete failed", err instanceof Error ? err.message : err);
+      deleted.tasks = false;
+    }
+    return { success: true, deleted };
+  }
+);
