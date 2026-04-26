@@ -32,7 +32,7 @@ interface PublicProfileResponse {
   profile: {
     name: string;
     avatarUrl?: string;
-    plan: string;
+    // `plan` deliberately omitted — see getPublicProfile for the rationale.
     headline?: string;
     bio?: string;
     memberSince: string;
@@ -160,7 +160,13 @@ export interface SignInParams {
 export const signin = api(
   { expose: true, method: "POST", path: "/auth/signin", auth: false },
   async (params: SignInParams): Promise<TokenResponse> => {
-    RateLimits.auth("signin:" + params.email);
+    // Per-email AND per-attempt limits both apply. Per-email alone enables
+    // an attacker to lock a target out by spamming wrong attempts (DoS);
+    // adding a global limit ensures that distributed lockout-spray is
+    // throttled too. The legitimate user is still blocked for ~1 minute
+    // after their own bad attempts, which is intentional.
+    RateLimits.auth("signin:" + (params.email ?? "").toLowerCase());
+    RateLimits.forgotGlobal("signin:global");
     const row = await db.queryRow`
       SELECT id, name, email, avatar_url, plan, password_hash
       FROM users WHERE email = ${params.email}
@@ -311,27 +317,36 @@ interface ForgotPasswordParams {
 export const forgotPassword = api(
   { expose: true, method: "POST", path: "/auth/forgot-password", auth: false },
   async (params: ForgotPasswordParams): Promise<{ success: boolean }> => {
-    RateLimits.auth("forgot:" + params.email);
+    // Two limiters: per-email (slow targeted enumeration) and global
+    // (cap total reset emails sent per hour across the platform — a
+    // password-reset spray bot can't blow up our Resend bill).
+    RateLimits.auth("forgot:" + (params.email ?? "").toLowerCase());
+    RateLimits.forgotGlobal("forgot:global");
 
-    // Always return success to avoid email enumeration
-    const row = await db.queryRow`SELECT id FROM users WHERE email = ${params.email}`;
-    if (!row) return { success: true };
-
-    // Delete existing tokens for this user
-    await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${row.id}`;
-
-    // Generate secure token
+    // Always do the bcrypt + INSERT + email-shape work, even when the
+    // email isn't registered. Timing-equalizes the response across hit
+    // and miss so attackers can't enumerate registered emails.
     const token = crypto.randomUUID() + "-" + crypto.randomUUID();
     const tokenHash = await bcrypt.hash(token, 10);
     const id = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
 
+    const row = await db.queryRow`SELECT id FROM users WHERE email = ${params.email}`;
+    if (!row) {
+      // Discard the bcrypt work; do nothing else. Returning success here
+      // is what makes the endpoint enumeration-resistant.
+      return { success: true };
+    }
+
+    // Single token at a time per user.
+    await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${row.id}`;
     await db.exec`
       INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at)
       VALUES (${id}, ${row.id}, ${tokenHash}, ${expiresAt})
     `;
 
-    // Send reset email
+    // Fire-and-forget. Don't reveal email-send errors to the caller —
+    // they're a side channel for "this email exists" detection.
     try {
       const { sendEmail, passwordResetEmail } = await import("../email/email");
       const baseUrl = frontendUrl();
@@ -360,27 +375,48 @@ export const resetPassword = api(
     if (!params.newPassword || params.newPassword.length < 8) {
       throw APIError.invalidArgument("password must be at least 8 characters");
     }
+    if (params.newPassword.length > 128) {
+      throw APIError.invalidArgument("password too long");
+    }
 
     const row = await db.queryRow`
-      SELECT id, user_id, token_hash, expires_at FROM password_reset_tokens WHERE id = ${params.tokenId}
+      SELECT user_id, token_hash, expires_at, used_at FROM password_reset_tokens WHERE id = ${params.tokenId}
     `;
 
-    if (!row) throw APIError.notFound("invalid or expired reset link");
+    // Generic error message in every failure branch so the endpoint
+    // doesn't act as an oracle for "valid token id" / "already used" /
+    // "expired" / "wrong password".
+    const REJECT = APIError.invalidArgument("invalid or expired reset link");
 
+    if (!row) throw REJECT;
+    if (row.used_at) throw REJECT;
     if (new Date(row.expires_at) < new Date()) {
       await db.exec`DELETE FROM password_reset_tokens WHERE id = ${params.tokenId}`;
-      throw APIError.invalidArgument("reset link has expired — please request a new one");
+      throw REJECT;
     }
 
     const valid = await bcrypt.compare(params.token, row.token_hash);
-    if (!valid) throw APIError.unauthenticated("invalid reset link");
+    if (!valid) throw REJECT;
 
-    // Update password
+    // Atomic single-use guarantee. If two requests pass bcrypt for the
+    // same token concurrently, only one UPDATE returns a row — the other
+    // sees no rows back and is rejected. Closes the TOCTOU race that
+    // existed before the `used_at` column was added.
+    const claimed = await db.queryRow<{ user_id: string }>`
+      UPDATE password_reset_tokens
+      SET used_at = NOW()
+      WHERE id = ${params.tokenId} AND used_at IS NULL
+      RETURNING user_id
+    `;
+    if (!claimed) throw REJECT;
+
     const newHash = await bcrypt.hash(params.newPassword, 12);
-    await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${row.user_id}`;
+    await db.exec`UPDATE users SET password_hash = ${newHash} WHERE id = ${claimed.user_id}`;
 
-    // Delete used token
-    await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${row.user_id}`;
+    // Invalidate every other token for this user, in case multiple were
+    // outstanding (forgotPassword above already deletes prior tokens, but
+    // be defensive).
+    await db.exec`DELETE FROM password_reset_tokens WHERE user_id = ${claimed.user_id} AND id != ${params.tokenId}`;
 
     return { success: true };
   }
@@ -738,22 +774,45 @@ export const exportData = api(
   }
 );
 
+// ── Profile text sanitizer ────────────────────────────────────────────────────
+
+/**
+ * Headline + bio are rendered on the public `/profile/:slug` page. React
+ * escapes them by default, but defense-in-depth: strip every HTML tag and
+ * non-printable control char before storage so a future change of renderer
+ * (or downstream consumer like an OG image renderer or RSS feed) can't
+ * accidentally introduce stored XSS.
+ */
+function sanitizeProfileText(raw: string | null | undefined, maxLen: number, label: string): string | null {
+  if (raw === null || raw === undefined) return null;
+  const stripped = raw
+    .replace(/<\/?[^>]+>/g, "")          // drop all HTML tags
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "") // drop control chars, keep \n \r \t
+    .trim();
+  if (stripped.length > maxLen) {
+    throw APIError.invalidArgument(`${label} too long (max ${maxLen} characters)`);
+  }
+  return stripped.length === 0 ? null : stripped;
+}
+
 // ── Public Profile ────────────────────────────────────────────────────────────
 
 export const getPublicProfile = api(
   { expose: true, method: "GET", path: "/profile/:slug", auth: false },
   async ({ slug }: { slug: string }): Promise<PublicProfileResponse> => {
     const row = await db.queryRow`
-      SELECT id, name, email, avatar_url, plan, headline, bio, created_at
+      SELECT id, name, avatar_url, headline, bio, created_at
       FROM users WHERE profile_slug = ${slug} AND profile_public = true
     `;
     if (!row) throw APIError.notFound("profile not found");
 
+    // Note: `plan` is intentionally not returned. Exposing free vs paid
+    // status to anonymous viewers is a privacy/targeting issue (lets
+    // crawlers build a list of premium users for upsell-scam targeting).
     return {
       profile: {
         name: row.name,
         avatarUrl: row.avatar_url ?? undefined,
-        plan: row.plan,
         headline: row.headline ?? undefined,
         bio: row.bio ?? undefined,
         memberSince: row.created_at,
@@ -785,10 +844,12 @@ export const updateProfileSettings = api(
       await db.exec`UPDATE users SET profile_public = ${params.profilePublic} WHERE id = ${userID}`;
     }
     if (params.headline !== undefined) {
-      await db.exec`UPDATE users SET headline = ${params.headline} WHERE id = ${userID}`;
+      const headline = sanitizeProfileText(params.headline, 100, "headline");
+      await db.exec`UPDATE users SET headline = ${headline} WHERE id = ${userID}`;
     }
     if (params.bio !== undefined) {
-      await db.exec`UPDATE users SET bio = ${params.bio} WHERE id = ${userID}`;
+      const bio = sanitizeProfileText(params.bio, 2000, "bio");
+      await db.exec`UPDATE users SET bio = ${bio} WHERE id = ${userID}`;
     }
 
     return { success: true };

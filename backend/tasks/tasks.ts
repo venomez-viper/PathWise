@@ -143,10 +143,10 @@ export const updateTask = api(
              category, due_date, completed_at, created_at
       FROM tasks WHERE id = ${taskId}
     `;
-    if (!row) throw new Error(`Task ${taskId} not found`);
-
-    if (row.user_id !== userID) {
-      throw APIError.permissionDenied("you can only update your own tasks");
+    // Same "not found" response for missing-id AND wrong-owner so the
+    // endpoint isn't a UUID-existence oracle.
+    if (!row || row.user_id !== userID) {
+      throw APIError.notFound("task not found");
     }
 
     const newStatus   = updates.status      ?? row.status;
@@ -272,6 +272,9 @@ export const aiGenerateTasks = api(
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
     RateLimits.aiGenerate("aigen:" + userID);
+    // Global daily ceiling so a horde of accounts can't burn the Mistral
+    // budget. 500 calls/day is far above legitimate usage.
+    RateLimits.aiGenerateGlobal("aigen:global");
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
 
     // Check if AI tasks already exist for this milestone
@@ -388,6 +391,9 @@ export const customGenerateTasks = api(
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
     RateLimits.aiGenerate("aigen:" + userID);
+    // Global daily ceiling so a horde of accounts can't burn the Mistral
+    // budget. 500 calls/day is far above legitimate usage.
+    RateLimits.aiGenerateGlobal("aigen:global");
     if (userID !== params.userId) throw APIError.permissionDenied("not your data");
     const count = params.count ?? 4;
     const safePrompt = sanitizeForPrompt(params.prompt, 500);

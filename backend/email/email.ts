@@ -60,20 +60,25 @@ export const sendEmail = api(
   }): Promise<{ success: boolean; messageId?: string; resendId?: string; error?: string }> => {
     try {
       const resend = getResend();
+      // Strip CR/LF from any header value to prevent header injection
+      // (Bcc:/Reply-To: smuggling) if Resend's SDK ever stops sanitizing
+      // input. Same scrub on the user-controlled subject.
+      const safeHeader = (v: string): string => v.replace(/[\r\n]/g, " ").trim();
+      const safeSubject = subject.replace(/[\r\n]/g, " ");
       const headers: Record<string, string> = {
         "List-Unsubscribe": "<mailto:hello@pathwise.fit?subject=Unsubscribe>",
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-        "Reply-To": replyTo ?? "hello@pathwise.fit",
+        "Reply-To": safeHeader(replyTo ?? "hello@pathwise.fit"),
       };
-      if (messageId) headers["Message-ID"] = messageId;
-      if (inReplyTo) headers["In-Reply-To"] = inReplyTo;
-      if (references) headers["References"] = references;
+      if (messageId) headers["Message-ID"] = safeHeader(messageId);
+      if (inReplyTo) headers["In-Reply-To"] = safeHeader(inReplyTo);
+      if (references) headers["References"] = safeHeader(references);
 
       const res = await resend.emails.send({
         from: resolveFromAddress(from),
         to,
         ...(cc && cc.length > 0 ? { cc } : {}),
-        subject,
+        subject: safeSubject,
         html,
         headers,
       });

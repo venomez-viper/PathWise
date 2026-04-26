@@ -9,6 +9,7 @@ import { getMilestonesForRole } from "../assessment/career-brain";
 import { awardAchievement } from "../streaks/streaks";
 
 const db = new SQLDatabase("roadmap", { migrations: "./migrations" });
+const usersDb = SQLDatabase.named("users");
 
 export interface Milestone {
   id: string;
@@ -209,18 +210,19 @@ export const completeMilestone = api(
     if (!authData) throw APIError.unauthenticated("session invalid");
     const { userID } = authData;
 
-    // 1. Get the milestone and its roadmap
+    // 1. Get the milestone, its roadmap, AND the roadmap owner in one shot.
+    // Fetching ownership in the same query (rather than sequential) means
+    // a guess-and-check attacker can't probe milestone-id existence before
+    // the ownership check fires — both fail with the same "not found"
+    // message in the same code path.
     const ms = await db.queryRow`
-      SELECT id, roadmap_id, position FROM milestones WHERE id = ${milestoneId}
+      SELECT m.id, m.roadmap_id, m.position, r.user_id
+      FROM milestones m
+      JOIN roadmaps r ON r.id = m.roadmap_id
+      WHERE m.id = ${milestoneId}
     `;
-    if (!ms) throw new Error("Milestone not found");
-
-    // Verify the milestone belongs to the authenticated user
-    const roadmapOwner = await db.queryRow`
-      SELECT user_id FROM roadmaps WHERE id = ${ms.roadmap_id}
-    `;
-    if (!roadmapOwner || roadmapOwner.user_id !== userID) {
-      throw APIError.permissionDenied("you can only complete your own milestones");
+    if (!ms || ms.user_id !== userID) {
+      throw APIError.notFound("milestone not found");
     }
 
     // 2. Check all tasks for this milestone are complete
@@ -526,12 +528,24 @@ export const getCertificate = api(
 
     if (!row) return { certificate: null };
 
+    // Pull the displayed name from the DB (server-side authority) rather
+    // than the JWT/auth context — strip HTML so the cert PDF/HTML
+    // renderer never receives <script> tags via a maliciously-set name.
+    const userRow = await usersDb.queryRow<{ name: string }>`
+      SELECT name FROM users WHERE id = ${userID}
+    `;
+    const safeName = (userRow?.name ?? "")
+      .replace(/<\/?[^>]+>/g, "")
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+      .slice(0, 120)
+      .trim();
+
     return {
       certificate: {
         id: row.certificate_id,
         targetRole: row.target_role,
         issuedAt: row.certificate_issued_at,
-        userName: '', // Will be filled by frontend from auth context
+        userName: safeName,
       },
     };
   }
