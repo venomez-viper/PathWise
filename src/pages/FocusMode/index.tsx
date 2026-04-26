@@ -49,10 +49,10 @@ const AMBIENT_SOUNDS: AmbientTrack[] = [
     gradient: 'radial-gradient(at 20% 100%, #2a8a8a 0%, transparent 60%), radial-gradient(at 80% 0%, #5cc4c4 0%, transparent 55%), linear-gradient(180deg, #06384a 0%, #1c6b78 100%)' },
   { id: 'forest',     label: 'Forest',        icon: '🌿', file: '/audio/forest.mp3',      group: 'nature',
     gradient: 'radial-gradient(at 30% 20%, #7ba968 0%, transparent 55%), radial-gradient(at 70% 100%, #345a2c 0%, transparent 60%), linear-gradient(180deg, #1f3a18 0%, #4d7a3c 100%)' },
-  { id: 'stream',     label: 'River Stream',  icon: '💧', file: '/audio/stream.mp3',      group: 'nature',
-    gradient: 'radial-gradient(at 30% 0%, #b6dcd8 0%, transparent 55%), radial-gradient(at 70% 100%, #6ba8a0 0%, transparent 55%), linear-gradient(180deg, #4f8a85 0%, #cfe9e3 100%)' },
-  { id: 'birds',      label: 'Birdsong',      icon: '🐦', file: '/audio/birds.mp3',       group: 'nature',
-    gradient: 'radial-gradient(at 50% 0%, #ffd49a 0%, transparent 55%), radial-gradient(at 20% 100%, #f0a36a 0%, transparent 55%), linear-gradient(180deg, #ffd9a3 0%, #ffb074 100%)' },
+  { id: 'wind',       label: 'Wind',          icon: '🍃', file: '/audio/wind.mp3',        group: 'nature',
+    gradient: 'radial-gradient(at 30% 0%, #d6e7f0 0%, transparent 55%), radial-gradient(at 70% 100%, #f5ecdc 0%, transparent 55%), linear-gradient(180deg, #b6cfe0 0%, #f0e5c8 100%)' },
+  { id: 'crickets',   label: 'Crickets',      icon: '🦗', file: '/audio/crickets.mp3',    group: 'nature',
+    gradient: 'radial-gradient(at 30% 0%, #2a3f6e 0%, transparent 55%), radial-gradient(at 70% 100%, #0c1733 0%, transparent 60%), linear-gradient(180deg, #060a1c 0%, #1a2649 100%)' },
   { id: 'fireplace',  label: 'Fireplace',     icon: '🔥', file: '/audio/fireplace.mp3',   group: 'nature',
     gradient: 'radial-gradient(at 50% 100%, #ff7a3d 0%, transparent 55%), radial-gradient(at 30% 30%, #b8421a 0%, transparent 55%), linear-gradient(180deg, #2b0d05 0%, #6b240e 100%)' },
   { id: 'thunder',    label: 'Thunderstorm',  icon: '⛈️', file: '/audio/thunder.mp3',     group: 'nature',
@@ -60,13 +60,7 @@ const AMBIENT_SOUNDS: AmbientTrack[] = [
   // Spaces
   { id: 'cafe',       label: 'Cafe',          icon: '☕', file: '/audio/cafe.mp3',        group: 'spaces',
     gradient: 'radial-gradient(at 30% 20%, #d4a573 0%, transparent 55%), radial-gradient(at 80% 100%, #6e3f21 0%, transparent 55%), linear-gradient(180deg, #3d2415 0%, #8b5a36 100%)' },
-  { id: 'library',    label: 'Library',       icon: '📚', file: '/audio/library.mp3',    group: 'spaces',
-    gradient: 'radial-gradient(at 20% 0%, #cdb494 0%, transparent 55%), radial-gradient(at 80% 100%, #7a5a3a 0%, transparent 55%), linear-gradient(180deg, #4d3826 0%, #9a7d57 100%)' },
-  // Tones & music
-  { id: 'lofi',       label: 'Lo-Fi Beats',   icon: '🎧', file: '/audio/lofi.mp3',        group: 'tones',
-    gradient: 'radial-gradient(at 70% 0%, #ff9aa8 0%, transparent 55%), radial-gradient(at 30% 100%, #6a4ec7 0%, transparent 55%), linear-gradient(180deg, #2b1d4a 0%, #6f47a8 100%)' },
-  { id: 'piano',      label: 'Piano',         icon: '🎹', file: '/audio/piano.mp3',       group: 'tones',
-    gradient: 'radial-gradient(at 30% 20%, #e9dcf2 0%, transparent 55%), radial-gradient(at 70% 100%, #c1a8d6 0%, transparent 55%), linear-gradient(180deg, #f5ecf6 0%, #d6c2dc 100%)' },
+  // Tones
   { id: 'brown',      label: 'Brown Noise',   icon: '🟫', file: '/audio/brown-noise.mp3', group: 'tones',
     gradient: 'radial-gradient(at 20% 100%, #6b4a2b 0%, transparent 60%), linear-gradient(180deg, #2b1a0e 0%, #553820 100%)' },
   { id: 'white',      label: 'White Noise',   icon: '⚪', file: '/audio/white-noise.mp3', group: 'tones',
@@ -87,29 +81,37 @@ function AmbientPicker({
 }) {
   const isPlaying = active !== 'off';
   const activeTrack = AMBIENT_SOUNDS.find(s => s.id === active);
-  const trackRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const trackRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Centre the active card whenever the user picks a new one — gives the
-  // iPod-album feel where the chosen track slides to the middle.
+  // Keep the active row in view inside the scrollable list. Quiet, no
+  // horizontal centring — just scrolls vertically into the visible area.
   useEffect(() => {
     const el = trackRefs.current[active];
     if (el && typeof el.scrollIntoView === 'function') {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, [active]);
 
   return (
     <div style={{
       width: '100%', maxWidth: 720, marginBottom: '2rem',
-      display: 'flex', flexDirection: 'column', gap: 14,
+      display: 'flex', flexDirection: 'column',
+      background: 'var(--surface-container-lowest)',
+      border: '1px solid var(--outline-variant)',
+      borderRadius: 'var(--radius-xl, 16px)',
+      overflow: 'hidden',
     }}>
-      {/* Now-playing strip */}
+      {/* Header strip: Ambient label + now-playing + Volume + Stop */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: 12, padding: '0 4px',
+        gap: 12, padding: '10px 14px',
+        borderBottom: '1px solid var(--outline-variant)',
+        background: 'var(--surface-container-low)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-          {isPlaying ? <Volume2 size={14} color="var(--copper)" /> : <VolumeX size={14} color="var(--on-surface-muted)" />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: '0 1 auto' }}>
+          {isPlaying
+            ? <Volume2 size={14} color="#8b4f2c" aria-hidden="true" />
+            : <VolumeX size={14} color="var(--on-surface-variant)" aria-hidden="true" />}
           <span style={{
             fontSize: '0.66rem', fontWeight: 700, textTransform: 'uppercase',
             letterSpacing: '0.12em', color: 'var(--on-surface-variant)',
@@ -118,9 +120,9 @@ function AmbientPicker({
           </span>
           {isPlaying && activeTrack && (
             <>
-              <span style={{ color: 'var(--on-surface-variant)' }}>·</span>
+              <span style={{ color: 'var(--on-surface-variant)' }} aria-hidden="true">·</span>
               <span style={{
-                fontSize: '0.84rem', fontWeight: 700, color: 'var(--on-surface)',
+                fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {activeTrack.label}
@@ -128,145 +130,155 @@ function AmbientPicker({
             </>
           )}
         </div>
-        {isPlaying && (
+
+        {/* Volume cluster — compact, sits inline so the list stays uncluttered */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          flex: '1 1 220px', maxWidth: 280, minWidth: 140,
+          opacity: isPlaying ? 1 : 0.55,
+          transition: 'opacity 0.2s',
+        }}>
+          <input
+            type="range" min={0} max={1} step={0.05} value={volume}
+            onChange={e => onVolume(parseFloat(e.target.value))}
+            aria-label="Volume"
+            disabled={!isPlaying}
+            style={{
+              flex: 1, accentColor: '#8b4f2c',
+              cursor: isPlaying ? 'pointer' : 'default',
+            }}
+          />
+          <span style={{
+            fontSize: '0.7rem', fontWeight: 600, color: 'var(--on-surface-variant)',
+            minWidth: 32, textAlign: 'right', fontVariantNumeric: 'tabular-nums',
+          }}>
+            {Math.round(volume * 100)}%
+          </span>
+        </div>
+
+        {isPlaying ? (
           <button
             onClick={onStop}
             aria-label="Stop ambient sound"
             style={{
-              height: 28, padding: '0 12px', borderRadius: 999,
+              height: 26, padding: '0 12px', borderRadius: 999,
               border: '1px solid var(--outline-variant)',
               background: 'transparent', color: 'var(--on-surface-variant)',
               fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
-              transition: 'background 0.15s, color 0.15s',
+              transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+              flexShrink: 0,
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-container)'; e.currentTarget.style.color = 'var(--on-surface)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--on-surface-variant)'; }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'var(--surface-container)';
+              e.currentTarget.style.color = 'var(--on-surface)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--on-surface-variant)';
+            }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#8b4f2c'; }}
+            onBlur={e => { e.currentTarget.style.borderColor = 'var(--outline-variant)'; }}
           >
             Stop
           </button>
+        ) : (
+          // Hidden placeholder to keep header height stable
+          <span style={{ width: 1, height: 26, flexShrink: 0 }} aria-hidden="true" />
         )}
       </div>
 
-      {/* Coverflow rail — horizontal scroll-snap of "album" cards. The
-          active card scales up to mimic the iPod Albums centre-stage card
-          while the rest sit a touch smaller. */}
-      <div style={{
-        display: 'flex', gap: 14,
-        padding: '20px 24px 24px',
-        overflowX: 'auto',
-        scrollSnapType: 'x mandatory',
-        WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-        // Edge fade so the rail feels infinite.
-        maskImage: 'linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent)',
-        WebkitMaskImage: 'linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent)',
-      }}>
-        {/* hide WebKit scrollbar */}
-        <style>{`.ambient-rail::-webkit-scrollbar{display:none;}`}</style>
-        {AMBIENT_SOUNDS.map(s => {
+      {/* Track list — scrollable when many tracks */}
+      <div
+        role="listbox"
+        aria-label="Ambient sound tracks"
+        style={{
+          display: 'flex', flexDirection: 'column',
+          maxHeight: 320, overflowY: 'auto',
+        }}
+      >
+        {AMBIENT_SOUNDS.map((s, idx) => {
           const on = active === s.id;
+          const isLast = idx === AMBIENT_SOUNDS.length - 1;
           return (
-            <button
+            <div
               key={s.id}
               ref={(el) => { trackRefs.current[s.id] = el; }}
+              role="option"
+              aria-selected={on}
+              tabIndex={0}
               onClick={() => onPick(s.id)}
-              aria-pressed={on}
-              aria-label={s.label}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onPick(s.id);
+                }
+              }}
               style={{
-                flex: '0 0 auto',
-                width: on ? 168 : 132,
-                height: on ? 168 : 132,
-                marginTop: on ? 0 : 18,
-                borderRadius: 18,
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 14px',
                 cursor: 'pointer',
-                border: 'none',
-                padding: 0,
-                position: 'relative',
-                overflow: 'hidden',
-                scrollSnapAlign: 'center',
-                backgroundImage: s.gradient,
-                backgroundSize: 'cover',
-                boxShadow: on
-                  ? '0 18px 42px rgba(15,17,30,0.28), 0 4px 10px rgba(15,17,30,0.18), 0 0 0 2px rgba(255,255,255,0.5) inset'
-                  : '0 6px 18px rgba(15,17,30,0.14)',
-                transition: 'width 0.35s ease, height 0.35s ease, margin-top 0.35s ease, box-shadow 0.35s ease',
+                borderLeft: on ? '3px solid #8b4f2c' : '3px solid transparent',
+                background: on ? 'var(--surface-container)' : 'transparent',
+                borderBottom: isLast ? 'none' : '1px solid var(--outline-variant)',
+                transition: 'background 0.15s ease, border-color 0.15s ease',
                 outline: 'none',
               }}
+              onMouseEnter={(e) => {
+                if (!on) e.currentTarget.style.background = 'var(--surface-container-low)';
+              }}
+              onMouseLeave={(e) => {
+                if (!on) e.currentTarget.style.background = 'transparent';
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.boxShadow = 'inset 0 0 0 2px rgba(139,79,44,0.35)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
-              {/* glossy highlight (top half lighter) */}
+              {/* Small tinted icon tile — uses the track's gradient at low opacity */}
               <span
                 aria-hidden="true"
                 style={{
-                  position: 'absolute', top: 0, left: 0, right: 0, height: '50%',
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)',
-                  pointerEvents: 'none',
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.05rem',
+                  backgroundImage: s.gradient,
+                  backgroundSize: 'cover',
+                  flexShrink: 0,
+                  // Quiet down the gradient so it reads as a subtle tint, not a card
+                  opacity: 0.55,
+                  filter: 'saturate(0.85)',
+                  border: '1px solid var(--outline-variant)',
                 }}
-              />
-              {/* large emoji "album art" */}
-              <span style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: on ? '3.5rem' : '2.6rem',
-                filter: on ? 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
-                transition: 'font-size 0.35s ease',
-              }} aria-hidden="true">
+              >
                 {s.icon}
               </span>
-              {/* now-playing pulse on the active card */}
-              {on && (
-                <span style={{
-                  position: 'absolute', top: 10, right: 10,
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: '#fff',
-                  boxShadow: '0 0 0 4px rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.6)',
-                  animation: 'spin 1.8s ease-in-out infinite',
-                }} aria-hidden="true" />
-              )}
-              {/* label band */}
+
               <span style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                padding: '20px 10px 8px',
-                background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%)',
-                color: '#fff',
-                fontSize: on ? '0.78rem' : '0.7rem',
-                fontWeight: 700,
-                textAlign: 'center', letterSpacing: '0.02em',
-                textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                transition: 'font-size 0.35s ease',
+                flex: 1, minWidth: 0,
+                fontSize: '0.88rem',
+                fontWeight: on ? 600 : 500,
+                color: on ? 'var(--on-surface)' : 'var(--on-surface)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {s.label}
               </span>
-            </button>
+
+              {/* Right-side state indicator: copper dot when active, faint dot otherwise */}
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: on ? '#8b4f2c' : 'transparent',
+                  border: on ? 'none' : '1px solid var(--outline-variant)',
+                  flexShrink: 0,
+                  transition: 'background 0.15s ease',
+                }}
+              />
+            </div>
           );
         })}
-      </div>
-
-      {/* Volume slider — always visible, subtle when nothing's playing */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '0 8px',
-        opacity: isPlaying ? 1 : 0.55,
-        transition: 'opacity 0.2s',
-      }}>
-        <VolumeX size={13} style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }} />
-        <input
-          type="range" min={0} max={1} step={0.05} value={volume}
-          onChange={e => onVolume(parseFloat(e.target.value))}
-          aria-label="Volume"
-          disabled={!isPlaying}
-          style={{
-            flex: 1, accentColor: 'var(--copper)',
-            cursor: isPlaying ? 'pointer' : 'default',
-          }}
-        />
-        <Volume2 size={13} style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }} />
-        <span style={{
-          fontSize: '0.7rem', fontWeight: 700, color: 'var(--on-surface-variant)',
-          minWidth: 32, textAlign: 'right',
-        }}>
-          {Math.round(volume * 100)}%
-        </span>
       </div>
     </div>
   );
