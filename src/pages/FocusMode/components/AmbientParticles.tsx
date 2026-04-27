@@ -534,7 +534,10 @@ export function AmbientParticles({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 0,
+        // Sits ABOVE the wallpaper scrim (zIndex 0) so the particles read
+        // against the toned photo. Content wrapper has zIndex 2 so UI is
+        // still on top of the particles.
+        zIndex: 1,
       }}
     />
   );

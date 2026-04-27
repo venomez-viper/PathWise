@@ -700,7 +700,7 @@ export default function FocusMode() {
           }}
         />
       )}
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {/* Back link + shortcuts */}
       <div style={{ width: '100%', maxWidth: 640, marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Link to="/app" style={{
