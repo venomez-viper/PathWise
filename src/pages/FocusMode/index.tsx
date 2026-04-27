@@ -61,6 +61,8 @@ const AMBIENT_SOUNDS: AmbientTrack[] = [
   { id: 'cafe',       label: 'Cafe',          icon: '☕', file: '/audio/cafe.mp3',        group: 'spaces',
     gradient: 'radial-gradient(at 30% 20%, #d4a573 0%, transparent 55%), radial-gradient(at 80% 100%, #6e3f21 0%, transparent 55%), linear-gradient(180deg, #3d2415 0%, #8b5a36 100%)' },
   // Tones
+  { id: 'piano',      label: 'Piano',         icon: '🎹', file: '/audio/piano.mp3',       group: 'tones',
+    gradient: 'radial-gradient(at 30% 20%, #e9dcf2 0%, transparent 55%), radial-gradient(at 70% 100%, #c1a8d6 0%, transparent 55%), linear-gradient(180deg, #f5ecf6 0%, #d6c2dc 100%)' },
   { id: 'brown',      label: 'Brown Noise',   icon: '🟫', file: '/audio/brown-noise.mp3', group: 'tones',
     gradient: 'radial-gradient(at 20% 100%, #6b4a2b 0%, transparent 60%), linear-gradient(180deg, #2b1a0e 0%, #553820 100%)' },
   { id: 'white',      label: 'White Noise',   icon: '⚪', file: '/audio/white-noise.mp3', group: 'tones',
