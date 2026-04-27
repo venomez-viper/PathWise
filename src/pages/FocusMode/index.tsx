@@ -693,7 +693,7 @@ export default function FocusMode() {
           aria-hidden="true"
           style={{
             position: 'fixed', inset: 0, pointerEvents: 'none',
-            background: 'linear-gradient(180deg, rgba(238,252,254,0.85) 0%, rgba(238,252,254,0.78) 100%)',
+            background: 'linear-gradient(180deg, rgba(238,252,254,0.42) 0%, rgba(238,252,254,0.28) 100%)',
             backdropFilter: 'saturate(0.85) blur(1px)',
             WebkitBackdropFilter: 'saturate(0.85) blur(1px)',
             zIndex: 0,
