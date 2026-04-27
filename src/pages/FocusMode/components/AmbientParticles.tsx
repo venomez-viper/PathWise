@@ -36,7 +36,8 @@ type ParticleKind =
   | 'lofi'
   | 'piano'
   | 'crickets'
-  | 'wind';
+  | 'wind'
+  | 'brown';
 
 const KIND_BY_TRACK: Record<string, ParticleKind | null> = {
   rain: 'rain',
@@ -52,7 +53,8 @@ const KIND_BY_TRACK: Record<string, ParticleKind | null> = {
   piano: 'piano',
   crickets: 'crickets',
   wind: 'wind',
-  brown: null,
+  brown: 'brown',
+  // White noise has no visual effect — clean abstract whiteout.
   white: null,
 };
 
@@ -227,6 +229,21 @@ function makeParticles(kind: ParticleKind, w: number, h: number): Particle[] {
           vy: rand(-0.3, 0.3),
           size: rand(10, 22),
           life: 1,
+        });
+      }
+      return arr;
+    }
+    case 'brown': {
+      // Slow drifting amber motes — warm dust particles that match the
+      // deep brown noise palette. ~28 particles, soft pulse via `life`.
+      for (let i = 0; i < 28; i++) {
+        arr.push({
+          x: rand(0, w),
+          y: rand(0, h),
+          vx: rand(-0.25, 0.25),
+          vy: rand(-0.18, 0.06),
+          size: rand(1.6, 3.2),
+          life: rand(0, Math.PI * 2),
         });
       }
       return arr;
@@ -501,6 +518,26 @@ export function AmbientParticles({
               p.x = -p.size;
               p.y = Math.random() * h;
             }
+          }
+          break;
+        }
+        case 'brown': {
+          // Slow amber motes drifting upward, with a soft alpha pulse so
+          // the page doesn't feel static during a long brown-noise session.
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.life = (p.life + 0.012) % (Math.PI * 2);
+            const pulse = 0.55 + 0.25 * Math.sin(p.life);
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(180,135,80,${(0.32 * pulse).toFixed(3)})`;
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.y < -8) { p.y = h + 8; p.x = Math.random() * w; }
+            if (p.y > h + 8) { p.y = -8; p.x = Math.random() * w; }
+            if (p.x < -8) p.x = w + 8;
+            else if (p.x > w + 8) p.x = -8;
           }
           break;
         }
