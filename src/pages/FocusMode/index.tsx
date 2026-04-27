@@ -5,7 +5,6 @@ import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import { useChime } from './hooks/useChime';
-import { useAmbientFade } from './hooks/useAmbientFade';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { usePomodoroNotification } from './hooks/usePomodoroNotification';
 import { useDailyTarget } from './hooks/useDailyTarget';
@@ -345,45 +344,48 @@ export default function FocusMode() {
   // looks broken or flashes.
   const [hasWallpaper, setHasWallpaper] = useState<Record<string, boolean>>({});
   const [volume, setVolume] = useState(0.4);
+  // Per-pick `new Audio(...)` — same approach we used before the
+  // persistent-element refactor. It survives every autoplay policy +
+  // visibility-change quirk we tried to handle, with no fade plumbing
+  // to race the volume slider.
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const ambient = useAmbientFade(audioRef, volume);
-
-  // Track which file we've already warned about so we don't spam the console
-  // when the user reselects the same track repeatedly.
   const warnedRef = useRef<Set<string>>(new Set());
 
   const stopSound = useCallback(() => {
-    ambient.stop();
-    setActiveSound('off');
-  }, [ambient]);
+    if (audioRef.current) {
+      try { audioRef.current.pause(); } catch { /* noop */ }
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
+  }, []);
 
   const playSound = useCallback((soundId: string) => {
-    if (soundId === 'off') { ambient.stop(); setActiveSound('off'); return; }
+    stopSound();
+    if (soundId === 'off') { setActiveSound('off'); return; }
 
     const sound = AMBIENT_SOUNDS.find(s => s.id === soundId);
     if (!sound?.file) return;
 
-    // Warn the developer once per track if the source is shorter than 3 minutes.
-    if (audioRef.current && !warnedRef.current.has(sound.file)) {
-      const probe = audioRef.current;
-      const onMeta = () => {
-        if (Number.isFinite(probe.duration) && probe.duration > 0 && probe.duration < 180) {
+    const audio = new Audio(sound.file);
+    audio.loop = true;
+    audio.volume = volume;
+    if (!warnedRef.current.has(sound.file)) {
+      audio.addEventListener('loadedmetadata', () => {
+        if (Number.isFinite(audio.duration) && audio.duration > 0 && audio.duration < 180) {
           console.warn(
-            `[FocusMode] "${sound.label}" (${sound.file}) is only ${probe.duration.toFixed(1)}s — ` +
+            `[FocusMode] "${sound.label}" (${sound.file}) is only ${audio.duration.toFixed(1)}s — ` +
             `loops will be audible. Replace with a 3+ minute CC0 track. See /public/audio/SOURCES.md.`
           );
         }
         warnedRef.current.add(sound.file);
-        probe.removeEventListener('loadedmetadata', onMeta);
-      };
-      probe.addEventListener('loadedmetadata', onMeta);
+      }, { once: true });
     }
-
-    ambient.play(sound.file);
+    audio.play().catch(() => { /* autoplay blocked, user will click again */ });
+    audioRef.current = audio;
     setActiveSound(soundId);
-  }, [ambient]);
+  }, [volume, stopSound]);
 
-  // Update volume live on the persistent <audio> element
+  // Update volume live on the active audio element
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
@@ -682,10 +684,6 @@ export default function FocusMode() {
           above the wallpaper but below the scrim and UI. Renders nothing for
           tracks without a configured particle behaviour. */}
       <AmbientParticles trackId={activeSound} active={isAmbientActive} />
-
-      {/* Hidden persistent audio element — driven by useAmbientFade so we can
-          crossfade smoothly between tracks without recreating <audio> nodes. */}
-      <audio loop ref={audioRef} style={{ display: 'none' }} />
 
       {/* Constant readability scrim — only when a wallpaper is showing.
           Tones the photo down to the surface palette so every UI element
