@@ -4,6 +4,17 @@ import { ArrowLeft, Check, Play, Pause, RotateCcw, Coffee, Clock, ChevronDown, K
 import { useAuth } from '../../lib/auth-context';
 import { tasks as tasksApi } from '../../lib/api';
 import { Panda } from '../../components/panda';
+import { useChime } from './hooks/useChime';
+import { useAmbientFade } from './hooks/useAmbientFade';
+import { useDocumentTitle } from './hooks/useDocumentTitle';
+import { usePomodoroNotification } from './hooks/usePomodoroNotification';
+import { useDailyTarget } from './hooks/useDailyTarget';
+import { useStreakSync } from './hooks/useStreakSync';
+import { AmbientParticles } from './components/AmbientParticles';
+import { BreathworkInterlude } from './components/BreathworkInterlude';
+import { TaskFocusBinding } from './components/TaskFocusBinding';
+import { MiniPlayer } from './components/MiniPlayer';
+import { DailyTargetCard } from './components/DailyTargetCard';
 
 const TIMER_PRESETS = [
   { label: '15 min', work: 15 * 60, break: 3 * 60 },
@@ -335,41 +346,44 @@ export default function FocusMode() {
   const [hasWallpaper, setHasWallpaper] = useState<Record<string, boolean>>({});
   const [volume, setVolume] = useState(0.4);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ambient = useAmbientFade(audioRef, volume);
+
+  // Track which file we've already warned about so we don't spam the console
+  // when the user reselects the same track repeatedly.
+  const warnedRef = useRef<Set<string>>(new Set());
 
   const stopSound = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = '';
-      audioRef.current = null;
-    }
-  }, []);
+    ambient.stop();
+    setActiveSound('off');
+  }, [ambient]);
 
   const playSound = useCallback((soundId: string) => {
-    stopSound();
-    if (soundId === 'off') { setActiveSound('off'); return; }
+    if (soundId === 'off') { ambient.stop(); setActiveSound('off'); return; }
 
     const sound = AMBIENT_SOUNDS.find(s => s.id === soundId);
     if (!sound?.file) return;
 
-    const audio = new Audio(sound.file);
-    audio.loop = true;
-    audio.volume = volume;
-    // Warn the developer if a track is shorter than 3 minutes — the loop
-    // becomes audible at that length. Replace at /public/audio/<file>.
-    audio.addEventListener('loadedmetadata', () => {
-      if (Number.isFinite(audio.duration) && audio.duration > 0 && audio.duration < 180) {
-        console.warn(
-          `[FocusMode] "${sound.label}" (${sound.file}) is only ${audio.duration.toFixed(1)}s — ` +
-          `loops will be audible. Replace with a 3+ minute CC0 track. See /public/audio/SOURCES.md.`
-        );
-      }
-    }, { once: true });
-    audio.play().catch(() => { /* autoplay blocked, user will click again */ });
-    audioRef.current = audio;
-    setActiveSound(soundId);
-  }, [volume, stopSound]);
+    // Warn the developer once per track if the source is shorter than 3 minutes.
+    if (audioRef.current && !warnedRef.current.has(sound.file)) {
+      const probe = audioRef.current;
+      const onMeta = () => {
+        if (Number.isFinite(probe.duration) && probe.duration > 0 && probe.duration < 180) {
+          console.warn(
+            `[FocusMode] "${sound.label}" (${sound.file}) is only ${probe.duration.toFixed(1)}s — ` +
+            `loops will be audible. Replace with a 3+ minute CC0 track. See /public/audio/SOURCES.md.`
+          );
+        }
+        warnedRef.current.add(sound.file);
+        probe.removeEventListener('loadedmetadata', onMeta);
+      };
+      probe.addEventListener('loadedmetadata', onMeta);
+    }
 
-  // Update volume live
+    ambient.play(sound.file);
+    setActiveSound(soundId);
+  }, [ambient]);
+
+  // Update volume live on the persistent <audio> element
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
@@ -398,6 +412,44 @@ export default function FocusMode() {
 
   // Shortcuts help
   const [showShortcuts, setShowShortcuts] = useState(false);
+
+  // --- Enhancement features state ---
+  const [lockedTask, setLockedTask] = useState<{ id: string; title: string } | null>(null);
+  const [secondsOnLocked, setSecondsOnLocked] = useState(0);
+  const [showBreathwork, setShowBreathwork] = useState(false);
+  const [pageHidden, setPageHidden] = useState(false);
+  const [notifEnabled, setNotifEnabled] = useState<NotificationPermission>(
+    typeof window !== 'undefined' && 'Notification' in window
+      ? Notification.permission
+      : 'denied'
+  );
+
+  // Hooks
+  const chime = useChime();
+  useDocumentTitle(secondsLeft, phase, running);
+  const notification = usePomodoroNotification();
+  const { target, setTarget } = useDailyTarget();
+  const { recordPomodoro } = useStreakSync(user?.id);
+
+  // Page visibility — for the floating mini-player
+  useEffect(() => {
+    const onVis = () => setPageHidden(document.hidden);
+    document.addEventListener('visibilitychange', onVis);
+    onVis();
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
+  // Mark a locked task as in_progress the moment the user starts running
+  const lockedTaskMarkedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!running || !lockedTask || !user) return;
+    if (lockedTaskMarkedRef.current.has(lockedTask.id)) return;
+    lockedTaskMarkedRef.current.add(lockedTask.id);
+    void tasksApi.update(lockedTask.id, { status: 'in_progress' }).catch(() => {
+      // best-effort; fall back silently
+      lockedTaskMarkedRef.current.delete(lockedTask.id);
+    });
+  }, [running, lockedTask, user]);
 
   // Fetch tasks
   useEffect(() => {
@@ -430,10 +482,17 @@ export default function FocusMode() {
   useEffect(() => {
     if (!running) return;
     intervalRef.current = setInterval(() => {
+      // Drive the locked-task counter only while a work phase is actively
+      // running. Break time isn't counted toward the task, by design.
+      if (phase === 'work' && lockedTask) {
+        setSecondsOnLocked(s => s + 1);
+      }
+
       setSecondsLeft(prev => {
         if (prev <= 1) {
           // Phase complete
-          if (phase === 'work') {
+          const wasWork = phase === 'work';
+          if (wasWork) {
             setSession(s => {
               const updated = {
                 pomodorosCompleted: s.pomodorosCompleted + 1,
@@ -445,8 +504,32 @@ export default function FocusMode() {
             });
           }
 
+          // End-of-phase signals: chime + system notification.
+          chime.play();
+          if (wasWork) {
+            notification.notify('Focus session complete', 'Time for a short break.');
+            recordPomodoro();
+          } else {
+            notification.notify('Break over', 'Back to focus when you’re ready.');
+          }
+
+          // On a work→break boundary, surface the breathwork interlude
+          // (unless the user prefers reduced motion). The breathwork
+          // callbacks own the actual phase advance in that case.
+          const reducedMotion =
+            typeof window !== 'undefined' &&
+            typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+          if (wasWork && autoAdvance && !reducedMotion) {
+            setShowBreathwork(true);
+            // Hold timer at zero — breathwork callbacks flip phase to 'break'.
+            setRunning(false);
+            return 0;
+          }
+
           if (autoAdvance) {
-            const next: TimerPhase = phase === 'work' ? 'break' : 'work';
+            const next: TimerPhase = wasWork ? 'break' : 'work';
             setPhase(next);
             setSecondsLeft(next === 'work' ? preset.work : preset.break);
             return next === 'work' ? preset.work : preset.break;
@@ -461,7 +544,7 @@ export default function FocusMode() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [running, phase, autoAdvance, preset]);
+  }, [running, phase, autoAdvance, preset, lockedTask, chime, notification, recordPomodoro]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -488,6 +571,14 @@ export default function FocusMode() {
     setRunning(false);
     setSecondsLeft(phase === 'work' ? preset.work : preset.break);
   }, [phase, preset]);
+
+  // After breathwork resolves (complete or skip), advance into the break.
+  const advanceAfterBreathwork = useCallback(() => {
+    setShowBreathwork(false);
+    setPhase('break');
+    setSecondsLeft(preset.break);
+    if (autoAdvance) setRunning(true);
+  }, [preset, autoAdvance]);
 
   const handleMarkDone = useCallback(async (taskId: string) => {
     try {
@@ -587,6 +678,15 @@ export default function FocusMode() {
       padding: '2rem 1.5rem 4rem',
       position: 'relative',
     }}>
+      {/* Ambient mood particles (rain droplets, leaves, embers, etc.) — sits
+          above the wallpaper but below the scrim and UI. Renders nothing for
+          tracks without a configured particle behaviour. */}
+      <AmbientParticles trackId={activeSound} active={isAmbientActive} />
+
+      {/* Hidden persistent audio element — driven by useAmbientFade so we can
+          crossfade smoothly between tracks without recreating <audio> nodes. */}
+      <audio loop ref={audioRef} style={{ display: 'none' }} />
+
       {/* Constant readability scrim — only when a wallpaper is showing.
           Tones the photo down to the surface palette so every UI element
           retains its designed contrast. No animation, no flashing. */}
@@ -631,10 +731,22 @@ export default function FocusMode() {
           width: '100%', maxWidth: 640, marginBottom: '1rem',
           background: 'var(--surface-container-lowest)', borderRadius: 'var(--radius-md)',
           padding: '0.75rem 1rem', fontSize: '0.78rem', color: 'var(--on-surface-variant)',
-          display: 'flex', gap: 24,
+          display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap',
         }}>
           <span><kbd style={{ padding: '1px 6px', borderRadius: 4, background: 'var(--surface-container)', fontFamily: 'monospace', fontSize: '0.72rem' }}>Space</kbd> Play / Pause</span>
           <span><kbd style={{ padding: '1px 6px', borderRadius: 4, background: 'var(--surface-container)', fontFamily: 'monospace', fontSize: '0.72rem' }}>R</kbd> Reset timer</span>
+          {notifEnabled === 'default' && (
+            <button
+              onClick={() => { void notification.request().then(setNotifEnabled); }}
+              style={{
+                marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: '0.72rem', fontWeight: 600, color: 'var(--copper)', padding: 0,
+                textDecoration: 'underline', textUnderlineOffset: 3,
+              }}
+            >
+              Enable alerts
+            </button>
+          )}
         </div>
       )}
 
@@ -812,6 +924,29 @@ export default function FocusMode() {
           />
           Auto-start next phase
         </label>
+      </div>
+
+      {/* Daily target — progress ring + editable goal, sits directly below
+          the timer card. Pulses on each completed pomodoro. */}
+      <div style={{ width: '100%', maxWidth: 640, marginBottom: '1rem' }}>
+        <DailyTargetCard
+          pomodorosCompleted={session.pomodorosCompleted}
+          totalFocusSeconds={session.totalFocusSeconds}
+          target={target}
+          onTargetChange={setTarget}
+        />
+      </div>
+
+      {/* Task lock — bind the timer to a single task and accumulate its
+          focus seconds. Sits between the timer/target and the ambient picker. */}
+      <div style={{ width: '100%', maxWidth: 640, marginBottom: '1.5rem' }}>
+        <TaskFocusBinding
+          tasks={focusTasks.map((t: any) => ({ id: t.id as string, title: t.title as string }))}
+          selected={lockedTask}
+          onSelect={setLockedTask}
+          onClear={() => { setLockedTask(null); setSecondsOnLocked(0); }}
+          totalSecondsOnSelected={secondsOnLocked}
+        />
       </div>
 
       {/* Panda - mood changes with timer state */}
@@ -1041,7 +1176,29 @@ export default function FocusMode() {
           </p>
         </div>
       )}
+
+      {/* Breathwork interlude — full-screen pacer between work→break. The
+          callbacks here own the actual phase advance (timer holds at 0
+          until the interlude resolves). */}
+      {showBreathwork && (
+        <BreathworkInterlude
+          onComplete={advanceAfterBreathwork}
+          onSkip={advanceAfterBreathwork}
+        />
+      )}
       </div>
+
+      {/* Floating mini-player — only when the page is hidden / backgrounded. */}
+      <MiniPlayer
+        visible={pageHidden}
+        secondsLeft={secondsLeft}
+        phase={phase}
+        running={running}
+        ambientLabel={activeTrack?.label ?? null}
+        ambientIcon={activeTrack?.icon ?? null}
+        onTogglePlay={() => setRunning(r => !r)}
+        onDismiss={() => setPageHidden(false)}
+      />
     </div>
   );
 }
