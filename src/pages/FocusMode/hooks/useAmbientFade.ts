@@ -61,22 +61,42 @@ export function useAmbientFade(
   const play = useCallback((src: string) => {
     const el = audioRef.current;
     if (!el) return;
-    const startNew = () => {
-      try {
-        if (el.src !== src) el.src = src;
-        el.volume = 0;
-        const p = el.play();
-        if (p && typeof p.catch === 'function') p.catch(() => {});
-        ramp(targetRef.current);
-      } catch {
-        // playback rejected (autoplay policy etc.) — caller can retry on gesture
-      }
-    };
+
+    // Already playing something — crossfade: ramp current to 0, swap src,
+    // start the new track at 0, ramp up to target.
     if (!el.paused && el.src) {
-      ramp(0, startNew);
-    } else {
-      startNew();
+      ramp(0, () => {
+        try {
+          el.src = src;
+          el.volume = 0;
+          const p = el.play();
+          if (p && typeof p.catch === 'function') {
+            // play() may reject if the gesture chain expired during the
+            // 600 ms fadeout. Recover by leaving volume at target so the
+            // user's next interaction (or the volume slider) reactivates
+            // playback at the right level.
+            p.then(() => ramp(targetRef.current))
+             .catch(() => { try { el.volume = targetRef.current; } catch { /* noop */ } });
+          } else {
+            ramp(targetRef.current);
+          }
+        } catch { /* swallow */ }
+      });
+      return;
     }
+
+    // Cold start — set src, volume = target, play synchronously inside
+    // the user gesture. No ramp here: ramping FROM 0 means a play()
+    // that succeeds but then has its volume.write contended by the live
+    // useEffect on `volume` ends up effectively muted, which is the bug
+    // that broke ambient on cold-start. Match the original behaviour:
+    // play at full target volume immediately.
+    try {
+      if (el.src !== src) el.src = src;
+      el.volume = targetRef.current;
+      const p = el.play();
+      if (p && typeof p.catch === 'function') p.catch(() => { /* autoplay blocked */ });
+    } catch { /* swallow */ }
   }, [audioRef, ramp]);
 
   const stop = useCallback(() => {
