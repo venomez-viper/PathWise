@@ -41,6 +41,8 @@ Sentry.init({
     /Failed to fetch dynamically imported module/i,
     /Loading chunk \d+ failed/i,
     /Importing a module script failed/i,
+    // Chrome autofill/password-manager extension noise — not app code
+    /Object Not Found Matching Id/i,
   ],
   beforeSend(event) {
     // Don't send events in local dev without DSN
