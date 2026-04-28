@@ -216,23 +216,31 @@ export default function Roadmap() {
     </div>
   );
 
-  if (!data) return (
+  if (!data || (data.milestones ?? []).length === 0) return (
     <div className="page">
       <h1 className="page-title">Growth Roadmap</h1>
       <div className="panel" style={{ textAlign: 'center', padding: '3rem', borderRadius: '2rem' }}>
         <Panda mood="curious" size={110} animate />
-        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--on-surface)', marginBottom: 8, marginTop: 16 }}>No milestones yet</p>
+        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--on-surface)', marginBottom: 8, marginTop: 16 }}>
+          {data ? 'Roadmap setup incomplete' : 'No roadmap yet'}
+        </p>
         <p style={{ fontSize: '0.88rem', color: 'var(--on-surface-variant)', marginBottom: 20, lineHeight: 1.6, maxWidth: 340, marginLeft: 'auto', marginRight: 'auto' }}>
-          Take the career assessment first to get personalized milestones tailored to your goals and skills.
+          {data
+            ? 'Your roadmap was started but milestones weren\'t created — this can happen on a slow connection. Generate it again to get your personalized milestones.'
+            : 'Complete the career assessment and set your target role to get a personalised roadmap with milestones and tasks.'}
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link to="/app/assessment-v2" className="btn-page-action" style={{ background: 'var(--copper)' }}>Take Assessment <ArrowRight size={14} /></Link>
-          <Link to="/app/onboarding" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-full)',
-            background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontWeight: 600,
-            fontSize: '0.82rem', textDecoration: 'none', border: '1px solid var(--surface-container-high)',
-          }}>Already assessed? Set your role</Link>
+          <Link to="/app/onboarding" className="btn-page-action" style={{ background: 'var(--copper)' }}>
+            {data ? 'Generate Roadmap' : 'Get Started'} <ArrowRight size={14} />
+          </Link>
+          {!data && (
+            <Link to="/app/assessment-v2" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-full)',
+              background: 'var(--surface-container-low)', color: 'var(--on-surface)', fontWeight: 600,
+              fontSize: '0.82rem', textDecoration: 'none', border: '1px solid var(--surface-container-high)',
+            }}>Take Assessment <ArrowRight size={13} /></Link>
+          )}
         </div>
       </div>
     </div>

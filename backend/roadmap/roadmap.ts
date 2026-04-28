@@ -474,16 +474,20 @@ export const generateRoadmap = api(
 
       // Auto-generate tasks for each milestone via tasks service
       for (const t of m.tasks ?? []) {
-        await createTask({
-          userId: params.userId,
-          milestoneId,
-          title: t.title,
-          description: t.description,
-          priority: t.priority ?? "medium",
-          category: t.category ?? "learning",
-          dueDate,
-          aiGenerated: true,
-        });
+        try {
+          await createTask({
+            userId: params.userId,
+            milestoneId,
+            title: t.title,
+            description: t.description,
+            priority: t.priority ?? "medium",
+            category: t.category ?? "learning",
+            dueDate,
+            aiGenerated: true,
+          });
+        } catch {
+          // A single task failure should not abort the entire roadmap generation
+        }
       }
     }
 

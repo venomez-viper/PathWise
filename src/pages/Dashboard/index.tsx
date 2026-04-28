@@ -365,7 +365,7 @@ export default function Dashboard() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
               {careerMatches.map((m, i) => (
-                <Link to="/app/assessment-v2" key={m.title} style={{
+                <Link to={`/app/onboarding?role=${encodeURIComponent(m.title)}`} key={m.title} style={{
                   background: 'var(--surface-container-low)',
                   borderRadius: 'var(--radius-xl)',
                   padding: '1.25rem 1rem',

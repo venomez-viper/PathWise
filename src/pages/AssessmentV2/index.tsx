@@ -666,6 +666,7 @@ export default function AssessmentV2() {
         workStyle: workStyleAnswers.length > 0 ? workStyleAnswers[0] : 'mixed',
         strengths: extractedStrengths,
         values: extractedValues,
+        startedAt: state.startedAt,
       };
 
       const res: any = await assessmentApi.submitV2(payload);
