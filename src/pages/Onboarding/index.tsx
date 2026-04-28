@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
-import { roadmap, assessment } from '../../lib/api';
+import { roadmap, assessment, warmup } from '../../lib/api';
 import { Panda } from '../../components/panda';
 import './Onboarding.css';
 
@@ -24,6 +24,9 @@ export default function Onboarding() {
   const [assessmentMatches, setAssessmentMatches] = useState<{ title: string; matchScore: number; pathwayTime?: string }[]>([]);
 
   const firstName = user?.name?.split(' ')[0] ?? 'there';
+
+  // Wake backend early so it's ready when the user clicks Generate
+  useEffect(() => { warmup(); }, []);
 
   // If coming back from Assessment V2 results with a role, skip to role confirmation
   useEffect(() => {
@@ -61,13 +64,21 @@ export default function Onboarding() {
     setStep('generating');
     setGenerating(true);
     setError('');
+    const params = { userId: user.id, targetRole: targetRole.trim(), timeline };
     try {
-      await roadmap.generate({ userId: user.id, targetRole: targetRole.trim(), timeline });
+      await roadmap.generate(params);
       setTimeout(() => navigate('/app', { replace: true }), 1000);
     } catch (err: unknown) {
-      setGenerating(false);
-      setStep('role');
-      setError(err instanceof Error ? err.message : 'Failed to generate roadmap. Please try again.');
+      // Retry once — Encore cold starts can cause the first request to fail
+      try {
+        await new Promise(r => setTimeout(r, 4000));
+        await roadmap.generate(params);
+        setTimeout(() => navigate('/app', { replace: true }), 1000);
+      } catch (retryErr: unknown) {
+        setGenerating(false);
+        setStep('role');
+        setError(retryErr instanceof Error ? retryErr.message : 'Failed to generate roadmap. Please try again.');
+      }
     }
   };
 
