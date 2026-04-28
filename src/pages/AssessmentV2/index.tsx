@@ -680,6 +680,13 @@ export default function AssessmentV2() {
         assessmentApi.saveProgress({ currentPhase: 0, currentQuestion: 0, answers: {}, completedTier: 0, startedAt: '' }).catch(() => {});
       }
       toast('Progress saved', 'success');
+      import('posthog-js').then(({ default: posthog }) => {
+        posthog.capture('assessment_completed', {
+          tier: tierCompleted,
+          top_career: res.result?.careerMatches?.[0]?.title,
+          match_score: res.result?.careerMatches?.[0]?.matchScore,
+        });
+      });
       navigate('/app/assessment-v2/results', { state: { result: res.result, completedTier: tierCompleted } });
     } catch (err) {
       toast('Something went wrong', 'error');

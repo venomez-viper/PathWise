@@ -67,6 +67,9 @@ export default function Onboarding() {
     const params = { userId: user.id, targetRole: targetRole.trim(), timeline };
     try {
       await roadmap.generate(params);
+      import('posthog-js').then(({ default: posthog }) => {
+        posthog.capture('roadmap_generated', { target_role: params.targetRole, timeline: params.timeline });
+      });
       setTimeout(() => navigate('/app', { replace: true }), 1000);
     } catch (err: unknown) {
       // Retry once — Encore cold starts can cause the first request to fail
@@ -77,7 +80,11 @@ export default function Onboarding() {
       } catch (retryErr: unknown) {
         setGenerating(false);
         setStep('role');
-        setError(retryErr instanceof Error ? retryErr.message : 'Failed to generate roadmap. Please try again.');
+        const msg = retryErr instanceof Error ? retryErr.message : 'Failed to generate roadmap. Please try again.';
+        setError(msg);
+        import('posthog-js').then(({ default: posthog }) => {
+          posthog.capture('roadmap_generation_failed', { target_role: params.targetRole, error: msg });
+        });
       }
     }
   };

@@ -182,7 +182,12 @@ export default function Tasks() {
   const toggle = async (task: Task) => {
     const newStatus: Task['status'] = task.status === 'done' ? 'todo' : 'done';
     await moveTask(task, newStatus);
-    if (newStatus === 'done') toast('Task completed!', 'success');
+    if (newStatus === 'done') {
+      toast('Task completed!', 'success');
+      import('posthog-js').then(({ default: posthog }) => {
+        posthog.capture('task_completed', { category: task.category, priority: task.priority });
+      });
+    }
   };
 
   /* ── Mark all complete ── */
